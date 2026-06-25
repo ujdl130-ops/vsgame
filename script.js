@@ -13,6 +13,11 @@ const summonArcherBtn = document.getElementById("summonArcherBtn");
 const skillBtn = document.getElementById("skillBtn");
 const titleScreen = document.getElementById("titleScreen");
 const titleStartBtn = document.getElementById("titleStartBtn");
+const lobbyScreen = document.getElementById("lobbyScreen");
+const lobbyBattleBtn = document.getElementById("lobbyBattleBtn");
+const lobbyShopBtn = document.getElementById("lobbyShopBtn");
+const lobbyExitBtn = document.getElementById("lobbyExitBtn");
+const lobbyNotice = document.getElementById("lobbyNotice");
 
 const GROUND_Y = 410;
 const PLAYER_BASE_X = 40;
@@ -67,10 +72,50 @@ function resetGame() {
   animationId = requestAnimationFrame(gameLoop);
 }
 
+function isTitleVisible() {
+  return titleScreen && !titleScreen.classList.contains("is-hidden");
+}
+
+function isLobbyVisible() {
+  return lobbyScreen && !lobbyScreen.classList.contains("is-hidden");
+}
+
+function showLobby() {
+  if (titleScreen) titleScreen.classList.add("is-hidden");
+  if (lobbyScreen) lobbyScreen.classList.remove("is-hidden");
+  document.body.classList.remove("game-started");
+  document.body.classList.add("in-lobby");
+  if (gameState) {
+    gameState.running = false;
+    gameState.message = "로비에서 전투를 준비하세요";
+    updateButtons();
+  }
+  if (lobbyNotice) {
+    lobbyNotice.textContent = "상점은 아직 준비 중입니다. 전투 버튼을 누르면 1스테이지가 시작됩니다.";
+  }
+}
+
+function showTitle() {
+  resetGame();
+  if (titleScreen) titleScreen.classList.remove("is-hidden");
+  if (lobbyScreen) lobbyScreen.classList.add("is-hidden");
+  document.body.classList.remove("game-started", "in-lobby");
+  if (lobbyNotice) {
+    lobbyNotice.textContent = "상점은 아직 준비 중입니다. 전투 버튼을 누르면 1스테이지가 시작됩니다.";
+  }
+}
+
+function showShopNotice() {
+  if (!lobbyNotice) return;
+  lobbyNotice.textContent = "상점 기능은 다음 단계에서 추가 예정입니다. 지금은 전투 버튼으로 스테이지를 시작할 수 있어요.";
+}
+
 function startGame() {
   if (gameState.gameOver || gameState.clear) resetGame();
   if (titleScreen) titleScreen.classList.add("is-hidden");
+  if (lobbyScreen) lobbyScreen.classList.add("is-hidden");
   document.body.classList.add("game-started");
+  document.body.classList.remove("in-lobby");
   gameState.running = true;
   gameState.message = `Wave ${gameState.wave} 시작!`;
   gameState.messageTimer = 1.2;
@@ -80,7 +125,9 @@ function startGame() {
 function restartGame() {
   resetGame();
   if (titleScreen) titleScreen.classList.add("is-hidden");
+  if (lobbyScreen) lobbyScreen.classList.add("is-hidden");
   document.body.classList.add("game-started");
+  document.body.classList.remove("in-lobby");
   startGame();
 }
 
@@ -721,11 +768,21 @@ window.addEventListener("keydown", (event) => {
   const playableKeys = ["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown", "Space"];
   if (playableKeys.includes(event.code)) event.preventDefault();
 
-  if (titleScreen && !titleScreen.classList.contains("is-hidden")) {
+  if (isTitleVisible()) {
+    if (event.code === "Enter" || event.code === "Space") {
+      event.preventDefault();
+      showLobby();
+    }
+    return;
+  }
+
+  if (isLobbyVisible()) {
     if (event.code === "Enter" || event.code === "Space") {
       event.preventDefault();
       startGame();
     }
+    if (event.code === "KeyS") showShopNotice();
+    if (event.code === "Escape") showTitle();
     return;
   }
 
@@ -745,7 +802,10 @@ window.addEventListener("keyup", (event) => {
 });
 
 startBtn.addEventListener("click", startGame);
-titleStartBtn.addEventListener("click", startGame);
+titleStartBtn.addEventListener("click", showLobby);
+if (lobbyBattleBtn) lobbyBattleBtn.addEventListener("click", startGame);
+if (lobbyShopBtn) lobbyShopBtn.addEventListener("click", showShopNotice);
+if (lobbyExitBtn) lobbyExitBtn.addEventListener("click", showTitle);
 restartBtn.addEventListener("click", restartGame);
 summonGuardBtn.addEventListener("click", summonGuard);
 summonArcherBtn.addEventListener("click", summonArcher);
