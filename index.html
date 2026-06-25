@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>라인 디펜스 데모</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <main class="game-wrap">
+    <section class="title-card">
+      <p class="eyebrow">PALADOG-LIKE LINE DEFENSE DEMO</p>
+      <h1>용사 라인 디펜스</h1>
+      <p>주인공을 움직이며 아군을 소환해 적 기지를 밀어붙이는 간단한 횡스크롤 디펜스 데모입니다.</p>
+    </section>
+
+    <section class="hud">
+      <div><span>Wave</span><strong id="waveText">1 / 3</strong></div>
+      <div><span>Gold</span><strong id="goldText">100</strong></div>
+      <div><span>Player Base</span><strong id="playerHpText">100</strong></div>
+      <div><span>Enemy Base</span><strong id="enemyHpText">100</strong></div>
+    </section>
+
+    <canvas id="gameCanvas" width="960" height="540" aria-label="라인 디펜스 게임 화면"></canvas>
+
+    <section class="controls">
+      <button id="startBtn">게임 시작</button>
+      <button id="summonGuardBtn">방패병 소환 50G</button>
+      <button id="summonArcherBtn">궁수 소환 75G</button>
+      <button id="skillBtn">성검 스킬 100G</button>
+      <button id="restartBtn">재시작</button>
+    </section>
+
+    <section class="guide">
+      <p><b>조작:</b> A/D 또는 ←/→ 이동 · Space 주인공 공격 · 버튼 클릭으로 유닛 소환</p>
+      <p><b>목표:</b> 3웨이브를 버티고 적 기지를 파괴하면 승리</p>
+    </section>
+  </main>
+
+  <script src="script.js"></script>
+</body>
+</html>
