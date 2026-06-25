@@ -3,15 +3,40 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>라인 디펜스 데모</title>
+  <title>픽셀디펜스</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
+  <section id="titleScreen" class="title-screen" aria-label="픽셀디펜스 타이틀 화면">
+    <div class="pixel-stars" aria-hidden="true">
+      <span></span><span></span><span></span><span></span><span></span>
+      <span></span><span></span><span></span><span></span><span></span>
+    </div>
+
+    <div class="title-panel">
+      <p class="title-kicker">ARCADE LINE DEFENSE</p>
+      <h1 class="pixel-logo" aria-label="픽셀디펜스">픽셀디펜스</h1>
+      <p class="title-copy">용사를 조작하고 아군을 소환해 몬스터 기지를 밀어붙이는 픽셀풍 횡스크롤 디펜스</p>
+
+      <div class="title-preview" aria-hidden="true">
+        <div class="mini-base player"></div>
+        <div class="mini-hero"></div>
+        <div class="mini-unit"></div>
+        <div class="mini-lane"></div>
+        <div class="mini-enemy"></div>
+        <div class="mini-base enemy"></div>
+      </div>
+
+      <button id="titleStartBtn" class="title-start-btn" type="button">▶ 게임 시작</button>
+      <p class="title-help">A/D 또는 ←/→ 이동 · Space 공격 · 1/2 유닛 소환 · Q 스킬</p>
+    </div>
+  </section>
+
   <main class="game-wrap">
     <section class="title-card">
-      <p class="eyebrow">PALADOG-LIKE LINE DEFENSE DEMO</p>
-      <h1>용사 라인 디펜스</h1>
-      <p>주인공을 움직이며 아군을 소환해 적 기지를 밀어붙이는 간단한 횡스크롤 디펜스 데모입니다.</p>
+      <p class="eyebrow">PIXEL DEFENSE · PROTOTYPE</p>
+      <h2>픽셀디펜스</h2>
+      <p>주인공을 움직이며 아군을 소환해 적 기지를 밀어붙이는 횡스크롤 디펜스 데모입니다.</p>
     </section>
 
     <section class="hud">
@@ -21,18 +46,18 @@
       <div><span>Enemy Base</span><strong id="enemyHpText">100</strong></div>
     </section>
 
-    <canvas id="gameCanvas" width="960" height="540" aria-label="라인 디펜스 게임 화면"></canvas>
+    <canvas id="gameCanvas" width="960" height="540" aria-label="픽셀디펜스 게임 화면"></canvas>
 
     <section class="controls">
-      <button id="startBtn">게임 시작</button>
-      <button id="summonGuardBtn">방패병 소환 50G</button>
-      <button id="summonArcherBtn">궁수 소환 75G</button>
-      <button id="skillBtn">성검 스킬 100G</button>
-      <button id="restartBtn">재시작</button>
+      <button id="startBtn" type="button">게임 시작</button>
+      <button id="summonGuardBtn" type="button">방패병 소환 50G</button>
+      <button id="summonArcherBtn" type="button">궁수 소환 75G</button>
+      <button id="skillBtn" type="button">성검 스킬 100G</button>
+      <button id="restartBtn" type="button">재시작</button>
     </section>
 
     <section class="guide">
-      <p><b>조작:</b> A/D 또는 ←/→ 이동 · Space 주인공 공격 · 버튼 클릭으로 유닛 소환</p>
+      <p><b>조작:</b> A/D 또는 ←/→ 이동 · Space 주인공 공격 · 1 방패병 · 2 궁수 · Q 성검 스킬</p>
       <p><b>목표:</b> 3웨이브를 버티고 적 기지를 파괴하면 승리</p>
     </section>
   </main>

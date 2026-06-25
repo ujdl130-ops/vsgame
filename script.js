@@ -11,6 +11,8 @@ const restartBtn = document.getElementById("restartBtn");
 const summonGuardBtn = document.getElementById("summonGuardBtn");
 const summonArcherBtn = document.getElementById("summonArcherBtn");
 const skillBtn = document.getElementById("skillBtn");
+const titleScreen = document.getElementById("titleScreen");
+const titleStartBtn = document.getElementById("titleStartBtn");
 
 const GROUND_Y = 410;
 const PLAYER_BASE_X = 40;
@@ -67,10 +69,19 @@ function resetGame() {
 
 function startGame() {
   if (gameState.gameOver || gameState.clear) resetGame();
+  if (titleScreen) titleScreen.classList.add("is-hidden");
+  document.body.classList.add("game-started");
   gameState.running = true;
-  gameState.message = "Wave 1 시작!";
+  gameState.message = `Wave ${gameState.wave} 시작!`;
   gameState.messageTimer = 1.2;
   updateButtons();
+}
+
+function restartGame() {
+  resetGame();
+  if (titleScreen) titleScreen.classList.add("is-hidden");
+  document.body.classList.add("game-started");
+  startGame();
 }
 
 function updateHud() {
@@ -707,11 +718,26 @@ function gameLoop(now) {
 }
 
 window.addEventListener("keydown", (event) => {
+  const playableKeys = ["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown", "Space"];
+  if (playableKeys.includes(event.code)) event.preventDefault();
+
+  if (titleScreen && !titleScreen.classList.contains("is-hidden")) {
+    if (event.code === "Enter" || event.code === "Space") {
+      event.preventDefault();
+      startGame();
+    }
+    return;
+  }
+
   keys[event.code] = true;
+
   if (event.code === "Space") {
-    event.preventDefault();
     heroAttack();
   }
+
+  if (event.code === "Digit1") summonGuard();
+  if (event.code === "Digit2") summonArcher();
+  if (event.code === "KeyQ") castHolySlash();
 });
 
 window.addEventListener("keyup", (event) => {
@@ -719,7 +745,8 @@ window.addEventListener("keyup", (event) => {
 });
 
 startBtn.addEventListener("click", startGame);
-restartBtn.addEventListener("click", resetGame);
+titleStartBtn.addEventListener("click", startGame);
+restartBtn.addEventListener("click", restartGame);
 summonGuardBtn.addEventListener("click", summonGuard);
 summonArcherBtn.addEventListener("click", summonArcher);
 skillBtn.addEventListener("click", castHolySlash);
