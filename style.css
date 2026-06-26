@@ -1747,3 +1747,80 @@ body:not(.game-started) .game-wrap {
     padding-bottom: 10px;
   }
 }
+
+
+/* 상점 품목 이름 전용 UI 수정 */
+.shop-item-grid {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.shop-card {
+  min-height: 148px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 14px;
+  padding: 18px 12px;
+}
+
+.shop-card strong {
+  min-height: auto;
+  font-size: clamp(22px, 3vw, 31px);
+  line-height: 1;
+  letter-spacing: -0.08em;
+  text-shadow: 2px 2px 0 rgba(255, 255, 255, 0.45);
+}
+
+.shop-card small,
+.shop-card em,
+.shop-buy-label {
+  display: none;
+}
+
+.shop-item-icon {
+  width: 58px;
+  height: 58px;
+  margin: 0;
+}
+
+.bit-icon {
+  background:
+    radial-gradient(circle at 50% 42%, #fff7b5 0 18%, #ffd66b 19% 44%, #ff9f3f 45% 70%, #5d311b 71%);
+  clip-path: polygon(50% 0, 88% 22%, 88% 72%, 50% 100%, 12% 72%, 12% 22%);
+}
+
+.pixelcore-icon {
+  background:
+    radial-gradient(circle, #ffffff 0 12%, #70f7ff 13% 38%, #7b3eff 39% 68%, #201426 69%);
+  clip-path: polygon(50% 0, 93% 25%, 93% 75%, 50% 100%, 7% 75%, 7% 25%);
+}
+
+.pixelshard-icon {
+  background:
+    linear-gradient(135deg, #ffffff 0 12%, #70f7ff 13% 42%, #3eb1dc 43% 68%, #7b3eff 69%);
+  clip-path: polygon(50% 0, 82% 18%, 70% 100%, 20% 86%, 8% 32%);
+}
+
+.pixeltoken-icon {
+  background:
+    radial-gradient(circle, #fff7b5 0 18%, #ffd66b 19% 44%, #b86a35 45% 70%, #201426 71%);
+  border-radius: 0;
+  clip-path: polygon(18% 0, 82% 0, 100% 18%, 100% 82%, 82% 100%, 18% 100%, 0 82%, 0 18%);
+}
+
+@media (max-width: 860px) {
+  .shop-card {
+    min-height: 120px;
+  }
+
+  .shop-card strong {
+    font-size: clamp(20px, 5vw, 28px);
+  }
+
+  .shop-item-icon {
+    width: 48px;
+    height: 48px;
+  }
+}

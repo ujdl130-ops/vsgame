@@ -263,13 +263,13 @@ function showShop() {
   }
 
   if (shopNotice) {
-    shopNotice.textContent = "현재는 상점 UI 미리보기 단계입니다. 아이템 클릭 시 안내 문구만 표시됩니다.";
+    shopNotice.textContent = "상점 품목을 선택하세요.";
   }
 }
 
 function showShopItemNotice(itemName) {
   if (!shopNotice) return;
-  shopNotice.textContent = `${itemName}은 다음 단계에서 구매/강화 기능과 연결할 예정입니다.`;
+  shopNotice.textContent = `${itemName} 선택됨`;
 }
 
 function showLobby() {
