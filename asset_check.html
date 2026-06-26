@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>픽셀디펜스 에셋 체크</title>
+<style>body{font-family:Arial,'Noto Sans KR',sans-serif;background:#10131f;color:white;margin:0;padding:24px;}h1{margin:0 0 12px}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px}.card{background:#1b2035;border:2px solid #56648f;padding:14px;border-radius:10px}.ok{color:#75ff8f;font-weight:900}.bad{color:#ff7777;font-weight:900}img{max-width:100%;background:#30384f;border:1px solid #56648f;image-rendering:auto}code{background:#080b14;padding:2px 5px;border-radius:4px}</style>
+</head>
+<body>
+<h1>픽셀디펜스 에셋 체크</h1>
+<p>아래 3개가 모두 보이면 <code>index.html</code>에서도 정상 로드됩니다.</p>
+<div id="result"></div>
+<div class="grid">
+  <div class="card"><h2>Stage 1 배경</h2><img src="stage1_forest_bg_v2.png" alt="stage bg"></div>
+  <div class="card"><h2>방패병 SD 기사</h2><img src="guard_spritesheet_v2.png" alt="guard"></div>
+  <div class="card"><h2>궁수</h2><img src="archer_spritesheet_v2.png" alt="archer"></div>
+</div>
+<script>
+const targets=[['Stage 1 배경','stage1_forest_bg_v2.png'],['방패병 SD 기사','guard_spritesheet_v2.png'],['궁수','archer_spritesheet_v2.png']];
+const result=document.getElementById('result');
+Promise.all(targets.map(([name,src])=>new Promise(resolve=>{const img=new Image();img.onload=()=>resolve(`<p class="ok">OK · ${name} · ${img.naturalWidth}x${img.naturalHeight}</p>`);img.onerror=()=>resolve(`<p class="bad">FAIL · ${name} · ${src} 파일을 못 찾음</p>`);img.src=src;}))).then(lines=>result.innerHTML=lines.join(''));
+</script>
+</body>
+</html>
