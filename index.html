@@ -37,12 +37,6 @@
 
     <button id="lobbyExitBtn" class="lobby-btn lobby-exit" type="button">게임종료</button>
 
-    <div class="lobby-title-box">
-      <p class="lobby-kicker">PIXEL BASE CAMP</p>
-      <h1 class="lobby-logo">픽셀디펜스</h1>
-      <p>전투를 준비하는 작은 기사단 로비</p>
-    </div>
-
     <div class="lobby-stage" aria-hidden="true">
       <div class="lobby-sun"></div>
       <div class="lobby-cloud cloud-a"></div>
@@ -62,10 +56,84 @@
       <div class="lobby-flag"></div>
     </div>
 
-    <div id="lobbyNotice" class="lobby-notice">상점은 아직 준비 중입니다. 전투 버튼을 누르면 Chapter 1 선택 화면으로 이동합니다.</div>
 
     <button id="lobbyShopBtn" class="lobby-btn lobby-shop" type="button">상점</button>
     <button id="lobbyBattleBtn" class="lobby-btn lobby-battle" type="button">전투</button>
+  </section>
+
+
+  <section id="shopScreen" class="shop-screen is-hidden" aria-label="픽셀디펜스 상점 화면">
+    <div class="shop-scanline" aria-hidden="true"></div>
+
+    <button id="shopBackBtn" class="shop-ui-btn shop-back-btn" type="button">← 로비</button>
+    <button id="shopCloseBtn" class="shop-ui-btn shop-close-btn" type="button">닫기</button>
+
+    <div class="shop-title-box">
+      <p class="shop-kicker">PIXEL FANTASY WESTERN SHOP</p>
+      <h1 class="shop-logo">황야의 상점</h1>
+      <p>마법 장비와 서부 개척 장비가 함께 놓인 픽셀 상점</p>
+    </div>
+
+    <div class="shop-scene" aria-hidden="true">
+      <div class="shop-moon"></div>
+      <div class="shop-cloud shop-cloud-a"></div>
+      <div class="shop-cloud shop-cloud-b"></div>
+      <div class="shop-saloon">
+        <span class="shop-sign-board">SHOP</span>
+        <span class="shop-door"></span>
+        <span class="shop-window left"></span>
+        <span class="shop-window right"></span>
+      </div>
+      <div class="shop-wagon">
+        <span></span>
+      </div>
+      <div class="shopkeeper"></div>
+      <div class="shop-hero"></div>
+      <div class="shop-ground"></div>
+    </div>
+
+    <div class="shop-board">
+      <div class="shop-wallet">
+        <span>보유 코인</span>
+        <strong>준비중</strong>
+      </div>
+
+      <div class="shop-item-grid">
+        <button class="shop-card" type="button" data-item="견습 기사 장비">
+          <span class="shop-item-icon sword-icon" aria-hidden="true"></span>
+          <strong>견습 기사 장비</strong>
+          <small>영웅의 기본 공격력을 올리는 초반용 장비</small>
+          <em>120 코인</em>
+          <span class="shop-buy-label">구매 준비중</span>
+        </button>
+
+        <button class="shop-card" type="button" data-item="서부 보안관 모자">
+          <span class="shop-item-icon hat-icon" aria-hidden="true"></span>
+          <strong>서부 보안관 모자</strong>
+          <small>유닛 소환 비용을 줄여주는 개척자 장비</small>
+          <em>180 코인</em>
+          <span class="shop-buy-label">구매 준비중</span>
+        </button>
+
+        <button class="shop-card" type="button" data-item="마법 탄약 상자">
+          <span class="shop-item-icon ammo-icon" aria-hidden="true"></span>
+          <strong>마법 탄약 상자</strong>
+          <small>궁수와 원거리 유닛 강화에 쓰이는 재료</small>
+          <em>220 코인</em>
+          <span class="shop-buy-label">구매 준비중</span>
+        </button>
+
+        <button class="shop-card" type="button" data-item="픽셀 코어">
+          <span class="shop-item-icon core-icon" aria-hidden="true"></span>
+          <strong>픽셀 코어</strong>
+          <small>영웅 스킬과 기지 강화를 위한 희귀 재료</small>
+          <em>300 코인</em>
+          <span class="shop-buy-label">구매 준비중</span>
+        </button>
+      </div>
+
+      <p id="shopNotice" class="shop-notice">현재는 상점 UI 미리보기 단계입니다. 아이템 클릭 시 안내 문구만 표시됩니다.</p>
+    </div>
   </section>
 
 
