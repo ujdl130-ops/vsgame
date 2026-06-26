@@ -118,6 +118,41 @@
         </div>
       </div>
     </div>
+
+    <div id="recruitDoorScene" class="recruit-door-scene is-hidden" aria-label="모집 문 개방 연출 화면">
+      <div class="door-pixel-scanline" aria-hidden="true"></div>
+      <button id="recruitDoorCloseBtn" class="door-close-btn" type="button">닫기</button>
+
+      <div id="doorLight" class="door-light" aria-hidden="true">
+        <span></span><span></span><span></span><span></span><span></span>
+      </div>
+
+      <div id="recruitDoorFrame" class="recruit-door-frame" role="button" tabindex="0" aria-label="문을 터치해서 모집 연출을 진행">
+        <div class="door-kingdom-bg" aria-hidden="true">
+          <div class="door-tower door-tower-left"></div>
+          <div class="door-tower door-tower-right"></div>
+          <div class="door-flag door-flag-left"></div>
+          <div class="door-flag door-flag-right"></div>
+        </div>
+
+        <div class="door-arch" aria-hidden="true"></div>
+        <div class="door-panel-wrap" aria-hidden="true">
+          <div class="door-panel door-left">
+            <span class="door-metal-line"></span>
+            <span class="door-knob"></span>
+          </div>
+          <div class="door-panel door-right">
+            <span class="door-metal-line"></span>
+            <span class="door-knob"></span>
+          </div>
+        </div>
+
+        <div id="doorKnockText" class="door-knock-text" aria-hidden="true">쾅!</div>
+        <p id="doorTapGuide" class="door-tap-guide">문을 터치하세요</p>
+        <p id="doorResultText" class="door-result-text"></p>
+      </div>
+    </div>
+
   </section>
 
 
