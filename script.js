@@ -58,6 +58,25 @@ archerSprite.onload = () => {
 };
 archerSprite.src = "archer_spritesheet.png";
 
+const guardSprite = new Image();
+let guardSpriteReady = false;
+guardSprite.onload = () => {
+  guardSpriteReady = true;
+};
+guardSprite.src = "guard_spritesheet.png";
+
+const GUARD_SPRITE = {
+  // SD 기사형 방패병 전용 스프라이트 시트입니다.
+  // 6열 x 5행: idle / walk / attack / hurt / death 순서입니다.
+  frameW: 229,
+  frameH: 229,
+  drawW: 88,
+  drawH: 88,
+  fps: { idle: 5, walk: 8, attack: 11, hurt: 7, death: 6 },
+  rows: { idle: 0, walk: 1, attack: 2, hurt: 3, death: 4 },
+  frames: { idle: 6, walk: 6, attack: 6, hurt: 4, death: 6 },
+};
+
 const ARCHER_SPRITE = {
   // 6열 x 5행으로 다시 정렬한 궁수 전용 스프라이트 시트입니다.
   // 각 프레임의 발 위치를 같은 기준선에 맞춰 걷기/공격 중 흔들림을 줄였습니다.
@@ -572,6 +591,14 @@ function summonGuard() {
     range: 42,
     cooldown: 0,
     attackSpeed: 0.75,
+    animTime: 0,
+    moving: false,
+    attackAnimTimer: 0,
+    attackAnimDuration: 0.46,
+    attackImpactPending: false,
+    attackTarget: null,
+    hurtAnimTimer: 0,
+    lastHp: 90,
   });
 }
 
@@ -788,12 +815,12 @@ function updateUnits(dt) {
   for (const unit of gameState.units) {
     unit.cooldown = Math.max(0, unit.cooldown - dt);
 
-    if (unit.type === "archer") {
+    if (unit.type === "archer" || unit.type === "guard") {
       unit.animTime = (unit.animTime || 0) + dt;
       unit.moving = false;
 
       const previousAttackTimer = unit.attackAnimTimer || 0;
-      unit.attackAnimDuration = unit.attackAnimDuration || 0.58;
+      unit.attackAnimDuration = unit.attackAnimDuration || (unit.type === "guard" ? 0.46 : 0.58);
       unit.attackAnimTimer = Math.max(0, previousAttackTimer - dt);
       unit.hurtAnimTimer = Math.max(0, (unit.hurtAnimTimer || 0) - dt);
 
@@ -802,14 +829,28 @@ function updateUnits(dt) {
       }
       unit.lastHp = unit.hp;
 
-      // 공격 모션의 활시위가 풀리는 타이밍에 맞춰 화살을 발사합니다.
-      // 기존처럼 공격 시작 프레임에 바로 화살이 나가면 모션이 따로 노는 느낌이 생깁니다.
       const attackProgress = unit.attackAnimTimer > 0
         ? 1 - unit.attackAnimTimer / unit.attackAnimDuration
         : 1;
 
-      if (unit.pendingArrowShot && (attackProgress >= 0.62 || unit.attackAnimTimer <= 0)) {
+      // 궁수는 활시위를 놓는 타이밍에 화살 발사
+      if (unit.type === "archer" && unit.pendingArrowShot && (attackProgress >= 0.62 || unit.attackAnimTimer <= 0)) {
         fireArcherArrow(unit);
+      }
+
+      // 방패병은 검이 앞으로 나가는 프레임에 근접 피해 적용
+      if (unit.type === "guard" && unit.attackImpactPending && (attackProgress >= 0.48 || unit.attackAnimTimer <= 0)) {
+        const attackTarget = unit.attackTarget && unit.attackTarget.hp > 0
+          ? unit.attackTarget
+          : findNearestEnemy(unit.x, unit.range + 12);
+
+        if (attackTarget) {
+          attackTarget.hp -= unit.damage;
+          spawnHit(attackTarget.x, attackTarget.y - 30, "#b7f7ff");
+        }
+
+        unit.attackImpactPending = false;
+        unit.attackTarget = null;
       }
     }
 
@@ -823,6 +864,11 @@ function updateUnits(dt) {
           unit.attackAnimTimer = unit.attackAnimDuration;
           unit.pendingArrowShot = true;
           unit.shotTarget = target;
+        } else if (unit.type === "guard") {
+          unit.attackAnimDuration = 0.46;
+          unit.attackAnimTimer = unit.attackAnimDuration;
+          unit.attackImpactPending = true;
+          unit.attackTarget = target;
         } else {
           target.hp -= unit.damage;
           spawnHit(target.x, target.y - 30, "#b7f7ff");
@@ -830,13 +876,13 @@ function updateUnits(dt) {
       }
     } else {
       unit.x += unit.speed * dt;
-      if (unit.type === "archer") unit.moving = true;
+      if (unit.type === "archer" || unit.type === "guard") unit.moving = true;
     }
 
     if (unit.x > ENEMY_BASE_X - 35) {
       gameState.enemyBaseHp -= unit.type === "archer" ? 8 * dt : 18 * dt;
       unit.x = ENEMY_BASE_X - 35;
-      if (unit.type === "archer") unit.moving = false;
+      if (unit.type === "archer" || unit.type === "guard") unit.moving = false;
     }
   }
 }
@@ -1063,6 +1109,45 @@ function drawHero(hero) {
 }
 
 
+function drawGuardSprite(unit) {
+  if (!guardSpriteReady) return false;
+
+  let anim = "idle";
+  if (unit.hurtAnimTimer > 0) anim = "hurt";
+  else if (unit.attackAnimTimer > 0) anim = "attack";
+  else if (unit.moving) anim = "walk";
+
+  const frameCount = GUARD_SPRITE.frames[anim];
+  const fps = GUARD_SPRITE.fps[anim] || 8;
+  let frame = Math.floor((unit.animTime || 0) * fps) % frameCount;
+
+  if (anim === "attack") {
+    const duration = unit.attackAnimDuration || 0.46;
+    const progress = 1 - unit.attackAnimTimer / duration;
+    frame = Math.min(frameCount - 1, Math.max(0, Math.floor(progress * frameCount)));
+  }
+
+  const sx = frame * GUARD_SPRITE.frameW;
+  const sy = GUARD_SPRITE.rows[anim] * GUARD_SPRITE.frameH;
+  const dw = GUARD_SPRITE.drawW;
+  const dh = GUARD_SPRITE.drawH;
+
+  ctx.imageSmoothingEnabled = true;
+  ctx.drawImage(
+    guardSprite,
+    sx,
+    sy,
+    GUARD_SPRITE.frameW,
+    GUARD_SPRITE.frameH,
+    -dw / 2,
+    -dh + 9,
+    dw,
+    dh
+  );
+
+  return true;
+}
+
 function drawArcherSprite(unit) {
   if (!archerSpriteReady) return false;
 
@@ -1114,20 +1199,24 @@ function drawUnit(unit) {
   ctx.fill();
 
   if (unit.type === "guard") {
-    ctx.translate(0, bob);
+    const drewSprite = drawGuardSprite(unit);
 
-    ctx.fillStyle = "#5db7ff";
-    ctx.fillRect(-14, -42, 28, 34);
-    ctx.fillStyle = "#ffd7ac";
-    ctx.fillRect(-11, -58, 22, 18);
-    ctx.fillStyle = "#d6f1ff";
-    ctx.fillRect(8, -40, 18, 26);
-    ctx.strokeStyle = "#e9fbff";
-    ctx.lineWidth = 3;
-    ctx.beginPath();
-    ctx.moveTo(20, -42);
-    ctx.lineTo(42, -54);
-    ctx.stroke();
+    if (!drewSprite) {
+      ctx.translate(0, bob);
+
+      ctx.fillStyle = "#5db7ff";
+      ctx.fillRect(-14, -42, 28, 34);
+      ctx.fillStyle = "#ffd7ac";
+      ctx.fillRect(-11, -58, 22, 18);
+      ctx.fillStyle = "#d6f1ff";
+      ctx.fillRect(8, -40, 18, 26);
+      ctx.strokeStyle = "#e9fbff";
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.moveTo(20, -42);
+      ctx.lineTo(42, -54);
+      ctx.stroke();
+    }
   } else {
     const drewSprite = drawArcherSprite(unit);
 
