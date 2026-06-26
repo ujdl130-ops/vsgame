@@ -17,6 +17,12 @@ const lobbyScreen = document.getElementById("lobbyScreen");
 const lobbyBattleBtn = document.getElementById("lobbyBattleBtn");
 const lobbyShopBtn = document.getElementById("lobbyShopBtn");
 const lobbyRecruitBtn = document.getElementById("lobbyRecruitBtn");
+const recruitScreen = document.getElementById("recruitScreen");
+const recruitBackBtn = document.getElementById("recruitBackBtn");
+const recruitCloseBtn = document.getElementById("recruitCloseBtn");
+const recruitPullOneBtn = document.getElementById("recruitPullOneBtn");
+const recruitPullTenBtn = document.getElementById("recruitPullTenBtn");
+const recruitNotice = document.getElementById("recruitNotice");
 const lobbyExitBtn = document.getElementById("lobbyExitBtn");
 const lobbyNotice = document.getElementById("lobbyNotice");
 const shopScreen = document.getElementById("shopScreen");
@@ -201,9 +207,10 @@ function showStageSelect() {
   if (lobbyScreen) lobbyScreen.classList.add("is-hidden");
   if (stageScreen) stageScreen.classList.remove("is-hidden");
   if (shopScreen) shopScreen.classList.add("is-hidden");
+  if (recruitScreen) recruitScreen.classList.add("is-hidden");
   if (chapterPanel) chapterPanel.classList.remove("is-hidden");
   if (stagePanel) stagePanel.classList.add("is-hidden");
-  document.body.classList.remove("game-started", "in-lobby", "in-shop");
+  document.body.classList.remove("game-started", "in-lobby", "in-shop", "in-recruit");
   document.body.classList.add("in-stage-select");
 
   if (gameState) {
@@ -249,12 +256,17 @@ function isShopVisible() {
   return shopScreen && !shopScreen.classList.contains("is-hidden");
 }
 
+function isRecruitVisible() {
+  return recruitScreen && !recruitScreen.classList.contains("is-hidden");
+}
+
 function showShop() {
   if (titleScreen) titleScreen.classList.add("is-hidden");
   if (lobbyScreen) lobbyScreen.classList.add("is-hidden");
   if (stageScreen) stageScreen.classList.add("is-hidden");
   if (shopScreen) shopScreen.classList.remove("is-hidden");
-  document.body.classList.remove("game-started", "in-lobby", "in-stage-select");
+  if (recruitScreen) recruitScreen.classList.add("is-hidden");
+  document.body.classList.remove("game-started", "in-lobby", "in-stage-select", "in-recruit");
   document.body.classList.add("in-shop");
 
   if (gameState) {
@@ -273,12 +285,39 @@ function showShopItemNotice(itemName) {
   shopNotice.textContent = `${itemName} 선택됨`;
 }
 
+
+function showRecruit() {
+  if (titleScreen) titleScreen.classList.add("is-hidden");
+  if (lobbyScreen) lobbyScreen.classList.add("is-hidden");
+  if (stageScreen) stageScreen.classList.add("is-hidden");
+  if (shopScreen) shopScreen.classList.add("is-hidden");
+  if (recruitScreen) recruitScreen.classList.remove("is-hidden");
+  document.body.classList.remove("game-started", "in-lobby", "in-stage-select", "in-shop");
+  document.body.classList.add("in-recruit");
+
+  if (gameState) {
+    gameState.running = false;
+    gameState.message = "모집 화면에서 영웅을 확인하세요";
+    updateButtons();
+  }
+
+  if (recruitNotice) {
+    recruitNotice.textContent = "왕국 기사단에 합류할 영웅을 모집하세요.";
+  }
+}
+
+function showRecruitPullNotice(count) {
+  if (!recruitNotice) return;
+  recruitNotice.textContent = `${count}회 모집 기능은 다음 단계에서 확률/재화 시스템과 연결할 예정입니다.`;
+}
+
 function showLobby() {
   if (titleScreen) titleScreen.classList.add("is-hidden");
   if (lobbyScreen) lobbyScreen.classList.remove("is-hidden");
   if (stageScreen) stageScreen.classList.add("is-hidden");
   if (shopScreen) shopScreen.classList.add("is-hidden");
-  document.body.classList.remove("game-started", "in-stage-select", "in-shop");
+  if (recruitScreen) recruitScreen.classList.add("is-hidden");
+  document.body.classList.remove("game-started", "in-stage-select", "in-shop", "in-recruit");
   document.body.classList.add("in-lobby");
   if (gameState) {
     gameState.running = false;
@@ -296,7 +335,8 @@ function showTitle() {
   if (lobbyScreen) lobbyScreen.classList.add("is-hidden");
   if (stageScreen) stageScreen.classList.add("is-hidden");
   if (shopScreen) shopScreen.classList.add("is-hidden");
-  document.body.classList.remove("game-started", "in-lobby", "in-stage-select", "in-shop");
+  if (recruitScreen) recruitScreen.classList.add("is-hidden");
+  document.body.classList.remove("game-started", "in-lobby", "in-stage-select", "in-shop", "in-recruit");
   if (lobbyNotice) {
     lobbyNotice.textContent = "상점에서 장비를 확인하거나 전투 버튼으로 Chapter 1을 선택할 수 있습니다.";
   }
@@ -307,22 +347,7 @@ function showShopNotice() {
 }
 
 function showRecruitNotice() {
-  let notice = document.getElementById("lobbyRecruitNotice");
-  if (!notice && lobbyScreen) {
-    notice = document.createElement("div");
-    notice.id = "lobbyRecruitNotice";
-    notice.className = "lobby-recruit-notice";
-    lobbyScreen.appendChild(notice);
-  }
-
-  if (!notice) return;
-  notice.textContent = "모집 기능은 다음 단계에서 추가 예정입니다.";
-  notice.classList.add("is-show");
-
-  clearTimeout(showRecruitNotice.timer);
-  showRecruitNotice.timer = setTimeout(() => {
-    notice.classList.remove("is-show");
-  }, 1500);
+  showRecruit();
 }
 
 function startGame(stageNumber = selectedStage) {
@@ -339,8 +364,9 @@ function startGame(stageNumber = selectedStage) {
   if (lobbyScreen) lobbyScreen.classList.add("is-hidden");
   if (stageScreen) stageScreen.classList.add("is-hidden");
   if (shopScreen) shopScreen.classList.add("is-hidden");
+  if (recruitScreen) recruitScreen.classList.add("is-hidden");
   document.body.classList.add("game-started");
-  document.body.classList.remove("in-lobby", "in-stage-select", "in-shop");
+  document.body.classList.remove("in-lobby", "in-stage-select", "in-shop", "in-recruit");
   gameState.running = true;
   gameState.message = `Stage ${selectedStage} - Wave ${gameState.wave} 시작!`;
   gameState.messageTimer = 1.2;
@@ -1032,6 +1058,15 @@ window.addEventListener("keydown", (event) => {
     return;
   }
 
+  if (isRecruitVisible()) {
+    if (event.code === "Escape") showLobby();
+    if (event.code === "Enter" || event.code === "Space") {
+      event.preventDefault();
+      showRecruitPullNotice(1);
+    }
+    return;
+  }
+
   keys[event.code] = true;
 
   if (event.code === "Space") {
@@ -1051,7 +1086,11 @@ startBtn.addEventListener("click", () => startGame(selectedStage));
 titleStartBtn.addEventListener("click", showLobby);
 if (lobbyBattleBtn) lobbyBattleBtn.addEventListener("click", showStageSelect);
 if (lobbyShopBtn) lobbyShopBtn.addEventListener("click", showShop);
-if (lobbyRecruitBtn) lobbyRecruitBtn.addEventListener("click", showRecruitNotice);
+if (lobbyRecruitBtn) lobbyRecruitBtn.addEventListener("click", showRecruit);
+if (recruitBackBtn) recruitBackBtn.addEventListener("click", showLobby);
+if (recruitCloseBtn) recruitCloseBtn.addEventListener("click", showLobby);
+if (recruitPullOneBtn) recruitPullOneBtn.addEventListener("click", () => showRecruitPullNotice(1));
+if (recruitPullTenBtn) recruitPullTenBtn.addEventListener("click", () => showRecruitPullNotice(10));
 if (lobbyExitBtn) lobbyExitBtn.addEventListener("click", showTitle);
 if (shopBackBtn) shopBackBtn.addEventListener("click", showLobby);
 if (shopCloseBtn) shopCloseBtn.addEventListener("click", showLobby);
