@@ -62,10 +62,63 @@
       <div class="lobby-flag"></div>
     </div>
 
-    <div id="lobbyNotice" class="lobby-notice">상점은 아직 준비 중입니다. 전투 버튼을 누르면 1스테이지가 시작됩니다.</div>
+    <div id="lobbyNotice" class="lobby-notice">상점은 아직 준비 중입니다. 전투 버튼을 누르면 Chapter 1 선택 화면으로 이동합니다.</div>
 
     <button id="lobbyShopBtn" class="lobby-btn lobby-shop" type="button">상점</button>
     <button id="lobbyBattleBtn" class="lobby-btn lobby-battle" type="button">전투</button>
+  </section>
+
+
+  <section id="stageScreen" class="stage-screen is-hidden" aria-label="픽셀디펜스 스테이지 선택 화면">
+    <div class="stage-scanline" aria-hidden="true"></div>
+
+    <button id="stageBackBtn" class="stage-ui-btn stage-back-btn" type="button">← 로비</button>
+
+    <div class="stage-title-box">
+      <p class="stage-kicker">BATTLE MAP</p>
+      <h1 class="stage-logo">스테이지 선택</h1>
+      <p id="stageSelectNotice">Chapter 1을 선택해 전투 지역을 확인하세요.</p>
+    </div>
+
+    <div id="chapterPanel" class="chapter-panel">
+      <button id="chapter1Btn" class="chapter-card" type="button">
+        <span class="chapter-tag">OPEN</span>
+        <strong>Chapter 1</strong>
+        <small>초원의 전초기지</small>
+        <span class="chapter-arrow">▶</span>
+      </button>
+    </div>
+
+    <div id="stagePanel" class="stage-panel is-hidden">
+      <button id="chapterBackBtn" class="stage-ui-btn chapter-back-btn" type="button">← Chapter</button>
+      <h2>Chapter 1</h2>
+      <p class="stage-panel-copy">이전 스테이지를 클리어하면 다음 스테이지가 열립니다.</p>
+
+      <div class="stage-road" aria-hidden="true"></div>
+
+      <div class="stage-card-wrap">
+        <button class="stage-card" type="button" data-stage="1">
+          <span class="stage-number">STAGE 1</span>
+          <strong>풀숲 입구</strong>
+          <small class="stage-status">도전 가능</small>
+          <span class="lock-icon">▶</span>
+        </button>
+
+        <button class="stage-card" type="button" data-stage="2">
+          <span class="stage-number">STAGE 2</span>
+          <strong>몬스터 언덕</strong>
+          <small class="stage-status">잠김</small>
+          <span class="lock-icon">🔒</span>
+        </button>
+
+        <button class="stage-card" type="button" data-stage="3">
+          <span class="stage-number">STAGE 3</span>
+          <strong>마왕의 전초기지</strong>
+          <small class="stage-status">잠김</small>
+          <span class="lock-icon">🔒</span>
+        </button>
+      </div>
+    </div>
   </section>
 
   <main class="game-wrap">
@@ -90,6 +143,7 @@
       <button id="summonArcherBtn" type="button">궁수 소환 75G</button>
       <button id="skillBtn" type="button">성검 스킬 100G</button>
       <button id="restartBtn" type="button">재시작</button>
+      <button id="stageSelectBtn" type="button">스테이지 선택</button>
     </section>
 
     <section class="guide">

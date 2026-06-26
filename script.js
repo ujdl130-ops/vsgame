@@ -18,11 +18,49 @@ const lobbyBattleBtn = document.getElementById("lobbyBattleBtn");
 const lobbyShopBtn = document.getElementById("lobbyShopBtn");
 const lobbyExitBtn = document.getElementById("lobbyExitBtn");
 const lobbyNotice = document.getElementById("lobbyNotice");
+const stageSelectBtn = document.getElementById("stageSelectBtn");
+const stageScreen = document.getElementById("stageScreen");
+const stageBackBtn = document.getElementById("stageBackBtn");
+const chapterPanel = document.getElementById("chapterPanel");
+const stagePanel = document.getElementById("stagePanel");
+const chapter1Btn = document.getElementById("chapter1Btn");
+const chapterBackBtn = document.getElementById("chapterBackBtn");
+const stageSelectNotice = document.getElementById("stageSelectNotice");
+const stageCards = document.querySelectorAll(".stage-card");
 
 const GROUND_Y = 410;
 const PLAYER_BASE_X = 40;
 const ENEMY_BASE_X = 900;
 const MAX_WAVE = 3;
+
+const STAGE_CONFIGS = {
+  1: {
+    title: "풀숲 입구",
+    maxWave: 3,
+    startGold: 130,
+    enemyBaseHp: 90,
+    baseEnemiesToSpawn: 4,
+  },
+  2: {
+    title: "몬스터 언덕",
+    maxWave: 3,
+    startGold: 115,
+    enemyBaseHp: 120,
+    baseEnemiesToSpawn: 6,
+  },
+  3: {
+    title: "마왕의 전초기지",
+    maxWave: 3,
+    startGold: 100,
+    enemyBaseHp: 150,
+    baseEnemiesToSpawn: 8,
+  },
+};
+
+const STAGE_PROGRESS_KEY = "pixelDefenseStageProgress";
+let selectedStage = 1;
+let playerProgress = loadProgress();
+
 
 let gameState;
 let lastTime = 0;
@@ -30,19 +68,26 @@ let animationId = null;
 let keys = {};
 
 function createInitialState() {
+  const stageConfig = getStageConfig(selectedStage);
+
   return {
     running: false,
     gameOver: false,
     clear: false,
-    message: "게임 시작을 눌러주세요",
+    stage: selectedStage,
+    stageTitle: stageConfig.title,
+    maxWave: stageConfig.maxWave,
+    baseEnemiesToSpawn: stageConfig.baseEnemiesToSpawn,
+    message: `Stage ${selectedStage} 준비 완료`,
     messageTimer: 0,
     wave: 1,
-    gold: 100,
+    gold: stageConfig.startGold,
     goldTimer: 0,
     playerBaseHp: 100,
-    enemyBaseHp: 100,
+    enemyBaseHp: stageConfig.enemyBaseHp,
+    enemyBaseMaxHp: stageConfig.enemyBaseHp,
     enemySpawnTimer: 0,
-    enemiesToSpawn: 5,
+    enemiesToSpawn: stageConfig.baseEnemiesToSpawn,
     spawnedInWave: 0,
     waveBreakTimer: 0,
     particles: [],
@@ -72,6 +117,115 @@ function resetGame() {
   animationId = requestAnimationFrame(gameLoop);
 }
 
+
+function getStageConfig(stageNumber) {
+  return STAGE_CONFIGS[stageNumber] || STAGE_CONFIGS[1];
+}
+
+function loadProgress() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(STAGE_PROGRESS_KEY));
+    if (!saved || typeof saved !== "object") throw new Error("No progress");
+    const unlockedStage = Math.min(3, Math.max(1, Number(saved.unlockedStage) || 1));
+    const clearedStages = Array.isArray(saved.clearedStages)
+      ? saved.clearedStages.map(Number).filter((stage) => stage >= 1 && stage <= 3)
+      : [];
+    return { unlockedStage, clearedStages };
+  } catch (error) {
+    return { unlockedStage: 1, clearedStages: [] };
+  }
+}
+
+function saveProgress() {
+  try {
+    localStorage.setItem(STAGE_PROGRESS_KEY, JSON.stringify(playerProgress));
+  } catch (error) {
+    // 로컬 파일 실행 환경에서 저장소 접근이 막히더라도 게임 진행은 유지합니다.
+  }
+}
+
+function isStageUnlocked(stageNumber) {
+  return stageNumber <= playerProgress.unlockedStage;
+}
+
+function unlockStageProgress(stageNumber) {
+  if (!playerProgress.clearedStages.includes(stageNumber)) {
+    playerProgress.clearedStages.push(stageNumber);
+  }
+  if (stageNumber < 3) {
+    playerProgress.unlockedStage = Math.max(playerProgress.unlockedStage, stageNumber + 1);
+  }
+  saveProgress();
+  updateStageUI();
+}
+
+function updateStageUI() {
+  stageCards.forEach((card) => {
+    const stageNumber = Number(card.dataset.stage);
+    const unlocked = isStageUnlocked(stageNumber);
+    const cleared = playerProgress.clearedStages.includes(stageNumber);
+    const status = card.querySelector(".stage-status");
+    const lockIcon = card.querySelector(".lock-icon");
+
+    card.classList.toggle("is-locked", !unlocked);
+    card.classList.toggle("is-clear", cleared);
+    card.setAttribute("aria-disabled", unlocked ? "false" : "true");
+
+    if (status) {
+      if (cleared) status.textContent = "클리어 완료";
+      else if (unlocked) status.textContent = "도전 가능";
+      else status.textContent = `Stage ${stageNumber - 1} 클리어 필요`;
+    }
+
+    if (lockIcon) {
+      if (cleared) lockIcon.textContent = "★";
+      else if (unlocked) lockIcon.textContent = "▶";
+      else lockIcon.textContent = "🔒";
+    }
+  });
+}
+
+function showStageLockedNotice(stageNumber) {
+  if (!stageSelectNotice) return;
+  stageSelectNotice.textContent = `Stage ${stageNumber}는 아직 잠겨있습니다. 먼저 Stage ${stageNumber - 1}을 클리어하세요.`;
+}
+
+function showStageSelect() {
+  if (titleScreen) titleScreen.classList.add("is-hidden");
+  if (lobbyScreen) lobbyScreen.classList.add("is-hidden");
+  if (stageScreen) stageScreen.classList.remove("is-hidden");
+  if (chapterPanel) chapterPanel.classList.remove("is-hidden");
+  if (stagePanel) stagePanel.classList.add("is-hidden");
+  document.body.classList.remove("game-started", "in-lobby");
+  document.body.classList.add("in-stage-select");
+
+  if (gameState) {
+    gameState.running = false;
+    gameState.message = "스테이지를 선택하세요";
+    updateButtons();
+  }
+
+  if (stageSelectNotice) {
+    stageSelectNotice.textContent = "Chapter 1을 선택해 전투 지역을 확인하세요.";
+  }
+  updateStageUI();
+}
+
+function showChapterStages() {
+  if (chapterPanel) chapterPanel.classList.add("is-hidden");
+  if (stagePanel) stagePanel.classList.remove("is-hidden");
+  if (stageSelectNotice) stageSelectNotice.textContent = "Stage 1부터 순서대로 클리어하면 다음 스테이지가 열립니다.";
+  updateStageUI();
+}
+
+function openStage(stageNumber) {
+  if (!isStageUnlocked(stageNumber)) {
+    showStageLockedNotice(stageNumber);
+    return;
+  }
+  startGame(stageNumber);
+}
+
 function isTitleVisible() {
   return titleScreen && !titleScreen.classList.contains("is-hidden");
 }
@@ -80,10 +234,15 @@ function isLobbyVisible() {
   return lobbyScreen && !lobbyScreen.classList.contains("is-hidden");
 }
 
+function isStageSelectVisible() {
+  return stageScreen && !stageScreen.classList.contains("is-hidden");
+}
+
 function showLobby() {
   if (titleScreen) titleScreen.classList.add("is-hidden");
   if (lobbyScreen) lobbyScreen.classList.remove("is-hidden");
-  document.body.classList.remove("game-started");
+  if (stageScreen) stageScreen.classList.add("is-hidden");
+  document.body.classList.remove("game-started", "in-stage-select");
   document.body.classList.add("in-lobby");
   if (gameState) {
     gameState.running = false;
@@ -91,7 +250,7 @@ function showLobby() {
     updateButtons();
   }
   if (lobbyNotice) {
-    lobbyNotice.textContent = "상점은 아직 준비 중입니다. 전투 버튼을 누르면 1스테이지가 시작됩니다.";
+    lobbyNotice.textContent = "상점은 아직 준비 중입니다. 전투 버튼을 누르면 Chapter 1 선택 화면으로 이동합니다.";
   }
 }
 
@@ -99,40 +258,46 @@ function showTitle() {
   resetGame();
   if (titleScreen) titleScreen.classList.remove("is-hidden");
   if (lobbyScreen) lobbyScreen.classList.add("is-hidden");
-  document.body.classList.remove("game-started", "in-lobby");
+  if (stageScreen) stageScreen.classList.add("is-hidden");
+  document.body.classList.remove("game-started", "in-lobby", "in-stage-select");
   if (lobbyNotice) {
-    lobbyNotice.textContent = "상점은 아직 준비 중입니다. 전투 버튼을 누르면 1스테이지가 시작됩니다.";
+    lobbyNotice.textContent = "상점은 아직 준비 중입니다. 전투 버튼을 누르면 Chapter 1 선택 화면으로 이동합니다.";
   }
 }
 
 function showShopNotice() {
   if (!lobbyNotice) return;
-  lobbyNotice.textContent = "상점 기능은 다음 단계에서 추가 예정입니다. 지금은 전투 버튼으로 스테이지를 시작할 수 있어요.";
+  lobbyNotice.textContent = "상점 기능은 다음 단계에서 추가 예정입니다. 지금은 전투 버튼으로 Chapter 1을 선택할 수 있어요.";
 }
 
-function startGame() {
-  if (gameState.gameOver || gameState.clear) resetGame();
+function startGame(stageNumber = selectedStage) {
+  selectedStage = Number(stageNumber) || 1;
+  if (!isStageUnlocked(selectedStage)) {
+    showStageSelect();
+    showChapterStages();
+    showStageLockedNotice(selectedStage);
+    return;
+  }
+
+  resetGame();
   if (titleScreen) titleScreen.classList.add("is-hidden");
   if (lobbyScreen) lobbyScreen.classList.add("is-hidden");
+  if (stageScreen) stageScreen.classList.add("is-hidden");
   document.body.classList.add("game-started");
-  document.body.classList.remove("in-lobby");
+  document.body.classList.remove("in-lobby", "in-stage-select");
   gameState.running = true;
-  gameState.message = `Wave ${gameState.wave} 시작!`;
+  gameState.message = `Stage ${selectedStage} - Wave ${gameState.wave} 시작!`;
   gameState.messageTimer = 1.2;
+  updateHud();
   updateButtons();
 }
 
 function restartGame() {
-  resetGame();
-  if (titleScreen) titleScreen.classList.add("is-hidden");
-  if (lobbyScreen) lobbyScreen.classList.add("is-hidden");
-  document.body.classList.add("game-started");
-  document.body.classList.remove("in-lobby");
-  startGame();
+  startGame(selectedStage);
 }
 
 function updateHud() {
-  waveText.textContent = `${gameState.wave} / ${MAX_WAVE}`;
+  waveText.textContent = `${gameState.wave} / ${gameState.maxWave}`;
   goldText.textContent = Math.floor(gameState.gold);
   playerHpText.textContent = Math.max(0, Math.ceil(gameState.playerBaseHp));
   enemyHpText.textContent = Math.max(0, Math.ceil(gameState.enemyBaseHp));
@@ -145,6 +310,7 @@ function updateButtons() {
   skillBtn.disabled = disabled || gameState.gold < 100;
   startBtn.textContent = gameState.running ? "진행 중" : "게임 시작";
   startBtn.disabled = gameState.running && !gameState.gameOver && !gameState.clear;
+  if (stageSelectBtn) stageSelectBtn.disabled = false;
 }
 
 function spendGold(amount) {
@@ -325,8 +491,8 @@ function updateWave(dt) {
       gameState.wave += 1;
       gameState.enemySpawnTimer = 0;
       gameState.spawnedInWave = 0;
-      gameState.enemiesToSpawn = 5 + gameState.wave * 3;
-      gameState.enemyBaseHp = Math.min(100, gameState.enemyBaseHp + 18);
+      gameState.enemiesToSpawn = gameState.baseEnemiesToSpawn + gameState.wave * 3;
+      gameState.enemyBaseHp = Math.min(gameState.enemyBaseMaxHp, gameState.enemyBaseHp + 18);
       gameState.message = `Wave ${gameState.wave} 시작!`;
       gameState.messageTimer = 1.1;
     }
@@ -343,13 +509,11 @@ function updateWave(dt) {
   }
 
   const waveFinished = gameState.spawnedInWave >= gameState.enemiesToSpawn && gameState.enemies.length === 0;
-  if (waveFinished && gameState.wave < MAX_WAVE) {
+  if (waveFinished && gameState.wave < gameState.maxWave) {
     gameState.waveBreakTimer = 3;
     gameState.gold += 60;
-  } else if (waveFinished && gameState.wave >= MAX_WAVE) {
-    gameState.clear = true;
-    gameState.running = false;
-    gameState.message = "CLEAR! 모든 웨이브 방어 성공";
+  } else if (waveFinished && gameState.wave >= gameState.maxWave) {
+    completeStage(`STAGE ${selectedStage} CLEAR! 모든 웨이브 방어 성공`);
   }
 }
 
@@ -455,11 +619,19 @@ function cleanupDeadEntities() {
   }
 }
 
+
+function completeStage(message) {
+  if (gameState.clear) return;
+  gameState.clear = true;
+  gameState.running = false;
+  gameState.message = `${message} · 스테이지 선택 버튼으로 다음 지역 도전`;
+  unlockStageProgress(selectedStage);
+  updateButtons();
+}
+
 function checkEndConditions() {
   if (gameState.enemyBaseHp <= 0) {
-    gameState.clear = true;
-    gameState.running = false;
-    gameState.message = "VICTORY! 적 기지 파괴";
+    completeStage(`STAGE ${selectedStage} CLEAR! 적 기지 파괴`);
   }
 
   if (gameState.playerBaseHp <= 0) {
@@ -742,7 +914,7 @@ function draw() {
   drawBase(ENEMY_BASE_X, false);
 
   drawHealthBar(PLAYER_BASE_X, GROUND_Y - 126, 86, gameState.playerBaseHp, 100, "#79ff7a");
-  drawHealthBar(ENEMY_BASE_X, GROUND_Y - 126, 86, gameState.enemyBaseHp, 100, "#ff6868");
+  drawHealthBar(ENEMY_BASE_X, GROUND_Y - 126, 86, gameState.enemyBaseHp, gameState.enemyBaseMaxHp, "#ff6868");
 
   const drawList = [gameState.hero, ...gameState.units, ...gameState.enemies].sort((a, b) => a.y - b.y || a.x - b.x);
   for (const entity of drawList) {
@@ -779,10 +951,23 @@ window.addEventListener("keydown", (event) => {
   if (isLobbyVisible()) {
     if (event.code === "Enter" || event.code === "Space") {
       event.preventDefault();
-      startGame();
+      showStageSelect();
     }
     if (event.code === "KeyS") showShopNotice();
     if (event.code === "Escape") showTitle();
+    return;
+  }
+
+  if (isStageSelectVisible()) {
+    if (event.code === "Escape") showLobby();
+    if (event.code === "Enter" || event.code === "Space") {
+      event.preventDefault();
+      if (stagePanel && stagePanel.classList.contains("is-hidden")) showChapterStages();
+      else openStage(playerProgress.unlockedStage);
+    }
+    if (event.code === "Digit1") openStage(1);
+    if (event.code === "Digit2") openStage(2);
+    if (event.code === "Digit3") openStage(3);
     return;
   }
 
@@ -801,12 +986,19 @@ window.addEventListener("keyup", (event) => {
   keys[event.code] = false;
 });
 
-startBtn.addEventListener("click", startGame);
+startBtn.addEventListener("click", () => startGame(selectedStage));
 titleStartBtn.addEventListener("click", showLobby);
-if (lobbyBattleBtn) lobbyBattleBtn.addEventListener("click", startGame);
+if (lobbyBattleBtn) lobbyBattleBtn.addEventListener("click", showStageSelect);
 if (lobbyShopBtn) lobbyShopBtn.addEventListener("click", showShopNotice);
 if (lobbyExitBtn) lobbyExitBtn.addEventListener("click", showTitle);
+if (stageBackBtn) stageBackBtn.addEventListener("click", showLobby);
+if (chapter1Btn) chapter1Btn.addEventListener("click", showChapterStages);
+if (chapterBackBtn) chapterBackBtn.addEventListener("click", showStageSelect);
+stageCards.forEach((card) => {
+  card.addEventListener("click", () => openStage(Number(card.dataset.stage)));
+});
 restartBtn.addEventListener("click", restartGame);
+if (stageSelectBtn) stageSelectBtn.addEventListener("click", showStageSelect);
 summonGuardBtn.addEventListener("click", summonGuard);
 summonArcherBtn.addEventListener("click", summonArcher);
 skillBtn.addEventListener("click", castHolySlash);
