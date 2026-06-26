@@ -16,6 +16,7 @@ const titleStartBtn = document.getElementById("titleStartBtn");
 const lobbyScreen = document.getElementById("lobbyScreen");
 const lobbyBattleBtn = document.getElementById("lobbyBattleBtn");
 const lobbyShopBtn = document.getElementById("lobbyShopBtn");
+const lobbyRecruitBtn = document.getElementById("lobbyRecruitBtn");
 const lobbyExitBtn = document.getElementById("lobbyExitBtn");
 const lobbyNotice = document.getElementById("lobbyNotice");
 const shopScreen = document.getElementById("shopScreen");
@@ -303,6 +304,25 @@ function showTitle() {
 
 function showShopNotice() {
   showShop();
+}
+
+function showRecruitNotice() {
+  let notice = document.getElementById("lobbyRecruitNotice");
+  if (!notice && lobbyScreen) {
+    notice = document.createElement("div");
+    notice.id = "lobbyRecruitNotice";
+    notice.className = "lobby-recruit-notice";
+    lobbyScreen.appendChild(notice);
+  }
+
+  if (!notice) return;
+  notice.textContent = "모집 기능은 다음 단계에서 추가 예정입니다.";
+  notice.classList.add("is-show");
+
+  clearTimeout(showRecruitNotice.timer);
+  showRecruitNotice.timer = setTimeout(() => {
+    notice.classList.remove("is-show");
+  }, 1500);
 }
 
 function startGame(stageNumber = selectedStage) {
@@ -1031,6 +1051,7 @@ startBtn.addEventListener("click", () => startGame(selectedStage));
 titleStartBtn.addEventListener("click", showLobby);
 if (lobbyBattleBtn) lobbyBattleBtn.addEventListener("click", showStageSelect);
 if (lobbyShopBtn) lobbyShopBtn.addEventListener("click", showShop);
+if (lobbyRecruitBtn) lobbyRecruitBtn.addEventListener("click", showRecruitNotice);
 if (lobbyExitBtn) lobbyExitBtn.addEventListener("click", showTitle);
 if (shopBackBtn) shopBackBtn.addEventListener("click", showLobby);
 if (shopCloseBtn) shopCloseBtn.addEventListener("click", showLobby);

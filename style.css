@@ -1824,3 +1824,117 @@ body:not(.game-started) .game-wrap {
     height: 48px;
   }
 }
+
+
+/* 로비 중앙 모집 버튼 */
+.lobby-recruit {
+  left: 50%;
+  bottom: clamp(22px, 6vh, 56px);
+  transform: translateX(-50%);
+  min-width: 156px;
+  padding: 16px 24px;
+  color: #fff7b5;
+  background: linear-gradient(180deg, #9d7cff, #7b3eff 68%, #4b239e);
+  text-shadow: 2px 2px 0 #000;
+  box-shadow:
+    0 8px 0 #2b155f,
+    0 0 0 4px #15172d,
+    0 0 28px rgba(157, 124, 255, 0.42);
+  animation: recruitPulse 1.25s steps(2) infinite;
+}
+
+.lobby-recruit::before,
+.lobby-recruit::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  width: 8px;
+  height: 8px;
+  background: #fff7b5;
+  transform: translateY(-50%);
+  box-shadow: 0 0 12px rgba(255, 247, 181, 0.7);
+}
+
+.lobby-recruit::before { left: 14px; }
+.lobby-recruit::after { right: 14px; }
+
+@keyframes recruitPulse {
+  0%, 100% { filter: brightness(1); }
+  50% { filter: brightness(1.18); }
+}
+
+.lobby-recruit-notice {
+  position: absolute;
+  left: 50%;
+  bottom: calc(max(18px, env(safe-area-inset-bottom)) + 92px);
+  z-index: 4;
+  width: min(82vw, 420px);
+  padding: 12px 16px;
+  color: #fff7b5;
+  text-align: center;
+  font-weight: 900;
+  line-height: 1.45;
+  background: rgba(0, 0, 0, 0.58);
+  border: 3px solid rgba(255, 255, 255, 0.32);
+  text-shadow: 2px 2px 0 #000;
+  opacity: 0;
+  pointer-events: none;
+  transform: translate(-50%, 8px);
+  transition: opacity 0.18s ease, transform 0.18s ease;
+}
+
+.lobby-recruit-notice.is-show {
+  opacity: 1;
+  transform: translate(-50%, 0);
+}
+
+/* 이전 로비 버튼 재배치 규칙에 모집 버튼 포함 */
+.lobby-recruit {
+  bottom: auto;
+  top: calc(50% + min(28vh, 190px) + 8px);
+  min-height: 64px;
+  touch-action: manipulation;
+}
+
+@media (max-width: 720px) {
+  .lobby-shop,
+  .lobby-recruit,
+  .lobby-battle {
+    top: auto;
+    bottom: max(18px, calc(18px + env(safe-area-inset-bottom)));
+    min-width: clamp(88px, 28vw, 124px);
+    min-height: 58px;
+    padding: 13px 10px;
+    font-size: clamp(15px, 4.7vw, 20px);
+  }
+
+  .lobby-recruit {
+    left: 50%;
+    transform: translateX(-50%);
+  }
+
+  .lobby-recruit::before,
+  .lobby-recruit::after {
+    width: 6px;
+    height: 6px;
+  }
+
+  .lobby-recruit::before { left: 9px; }
+  .lobby-recruit::after { right: 9px; }
+}
+
+@media (max-height: 620px) {
+  .lobby-recruit {
+    min-height: 52px;
+    padding-top: 10px;
+    padding-bottom: 10px;
+  }
+}
+
+.lobby-recruit:hover {
+  transform: translateX(-50%) translateY(-2px);
+}
+
+.lobby-recruit:active {
+  transform: translateX(-50%) translateY(4px);
+}
