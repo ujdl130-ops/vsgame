@@ -51,9 +51,11 @@ const PLAYER_BASE_X = 40;
 const ENEMY_BASE_X = 900;
 const MAX_WAVE = 3;
 
-const EMBEDDED_ARCHER_SHEET = "";
-const EMBEDDED_GUARD_SHEET = "";
-const EMBEDDED_STAGE1_BG = "";
+const ASSET_PATHS = {
+  archerSprite: "assets/animations/archer/archer_spritesheet_v2.png",
+  guardSprite: "assets/animations/guard/guard_spritesheet_v2.png",
+  stage1ForestBg: "assets/maps/stage1/stage1_forest_bg_v2.png",
+};
 
 function loadGameImage(image, sourceList, setReady, label) {
   let sourceIndex = 0;
@@ -80,7 +82,7 @@ const archerSprite = new Image();
 let archerSpriteReady = false;
 loadGameImage(
   archerSprite,
-  ["archer_spritesheet_v2.png"],
+  [ASSET_PATHS.archerSprite],
   (ready) => { archerSpriteReady = ready; },
   "궁수 스프라이트"
 );
@@ -89,7 +91,7 @@ const guardSprite = new Image();
 let guardSpriteReady = false;
 loadGameImage(
   guardSprite,
-  ["guard_spritesheet_v2.png"],
+  [ASSET_PATHS.guardSprite],
   (ready) => { guardSpriteReady = ready; },
   "방패병 SD 기사 스프라이트"
 );
@@ -98,7 +100,7 @@ const stage1ForestBg = new Image();
 let stage1ForestBgReady = false;
 loadGameImage(
   stage1ForestBg,
-  ["stage1_forest_bg_v2.png"],
+  [ASSET_PATHS.stage1ForestBg],
   (ready) => { stage1ForestBgReady = ready; },
   "Stage 1 숲 배경"
 );
