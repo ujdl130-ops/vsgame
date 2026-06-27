@@ -3,6 +3,7 @@ const ctx = canvas.getContext("2d");
 
 const waveText = document.getElementById("waveText");
 const goldText = document.getElementById("goldText");
+const unitCountText = document.getElementById("unitCountText");
 const playerHpText = document.getElementById("playerHpText");
 const enemyHpText = document.getElementById("enemyHpText");
 
@@ -50,6 +51,7 @@ const GROUND_Y = 410;
 const PLAYER_BASE_X = 40;
 const ENEMY_BASE_X = 900;
 const MAX_WAVE = 3;
+const MAX_SUMMONED_UNITS = 5;
 
 const ASSET_PATHS = {
   archerSprite: "assets/animations/archer/archer_spritesheet_v2.png",
@@ -582,14 +584,44 @@ function restartGame() {
 function updateHud() {
   waveText.textContent = `${gameState.wave} / ${gameState.maxWave}`;
   goldText.textContent = Math.floor(gameState.gold);
+  if (unitCountText) unitCountText.textContent = `${getActiveUnitCount()} / ${MAX_SUMMONED_UNITS}`;
   playerHpText.textContent = Math.max(0, Math.ceil(gameState.playerBaseHp));
   enemyHpText.textContent = Math.max(0, Math.ceil(gameState.enemyBaseHp));
 }
 
+function getActiveUnitCount() {
+  if (!gameState || !Array.isArray(gameState.units)) return 0;
+  return gameState.units.filter((unit) => unit.hp > 0).length;
+}
+
+function hasSummonSlot() {
+  return getActiveUnitCount() < MAX_SUMMONED_UNITS;
+}
+
+function showSummonLimitMessage() {
+  if (!gameState) return;
+  gameState.message = `소환 제한! 병사는 최대 ${MAX_SUMMONED_UNITS}명까지 유지됩니다.`;
+  gameState.messageTimer = 1.25;
+}
+
 function updateButtons() {
   const disabled = !gameState.running || gameState.gameOver || gameState.clear;
-  if (summonGuardBtn) summonGuardBtn.disabled = disabled || gameState.gold < 50;
-  if (summonArcherBtn) summonArcherBtn.disabled = disabled || gameState.gold < 75;
+  const activeUnits = getActiveUnitCount();
+  const unitLimitReached = activeUnits >= MAX_SUMMONED_UNITS;
+  const slotText = `${activeUnits}/${MAX_SUMMONED_UNITS}`;
+
+  if (summonGuardBtn) {
+    summonGuardBtn.textContent = unitLimitReached ? `방패병 소환 제한 ${slotText}` : `방패병 소환 50G · ${slotText}`;
+    summonGuardBtn.disabled = disabled || unitLimitReached || gameState.gold < 50;
+    summonGuardBtn.title = unitLimitReached ? "아군 병사가 사망하면 다시 소환할 수 있습니다." : "방패병을 소환합니다.";
+  }
+
+  if (summonArcherBtn) {
+    summonArcherBtn.textContent = unitLimitReached ? `궁수 소환 제한 ${slotText}` : `궁수 소환 75G · ${slotText}`;
+    summonArcherBtn.disabled = disabled || unitLimitReached || gameState.gold < 75;
+    summonArcherBtn.title = unitLimitReached ? "아군 병사가 사망하면 다시 소환할 수 있습니다." : "궁수를 소환합니다.";
+  }
+
   if (skillBtn) skillBtn.disabled = true;
   if (startBtn) {
     startBtn.textContent = gameState.running ? "진행 중" : "게임 시작";
@@ -607,6 +639,12 @@ function spendGold(amount) {
 }
 
 function summonGuard() {
+  if (!hasSummonSlot()) {
+    showSummonLimitMessage();
+    updateHud();
+    updateButtons();
+    return;
+  }
   if (!spendGold(50)) return;
   gameState.units.push({
     type: "guard",
@@ -634,6 +672,12 @@ function summonGuard() {
 }
 
 function summonArcher() {
+  if (!hasSummonSlot()) {
+    showSummonLimitMessage();
+    updateHud();
+    updateButtons();
+    return;
+  }
   if (!spendGold(75)) return;
   gameState.units.push({
     type: "archer",
@@ -941,6 +985,8 @@ function cleanupDeadEntities() {
   const killed = beforeEnemies - gameState.enemies.length;
   if (killed > 0) gameState.gold += killed * 18;
 
+  // 소환 제한 슬롯은 살아있는 병사 수를 기준으로 계산합니다.
+  // 병사가 죽으면 이 정리 단계 이후 자동으로 빈 자리가 생깁니다.
   gameState.units = gameState.units.filter((unit) => unit.hp > 0 && unit.x < ENEMY_BASE_X - 15);
 }
 
