@@ -57,6 +57,8 @@ const ASSET_PATHS = {
   archerSprite: "assets/animations/archer/archer_spritesheet_v2.png",
   guardSprite: "assets/animations/guard/guard_spritesheet_v2.png",
   stage1ForestBg: "assets/maps/stage1/stage1_forest_bg_v2.png",
+  playerCastle: "assets/maps/stage1/player_castle_stage1.png",
+  enemyCastle: "assets/maps/stage1/enemy_castle_stage1.png",
 };
 
 function loadGameImage(image, sourceList, setReady, label) {
@@ -64,7 +66,7 @@ function loadGameImage(image, sourceList, setReady, label) {
 
   image.onload = () => {
     setReady(true);
-    console.log(`${label} 로드 성공`);
+    console.log(`${label} 로드 성공: ${image.src}`);
   };
 
   image.onerror = () => {
@@ -84,7 +86,7 @@ const archerSprite = new Image();
 let archerSpriteReady = false;
 loadGameImage(
   archerSprite,
-  [ASSET_PATHS.archerSprite],
+  [ASSET_PATHS.archerSprite, "archer_spritesheet_v2.png", "pixeldefense_runtime_clean/archer_spritesheet_v2.png"],
   (ready) => { archerSpriteReady = ready; },
   "궁수 스프라이트"
 );
@@ -93,7 +95,7 @@ const guardSprite = new Image();
 let guardSpriteReady = false;
 loadGameImage(
   guardSprite,
-  [ASSET_PATHS.guardSprite],
+  [ASSET_PATHS.guardSprite, "guard_spritesheet_v2.png", "pixeldefense_runtime_clean/guard_spritesheet_v2.png"],
   (ready) => { guardSpriteReady = ready; },
   "방패병 SD 기사 스프라이트"
 );
@@ -102,9 +104,27 @@ const stage1ForestBg = new Image();
 let stage1ForestBgReady = false;
 loadGameImage(
   stage1ForestBg,
-  [ASSET_PATHS.stage1ForestBg],
+  [ASSET_PATHS.stage1ForestBg, "stage1_forest_bg_v2.png", "pixeldefense_runtime_clean/stage1_forest_bg_v2.png"],
   (ready) => { stage1ForestBgReady = ready; },
   "Stage 1 숲 배경"
+);
+
+const playerCastleImage = new Image();
+let playerCastleReady = false;
+loadGameImage(
+  playerCastleImage,
+  [ASSET_PATHS.playerCastle, "중세_판타지_성_탑_3d_모델.png"],
+  (ready) => { playerCastleReady = ready; },
+  "플레이어 성"
+);
+
+const enemyCastleImage = new Image();
+let enemyCastleReady = false;
+loadGameImage(
+  enemyCastleImage,
+  [ASSET_PATHS.enemyCastle, "원시_부족_풍의_나무_감시탑.png"],
+  (ready) => { enemyCastleReady = ready; },
+  "적국의 성"
 );
 
 const GUARD_SPRITE = {
@@ -1103,8 +1123,58 @@ function drawCloud(x, y, size) {
   ctx.fill();
 }
 
+function getBaseRenderConfig(isPlayer) {
+  if (isPlayer) {
+    return {
+      image: playerCastleImage,
+      ready: playerCastleReady,
+      drawX: 8,
+      drawY: GROUND_Y - 198,
+      drawW: 188,
+      drawH: 188,
+      shadowX: 92,
+      shadowY: GROUND_Y + 2,
+      shadowW: 58,
+      shadowH: 14,
+      hpX: 96,
+      hpY: GROUND_Y - 148,
+      hpW: 98,
+    };
+  }
+
+  return {
+    image: enemyCastleImage,
+    ready: enemyCastleReady,
+    drawX: canvas.width - 208,
+    drawY: GROUND_Y - 208,
+    drawW: 198,
+    drawH: 198,
+    shadowX: canvas.width - 110,
+    shadowY: GROUND_Y + 2,
+    shadowW: 64,
+    shadowH: 15,
+    hpX: canvas.width - 109,
+    hpY: GROUND_Y - 148,
+    hpW: 104,
+  };
+}
+
 function drawBase(x, isPlayer) {
+  const config = getBaseRenderConfig(isPlayer);
+
   ctx.save();
+  ctx.fillStyle = "rgba(0,0,0,0.18)";
+  ctx.beginPath();
+  ctx.ellipse(config.shadowX, config.shadowY, config.shadowW, config.shadowH, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  if (config.ready) {
+    ctx.imageSmoothingEnabled = true;
+    ctx.drawImage(config.image, config.drawX, config.drawY, config.drawW, config.drawH);
+    ctx.restore();
+    return;
+  }
+
   ctx.translate(x, GROUND_Y);
   ctx.fillStyle = isPlayer ? "#f6d77a" : "#60405d";
   ctx.fillRect(-32, -82, 64, 82);
@@ -1444,8 +1514,10 @@ function draw() {
   drawBase(PLAYER_BASE_X, true);
   drawBase(ENEMY_BASE_X, false);
 
-  drawHealthBar(PLAYER_BASE_X, GROUND_Y - 126, 86, gameState.playerBaseHp, 100, "#79ff7a");
-  drawHealthBar(ENEMY_BASE_X, GROUND_Y - 126, 86, gameState.enemyBaseHp, gameState.enemyBaseMaxHp, "#ff6868");
+  const playerBaseUi = getBaseRenderConfig(true);
+  const enemyBaseUi = getBaseRenderConfig(false);
+  drawHealthBar(playerBaseUi.hpX, playerBaseUi.hpY, playerBaseUi.hpW, gameState.playerBaseHp, 100, "#79ff7a");
+  drawHealthBar(enemyBaseUi.hpX, enemyBaseUi.hpY, enemyBaseUi.hpW, gameState.enemyBaseHp, gameState.enemyBaseMaxHp, "#ff6868");
 
   const drawList = [...gameState.units, ...gameState.enemies].sort((a, b) => a.y - b.y || a.x - b.x);
   for (const entity of drawList) {
