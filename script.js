@@ -69,7 +69,7 @@ const HERO_RESPAWN_SECONDS = 4;
 const ASSET_PATHS = {
   archerSprite: "assets/animations/archer/archer_spritesheet_v2.png",
   guardSprite: "assets/animations/guard/guard_spritesheet_v2.png",
-  heroSprite: "assets/animations/hero/zeus_hero_spritesheet.png",
+  heroSprite: "assets/animations/hero/zeus_hero_spritesheet_latest_transparent_aligned.png",
   stage1ForestBg: "assets/maps/stage1/stage1_forest_bg_v2.png",
   playerCastle: "assets/maps/stage1/player_castle_stage1.png",
   enemyCastle: "assets/maps/stage1/enemy_castle_stage1.png",
@@ -109,7 +109,7 @@ const heroSprite = new Image();
 let heroSpriteReady = false;
 loadGameImage(
   heroSprite,
-  [ASSET_PATHS.heroSprite],
+  [ASSET_PATHS.heroSprite, "assets/animations/hero/zeus_hero_spritesheet_latest.png", "zeus_hero_spritesheet_latest.png"],
   (ready) => { heroSpriteReady = ready; },
   "메인 오퍼레이터 제우스 스프라이트"
 );
@@ -176,16 +176,24 @@ const ARCHER_SPRITE = {
 
 
 const HERO_ZEUS_SPRITE = {
-  // 제우스 메인 오퍼레이터 전용 스프라이트 시트입니다.
-  // 6열 x 5행, 320px 가로 프레임으로 다시 정렬했습니다.
-  // 공격 프레임 좌우에 여백을 추가하고, 옆 프레임 조각이 보이던 분리 파편을 제거했습니다.
-  frameW: 320,
-  frameH: 256,
-  drawW: 122,
-  drawH: 122,
+  // 검은 배경을 제거하고 각 프레임의 좌우 간격을 다시 맞춘 최신 제우스 스프라이트입니다.
+  // 시트 크기: 1536 x 1024, 6열 x 5행 기준
+  frameW: 256,
+  frameH: 204,
+  drawW: 150,
+  drawH: 150,
   fps: { idle: 5, walk: 8, attack: 10, hurt: 7, death: 6 },
   rows: { idle: 0, walk: 1, attack: 2, hurt: 3, death: 4 },
   frames: { idle: 6, walk: 6, attack: 6, hurt: 6, death: 6 },
+  walkFrameOrder: [0, 1, 2, 3, 4, 5],
+  walkOffsets: [
+    { x: 0, y: 0 },
+    { x: 0, y: -1 },
+    { x: 0, y: 0 },
+    { x: 0, y: 1 },
+    { x: 0, y: 0 },
+    { x: 0, y: -1 },
+  ],
 };
 
 
@@ -282,6 +290,8 @@ function createMainHero() {
     shotTarget: null,
     hurtAnimTimer: 0,
     animTime: 0,
+    animState: "idle",
+    animStateTime: 0,
     moving: false,
     face: 1,
     dead: false,
@@ -1013,6 +1023,24 @@ function spawnHit(x, y, color) {
   }
 }
 
+function getHeroVisualAnim(hero) {
+  if (!hero || hero.dead || hero.hp <= 0) return "death";
+  if (hero.hurtAnimTimer > 0) return "hurt";
+  if (hero.attackAnimTimer > 0) return "attack";
+  if (hero.moving) return "walk";
+  return "idle";
+}
+
+function syncHeroAnimState(hero, dt) {
+  const nextAnim = getHeroVisualAnim(hero);
+  if (hero.animState !== nextAnim) {
+    hero.animState = nextAnim;
+    hero.animStateTime = 0;
+    return;
+  }
+  hero.animStateTime = (hero.animStateTime || 0) + dt;
+}
+
 function updateHero(dt) {
   const hero = gameState.hero;
   if (!hero) return;
@@ -1070,6 +1098,8 @@ function updateHero(dt) {
       fireHeroArrow(hero);
     }
   }
+
+  syncHeroAnimState(hero, dt);
 }
 
 function updateWave(dt) {
@@ -1459,15 +1489,20 @@ function drawHero(hero) {
   ctx.save();
   ctx.translate(hero.x, hero.y);
 
+  const isHeroWalking = hero.animState === "walk" || hero.moving;
+  const walkShadowPulse = isHeroWalking
+    ? Math.abs(Math.sin((hero.animStateTime || 0) * HERO_ZEUS_SPRITE.fps.walk * Math.PI))
+    : 0;
+
   ctx.fillStyle = "rgba(0,0,0,0.24)";
   ctx.beginPath();
-  ctx.ellipse(0, 4, 28, 8, 0, 0, Math.PI * 2);
+  ctx.ellipse(0, 4, 28 + walkShadowPulse * 2, 8 - walkShadowPulse * 0.8, 0, 0, Math.PI * 2);
   ctx.fill();
 
   if (heroSpriteReady) {
     drawHeroSprite(hero);
     ctx.restore();
-    drawHealthBar(hero.x, hero.y - 74, 56, hero.hp, hero.maxHp, "#79ff7a");
+    drawHealthBar(hero.x, hero.y - 118, 58, hero.hp, hero.maxHp, "#79ff7a");
     return;
   }
 
@@ -1486,18 +1521,21 @@ function drawHero(hero) {
   ctx.stroke();
   ctx.restore();
 
-  drawHealthBar(hero.x, hero.y - 74, 56, hero.hp, hero.maxHp, "#79ff7a");
+  drawHealthBar(hero.x, hero.y - 118, 58, hero.hp, hero.maxHp, "#79ff7a");
 }
 
 function drawHeroSprite(hero) {
-  let anim = "idle";
-  if (hero.hurtAnimTimer > 0) anim = "hurt";
-  else if (hero.attackAnimTimer > 0) anim = "attack";
-  else if (hero.moving) anim = "walk";
-
-  const frameCount = HERO_ZEUS_SPRITE.frames[anim];
+  const anim = hero.animState || getHeroVisualAnim(hero);
+  const frameCount = HERO_ZEUS_SPRITE.frames[anim] || 1;
   const fps = HERO_ZEUS_SPRITE.fps[anim] || 8;
-  let frame = Math.floor((hero.animTime || 0) * fps) % frameCount;
+  const animTime = hero.animStateTime || hero.animTime || 0;
+  let frame = Math.floor(animTime * fps) % frameCount;
+
+  if (anim === "walk") {
+    const order = HERO_ZEUS_SPRITE.walkFrameOrder || [0, 1, 2, 3, 4, 5];
+    const orderIndex = Math.floor(animTime * fps) % order.length;
+    frame = order[orderIndex] % frameCount;
+  }
 
   if (anim === "attack") {
     const duration = hero.attackAnimDuration || 0.56;
@@ -1509,6 +1547,9 @@ function drawHeroSprite(hero) {
   const sy = HERO_ZEUS_SPRITE.rows[anim] * HERO_ZEUS_SPRITE.frameH;
   const dw = HERO_ZEUS_SPRITE.drawW;
   const dh = HERO_ZEUS_SPRITE.drawH;
+  const walkOffset = anim === "walk"
+    ? HERO_ZEUS_SPRITE.walkOffsets[frame] || { x: 0, y: 0 }
+    : { x: 0, y: 0 };
 
   ctx.save();
   if (hero.face < 0) ctx.scale(-1, 1);
@@ -1519,8 +1560,8 @@ function drawHeroSprite(hero) {
     sy,
     HERO_ZEUS_SPRITE.frameW,
     HERO_ZEUS_SPRITE.frameH,
-    -dw / 2 + 2,
-    -dh + 10,
+    -dw / 2 + 2 + walkOffset.x,
+    -dh + 10 + walkOffset.y,
     dw,
     dh
   );
