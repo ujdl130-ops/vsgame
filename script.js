@@ -152,14 +152,14 @@ loadGameImage(
 
 const GUARD_SPRITE = {
   // SD 기사형 방패병 전용 스프라이트 시트입니다.
-  // 6열 x 5행: idle / walk / attack / hurt / death 순서입니다.
+  // 6열 x 5행: idle / walk / attack / unused hurt / death 순서입니다.
   frameW: 229,
   frameH: 229,
   drawW: 88,
   drawH: 88,
-  fps: { idle: 5, walk: 8, attack: 11, hurt: 7, death: 6 },
-  rows: { idle: 0, walk: 1, attack: 2, hurt: 3, death: 4 },
-  frames: { idle: 6, walk: 6, attack: 6, hurt: 4, death: 6 },
+  fps: { idle: 5, walk: 8, attack: 11, death: 6 },
+  rows: { idle: 0, walk: 1, attack: 2, death: 4 },
+  frames: { idle: 6, walk: 6, attack: 6, death: 6 },
 };
 
 const ARCHER_SPRITE = {
@@ -169,9 +169,9 @@ const ARCHER_SPRITE = {
   frameH: 229,
   drawW: 90,
   drawH: 90,
-  fps: { idle: 5, walk: 8, attack: 10, hurt: 7 },
-  rows: { idle: 0, walk: 1, attack: 2, hurt: 3, death: 4 },
-  frames: { idle: 6, walk: 6, attack: 6, hurt: 6, death: 6 },
+  fps: { idle: 5, walk: 8, attack: 10, death: 6 },
+  rows: { idle: 0, walk: 1, attack: 2, death: 4 },
+  frames: { idle: 6, walk: 6, attack: 6, death: 6 },
 };
 
 
@@ -754,7 +754,7 @@ function startGame(stageNumber = selectedStage) {
   document.body.classList.add("game-started");
   document.body.classList.remove("in-lobby", "in-stage-select", "in-shop", "in-recruit", "in-formation");
   gameState.running = true;
-  gameState.message = `Stage ${selectedStage} - Wave ${gameState.wave} 시작! 영웅을 조작하며 병사를 소환하세요`;
+  gameState.message = `Stage ${selectedStage} - Wave ${gameState.wave} 시작! 영웅을 보조하며 병사를 소환하세요`;
   gameState.messageTimer = 1.2;
   updateHud();
   updateButtons();
@@ -857,8 +857,10 @@ function summonGuard() {
     attackAnimDuration: 0.46,
     attackImpactPending: false,
     attackTarget: null,
-    hurtAnimTimer: 0,
-    lastHp: 90,
+    dead: false,
+    deathAnimTimer: 0,
+    deathAnimDuration: 0.85,
+    deathRewarded: false,
   });
 }
 
@@ -890,9 +892,47 @@ function summonArcher() {
     attackAnimDuration: 0.58,
     pendingArrowShot: false,
     shotTarget: null,
-    hurtAnimTimer: 0,
-    lastHp: 48,
+    dead: false,
+    deathAnimTimer: 0,
+    deathAnimDuration: 0.85,
+    deathRewarded: false,
   });
+}
+
+
+function isCombatAlive(entity) {
+  return Boolean(entity && !entity.dead && entity.hp > 0);
+}
+
+function startUnitDeath(unit) {
+  if (!unit || unit.dead) return;
+  unit.dead = true;
+  unit.hp = 0;
+  unit.moving = false;
+  unit.cooldown = 0;
+  unit.attackAnimTimer = 0;
+  unit.pendingArrowShot = false;
+  unit.attackImpactPending = false;
+  unit.shotTarget = null;
+  unit.attackTarget = null;
+  unit.deathAnimDuration = unit.deathAnimDuration || 0.85;
+  unit.deathAnimTimer = unit.deathAnimDuration;
+}
+
+function startEnemyDeath(enemy) {
+  if (!enemy || enemy.dead) return;
+  enemy.dead = true;
+  enemy.hp = 0;
+  enemy.moving = false;
+  enemy.cooldown = 0;
+  enemy.attackAnimTimer = 0;
+  enemy.deathAnimDuration = enemy.deathAnimDuration || 0.55;
+  enemy.deathAnimTimer = enemy.deathAnimDuration;
+
+  if (!enemy.deathRewarded) {
+    gameState.gold += 18;
+    enemy.deathRewarded = true;
+  }
 }
 
 function castHolySlash() {
@@ -918,6 +958,14 @@ function spawnEnemy() {
       range: 45,
       cooldown: 0,
       attackSpeed: 0.9,
+      animTime: 0,
+      moving: false,
+      attackAnimTimer: 0,
+      attackAnimDuration: 0.34,
+      dead: false,
+      deathAnimTimer: 0,
+      deathAnimDuration: 0.55,
+      deathRewarded: false,
     });
     return;
   }
@@ -935,6 +983,14 @@ function spawnEnemy() {
     range: 38,
     cooldown: 0,
     attackSpeed: isFast ? 0.52 : 0.78,
+    animTime: 0,
+    moving: false,
+    attackAnimTimer: 0,
+    attackAnimDuration: 0.34,
+    dead: false,
+    deathAnimTimer: 0,
+    deathAnimDuration: 0.55,
+    deathRewarded: false,
   });
 }
 
@@ -942,6 +998,7 @@ function findNearestEnemy(fromX, range) {
   let target = null;
   let bestDistance = Infinity;
   for (const enemy of gameState.enemies) {
+    if (!isCombatAlive(enemy)) continue;
     const distance = enemy.x - fromX;
     if (distance >= -20 && distance <= range && distance < bestDistance) {
       target = enemy;
@@ -952,7 +1009,7 @@ function findNearestEnemy(fromX, range) {
 }
 
 function findNearestAlly(fromX, range) {
-  const candidates = [...gameState.units];
+  const candidates = gameState.units.filter(isCombatAlive);
   if (gameState.hero && !gameState.hero.dead && gameState.hero.hp > 0) {
     candidates.push(gameState.hero);
   }
@@ -970,7 +1027,7 @@ function findNearestAlly(fromX, range) {
 }
 
 function fireHeroArrow(hero) {
-  const shotTarget = hero.shotTarget && hero.shotTarget.hp > 0
+  const shotTarget = isCombatAlive(hero.shotTarget)
     ? hero.shotTarget
     : findNearestEnemy(hero.x, hero.range);
 
@@ -1138,7 +1195,7 @@ function updateWave(dt) {
 }
 
 function fireArcherArrow(unit) {
-  const shotTarget = unit.shotTarget && unit.shotTarget.hp > 0
+  const shotTarget = isCombatAlive(unit.shotTarget)
     ? unit.shotTarget
     : findNearestEnemy(unit.x, unit.range + 40);
 
@@ -1163,45 +1220,43 @@ function fireArcherArrow(unit) {
 
 function updateUnits(dt) {
   for (const unit of gameState.units) {
+    unit.animTime = (unit.animTime || 0) + dt;
+
+    if (unit.hp <= 0 || unit.dead) {
+      startUnitDeath(unit);
+      unit.deathAnimTimer = Math.max(0, (unit.deathAnimTimer || 0) - dt);
+      continue;
+    }
+
     unit.cooldown = Math.max(0, unit.cooldown - dt);
+    unit.moving = false;
 
-    if (unit.type === "archer" || unit.type === "guard") {
-      unit.animTime = (unit.animTime || 0) + dt;
-      unit.moving = false;
+    const previousAttackTimer = unit.attackAnimTimer || 0;
+    unit.attackAnimDuration = unit.attackAnimDuration || (unit.type === "guard" ? 0.46 : 0.58);
+    unit.attackAnimTimer = Math.max(0, previousAttackTimer - dt);
 
-      const previousAttackTimer = unit.attackAnimTimer || 0;
-      unit.attackAnimDuration = unit.attackAnimDuration || (unit.type === "guard" ? 0.46 : 0.58);
-      unit.attackAnimTimer = Math.max(0, previousAttackTimer - dt);
-      unit.hurtAnimTimer = Math.max(0, (unit.hurtAnimTimer || 0) - dt);
+    const attackProgress = unit.attackAnimTimer > 0
+      ? 1 - unit.attackAnimTimer / unit.attackAnimDuration
+      : 1;
 
-      if (typeof unit.lastHp === "number" && unit.hp < unit.lastHp) {
-        unit.hurtAnimTimer = 0.28;
+    // 쫄병은 피격 모션이 없습니다. 공격 / 걷기 / 사망 모션만 사용합니다.
+    // 궁수는 활시위를 놓는 타이밍에 화살 발사
+    if (unit.type === "archer" && unit.pendingArrowShot && (attackProgress >= 0.62 || unit.attackAnimTimer <= 0)) {
+      fireArcherArrow(unit);
+    }
+
+    // 방패병은 검이 앞으로 나가는 프레임에 근접 피해 적용
+    if (unit.type === "guard" && unit.attackImpactPending && (attackProgress >= 0.48 || unit.attackAnimTimer <= 0)) {
+      const attackTarget = isCombatAlive(unit.attackTarget)
+        ? unit.attackTarget
+        : findNearestEnemy(unit.x, unit.range + 12);
+
+      if (attackTarget) {
+        attackTarget.hp -= unit.damage;
       }
-      unit.lastHp = unit.hp;
 
-      const attackProgress = unit.attackAnimTimer > 0
-        ? 1 - unit.attackAnimTimer / unit.attackAnimDuration
-        : 1;
-
-      // 궁수는 활시위를 놓는 타이밍에 화살 발사
-      if (unit.type === "archer" && unit.pendingArrowShot && (attackProgress >= 0.62 || unit.attackAnimTimer <= 0)) {
-        fireArcherArrow(unit);
-      }
-
-      // 방패병은 검이 앞으로 나가는 프레임에 근접 피해 적용
-      if (unit.type === "guard" && unit.attackImpactPending && (attackProgress >= 0.48 || unit.attackAnimTimer <= 0)) {
-        const attackTarget = unit.attackTarget && unit.attackTarget.hp > 0
-          ? unit.attackTarget
-          : findNearestEnemy(unit.x, unit.range + 12);
-
-        if (attackTarget) {
-          attackTarget.hp -= unit.damage;
-          spawnHit(attackTarget.x, attackTarget.y - 30, "#b7f7ff");
-        }
-
-        unit.attackImpactPending = false;
-        unit.attackTarget = null;
-      }
+      unit.attackImpactPending = false;
+      unit.attackTarget = null;
     }
 
     const target = findNearestEnemy(unit.x, unit.range);
@@ -1221,40 +1276,57 @@ function updateUnits(dt) {
           unit.attackTarget = target;
         } else {
           target.hp -= unit.damage;
-          spawnHit(target.x, target.y - 30, "#b7f7ff");
         }
       }
     } else {
       unit.x += unit.speed * dt;
-      if (unit.type === "archer" || unit.type === "guard") unit.moving = true;
+      unit.moving = true;
     }
 
     if (unit.x > ENEMY_BASE_X - 35) {
       gameState.enemyBaseHp -= unit.type === "archer" ? 8 * dt : 18 * dt;
       unit.x = ENEMY_BASE_X - 35;
-      if (unit.type === "archer" || unit.type === "guard") unit.moving = false;
+      unit.moving = false;
     }
   }
 }
 
 function updateEnemies(dt) {
   for (const enemy of gameState.enemies) {
+    enemy.animTime = (enemy.animTime || 0) + dt;
+
+    if (enemy.hp <= 0 || enemy.dead) {
+      startEnemyDeath(enemy);
+      enemy.deathAnimTimer = Math.max(0, (enemy.deathAnimTimer || 0) - dt);
+      continue;
+    }
+
     enemy.cooldown = Math.max(0, enemy.cooldown - dt);
+    enemy.attackAnimTimer = Math.max(0, (enemy.attackAnimTimer || 0) - dt);
+    enemy.moving = false;
+
     const target = findNearestAlly(enemy.x, enemy.range);
 
     if (target) {
       if (enemy.cooldown <= 0) {
         enemy.cooldown = enemy.attackSpeed;
+        enemy.attackAnimTimer = enemy.attackAnimDuration || 0.34;
         target.hp -= enemy.damage;
-        spawnHit(target.x, target.y - 38, "#ff9090");
+
+        // 피격 시스템은 메인 영웅에게만 적용합니다.
+        if (target.type === "hero") {
+          spawnHit(target.x, target.y - 38, "#ff9090");
+        }
       }
     } else {
       enemy.x -= enemy.speed * dt;
+      enemy.moving = true;
     }
 
     if (enemy.x < PLAYER_BASE_X + 28) {
       gameState.playerBaseHp -= enemy.damage * dt * 0.8;
       enemy.x = PLAYER_BASE_X + 28;
+      enemy.moving = false;
     }
   }
 }
@@ -1262,10 +1334,9 @@ function updateEnemies(dt) {
 function updateProjectiles(dt) {
   for (const projectile of gameState.projectiles) {
     projectile.x += projectile.vx * dt;
-    if (projectile.target && projectile.target.hp > 0 && Math.abs(projectile.x - projectile.target.x) < 18) {
+    if (isCombatAlive(projectile.target) && Math.abs(projectile.x - projectile.target.x) < 18) {
       projectile.target.hp -= projectile.damage;
       projectile.dead = true;
-      spawnHit(projectile.target.x, projectile.target.y - 35, "#c6f7ff");
     }
     if (projectile.x > canvas.width + 50) projectile.dead = true;
   }
@@ -1285,14 +1356,18 @@ function updateParticles(dt) {
 }
 
 function cleanupDeadEntities() {
-  const beforeEnemies = gameState.enemies.length;
-  gameState.enemies = gameState.enemies.filter((enemy) => enemy.hp > 0);
-  const killed = beforeEnemies - gameState.enemies.length;
-  if (killed > 0) gameState.gold += killed * 18;
+  for (const enemy of gameState.enemies) {
+    if (enemy.hp <= 0) startEnemyDeath(enemy);
+  }
+
+  for (const unit of gameState.units) {
+    if (unit.hp <= 0 || unit.x >= ENEMY_BASE_X - 15) startUnitDeath(unit);
+  }
 
   // 소환 제한 슬롯은 살아있는 병사 수를 기준으로 계산합니다.
-  // 병사가 죽으면 이 정리 단계 이후 자동으로 빈 자리가 생깁니다.
-  gameState.units = gameState.units.filter((unit) => unit.hp > 0 && unit.x < ENEMY_BASE_X - 15);
+  // 병사가 죽는 순간 hp가 0이 되므로, 사망 모션이 남아 있어도 빈 자리는 즉시 생깁니다.
+  gameState.enemies = gameState.enemies.filter((enemy) => !enemy.dead || enemy.deathAnimTimer > 0);
+  gameState.units = gameState.units.filter((unit) => !unit.dead || unit.deathAnimTimer > 0);
 }
 
 
@@ -1572,17 +1647,21 @@ function drawGuardSprite(unit) {
   if (!guardSpriteReady) return false;
 
   let anim = "idle";
-  if (unit.hurtAnimTimer > 0) anim = "hurt";
+  if (unit.dead || unit.hp <= 0) anim = "death";
   else if (unit.attackAnimTimer > 0) anim = "attack";
   else if (unit.moving) anim = "walk";
 
-  const frameCount = GUARD_SPRITE.frames[anim];
+  const frameCount = GUARD_SPRITE.frames[anim] || 1;
   const fps = GUARD_SPRITE.fps[anim] || 8;
   let frame = Math.floor((unit.animTime || 0) * fps) % frameCount;
 
   if (anim === "attack") {
     const duration = unit.attackAnimDuration || 0.46;
     const progress = 1 - unit.attackAnimTimer / duration;
+    frame = Math.min(frameCount - 1, Math.max(0, Math.floor(progress * frameCount)));
+  } else if (anim === "death") {
+    const duration = unit.deathAnimDuration || 0.85;
+    const progress = 1 - Math.max(0, unit.deathAnimTimer || 0) / duration;
     frame = Math.min(frameCount - 1, Math.max(0, Math.floor(progress * frameCount)));
   }
 
@@ -1611,17 +1690,21 @@ function drawArcherSprite(unit) {
   if (!archerSpriteReady) return false;
 
   let anim = "idle";
-  if (unit.hurtAnimTimer > 0) anim = "hurt";
+  if (unit.dead || unit.hp <= 0) anim = "death";
   else if (unit.attackAnimTimer > 0) anim = "attack";
   else if (unit.moving) anim = "walk";
 
-  const frameCount = ARCHER_SPRITE.frames[anim];
+  const frameCount = ARCHER_SPRITE.frames[anim] || 1;
   const fps = ARCHER_SPRITE.fps[anim] || 8;
   let frame = Math.floor((unit.animTime || 0) * fps) % frameCount;
 
   if (anim === "attack") {
     const duration = unit.attackAnimDuration || 0.58;
     const progress = 1 - unit.attackAnimTimer / duration;
+    frame = Math.min(frameCount - 1, Math.max(0, Math.floor(progress * frameCount)));
+  } else if (anim === "death") {
+    const duration = unit.deathAnimDuration || 0.85;
+    const progress = 1 - Math.max(0, unit.deathAnimTimer || 0) / duration;
     frame = Math.min(frameCount - 1, Math.max(0, Math.floor(progress * frameCount)));
   }
 
@@ -1649,7 +1732,14 @@ function drawArcherSprite(unit) {
 function drawUnit(unit) {
   ctx.save();
   ctx.translate(unit.x, unit.y);
-  const bob = Math.sin((performance.now() + unit.x * 10) * 0.01) * 2;
+  const isDying = unit.dead || unit.hp <= 0;
+  const bob = isDying ? 0 : Math.sin((performance.now() + unit.x * 10) * 0.01) * 2;
+
+  if (isDying) {
+    const duration = unit.deathAnimDuration || 0.85;
+    const progress = 1 - Math.max(0, unit.deathAnimTimer || 0) / duration;
+    ctx.globalAlpha = Math.max(0.25, 1 - progress * 0.45);
+  }
 
   // 그림자는 땅에 고정합니다. 그림자가 캐릭터와 같이 흔들리면 걷기 모션이 더 어색해 보입니다.
   ctx.fillStyle = "rgba(0,0,0,0.2)";
@@ -1695,14 +1785,25 @@ function drawUnit(unit) {
   }
 
   ctx.restore();
-  drawHealthBar(unit.x, unit.y - 68, 42, unit.hp, unit.maxHp, "#68d8ff");
+  if (!isDying) drawHealthBar(unit.x, unit.y - 68, 42, unit.hp, unit.maxHp, "#68d8ff");
 }
 
 function drawEnemy(enemy) {
   ctx.save();
   ctx.translate(enemy.x, enemy.y);
-  const bob = Math.sin((performance.now() + enemy.x * 11) * 0.012) * 2;
-  ctx.translate(0, bob);
+
+  const isDying = enemy.dead || enemy.hp <= 0;
+  const duration = enemy.deathAnimDuration || 0.55;
+  const deathProgress = isDying ? 1 - Math.max(0, enemy.deathAnimTimer || 0) / duration : 0;
+  const bob = isDying ? 0 : Math.sin((performance.now() + enemy.x * 11) * 0.012) * 2;
+
+  if (isDying) {
+    ctx.globalAlpha = Math.max(0.1, 1 - deathProgress * 0.85);
+    ctx.translate(0, deathProgress * 20);
+    ctx.scale(1, Math.max(0.25, 1 - deathProgress * 0.65));
+  } else {
+    ctx.translate(0, bob);
+  }
 
   ctx.fillStyle = "rgba(0,0,0,0.22)";
   ctx.beginPath();
@@ -1733,7 +1834,7 @@ function drawEnemy(enemy) {
   ctx.fillRect(4, -52, 5, 4);
 
   ctx.restore();
-  drawHealthBar(enemy.x, enemy.y - enemy.h - 18, 44, enemy.hp, enemy.maxHp, "#ff6868");
+  if (!isDying) drawHealthBar(enemy.x, enemy.y - enemy.h - 18, 44, enemy.hp, enemy.maxHp, "#ff6868");
 }
 
 function drawProjectiles() {
