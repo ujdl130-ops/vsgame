@@ -224,6 +224,97 @@
   </section>
 
 
+
+
+  <section id="formationScreen" class="formation-screen is-hidden" aria-label="픽셀디펜스 편성 화면">
+    <div class="formation-scanline" aria-hidden="true"></div>
+
+    <button id="formationBackBtn" class="formation-ui-btn formation-back-btn" type="button">← 로비</button>
+    <button id="formationCloseBtn" class="formation-ui-btn formation-close-btn" type="button">닫기</button>
+
+    <div class="formation-topbar" aria-label="재화 정보">
+      <div class="formation-currency orange"><span>티켓</span><strong>0</strong></div>
+      <div class="formation-currency purple"><span>토큰</span><strong>0</strong></div>
+      <div class="formation-currency blue"><span>젬</span><strong>0</strong></div>
+      <div class="formation-currency gold"><span>골드</span><strong>0</strong></div>
+      <button class="formation-gear" type="button" aria-label="설정">⚙</button>
+    </div>
+
+    <div class="formation-shell">
+      <aside class="formation-sidebar" aria-label="편성 메뉴">
+        <div class="formation-sidebar-title">편성</div>
+        <button class="formation-side-btn is-active" type="button">편성</button>
+        <button class="formation-side-btn is-disabled" type="button" disabled>컬렉션</button>
+        <button class="formation-side-btn" type="button">모집</button>
+        <button class="formation-side-btn" type="button">상점</button>
+        <button class="formation-side-btn" type="button">미션</button>
+      </aside>
+
+      <section class="formation-main-panel">
+        <header class="formation-header-row">
+          <div class="formation-title-box">
+            <p class="formation-kicker">FORMATION</p>
+            <h1 class="formation-logo">덱 편성</h1>
+          </div>
+          <div class="formation-category-tabs" role="tablist" aria-label="편성 카테고리">
+            <button class="formation-category-tab is-active" type="button" data-formation-tab="deck">덱</button>
+            <button class="formation-category-tab" type="button" data-formation-tab="unit">유닛</button>
+            <button class="formation-category-tab" type="button" data-formation-tab="tower">타워</button>
+          </div>
+        </header>
+
+        <div class="formation-filter-row">
+          <button class="formation-filter-btn" type="button">모든 등급</button>
+          <button class="formation-filter-btn" type="button">모든 유닛</button>
+          <div class="formation-attribute-group" aria-label="속성 필터">
+            <span class="formation-attribute fire">화염</span>
+            <span class="formation-attribute nature">자연</span>
+            <span class="formation-attribute water">물</span>
+          </div>
+        </div>
+
+        <div class="formation-advantage-box">
+          <strong>배치 안내</strong>
+          <p>원하는 유닛을 선택해 아래 빈 슬롯에 배치하는 화면입니다. 현재는 UI 시안 단계라 슬롯만 먼저 비워두었습니다.</p>
+        </div>
+
+        <div class="formation-slots-panel" aria-label="덱 슬롯">
+          <div class="formation-slot-grid">
+            <button class="formation-slot" type="button" aria-label="빈 슬롯 1"><span>+</span></button>
+            <button class="formation-slot" type="button" aria-label="빈 슬롯 2"><span>+</span></button>
+            <button class="formation-slot" type="button" aria-label="빈 슬롯 3"><span>+</span></button>
+            <button class="formation-slot" type="button" aria-label="빈 슬롯 4"><span>+</span></button>
+            <button class="formation-slot" type="button" aria-label="빈 슬롯 5"><span>+</span></button>
+            <button class="formation-slot" type="button" aria-label="빈 슬롯 6"><span>+</span></button>
+            <button class="formation-slot" type="button" aria-label="빈 슬롯 7"><span>+</span></button>
+            <button class="formation-slot" type="button" aria-label="빈 슬롯 8"><span>+</span></button>
+            <button class="formation-slot" type="button" aria-label="빈 슬롯 9"><span>+</span></button>
+            <button class="formation-slot" type="button" aria-label="빈 슬롯 10"><span>+</span></button>
+          </div>
+          <div class="formation-deck-tabs" aria-label="덱 페이지">
+            <button class="formation-deck-tab is-active" type="button" data-deck-page="1">1</button>
+            <button class="formation-deck-tab" type="button" data-deck-page="2">2</button>
+            <button class="formation-deck-tab is-locked" type="button" disabled>🔒</button>
+            <button class="formation-deck-tab is-locked" type="button" disabled>🔒</button>
+          </div>
+          <p id="formationNotice" class="formation-notice">유닛을 터치하면 빈 슬롯에 배치할 수 있도록 확장할 예정입니다.</p>
+        </div>
+      </section>
+
+      <aside class="formation-roster-panel" aria-label="보유 유닛 목록">
+        <div class="formation-roster-head">
+          <strong>보유 유닛</strong>
+          <span>0 / 0</span>
+        </div>
+        <div class="formation-roster-empty">
+          <div class="formation-roster-empty-icon">+</div>
+          <p>오른쪽 유닛 목록은 아직 비워둔 상태입니다.</p>
+          <small>추후 모집/획득한 유닛 카드가 이 영역에 표시됩니다.</small>
+        </div>
+      </aside>
+    </div>
+  </section>
+
   <section id="stageScreen" class="stage-screen is-hidden" aria-label="픽셀디펜스 스테이지 선택 화면">
     <div class="stage-scanline" aria-hidden="true"></div>
 

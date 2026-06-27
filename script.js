@@ -33,6 +33,13 @@ const recruitDoorCloseBtn = document.getElementById("recruitDoorCloseBtn");
 const doorTapGuide = document.getElementById("doorTapGuide");
 const doorResultText = document.getElementById("doorResultText");
 const doorKnockText = document.getElementById("doorKnockText");
+const formationScreen = document.getElementById("formationScreen");
+const formationBackBtn = document.getElementById("formationBackBtn");
+const formationCloseBtn = document.getElementById("formationCloseBtn");
+const formationNotice = document.getElementById("formationNotice");
+const formationCategoryTabs = document.querySelectorAll(".formation-category-tab");
+const formationDeckTabs = document.querySelectorAll(".formation-deck-tab:not(.is-locked)");
+const formationSlots = document.querySelectorAll(".formation-slot");
 const lobbyExitBtn = document.getElementById("lobbyExitBtn");
 const lobbyNotice = document.getElementById("lobbyNotice");
 const shopScreen = document.getElementById("shopScreen");
@@ -314,10 +321,11 @@ function showStageSelect() {
   if (stageScreen) stageScreen.classList.remove("is-hidden");
   if (shopScreen) shopScreen.classList.add("is-hidden");
   if (recruitScreen) recruitScreen.classList.add("is-hidden");
+  if (formationScreen) formationScreen.classList.add("is-hidden");
   hideRecruitDoorScene(true);
   if (chapterPanel) chapterPanel.classList.remove("is-hidden");
   if (stagePanel) stagePanel.classList.add("is-hidden");
-  document.body.classList.remove("game-started", "in-lobby", "in-shop", "in-recruit");
+  document.body.classList.remove("game-started", "in-lobby", "in-shop", "in-recruit", "in-formation");
   document.body.classList.add("in-stage-select");
 
   if (gameState) {
@@ -367,14 +375,19 @@ function isRecruitVisible() {
   return recruitScreen && !recruitScreen.classList.contains("is-hidden");
 }
 
+function isFormationVisible() {
+  return formationScreen && !formationScreen.classList.contains("is-hidden");
+}
+
 function showShop() {
   if (titleScreen) titleScreen.classList.add("is-hidden");
   if (lobbyScreen) lobbyScreen.classList.add("is-hidden");
   if (stageScreen) stageScreen.classList.add("is-hidden");
   if (shopScreen) shopScreen.classList.remove("is-hidden");
   if (recruitScreen) recruitScreen.classList.add("is-hidden");
+  if (formationScreen) formationScreen.classList.add("is-hidden");
   hideRecruitDoorScene(true);
-  document.body.classList.remove("game-started", "in-lobby", "in-stage-select", "in-recruit");
+  document.body.classList.remove("game-started", "in-lobby", "in-stage-select", "in-recruit", "in-formation");
   document.body.classList.add("in-shop");
 
   if (gameState) {
@@ -385,6 +398,28 @@ function showShop() {
 
   if (shopNotice) {
     shopNotice.textContent = "상점 품목을 선택하세요.";
+  }
+}
+
+function showFormation() {
+  if (titleScreen) titleScreen.classList.add("is-hidden");
+  if (lobbyScreen) lobbyScreen.classList.add("is-hidden");
+  if (stageScreen) stageScreen.classList.add("is-hidden");
+  if (shopScreen) shopScreen.classList.add("is-hidden");
+  if (recruitScreen) recruitScreen.classList.add("is-hidden");
+  if (formationScreen) formationScreen.classList.remove("is-hidden");
+  hideRecruitDoorScene(true);
+  document.body.classList.remove("game-started", "in-lobby", "in-stage-select", "in-shop", "in-recruit", "in-formation");
+  document.body.classList.add("in-formation");
+
+  if (gameState) {
+    gameState.running = false;
+    gameState.message = "편성 화면에서 덱을 구성하세요";
+    updateButtons();
+  }
+
+  if (formationNotice) {
+    formationNotice.textContent = "유닛을 터치하면 빈 슬롯에 배치할 수 있도록 확장할 예정입니다.";
   }
 }
 
@@ -400,7 +435,8 @@ function showRecruit() {
   if (stageScreen) stageScreen.classList.add("is-hidden");
   if (shopScreen) shopScreen.classList.add("is-hidden");
   if (recruitScreen) recruitScreen.classList.remove("is-hidden");
-  document.body.classList.remove("game-started", "in-lobby", "in-stage-select", "in-shop");
+  if (formationScreen) formationScreen.classList.add("is-hidden");
+  document.body.classList.remove("game-started", "in-lobby", "in-stage-select", "in-shop", "in-formation");
   document.body.classList.add("in-recruit");
 
   if (gameState) {
@@ -540,8 +576,9 @@ function showLobby() {
   if (stageScreen) stageScreen.classList.add("is-hidden");
   if (shopScreen) shopScreen.classList.add("is-hidden");
   if (recruitScreen) recruitScreen.classList.add("is-hidden");
+  if (formationScreen) formationScreen.classList.add("is-hidden");
   hideRecruitDoorScene(true);
-  document.body.classList.remove("game-started", "in-stage-select", "in-shop", "in-recruit");
+  document.body.classList.remove("game-started", "in-stage-select", "in-shop", "in-recruit", "in-formation");
   document.body.classList.add("in-lobby");
   if (gameState) {
     gameState.running = false;
@@ -564,8 +601,9 @@ function showTitle() {
   if (stageScreen) stageScreen.classList.add("is-hidden");
   if (shopScreen) shopScreen.classList.add("is-hidden");
   if (recruitScreen) recruitScreen.classList.add("is-hidden");
+  if (formationScreen) formationScreen.classList.add("is-hidden");
   hideRecruitDoorScene(true);
-  document.body.classList.remove("game-started", "in-lobby", "in-stage-select", "in-shop", "in-recruit");
+  document.body.classList.remove("game-started", "in-lobby", "in-stage-select", "in-shop", "in-recruit", "in-formation");
   if (lobbyNotice) {
     lobbyNotice.textContent = "상점에서 장비를 확인하거나 전투 버튼으로 Chapter 1을 선택할 수 있습니다.";
   }
@@ -585,7 +623,7 @@ function showLobbyMenuNotice(label) {
 }
 
 function showFormationNotice() {
-  showLobbyMenuNotice("편성");
+  showFormation();
 }
 
 function showMissionNotice() {
@@ -598,6 +636,35 @@ function showShopNotice() {
 
 function showRecruitNotice() {
   showRecruit();
+}
+
+function setFormationCategoryTab(tabName) {
+  formationCategoryTabs.forEach((tab) => {
+    tab.classList.toggle("is-active", tab.dataset.formationTab === tabName);
+  });
+
+  if (!formationNotice) return;
+  if (tabName === "deck") formationNotice.textContent = "덱 탭입니다. 빈 슬롯에 유닛을 배치하는 구조로 확장할 예정입니다.";
+  else if (tabName === "unit") formationNotice.textContent = "유닛 탭입니다. 보유 유닛 목록과 정렬 기능을 여기에 연결할 수 있습니다.";
+  else formationNotice.textContent = "타워 탭입니다. 추후 방어 타워 편성 UI를 연결할 수 있습니다.";
+}
+
+function setFormationDeckPage(page) {
+  formationDeckTabs.forEach((tab) => {
+    tab.classList.toggle("is-active", tab.dataset.deckPage === String(page));
+  });
+  if (formationNotice) {
+    formationNotice.textContent = `덱 ${page} 페이지입니다. 현재는 UI 시안 단계라 슬롯이 비워져 있습니다.`;
+  }
+}
+
+function handleFormationSlotClick(index) {
+  formationSlots.forEach((slot) => slot.classList.remove("is-selected"));
+  const target = formationSlots[index];
+  if (target) target.classList.add("is-selected");
+  if (formationNotice) {
+    formationNotice.textContent = `${index + 1}번 슬롯이 선택되었습니다. 이후 유닛 배치 기능을 연결할 수 있습니다.`;
+  }
 }
 
 function startGame(stageNumber = selectedStage) {
@@ -615,9 +682,10 @@ function startGame(stageNumber = selectedStage) {
   if (stageScreen) stageScreen.classList.add("is-hidden");
   if (shopScreen) shopScreen.classList.add("is-hidden");
   if (recruitScreen) recruitScreen.classList.add("is-hidden");
+  if (formationScreen) formationScreen.classList.add("is-hidden");
   hideRecruitDoorScene(true);
   document.body.classList.add("game-started");
-  document.body.classList.remove("in-lobby", "in-stage-select", "in-shop", "in-recruit");
+  document.body.classList.remove("in-lobby", "in-stage-select", "in-shop", "in-recruit", "in-formation");
   gameState.running = true;
   gameState.message = `Stage ${selectedStage} - Wave ${gameState.wave} 시작! 병사를 소환하세요`;
   gameState.messageTimer = 1.2;
@@ -1608,6 +1676,13 @@ window.addEventListener("keydown", (event) => {
     return;
   }
 
+  if (isFormationVisible()) {
+    if (event.code === "Escape") showLobby();
+    if (event.code === "Digit1") setFormationDeckPage(1);
+    if (event.code === "Digit2") setFormationDeckPage(2);
+    return;
+  }
+
   if (isRecruitVisible()) {
     if (event.code === "Escape") {
       if (recruitDoorScene && !recruitDoorScene.classList.contains("is-hidden")) hideRecruitDoorScene();
@@ -1639,9 +1714,20 @@ startBtn.addEventListener("click", () => startGame(selectedStage));
 titleStartBtn.addEventListener("click", showLobby);
 if (lobbyBattleBtn) lobbyBattleBtn.addEventListener("click", showStageSelect);
 if (lobbyShopBtn) lobbyShopBtn.addEventListener("click", showShop);
-if (lobbyFormationBtn) lobbyFormationBtn.addEventListener("click", showFormationNotice);
+if (lobbyFormationBtn) lobbyFormationBtn.addEventListener("click", showFormation);
 if (lobbyRecruitBtn) lobbyRecruitBtn.addEventListener("click", showRecruit);
 if (lobbyMissionBtn) lobbyMissionBtn.addEventListener("click", showMissionNotice);
+if (formationBackBtn) formationBackBtn.addEventListener("click", showLobby);
+if (formationCloseBtn) formationCloseBtn.addEventListener("click", showLobby);
+formationCategoryTabs.forEach((tab) => {
+  tab.addEventListener("click", () => setFormationCategoryTab(tab.dataset.formationTab || "deck"));
+});
+formationDeckTabs.forEach((tab) => {
+  tab.addEventListener("click", () => setFormationDeckPage(tab.dataset.deckPage || "1"));
+});
+formationSlots.forEach((slot, index) => {
+  slot.addEventListener("click", () => handleFormationSlotClick(index));
+});
 if (recruitBackBtn) recruitBackBtn.addEventListener("click", showLobby);
 if (recruitCloseBtn) recruitCloseBtn.addEventListener("click", showLobby);
 if (recruitPullOneBtn) recruitPullOneBtn.addEventListener("click", () => startRecruitDoorAnimation(1));
