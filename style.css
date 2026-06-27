@@ -3021,3 +3021,154 @@ body:not(.game-started) .game-wrap {
     top: 4%;
   }
 }
+
+
+/* 로비 5버튼 메뉴 확장: 상점 · 편성 · 모집 · 미션 · 전투 */
+.lobby-menu-bar {
+  position: absolute;
+  left: 50%;
+  top: calc(50% + min(28vh, 190px) + 8px);
+  z-index: 6;
+  width: min(94vw, 900px);
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: clamp(6px, 1vw, 12px);
+  transform: translateX(-50%);
+  padding: 0 max(0px, env(safe-area-inset-left)) 0 max(0px, env(safe-area-inset-right));
+}
+
+.lobby-menu-bar .lobby-btn {
+  position: relative;
+  left: auto;
+  right: auto;
+  top: auto;
+  bottom: auto;
+  width: 100%;
+  min-width: 0;
+  min-height: 64px;
+  padding: 14px 8px;
+  font-size: clamp(15px, 2.2vw, 23px);
+  white-space: nowrap;
+  touch-action: manipulation;
+  transform: none;
+}
+
+.lobby-menu-bar .lobby-btn:hover {
+  transform: translateY(-2px);
+}
+
+.lobby-menu-bar .lobby-btn:active {
+  transform: translateY(4px);
+}
+
+.lobby-menu-bar .lobby-recruit:hover,
+.lobby-menu-bar .lobby-recruit:active {
+  transform: translateY(-2px);
+}
+
+.lobby-menu-bar .lobby-recruit:active {
+  transform: translateY(4px);
+}
+
+.lobby-formation {
+  color: #10152e;
+  background: linear-gradient(180deg, #d8f4ff, #70f7ff 66%, #3eb1dc);
+  box-shadow:
+    0 8px 0 #1e7492,
+    0 0 0 4px #15172d,
+    0 0 28px rgba(112, 247, 255, 0.35);
+}
+
+.lobby-mission {
+  color: #111426;
+  background: linear-gradient(180deg, #fff7b5, #ffd66b 62%, #e8a832);
+  box-shadow:
+    0 8px 0 #8f5a11,
+    0 0 0 4px #15172d,
+    0 0 28px rgba(255, 214, 107, 0.36);
+}
+
+.lobby-menu-notice {
+  position: absolute;
+  left: 50%;
+  top: calc(50% + min(28vh, 190px) + 86px);
+  z-index: 7;
+  width: min(86vw, 430px);
+  margin: 0;
+  padding: 10px 14px;
+  color: #fff7b5;
+  text-align: center;
+  font-weight: 900;
+  line-height: 1.4;
+  background: rgba(0, 0, 0, 0.58);
+  border: 3px solid rgba(255, 255, 255, 0.32);
+  text-shadow: 2px 2px 0 #000;
+  opacity: 0;
+  pointer-events: none;
+  transform: translate(-50%, 8px);
+  transition: opacity 0.18s ease, transform 0.18s ease;
+}
+
+.lobby-menu-notice.is-show {
+  opacity: 1;
+  transform: translate(-50%, 0);
+}
+
+@media (max-width: 720px) {
+  .lobby-menu-bar {
+    top: auto;
+    bottom: max(18px, calc(18px + env(safe-area-inset-bottom)));
+    width: min(96vw, 620px);
+    gap: 5px;
+  }
+
+  .lobby-menu-bar .lobby-btn {
+    min-height: 54px;
+    padding: 10px 3px;
+    font-size: clamp(12px, 3.8vw, 15px);
+    letter-spacing: -0.08em;
+  }
+
+  .lobby-menu-bar .lobby-recruit::before,
+  .lobby-menu-bar .lobby-recruit::after {
+    display: none;
+  }
+
+  .lobby-menu-notice {
+    top: auto;
+    bottom: max(82px, calc(82px + env(safe-area-inset-bottom)));
+    width: min(92vw, 400px);
+    font-size: 12px;
+  }
+}
+
+@media (max-width: 380px) {
+  .lobby-menu-bar {
+    gap: 4px;
+  }
+
+  .lobby-menu-bar .lobby-btn {
+    min-height: 50px;
+    padding-left: 2px;
+    padding-right: 2px;
+    font-size: 12px;
+    border-width: 3px;
+    box-shadow: 0 6px 0 rgba(0, 0, 0, 0.42), 0 0 0 3px #15172d;
+  }
+}
+
+@media (max-height: 620px) and (min-width: 721px) {
+  .lobby-menu-bar {
+    top: calc(50% + min(22vh, 150px) + 8px);
+  }
+
+  .lobby-menu-bar .lobby-btn {
+    min-height: 52px;
+    padding-top: 10px;
+    padding-bottom: 10px;
+  }
+
+  .lobby-menu-notice {
+    top: calc(50% + min(22vh, 150px) + 72px);
+  }
+}

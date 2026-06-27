@@ -17,7 +17,10 @@ const titleStartBtn = document.getElementById("titleStartBtn");
 const lobbyScreen = document.getElementById("lobbyScreen");
 const lobbyBattleBtn = document.getElementById("lobbyBattleBtn");
 const lobbyShopBtn = document.getElementById("lobbyShopBtn");
+const lobbyFormationBtn = document.getElementById("lobbyFormationBtn");
 const lobbyRecruitBtn = document.getElementById("lobbyRecruitBtn");
+const lobbyMissionBtn = document.getElementById("lobbyMissionBtn");
+const lobbyMenuNotice = document.getElementById("lobbyMenuNotice");
 const recruitScreen = document.getElementById("recruitScreen");
 const recruitBackBtn = document.getElementById("recruitBackBtn");
 const recruitCloseBtn = document.getElementById("recruitCloseBtn");
@@ -548,6 +551,10 @@ function showLobby() {
   if (lobbyNotice) {
     lobbyNotice.textContent = "상점에서 장비를 확인하거나 전투 버튼으로 Chapter 1을 선택할 수 있습니다.";
   }
+  if (lobbyMenuNotice) {
+    lobbyMenuNotice.textContent = "";
+    lobbyMenuNotice.classList.remove("is-show");
+  }
 }
 
 function showTitle() {
@@ -562,6 +569,27 @@ function showTitle() {
   if (lobbyNotice) {
     lobbyNotice.textContent = "상점에서 장비를 확인하거나 전투 버튼으로 Chapter 1을 선택할 수 있습니다.";
   }
+}
+
+
+function showLobbyMenuNotice(label) {
+  if (!lobbyMenuNotice) return;
+  const noticeText = `${label} 기능은 다음 단계에서 추가 예정입니다.`;
+  lobbyMenuNotice.textContent = noticeText;
+  lobbyMenuNotice.classList.add("is-show");
+  clearTimeout(showLobbyMenuNotice.timer);
+  showLobbyMenuNotice.timer = setTimeout(() => {
+    if (!lobbyMenuNotice) return;
+    lobbyMenuNotice.classList.remove("is-show");
+  }, 1600);
+}
+
+function showFormationNotice() {
+  showLobbyMenuNotice("편성");
+}
+
+function showMissionNotice() {
+  showLobbyMenuNotice("미션");
 }
 
 function showShopNotice() {
@@ -1556,6 +1584,8 @@ window.addEventListener("keydown", (event) => {
       showStageSelect();
     }
     if (event.code === "KeyS") showShopNotice();
+    if (event.code === "KeyF") showFormationNotice();
+    if (event.code === "KeyM") showMissionNotice();
     if (event.code === "Escape") showTitle();
     return;
   }
@@ -1609,7 +1639,9 @@ startBtn.addEventListener("click", () => startGame(selectedStage));
 titleStartBtn.addEventListener("click", showLobby);
 if (lobbyBattleBtn) lobbyBattleBtn.addEventListener("click", showStageSelect);
 if (lobbyShopBtn) lobbyShopBtn.addEventListener("click", showShop);
+if (lobbyFormationBtn) lobbyFormationBtn.addEventListener("click", showFormationNotice);
 if (lobbyRecruitBtn) lobbyRecruitBtn.addEventListener("click", showRecruit);
+if (lobbyMissionBtn) lobbyMissionBtn.addEventListener("click", showMissionNotice);
 if (recruitBackBtn) recruitBackBtn.addEventListener("click", showLobby);
 if (recruitCloseBtn) recruitCloseBtn.addEventListener("click", showLobby);
 if (recruitPullOneBtn) recruitPullOneBtn.addEventListener("click", () => startRecruitDoorAnimation(1));
