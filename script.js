@@ -10,7 +10,7 @@ const startBtn = document.getElementById("startBtn");
 const restartBtn = document.getElementById("restartBtn");
 const summonGuardBtn = document.getElementById("summonGuardBtn");
 const summonArcherBtn = document.getElementById("summonArcherBtn");
-const skillBtn = document.getElementById("skillBtn");
+const skillBtn = document.getElementById("skillBtn"); // 현재 전투 개편으로 스킬 버튼은 사용하지 않습니다.
 const titleScreen = document.getElementById("titleScreen");
 const titleStartBtn = document.getElementById("titleStartBtn");
 const lobbyScreen = document.getElementById("lobbyScreen");
@@ -134,21 +134,21 @@ const STAGE_CONFIGS = {
   1: {
     title: "풀숲 입구",
     maxWave: 3,
-    startGold: 130,
+    startGold: 220,
     enemyBaseHp: 90,
     baseEnemiesToSpawn: 4,
   },
   2: {
     title: "몬스터 언덕",
     maxWave: 3,
-    startGold: 115,
+    startGold: 190,
     enemyBaseHp: 120,
     baseEnemiesToSpawn: 6,
   },
   3: {
     title: "마왕의 전초기지",
     maxWave: 3,
-    startGold: 100,
+    startGold: 170,
     enemyBaseHp: 150,
     baseEnemiesToSpawn: 8,
   },
@@ -198,23 +198,6 @@ function createInitialState() {
     projectiles: [],
     units: [],
     enemies: [],
-    hero: {
-      x: 145,
-      y: GROUND_Y,
-      w: 46,
-      h: 70,
-      hp: 120,
-      maxHp: 120,
-      speed: 210,
-      attackCooldown: 0,
-      face: 1,
-      animTime: 0,
-      moving: false,
-      attackAnimTimer: 0,
-      attackAnimDuration: 0.42,
-      hurtAnimTimer: 0,
-      lastHp: 120,
-    },
   };
 }
 
@@ -586,7 +569,7 @@ function startGame(stageNumber = selectedStage) {
   document.body.classList.add("game-started");
   document.body.classList.remove("in-lobby", "in-stage-select", "in-shop", "in-recruit");
   gameState.running = true;
-  gameState.message = `Stage ${selectedStage} - Wave ${gameState.wave} 시작!`;
+  gameState.message = `Stage ${selectedStage} - Wave ${gameState.wave} 시작! 병사를 소환하세요`;
   gameState.messageTimer = 1.2;
   updateHud();
   updateButtons();
@@ -605,11 +588,13 @@ function updateHud() {
 
 function updateButtons() {
   const disabled = !gameState.running || gameState.gameOver || gameState.clear;
-  summonGuardBtn.disabled = disabled || gameState.gold < 50;
-  summonArcherBtn.disabled = disabled || gameState.gold < 75;
-  skillBtn.disabled = disabled || gameState.gold < 100;
-  startBtn.textContent = gameState.running ? "진행 중" : "게임 시작";
-  startBtn.disabled = gameState.running && !gameState.gameOver && !gameState.clear;
+  if (summonGuardBtn) summonGuardBtn.disabled = disabled || gameState.gold < 50;
+  if (summonArcherBtn) summonArcherBtn.disabled = disabled || gameState.gold < 75;
+  if (skillBtn) skillBtn.disabled = true;
+  if (startBtn) {
+    startBtn.textContent = gameState.running ? "진행 중" : "게임 시작";
+    startBtn.disabled = gameState.running && !gameState.gameOver && !gameState.clear;
+  }
   if (stageSelectBtn) stageSelectBtn.disabled = false;
 }
 
@@ -676,14 +661,7 @@ function summonArcher() {
 }
 
 function castHolySlash() {
-  if (!spendGold(100)) return;
-  gameState.particles.push({ type: "slash", x: gameState.hero.x + 44, y: GROUND_Y - 70, life: 0.38, maxLife: 0.38, w: 340 });
-  for (const enemy of gameState.enemies) {
-    if (enemy.x > gameState.hero.x && enemy.x < gameState.hero.x + 360) {
-      enemy.hp -= 55;
-      spawnHit(enemy.x, enemy.y - 35, "#fff59d");
-    }
-  }
+  // 전투 개편: 플레이어 직접 스킬은 제거했습니다.
 }
 
 function spawnEnemy() {
@@ -739,7 +717,7 @@ function findNearestEnemy(fromX, range) {
 }
 
 function findNearestAlly(fromX, range) {
-  const candidates = [gameState.hero, ...gameState.units];
+  const candidates = [...gameState.units];
   let target = null;
   let bestDistance = Infinity;
   for (const ally of candidates) {
@@ -753,18 +731,7 @@ function findNearestAlly(fromX, range) {
 }
 
 function heroAttack() {
-  const hero = gameState.hero;
-  if (!gameState.running || hero.attackCooldown > 0 || gameState.gameOver || gameState.clear) return;
-  hero.attackCooldown = 0.42;
-  hero.attackAnimDuration = 0.42;
-  hero.attackAnimTimer = hero.attackAnimDuration;
-  gameState.particles.push({ type: "heroAttack", x: hero.x + 42, y: hero.y - 56, life: 0.18, maxLife: 0.18 });
-
-  const target = findNearestEnemy(hero.x, 98);
-  if (target) {
-    target.hp -= 22;
-    spawnHit(target.x, target.y - 32, "#fff2a8");
-  }
+  // 전투 개편: 플레이어 직접 공격은 제거했습니다.
 }
 
 function spawnHit(x, y, color) {
@@ -783,33 +750,7 @@ function spawnHit(x, y, color) {
 }
 
 function updateHero(dt) {
-  const hero = gameState.hero;
-  const moveLeft = keys.ArrowLeft || keys.KeyA;
-  const moveRight = keys.ArrowRight || keys.KeyD;
-
-  hero.animTime = (hero.animTime || 0) + dt;
-  hero.moving = false;
-  hero.attackAnimTimer = Math.max(0, (hero.attackAnimTimer || 0) - dt);
-  hero.hurtAnimTimer = Math.max(0, (hero.hurtAnimTimer || 0) - dt);
-
-  if (typeof hero.lastHp === "number" && hero.hp < hero.lastHp) {
-    hero.hurtAnimTimer = 0.28;
-  }
-  hero.lastHp = hero.hp;
-
-  if (moveLeft) {
-    hero.x -= hero.speed * dt;
-    hero.face = -1;
-    hero.moving = true;
-  }
-  if (moveRight) {
-    hero.x += hero.speed * dt;
-    hero.face = 1;
-    hero.moving = true;
-  }
-
-  hero.x = Math.max(PLAYER_BASE_X + 35, Math.min(ENEMY_BASE_X - 130, hero.x));
-  hero.attackCooldown = Math.max(0, hero.attackCooldown - dt);
+  // 전투 개편: 직접 조작 메인 유닛을 사용하지 않습니다.
 }
 
 function updateWave(dt) {
@@ -967,11 +908,6 @@ function updateEnemies(dt) {
       enemy.x = PLAYER_BASE_X + 28;
     }
   }
-
-  if (gameState.hero.hp <= 0) {
-    gameState.playerBaseHp -= 25 * dt;
-    gameState.hero.hp = 0;
-  }
 }
 
 function updateProjectiles(dt) {
@@ -1006,14 +942,6 @@ function cleanupDeadEntities() {
   if (killed > 0) gameState.gold += killed * 18;
 
   gameState.units = gameState.units.filter((unit) => unit.hp > 0 && unit.x < ENEMY_BASE_X - 15);
-
-  if (gameState.hero.hp <= 0 && gameState.gold >= 60) {
-    gameState.gold -= 60;
-    gameState.hero.hp = gameState.hero.maxHp;
-    gameState.hero.x = PLAYER_BASE_X + 105;
-    gameState.message = "주인공 부활! 60G 사용";
-    gameState.messageTimer = 1.1;
-  }
 }
 
 
@@ -1047,11 +975,10 @@ function update(dt) {
   gameState.messageTimer = Math.max(0, gameState.messageTimer - dt);
   gameState.goldTimer += dt;
   if (gameState.goldTimer >= 1) {
-    gameState.gold += 8;
+    gameState.gold += 12;
     gameState.goldTimer = 0;
   }
 
-  updateHero(dt);
   updateWave(dt);
   updateUnits(dt);
   updateEnemies(dt);
@@ -1474,10 +1401,9 @@ function draw() {
   drawHealthBar(PLAYER_BASE_X, GROUND_Y - 126, 86, gameState.playerBaseHp, 100, "#79ff7a");
   drawHealthBar(ENEMY_BASE_X, GROUND_Y - 126, 86, gameState.enemyBaseHp, gameState.enemyBaseMaxHp, "#ff6868");
 
-  const drawList = [gameState.hero, ...gameState.units, ...gameState.enemies].sort((a, b) => a.y - b.y || a.x - b.x);
+  const drawList = [...gameState.units, ...gameState.enemies].sort((a, b) => a.y - b.y || a.x - b.x);
   for (const entity of drawList) {
-    if (entity === gameState.hero) drawHero(entity);
-    else if (gameState.units.includes(entity)) drawUnit(entity);
+    if (gameState.units.includes(entity)) drawUnit(entity);
     else drawEnemy(entity);
   }
 
@@ -1495,7 +1421,7 @@ function gameLoop(now) {
 }
 
 window.addEventListener("keydown", (event) => {
-  const playableKeys = ["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown", "Space"];
+  const playableKeys = ["Space"];
   if (playableKeys.includes(event.code)) event.preventDefault();
 
   if (isTitleVisible()) {
@@ -1547,15 +1473,14 @@ window.addEventListener("keydown", (event) => {
     return;
   }
 
-  keys[event.code] = true;
-
-  if (event.code === "Space") {
-    heroAttack();
+  if (event.code === "Digit1") {
+    event.preventDefault();
+    summonGuard();
   }
-
-  if (event.code === "Digit1") summonGuard();
-  if (event.code === "Digit2") summonArcher();
-  if (event.code === "KeyQ") castHolySlash();
+  if (event.code === "Digit2") {
+    event.preventDefault();
+    summonArcher();
+  }
 });
 
 window.addEventListener("keyup", (event) => {
@@ -1593,7 +1518,7 @@ restartBtn.addEventListener("click", restartGame);
 if (stageSelectBtn) stageSelectBtn.addEventListener("click", showStageSelect);
 summonGuardBtn.addEventListener("click", summonGuard);
 summonArcherBtn.addEventListener("click", summonArcher);
-skillBtn.addEventListener("click", castHolySlash);
-canvas.addEventListener("pointerdown", heroAttack);
+if (skillBtn) skillBtn.addEventListener("click", castHolySlash);
+// 전투 개편: 캔버스 터치 직접 공격은 제거했습니다.
 
 resetGame();

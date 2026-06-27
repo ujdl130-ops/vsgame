@@ -287,6 +287,14 @@ button:disabled {
 .mini-base,
 .mini-hero,
 .mini-unit,
+
+.mini-unit-second {
+  left: 272px;
+  background: #7be05e;
+  box-shadow: 0 -12px 0 #ffd7ac, 16px 2px 0 -4px #6a3e1f;
+  animation-delay: 0.18s;
+}
+
 .mini-enemy {
   position: absolute;
   bottom: 28px;
@@ -330,6 +338,14 @@ button:disabled {
   background: #5db7ff;
   box-shadow: 0 -12px 0 #ffd7ac, 16px 2px 0 -4px #d6f1ff;
   animation: pixelWalk 0.8s steps(2) infinite reverse;
+}
+
+
+.mini-unit-second {
+  left: 272px;
+  background: #7be05e;
+  box-shadow: 0 -12px 0 #ffd7ac, 16px 2px 0 -4px #6a3e1f;
+  animation-delay: 0.18s;
 }
 
 .mini-enemy {
@@ -441,7 +457,15 @@ button:disabled {
     right: 18px;
   }
 
-  .mini-enemy {
+  
+.mini-unit-second {
+  left: 272px;
+  background: #7be05e;
+  box-shadow: 0 -12px 0 #ffd7ac, 16px 2px 0 -4px #6a3e1f;
+  animation-delay: 0.18s;
+}
+
+.mini-enemy {
     right: 104px;
   }
 }
