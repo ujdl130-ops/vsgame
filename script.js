@@ -62,10 +62,14 @@ const PLAYER_BASE_X = 40;
 const ENEMY_BASE_X = 900;
 const MAX_WAVE = 3;
 const MAX_SUMMONED_UNITS = 5;
+const HERO_MIN_X = PLAYER_BASE_X + 72;
+const HERO_MAX_X = ENEMY_BASE_X - 74;
+const HERO_RESPAWN_SECONDS = 4;
 
 const ASSET_PATHS = {
   archerSprite: "assets/animations/archer/archer_spritesheet_v2.png",
   guardSprite: "assets/animations/guard/guard_spritesheet_v2.png",
+  heroSprite: "assets/animations/hero/zeus_hero_spritesheet.png",
   stage1ForestBg: "assets/maps/stage1/stage1_forest_bg_v2.png",
   playerCastle: "assets/maps/stage1/player_castle_stage1.png",
   enemyCastle: "assets/maps/stage1/enemy_castle_stage1.png",
@@ -96,16 +100,25 @@ const archerSprite = new Image();
 let archerSpriteReady = false;
 loadGameImage(
   archerSprite,
-  [ASSET_PATHS.archerSprite, "archer_spritesheet_v2.png", "pixeldefense_runtime_clean/archer_spritesheet_v2.png"],
+  [ASSET_PATHS.archerSprite],
   (ready) => { archerSpriteReady = ready; },
   "궁수 스프라이트"
+);
+
+const heroSprite = new Image();
+let heroSpriteReady = false;
+loadGameImage(
+  heroSprite,
+  [ASSET_PATHS.heroSprite],
+  (ready) => { heroSpriteReady = ready; },
+  "메인 오퍼레이터 제우스 스프라이트"
 );
 
 const guardSprite = new Image();
 let guardSpriteReady = false;
 loadGameImage(
   guardSprite,
-  [ASSET_PATHS.guardSprite, "guard_spritesheet_v2.png", "pixeldefense_runtime_clean/guard_spritesheet_v2.png"],
+  [ASSET_PATHS.guardSprite],
   (ready) => { guardSpriteReady = ready; },
   "방패병 SD 기사 스프라이트"
 );
@@ -114,7 +127,7 @@ const stage1ForestBg = new Image();
 let stage1ForestBgReady = false;
 loadGameImage(
   stage1ForestBg,
-  [ASSET_PATHS.stage1ForestBg, "stage1_forest_bg_v2.png", "pixeldefense_runtime_clean/stage1_forest_bg_v2.png"],
+  [ASSET_PATHS.stage1ForestBg],
   (ready) => { stage1ForestBgReady = ready; },
   "Stage 1 숲 배경"
 );
@@ -123,7 +136,7 @@ const playerCastleImage = new Image();
 let playerCastleReady = false;
 loadGameImage(
   playerCastleImage,
-  [ASSET_PATHS.playerCastle, "중세_판타지_성_탑_3d_모델.png"],
+  [ASSET_PATHS.playerCastle],
   (ready) => { playerCastleReady = ready; },
   "플레이어 성"
 );
@@ -132,7 +145,7 @@ const enemyCastleImage = new Image();
 let enemyCastleReady = false;
 loadGameImage(
   enemyCastleImage,
-  [ASSET_PATHS.enemyCastle, "원시_부족_풍의_나무_감시탑.png"],
+  [ASSET_PATHS.enemyCastle],
   (ready) => { enemyCastleReady = ready; },
   "적국의 성"
 );
@@ -157,6 +170,20 @@ const ARCHER_SPRITE = {
   drawW: 90,
   drawH: 90,
   fps: { idle: 5, walk: 8, attack: 10, hurt: 7 },
+  rows: { idle: 0, walk: 1, attack: 2, hurt: 3, death: 4 },
+  frames: { idle: 6, walk: 6, attack: 6, hurt: 6, death: 6 },
+};
+
+
+const HERO_ZEUS_SPRITE = {
+  // 제우스 메인 오퍼레이터 전용 스프라이트 시트입니다.
+  // 6열 x 5행, 256px 균일 프레임으로 다시 정렬했습니다.
+  // 각 프레임의 발 기준선을 맞춰서 인게임에서 몸이 잘리거나 위아래로 튀는 문제를 줄였습니다.
+  frameW: 256,
+  frameH: 256,
+  drawW: 122,
+  drawH: 122,
+  fps: { idle: 5, walk: 8, attack: 10, hurt: 7, death: 6 },
   rows: { idle: 0, walk: 1, attack: 2, hurt: 3, death: 4 },
   frames: { idle: 6, walk: 6, attack: 6, hurt: 6, death: 6 },
 };
@@ -226,10 +253,40 @@ function createInitialState() {
     enemiesToSpawn: stageConfig.baseEnemiesToSpawn,
     spawnedInWave: 0,
     waveBreakTimer: 0,
+    hero: createMainHero(),
     particles: [],
     projectiles: [],
     units: [],
     enemies: [],
+  };
+}
+
+function createMainHero() {
+  return {
+    type: "hero",
+    name: "제우스",
+    x: PLAYER_BASE_X + 112,
+    y: GROUND_Y,
+    w: 38,
+    h: 62,
+    hp: 120,
+    maxHp: 120,
+    speed: 150,
+    damage: 22,
+    range: 265,
+    cooldown: 0,
+    attackSpeed: 0.5,
+    attackAnimTimer: 0,
+    attackAnimDuration: 0.56,
+    pendingHeroShot: false,
+    shotTarget: null,
+    hurtAnimTimer: 0,
+    animTime: 0,
+    moving: false,
+    face: 1,
+    dead: false,
+    respawnTimer: 0,
+    lastHp: 120,
   };
 }
 
@@ -687,7 +744,7 @@ function startGame(stageNumber = selectedStage) {
   document.body.classList.add("game-started");
   document.body.classList.remove("in-lobby", "in-stage-select", "in-shop", "in-recruit", "in-formation");
   gameState.running = true;
-  gameState.message = `Stage ${selectedStage} - Wave ${gameState.wave} 시작! 병사를 소환하세요`;
+  gameState.message = `Stage ${selectedStage} - Wave ${gameState.wave} 시작! 영웅을 조작하며 병사를 소환하세요`;
   gameState.messageTimer = 1.2;
   updateHud();
   updateButtons();
@@ -738,7 +795,15 @@ function updateButtons() {
     summonArcherBtn.title = unitLimitReached ? "아군 병사가 사망하면 다시 소환할 수 있습니다." : "궁수를 소환합니다.";
   }
 
-  if (skillBtn) skillBtn.disabled = true;
+  if (skillBtn) {
+    const hero = gameState.hero;
+    const heroReady = hero && !hero.dead && hero.hp > 0 && hero.cooldown <= 0;
+    skillBtn.textContent = hero && hero.dead
+      ? `영웅 부활 ${Math.ceil(hero.respawnTimer)}초`
+      : "영웅 공격 Space";
+    skillBtn.disabled = disabled || !heroReady;
+    skillBtn.title = "메인 영웅이 가장 가까운 적에게 화살을 발사합니다.";
+  }
   if (startBtn) {
     startBtn.textContent = gameState.running ? "진행 중" : "게임 시작";
     startBtn.disabled = gameState.running && !gameState.gameOver && !gameState.clear;
@@ -821,7 +886,7 @@ function summonArcher() {
 }
 
 function castHolySlash() {
-  // 전투 개편: 플레이어 직접 스킬은 제거했습니다.
+  heroAttack();
 }
 
 function spawnEnemy() {
@@ -878,6 +943,10 @@ function findNearestEnemy(fromX, range) {
 
 function findNearestAlly(fromX, range) {
   const candidates = [...gameState.units];
+  if (gameState.hero && !gameState.hero.dead && gameState.hero.hp > 0) {
+    candidates.push(gameState.hero);
+  }
+
   let target = null;
   let bestDistance = Infinity;
   for (const ally of candidates) {
@@ -890,8 +959,43 @@ function findNearestAlly(fromX, range) {
   return target;
 }
 
+function fireHeroArrow(hero) {
+  const shotTarget = hero.shotTarget && hero.shotTarget.hp > 0
+    ? hero.shotTarget
+    : findNearestEnemy(hero.x, hero.range);
+
+  if (shotTarget) {
+    gameState.projectiles.push({
+      type: "heroBolt",
+      x: hero.x + 28,
+      y: hero.y - 56,
+      vx: 620,
+      damage: hero.damage,
+      target: shotTarget,
+    });
+  } else if (ENEMY_BASE_X - hero.x <= hero.range + 25) {
+    gameState.enemyBaseHp -= hero.damage * 0.65;
+    spawnHit(ENEMY_BASE_X - 38, GROUND_Y - 78, "#9fe8ff");
+  } else {
+    gameState.message = "사거리 안에 적이 없습니다.";
+    gameState.messageTimer = 0.8;
+  }
+
+  hero.pendingHeroShot = false;
+  hero.shotTarget = null;
+}
+
 function heroAttack() {
-  // 전투 개편: 플레이어 직접 공격은 제거했습니다.
+  if (!gameState || !gameState.running || gameState.gameOver || gameState.clear) return;
+  const hero = gameState.hero;
+  if (!hero || hero.dead || hero.hp <= 0 || hero.cooldown > 0) return;
+
+  hero.face = 1;
+  hero.cooldown = hero.attackSpeed;
+  hero.attackAnimDuration = 0.56;
+  hero.attackAnimTimer = hero.attackAnimDuration;
+  hero.pendingHeroShot = true;
+  hero.shotTarget = findNearestEnemy(hero.x, hero.range);
 }
 
 function spawnHit(x, y, color) {
@@ -910,7 +1014,62 @@ function spawnHit(x, y, color) {
 }
 
 function updateHero(dt) {
-  // 전투 개편: 직접 조작 메인 유닛을 사용하지 않습니다.
+  const hero = gameState.hero;
+  if (!hero) return;
+
+  hero.animTime = (hero.animTime || 0) + dt;
+  hero.cooldown = Math.max(0, hero.cooldown - dt);
+  hero.attackAnimTimer = Math.max(0, (hero.attackAnimTimer || 0) - dt);
+  hero.hurtAnimTimer = Math.max(0, (hero.hurtAnimTimer || 0) - dt);
+  hero.moving = false;
+
+  if (hero.hp <= 0) {
+    if (!hero.dead) {
+      hero.dead = true;
+      hero.respawnTimer = HERO_RESPAWN_SECONDS;
+      hero.pendingHeroShot = false;
+      gameState.message = `메인 영웅 쓰러짐 · ${HERO_RESPAWN_SECONDS}초 후 부활`;
+      gameState.messageTimer = 1.2;
+    }
+
+    hero.respawnTimer = Math.max(0, hero.respawnTimer - dt);
+    if (hero.respawnTimer <= 0) {
+      Object.assign(hero, createMainHero());
+      gameState.message = "메인 영웅 부활! 다시 조작할 수 있습니다.";
+      gameState.messageTimer = 1.2;
+    }
+    return;
+  }
+
+  if (typeof hero.lastHp === "number" && hero.hp < hero.lastHp) {
+    hero.hurtAnimTimer = 0.3;
+  }
+  hero.lastHp = hero.hp;
+
+  const moveLeft = keys.ArrowLeft || keys.KeyA;
+  const moveRight = keys.ArrowRight || keys.KeyD;
+  let moveDir = 0;
+  if (moveLeft) moveDir -= 1;
+  if (moveRight) moveDir += 1;
+
+  if (moveDir !== 0) {
+    hero.x += moveDir * hero.speed * dt;
+    hero.x = Math.max(HERO_MIN_X, Math.min(HERO_MAX_X, hero.x));
+    hero.moving = true;
+    hero.face = moveDir > 0 ? 1 : -1;
+  }
+
+  if (keys.Space) {
+    heroAttack();
+  }
+
+  if (hero.pendingHeroShot) {
+    const duration = hero.attackAnimDuration || 0.56;
+    const progress = hero.attackAnimTimer > 0 ? 1 - hero.attackAnimTimer / duration : 1;
+    if (progress >= 0.58 || hero.attackAnimTimer <= 0) {
+      fireHeroArrow(hero);
+    }
+  }
 }
 
 function updateWave(dt) {
@@ -1142,6 +1301,7 @@ function update(dt) {
   }
 
   updateWave(dt);
+  updateHero(dt);
   updateUnits(dt);
   updateEnemies(dt);
   updateProjectiles(dt);
@@ -1294,49 +1454,39 @@ function drawHealthBar(x, y, w, hp, maxHp, color) {
 }
 
 function drawHero(hero) {
+  if (!hero || hero.dead || hero.hp <= 0) return;
+
   ctx.save();
   ctx.translate(hero.x, hero.y);
-  const bob = Math.sin(performance.now() * 0.008) * 2;
 
-  ctx.fillStyle = "rgba(0,0,0,0.22)";
+  ctx.fillStyle = "rgba(0,0,0,0.24)";
   ctx.beginPath();
-  ctx.ellipse(0, 4, 32, 9, 0, 0, Math.PI * 2);
+  ctx.ellipse(0, 4, 28, 8, 0, 0, Math.PI * 2);
   ctx.fill();
 
-  // 주인공도 임시로 SD 기사 스프라이트를 사용합니다.
-  // 이렇게 해야 전투 시작 직후에도 캐릭터가 네모 도형처럼 보이지 않습니다.
-  if (guardSpriteReady) {
+  if (heroSpriteReady) {
     drawHeroSprite(hero);
     ctx.restore();
-    drawHealthBar(hero.x, hero.y - 88, 54, hero.hp, hero.maxHp, "#79ff7a");
+    drawHealthBar(hero.x, hero.y - 74, 56, hero.hp, hero.maxHp, "#79ff7a");
     return;
   }
 
+  const bob = Math.sin(performance.now() * 0.008) * 2;
   ctx.translate(0, bob);
-  ctx.fillStyle = "#fff7d0";
-  ctx.fillRect(-16, -52, 32, 38);
-  ctx.fillStyle = "#684027";
-  ctx.fillRect(-14, -74, 28, 22);
-  ctx.fillStyle = "#ffe1b2";
-  ctx.fillRect(-12, -68, 24, 21);
-  ctx.fillStyle = "#2f4b95";
-  ctx.fillRect(-18, -30, 36, 22);
-  ctx.fillStyle = "#47311d";
-  ctx.fillRect(-18, -12, 12, 14);
-  ctx.fillRect(6, -12, 12, 14);
-
-  ctx.strokeStyle = "#f7f2ff";
-  ctx.lineWidth = 4;
+  ctx.fillStyle = "#355f1f";
+  ctx.fillRect(-15, -42, 30, 34);
+  ctx.fillStyle = "#f0c78a";
+  ctx.fillRect(-10, -58, 20, 18);
+  ctx.fillStyle = "#244017";
+  ctx.fillRect(-18, -50, 36, 16);
+  ctx.strokeStyle = "#6a3e1f";
+  ctx.lineWidth = 3;
   ctx.beginPath();
-  ctx.moveTo(14, -43);
-  ctx.lineTo(48, -64);
+  ctx.arc(22, -35, 18, -1.2, 1.2);
   ctx.stroke();
-
-  ctx.fillStyle = "#222";
-  ctx.fillRect(3, -61, 4, 4);
   ctx.restore();
 
-  drawHealthBar(hero.x, hero.y - 88, 54, hero.hp, hero.maxHp, "#79ff7a");
+  drawHealthBar(hero.x, hero.y - 74, 56, hero.hp, hero.maxHp, "#79ff7a");
 }
 
 function drawHeroSprite(hero) {
@@ -1345,38 +1495,37 @@ function drawHeroSprite(hero) {
   else if (hero.attackAnimTimer > 0) anim = "attack";
   else if (hero.moving) anim = "walk";
 
-  const frameCount = GUARD_SPRITE.frames[anim];
-  const fps = GUARD_SPRITE.fps[anim] || 8;
+  const frameCount = HERO_ZEUS_SPRITE.frames[anim];
+  const fps = HERO_ZEUS_SPRITE.fps[anim] || 8;
   let frame = Math.floor((hero.animTime || 0) * fps) % frameCount;
 
   if (anim === "attack") {
-    const duration = hero.attackAnimDuration || 0.42;
+    const duration = hero.attackAnimDuration || 0.56;
     const progress = 1 - hero.attackAnimTimer / duration;
     frame = Math.min(frameCount - 1, Math.max(0, Math.floor(progress * frameCount)));
   }
 
-  const sx = frame * GUARD_SPRITE.frameW;
-  const sy = GUARD_SPRITE.rows[anim] * GUARD_SPRITE.frameH;
-  const dw = 96;
-  const dh = 96;
+  const sx = frame * HERO_ZEUS_SPRITE.frameW;
+  const sy = HERO_ZEUS_SPRITE.rows[anim] * HERO_ZEUS_SPRITE.frameH;
+  const dw = HERO_ZEUS_SPRITE.drawW;
+  const dh = HERO_ZEUS_SPRITE.drawH;
 
   ctx.save();
   if (hero.face < 0) ctx.scale(-1, 1);
-  ctx.imageSmoothingEnabled = true;
+  ctx.imageSmoothingEnabled = false;
   ctx.drawImage(
-    guardSprite,
+    heroSprite,
     sx,
     sy,
-    GUARD_SPRITE.frameW,
-    GUARD_SPRITE.frameH,
-    -dw / 2,
+    HERO_ZEUS_SPRITE.frameW,
+    HERO_ZEUS_SPRITE.frameH,
+    -dw / 2 + 2,
     -dh + 10,
     dw,
     dh
   );
   ctx.restore();
 }
-
 
 function drawGuardSprite(unit) {
   if (!guardSpriteReady) return false;
@@ -1548,6 +1697,23 @@ function drawEnemy(enemy) {
 
 function drawProjectiles() {
   for (const projectile of gameState.projectiles) {
+    if (projectile.type === "heroBolt") {
+      ctx.save();
+      ctx.strokeStyle = "#9fe8ff";
+      ctx.shadowColor = "rgba(120, 220, 255, 0.95)";
+      ctx.shadowBlur = 10;
+      ctx.lineWidth = 4;
+      ctx.beginPath();
+      ctx.moveTo(projectile.x - 18, projectile.y + 2);
+      ctx.lineTo(projectile.x - 10, projectile.y - 9);
+      ctx.lineTo(projectile.x - 1, projectile.y + 1);
+      ctx.lineTo(projectile.x + 8, projectile.y - 10);
+      ctx.lineTo(projectile.x + 18, projectile.y);
+      ctx.stroke();
+      ctx.restore();
+      continue;
+    }
+
     ctx.strokeStyle = "#f2fdff";
     ctx.lineWidth = 3;
     ctx.beginPath();
@@ -1615,9 +1781,15 @@ function draw() {
   drawHealthBar(playerBaseUi.hpX, playerBaseUi.hpY, playerBaseUi.hpW, gameState.playerBaseHp, 100, "#79ff7a");
   drawHealthBar(enemyBaseUi.hpX, enemyBaseUi.hpY, enemyBaseUi.hpW, gameState.enemyBaseHp, gameState.enemyBaseMaxHp, "#ff6868");
 
-  const drawList = [...gameState.units, ...gameState.enemies].sort((a, b) => a.y - b.y || a.x - b.x);
+  const drawList = [
+    ...(gameState.hero && !gameState.hero.dead && gameState.hero.hp > 0 ? [gameState.hero] : []),
+    ...gameState.units,
+    ...gameState.enemies,
+  ].sort((a, b) => a.y - b.y || a.x - b.x);
+
   for (const entity of drawList) {
-    if (gameState.units.includes(entity)) drawUnit(entity);
+    if (entity === gameState.hero) drawHero(entity);
+    else if (gameState.units.includes(entity)) drawUnit(entity);
     else drawEnemy(entity);
   }
 
@@ -1635,7 +1807,7 @@ function gameLoop(now) {
 }
 
 window.addEventListener("keydown", (event) => {
-  const playableKeys = ["Space"];
+  const playableKeys = ["Space", "ArrowLeft", "ArrowRight"];
   if (playableKeys.includes(event.code)) event.preventDefault();
 
   if (isTitleVisible()) {
@@ -1696,6 +1868,12 @@ window.addEventListener("keydown", (event) => {
     return;
   }
 
+  keys[event.code] = true;
+
+  if (event.code === "Space") {
+    event.preventDefault();
+    heroAttack();
+  }
   if (event.code === "Digit1") {
     event.preventDefault();
     summonGuard();
