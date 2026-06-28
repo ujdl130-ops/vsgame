@@ -96,6 +96,17 @@ function checkEndConditions() {
   }
 }
 
+function updateZeusThunderstormEffect(dt) {
+  const effect = gameState.zeusSkillEffect;
+  if (!effect || !effect.active) return;
+
+  effect.timer += dt;
+  if (effect.timer >= effect.duration) {
+    gameState.zeusSkillEffect = null;
+    updateButtons();
+  }
+}
+
 function update(dt) {
   if (!gameState.running) {
     updateParticles(dt);
@@ -114,6 +125,7 @@ function update(dt) {
   updateUnits(dt);
   updateEnemies(dt);
   updateProjectiles(dt);
+  updateZeusThunderstormEffect(dt);
   updateParticles(dt);
   cleanupDeadEntities();
   checkEndConditions();
@@ -134,6 +146,36 @@ function drawMessage() {
   ctx.font = "bold 28px Arial";
   ctx.textAlign = "center";
   ctx.fillText(gameState.message, canvas.width / 2, 82);
+  ctx.restore();
+}
+
+function drawZeusThunderstormEffect() {
+  const effect = gameState.zeusSkillEffect;
+  if (!effect || !effect.active || !zeusStormSpriteReady) return;
+
+  const duration = effect.duration || ZEUS_THUNDERSTORM_SKILL.duration;
+  const progress = Math.max(0, Math.min(0.999, effect.timer / duration));
+  const frameCount = ZEUS_THUNDERSTORM_SKILL.frameCount;
+  const frame = Math.min(frameCount - 1, Math.floor(progress * frameCount));
+  const frameW = zeusStormSprite.naturalWidth / frameCount;
+  const frameH = zeusStormSprite.naturalHeight;
+  const fadeIn = Math.min(1, progress / 0.12);
+  const fadeOut = Math.min(1, (1 - progress) / 0.18);
+
+  ctx.save();
+  ctx.globalAlpha = Math.max(0, Math.min(0.96, fadeIn, fadeOut));
+  ctx.imageSmoothingEnabled = true;
+  ctx.drawImage(
+    zeusStormSprite,
+    frame * frameW,
+    0,
+    frameW,
+    frameH,
+    0,
+    -28,
+    canvas.width,
+    canvas.height * 1.04
+  );
   ctx.restore();
 }
 
@@ -161,5 +203,6 @@ function draw() {
 
   drawProjectiles();
   drawParticles();
+  drawZeusThunderstormEffect();
   drawMessage();
 }

@@ -41,6 +41,7 @@ function createInitialState() {
     spawnedInWave: 0,
     waveBreakTimer: 0,
     hero: createMainHero(),
+    zeusSkillEffect: null,
     particles: [],
     projectiles: [],
     units: [],

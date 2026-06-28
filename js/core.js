@@ -96,6 +96,7 @@ const ASSET_PATHS = {
   saintessSprite: "assets/animations/saintess/saintess_spritesheet_aligned.png",
   thiefSprite: "assets/animations/thief/female_thief_spritesheet.png",
   heroSprite: "assets/animations/hero/zeus_hero_spritesheet_latest_transparent_aligned.png",
+  zeusStormSprite: "assets/effects/zeus_thunderstorm_spritesheet.png",
   stage1EnemySprite: "assets/animations/enemy/stage1_goblin_spritesheet.png",
   stage1ForestBg: "assets/maps/stage1/stage1_forest_bg_v2.png",
   playerCastle: "assets/maps/stage1/player_castle_stage1.png",
@@ -139,6 +140,15 @@ loadGameImage(
   [ASSET_PATHS.heroSprite, "assets/animations/hero/zeus_hero_spritesheet_latest.png", "zeus_hero_spritesheet_latest.png"],
   (ready) => { heroSpriteReady = ready; },
   "Hero Zeus sprite"
+);
+
+const zeusStormSprite = new Image();
+let zeusStormSpriteReady = false;
+loadGameImage(
+  zeusStormSprite,
+  [ASSET_PATHS.zeusStormSprite],
+  (ready) => { zeusStormSpriteReady = ready; },
+  "Zeus thunderstorm sprite"
 );
 
 const guardSprite = new Image();

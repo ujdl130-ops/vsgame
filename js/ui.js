@@ -261,6 +261,7 @@ function refreshCommandButtonMarkup() {
   );
 
   const hero = gameState && gameState.hero;
+  const zeusEffectActive = Boolean(gameState && gameState.zeusSkillEffect && gameState.zeusSkillEffect.active);
   renderRoundCommand(
     skillBtn,
     hero && hero.dead ? `부활 ${Math.ceil(hero.respawnTimer)}` : "SPACE",
@@ -269,9 +270,9 @@ function refreshCommandButtonMarkup() {
   );
   renderRoundCommand(
     zeusSkillBtn,
-    "READY",
+    zeusEffectActive ? "CAST" : "READY",
     "제우스 스킬",
-    "제우스 스킬 기능은 준비 중입니다."
+    zeusEffectActive ? "번개 폭풍 연출 중입니다." : "거대한 먹구름과 번개 폭풍을 소환합니다."
   );
 }
 
@@ -325,8 +326,9 @@ function updateButtons() {
   if (zeusSkillBtn) {
     const hero = gameState.hero;
     const heroReady = hero && !hero.dead && hero.hp > 0;
-    zeusSkillBtn.disabled = disabled || !heroReady;
-    zeusSkillBtn.title = "제우스 스킬 기능은 준비 중입니다.";
+    const zeusEffectActive = Boolean(gameState.zeusSkillEffect && gameState.zeusSkillEffect.active);
+    zeusSkillBtn.disabled = disabled || !heroReady || zeusEffectActive;
+    zeusSkillBtn.title = zeusEffectActive ? "번개 폭풍 연출 중입니다." : "거대한 먹구름과 번개 폭풍을 소환합니다.";
   }
   if (startBtn) {
     startBtn.textContent = gameState.running ? "진행 중" : "게임 시작";

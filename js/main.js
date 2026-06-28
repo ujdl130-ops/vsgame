@@ -200,7 +200,7 @@ if (summonMageBtn) summonMageBtn.addEventListener("click", summonMage);
 if (summonSaintessBtn) summonSaintessBtn.addEventListener("click", summonSaintess);
 if (summonThiefBtn) summonThiefBtn.addEventListener("click", summonThief);
 if (skillBtn) skillBtn.addEventListener("click", castHolySlash);
-if (zeusSkillBtn) zeusSkillBtn.addEventListener("click", showZeusSkillPlaceholder);
+if (zeusSkillBtn) zeusSkillBtn.addEventListener("click", castZeusThunderstorm);
 // 전투 개편: 캔버스 직접 터치 공격은 제거했습니다.
 
 resetGame();

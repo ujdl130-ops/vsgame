@@ -21,6 +21,11 @@ const HERO_ZEUS_SPRITE = {
   ],
 };
 
+const ZEUS_THUNDERSTORM_SKILL = {
+  frameCount: 8,
+  duration: 1.35,
+};
+
 
 function createMainHero() {
   return {
@@ -54,10 +59,24 @@ function createMainHero() {
 }
 
 
-function showZeusSkillPlaceholder() {
+function castZeusThunderstorm() {
   if (!gameState || !gameState.running || gameState.gameOver || gameState.clear) return;
-  gameState.message = "제우스 스킬은 아직 준비 중입니다.";
-  gameState.messageTimer = 1.25;
+  const hero = gameState.hero;
+  if (!hero || hero.dead || hero.hp <= 0) return;
+  if (gameState.zeusSkillEffect && gameState.zeusSkillEffect.active) return;
+
+  gameState.zeusSkillEffect = {
+    active: true,
+    timer: 0,
+    duration: ZEUS_THUNDERSTORM_SKILL.duration,
+  };
+  gameState.message = "제우스 스킬! 번개 폭풍";
+  gameState.messageTimer = 1.05;
+  updateButtons();
+}
+
+function showZeusSkillPlaceholder() {
+  castZeusThunderstorm();
 }
 
 
