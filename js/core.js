@@ -94,6 +94,7 @@ const ASSET_PATHS = {
   guardSprite: "assets/animations/guard/guard_spritesheet_v2.png",
   mageSprite: "assets/animations/mage/red_wizard_spritesheet.png",
   saintessSprite: "assets/animations/saintess/saintess_spritesheet_aligned.png",
+  thiefSprite: "assets/animations/thief/female_thief_spritesheet.png",
   heroSprite: "assets/animations/hero/zeus_hero_spritesheet_latest_transparent_aligned.png",
   stage1EnemySprite: "assets/animations/enemy/stage1_goblin_spritesheet.png",
   stage1ForestBg: "assets/maps/stage1/stage1_forest_bg_v2.png",
@@ -165,6 +166,15 @@ loadGameImage(
   [ASSET_PATHS.saintessSprite],
   (ready) => { saintessSpriteReady = ready; },
   "Saintess sprite"
+);
+
+const thiefSprite = new Image();
+let thiefSpriteReady = false;
+loadGameImage(
+  thiefSprite,
+  [ASSET_PATHS.thiefSprite],
+  (ready) => { thiefSpriteReady = ready; },
+  "Thief sprite"
 );
 
 const stage1EnemySprite = new Image();

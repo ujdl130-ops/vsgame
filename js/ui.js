@@ -254,10 +254,10 @@ function refreshCommandButtonMarkup() {
   );
   renderCommandSlot(
     summonThiefBtn,
-    "?",
-    "준비",
-    "도적 소환",
-    "도적 소환 기능은 준비 중입니다."
+    "90",
+    slotText,
+    unitLimitReached ? `도적 소환 제한 ${activeUnits}/${MAX_SUMMONED_UNITS}` : "도적 소환",
+    unitLimitReached ? limitTitle : "빠른 근접 도적을 소환합니다."
   );
 
   const hero = gameState && gameState.hero;
@@ -306,9 +306,9 @@ function updateButtons() {
   }
 
   if (summonThiefBtn) {
-    summonThiefBtn.textContent = "도적 소환";
-    summonThiefBtn.disabled = disabled;
-    summonThiefBtn.title = "도적 소환 기능은 준비 중입니다.";
+    summonThiefBtn.textContent = unitLimitReached ? `도적 소환 제한 ${slotText}` : `도적 소환 90G · ${slotText}`;
+    summonThiefBtn.disabled = disabled || unitLimitReached || gameState.gold < 90;
+    summonThiefBtn.title = unitLimitReached ? "아군 병사가 사망하면 다시 소환할 수 있습니다." : "빠른 근접 도적을 소환합니다.";
   }
 
   if (skillBtn) {
