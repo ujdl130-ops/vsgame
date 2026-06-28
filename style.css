@@ -169,8 +169,8 @@ canvas {
 .battle-wave-badge strong {
   display: block;
   color: #fff0a7;
-  font-size: 20px;
-  line-height: 1;
+  font-size: 17px;
+  line-height: 0.95;
   text-shadow: 2px 2px 0 #000;
 }
 
@@ -763,7 +763,7 @@ canvas {
   }
 
   .battle-wave-badge strong {
-    font-size: 16px;
+    font-size: 14px;
   }
 
   .battle-command-panel {
