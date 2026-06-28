@@ -126,6 +126,676 @@ canvas {
     0 24px 60px rgba(0, 0, 0, 0.42);
 }
 
+.battle-stage-frame {
+  position: relative;
+  width: 100%;
+  max-width: 960px;
+  margin: 0 auto;
+}
+
+.battle-stage-frame canvas {
+  max-width: none;
+  margin: 0;
+}
+
+.game-options-btn {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 4;
+  min-width: 112px;
+  padding: 10px 14px;
+  border: 3px solid rgba(255, 255, 255, 0.9);
+  font-size: 14px;
+  background: linear-gradient(180deg, #d8f4ff, #70f7ff);
+  box-shadow:
+    0 5px 0 #1e7492,
+    0 0 0 3px rgba(16, 21, 46, 0.9),
+    0 10px 20px rgba(0, 0, 0, 0.28);
+}
+
+.game-options-btn.is-active {
+  filter: brightness(1.12);
+}
+
+.game-options-menu {
+  position: absolute;
+  top: 62px;
+  right: 12px;
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 176px;
+  padding: 12px;
+  border: 3px solid rgba(255, 255, 255, 0.86);
+  background: rgba(5, 8, 20, 0.9);
+  box-shadow:
+    0 0 0 3px rgba(16, 21, 46, 0.95),
+    0 14px 30px rgba(0, 0, 0, 0.38);
+}
+
+.game-options-menu.is-hidden {
+  display: none;
+}
+
+.game-options-menu button {
+  width: 100%;
+  padding: 12px 14px;
+  white-space: nowrap;
+}
+
+.battle-command-panel {
+  position: absolute;
+  left: 5px;
+  right: 5px;
+  bottom: 5px;
+  z-index: 3;
+  height: 118px;
+  border: 3px solid #1f1c17;
+  background:
+    linear-gradient(90deg, #f9e9b9 0 50%, #8a6331 50% 100%),
+    linear-gradient(180deg, #fff7c8, #d4a247);
+  box-shadow:
+    inset 0 0 0 2px #fff5c9,
+    0 -5px 0 rgba(34, 23, 12, 0.62),
+    0 -9px 0 rgba(255, 247, 190, 0.82);
+  overflow: hidden;
+}
+
+.battle-command-top {
+  position: absolute;
+  left: 10px;
+  right: 10px;
+  top: 4px;
+  height: 17px;
+  border: 2px solid #2b1a13;
+  background: linear-gradient(180deg, #fff9c8, #e4bd62);
+  box-shadow: inset 0 2px 0 rgba(255, 255, 255, 0.75);
+}
+
+.battle-command-top::before {
+  content: "";
+  position: absolute;
+  left: 35%;
+  right: 35%;
+  top: -2px;
+  height: 13px;
+  border-bottom: 4px solid #2b1a13;
+  border-radius: 0 0 24px 24px;
+  background: #080706;
+}
+
+.battle-meter {
+  position: absolute;
+  top: -4px;
+  min-width: 136px;
+  height: 22px;
+  padding: 1px 14px;
+  color: #fff7cf;
+  font-size: 16px;
+  font-weight: 900;
+  line-height: 20px;
+  text-align: center;
+  text-shadow: 2px 2px 0 #000;
+  background: #12100f;
+  border: 3px solid #61462c;
+  box-shadow: inset 0 0 0 2px #f4d378;
+}
+
+.battle-meter.left {
+  left: 72px;
+}
+
+.battle-meter.right {
+  right: 34px;
+}
+
+.battle-slot-row {
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  top: 25px;
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 5px;
+  height: 47px;
+}
+
+.battle-command-panel button {
+  min-width: 0;
+  margin: 0;
+  border-radius: 0;
+  padding: 0;
+  box-shadow: none;
+  transform: none;
+}
+
+.battle-command-panel button:hover {
+  transform: none;
+  filter: brightness(1.08);
+}
+
+.battle-command-panel button:active {
+  transform: translateY(2px);
+  box-shadow: none;
+}
+
+.command-slot {
+  position: relative;
+  height: 47px;
+  border: 3px solid #2a2b2d;
+  background:
+    linear-gradient(180deg, #73787d, #4c4f53 64%, #303235);
+  box-shadow:
+    inset 0 0 0 2px rgba(255, 255, 255, 0.16),
+    inset 0 -7px 0 rgba(0, 0, 0, 0.28);
+  overflow: hidden;
+}
+
+.command-slot:not(:disabled) {
+  background:
+    linear-gradient(180deg, #baf8ff, #46c7d4 58%, #1f8790);
+  border-color: #17394d;
+}
+
+.command-slot:disabled:not(.is-locked) {
+  opacity: 0.72;
+}
+
+.slot-icon {
+  position: absolute;
+  left: 50%;
+  top: 48%;
+  transform: translate(-50%, -50%);
+}
+
+.slot-icon {
+  width: 36px;
+  height: 28px;
+}
+
+.slot-cost,
+.slot-count {
+  position: absolute;
+  z-index: 2;
+  color: #fff2b3;
+  font-size: 11px;
+  font-weight: 900;
+  line-height: 1;
+  text-shadow: 2px 2px 0 #000;
+}
+
+.slot-cost {
+  right: 5px;
+  bottom: 5px;
+}
+
+.slot-count {
+  left: 5px;
+  bottom: 5px;
+}
+
+.slot-guard .slot-icon::before {
+  content: "";
+  position: absolute;
+  left: 8px;
+  top: 2px;
+  width: 13px;
+  height: 22px;
+  background: linear-gradient(180deg, #f6fbff, #91c7ff);
+  border: 2px solid #184977;
+  box-shadow: inset 0 -5px 0 rgba(0, 0, 0, 0.18);
+}
+
+.slot-guard .slot-icon::after {
+  content: "";
+  position: absolute;
+  right: 3px;
+  top: -3px;
+  width: 5px;
+  height: 35px;
+  background: #ffe56a;
+  border: 1px solid #4e3514;
+  transform: rotate(45deg);
+}
+
+.slot-archer .slot-icon::before {
+  content: "";
+  position: absolute;
+  left: 4px;
+  top: 0;
+  width: 24px;
+  height: 24px;
+  border: 5px solid #292a2d;
+  border-left-color: transparent;
+  border-radius: 50%;
+  transform: rotate(-18deg);
+}
+
+.slot-archer .slot-icon::after {
+  content: "";
+  position: absolute;
+  left: 9px;
+  top: 14px;
+  width: 34px;
+  height: 5px;
+  background: #2b2c30;
+  transform: rotate(-22deg);
+}
+
+.slot-mage .slot-icon::before {
+  content: "";
+  position: absolute;
+  left: 5px;
+  top: 15px;
+  width: 34px;
+  height: 7px;
+  background: #30212f;
+  transform: rotate(-28deg);
+}
+
+.slot-mage .slot-icon::after {
+  content: "";
+  position: absolute;
+  right: 0;
+  top: 1px;
+  width: 15px;
+  height: 15px;
+  background: #72f7ff;
+  border: 2px solid #fff7b5;
+  box-shadow: 0 0 10px rgba(112, 247, 255, 0.9);
+}
+
+.slot-saintess .slot-icon::before {
+  content: "";
+  position: absolute;
+  left: 16px;
+  top: 0;
+  width: 7px;
+  height: 30px;
+  background: #fff7cf;
+  border: 2px solid #b78922;
+}
+
+.slot-saintess .slot-icon::after {
+  content: "";
+  position: absolute;
+  left: 8px;
+  top: 9px;
+  width: 24px;
+  height: 7px;
+  background: #fff7cf;
+  border: 2px solid #b78922;
+}
+
+.slot-thief .slot-icon::before {
+  content: "";
+  position: absolute;
+  left: 9px;
+  top: 3px;
+  width: 9px;
+  height: 31px;
+  background: linear-gradient(180deg, #f7fbff, #7f8b99);
+  border: 2px solid #16191f;
+  transform: rotate(42deg);
+}
+
+.slot-thief .slot-icon::after {
+  content: "";
+  position: absolute;
+  left: 3px;
+  top: 20px;
+  width: 22px;
+  height: 7px;
+  background: #2a1b15;
+  border: 2px solid #070606;
+  transform: rotate(42deg);
+}
+
+.battle-command-bottom {
+  position: absolute;
+  left: 16px;
+  right: 16px;
+  bottom: 7px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 37px;
+}
+
+.battle-arrow-btn {
+  position: relative;
+  width: 144px;
+  height: 34px;
+  border: 3px solid #311c08;
+  background: linear-gradient(180deg, #ffc448, #ff8f1f);
+  box-shadow:
+    inset 0 2px 0 rgba(255, 255, 255, 0.7),
+    4px 4px 0 rgba(0, 0, 0, 0.18);
+}
+
+.battle-arrow-btn span {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 86px;
+  height: 18px;
+  background: #ff9b1a;
+  border: 3px solid #2d1706;
+  transform: translate(-50%, -50%);
+}
+
+.battle-arrow-btn span::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  width: 31px;
+  height: 31px;
+  background: #ff9b1a;
+  border: 3px solid #2d1706;
+  transform: translateY(-50%) rotate(45deg);
+}
+
+.arrow-left span::before {
+  left: -18px;
+  border-right: 0;
+  border-top: 0;
+}
+
+.arrow-right span::before {
+  right: -18px;
+  border-left: 0;
+  border-bottom: 0;
+}
+
+.battle-round-group {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.zeus-action-btn {
+  position: relative;
+  width: 128px;
+  height: 52px;
+  border: 4px solid #211c18;
+  background: linear-gradient(180deg, #f8fbff, #91d7ff 52%, #327bc2);
+  box-shadow:
+    inset 0 4px 0 rgba(255, 255, 255, 0.62),
+    inset 0 -8px 0 rgba(0, 0, 0, 0.2),
+    3px 5px 0 rgba(0, 0, 0, 0.24);
+  color: #15192a;
+  overflow: hidden;
+}
+
+.zeus-skill-btn {
+  background: linear-gradient(180deg, #fff6a8, #ffb72e 56%, #c76b16);
+}
+
+.zeus-action-btn:disabled {
+  opacity: 0.56;
+}
+
+.zeus-action-icon {
+  position: absolute;
+  left: 16px;
+  top: 50%;
+  width: 35px;
+  height: 12px;
+  background: #26272d;
+  border: 2px solid #070707;
+  transform: translateY(-50%) rotate(-30deg);
+}
+
+.zeus-action-icon::after {
+  content: "";
+  position: absolute;
+  right: -13px;
+  top: -5px;
+  width: 16px;
+  height: 16px;
+  background: #f3fbff;
+  border: 2px solid #070707;
+  transform: rotate(45deg);
+}
+
+.zeus-action-icon.skill {
+  width: 24px;
+  height: 24px;
+  background: #72f7ff;
+  border-color: #fff7b5;
+  box-shadow: 0 0 12px rgba(112, 247, 255, 0.9);
+  transform: translateY(-50%) rotate(45deg);
+}
+
+.zeus-action-icon.skill::before {
+  content: "";
+  position: absolute;
+  left: 8px;
+  top: -18px;
+  width: 5px;
+  height: 56px;
+  background: #fff7b5;
+  box-shadow: -10px 12px 0 -1px #ffffff, 12px 6px 0 -1px #ffffff;
+  transform: rotate(-45deg);
+}
+
+.zeus-action-icon.skill::after {
+  display: none;
+}
+
+.zeus-action-label,
+.zeus-action-key {
+  position: absolute;
+  right: 9px;
+  font-weight: 900;
+  text-align: right;
+  text-shadow: 1px 1px 0 rgba(255, 255, 255, 0.45);
+}
+
+.zeus-action-label {
+  top: 9px;
+  font-size: 14px;
+  line-height: 1;
+}
+
+.zeus-action-key {
+  bottom: 7px;
+  color: #fff6bd;
+  font-size: 10px;
+  line-height: 1;
+  text-shadow: 2px 2px 0 #000;
+}
+
+.battle-round-btn {
+  position: relative;
+  width: 72px;
+  height: 54px;
+  border: 4px solid #211c18;
+  border-radius: 50%;
+  background: radial-gradient(circle at 38% 28%, #ffe76d, #e77b16 58%, #7b3c14);
+  box-shadow:
+    inset 0 4px 0 rgba(255, 255, 255, 0.45),
+    3px 5px 0 rgba(0, 0, 0, 0.24);
+}
+
+.battle-round-btn.is-locked {
+  background: radial-gradient(circle at 38% 28%, #e9edf0, #8b929b 58%, #454b53);
+}
+
+.round-icon,
+.round-lock {
+  position: absolute;
+  left: 50%;
+  top: 45%;
+  transform: translate(-50%, -50%);
+}
+
+.round-icon {
+  width: 38px;
+  height: 12px;
+  background: #28292e;
+  border: 2px solid #090909;
+  transform: translate(-50%, -50%) rotate(-30deg);
+}
+
+.round-icon::after {
+  content: "";
+  position: absolute;
+  right: -14px;
+  top: -5px;
+  width: 17px;
+  height: 17px;
+  background: #f2fbff;
+  border: 2px solid #090909;
+  transform: rotate(45deg);
+}
+
+.round-label {
+  position: absolute;
+  left: 50%;
+  bottom: 4px;
+  color: #fff6bd;
+  font-size: 10px;
+  font-weight: 900;
+  line-height: 1;
+  text-shadow: 2px 2px 0 #000;
+  transform: translateX(-50%);
+}
+
+.round-lock {
+  width: 24px;
+  height: 18px;
+  border: 4px solid #edf0f3;
+  border-top: 0;
+  background: #6f7680;
+}
+
+.round-lock::before {
+  content: "";
+  position: absolute;
+  left: 2px;
+  top: -15px;
+  width: 12px;
+  height: 14px;
+  border: 4px solid #edf0f3;
+  border-bottom: 0;
+  border-radius: 9px 9px 0 0;
+}
+
+@media (max-width: 720px) {
+  .battle-command-panel {
+    height: 96px;
+  }
+
+  .battle-command-top {
+    left: 8px;
+    right: 8px;
+    height: 14px;
+  }
+
+  .battle-meter {
+    min-width: 88px;
+    height: 18px;
+    padding: 0 8px;
+    font-size: 12px;
+    line-height: 16px;
+  }
+
+  .battle-meter.left {
+    left: 30px;
+  }
+
+  .battle-meter.right {
+    right: 14px;
+  }
+
+  .battle-slot-row {
+    left: 8px;
+    right: 8px;
+    top: 22px;
+    height: 37px;
+    gap: 3px;
+  }
+
+  .command-slot {
+    height: 37px;
+    border-width: 2px;
+  }
+
+  .slot-icon {
+    transform: translate(-50%, -50%) scale(0.76);
+  }
+
+  .slot-cost,
+  .slot-count {
+    font-size: 9px;
+  }
+
+  .battle-command-bottom {
+    left: 10px;
+    right: 10px;
+    bottom: 5px;
+    height: 30px;
+  }
+
+  .battle-arrow-btn {
+    width: 82px;
+    height: 28px;
+  }
+
+  .battle-arrow-btn span {
+    width: 45px;
+    height: 13px;
+  }
+
+  .battle-round-group {
+    gap: 6px;
+  }
+
+  .zeus-action-btn {
+    width: 76px;
+    height: 34px;
+    border-width: 3px;
+  }
+
+  .zeus-action-icon {
+    left: 10px;
+    transform: translateY(-50%) rotate(-30deg) scale(0.66);
+  }
+
+  .zeus-action-icon.skill {
+    transform: translateY(-50%) rotate(45deg) scale(0.62);
+  }
+
+  .zeus-action-label {
+    top: 6px;
+    right: 5px;
+    font-size: 9px;
+  }
+
+  .zeus-action-key {
+    right: 5px;
+    bottom: 5px;
+    font-size: 7px;
+  }
+
+  .battle-round-btn {
+    width: 46px;
+    height: 36px;
+    border-width: 3px;
+  }
+
+  .round-icon {
+    transform: translate(-50%, -50%) rotate(-30deg) scale(0.72);
+  }
+
+  .round-label {
+    font-size: 8px;
+  }
+}
+
 .controls {
   display: flex;
   flex-wrap: wrap;
