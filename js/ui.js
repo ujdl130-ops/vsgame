@@ -164,8 +164,8 @@ function updateHud() {
   if (unitCountText) unitCountText.textContent = `${activeUnits} / ${MAX_SUMMONED_UNITS}`;
   if (commandUnitText) commandUnitText.textContent = `${activeUnits} / ${MAX_SUMMONED_UNITS}`;
   if (commandGoldText) commandGoldText.textContent = `${Math.floor(gameState.gold)}G`;
-  playerHpText.textContent = Math.max(0, Math.ceil(gameState.playerBaseHp));
-  enemyHpText.textContent = Math.max(0, Math.ceil(gameState.enemyBaseHp));
+  if (playerHpText) playerHpText.textContent = Math.max(0, Math.ceil(gameState.playerBaseHp));
+  if (enemyHpText) enemyHpText.textContent = Math.max(0, Math.ceil(gameState.enemyBaseHp));
 }
 
 function getActiveUnitCount() {
