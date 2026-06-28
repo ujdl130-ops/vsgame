@@ -11,8 +11,6 @@ const startBtn = document.getElementById("startBtn");
 const restartBtn = document.getElementById("restartBtn");
 const summonGuardBtn = document.getElementById("summonGuardBtn");
 const summonArcherBtn = document.getElementById("summonArcherBtn");
-const summonMageBtn = document.getElementById("summonMageBtn");
-const summonSaintessBtn = document.getElementById("summonSaintessBtn");
 const skillBtn = document.getElementById("skillBtn"); // 현재 전투 개편으로 스킬 버튼은 사용하지 않습니다.
 const titleScreen = document.getElementById("titleScreen");
 const titleStartBtn = document.getElementById("titleStartBtn");
@@ -64,17 +62,10 @@ const PLAYER_BASE_X = 40;
 const ENEMY_BASE_X = 900;
 const MAX_WAVE = 3;
 const MAX_SUMMONED_UNITS = 5;
-const HERO_MIN_X = PLAYER_BASE_X + 72;
-const HERO_MAX_X = ENEMY_BASE_X - 74;
-const HERO_RESPAWN_SECONDS = 4;
 
 const ASSET_PATHS = {
-  archerSprite: "assets/animations/archer/elf_archer_guard_size_spritesheet.png",
+  archerSprite: "assets/animations/archer/archer_spritesheet_v2.png",
   guardSprite: "assets/animations/guard/guard_spritesheet_v2.png",
-  mageSprite: "assets/animations/mage/red_wizard_spritesheet.png",
-  saintessSprite: "assets/animations/saintess/saintess_spritesheet_aligned.png",
-  heroSprite: "assets/animations/hero/zeus_hero_spritesheet_latest_transparent_aligned.png",
-  stage1EnemySprite: "assets/animations/enemy/stage1_goblin_spritesheet.png",
   stage1ForestBg: "assets/maps/stage1/stage1_forest_bg_v2.png",
   playerCastle: "assets/maps/stage1/player_castle_stage1.png",
   enemyCastle: "assets/maps/stage1/enemy_castle_stage1.png",
@@ -105,61 +96,25 @@ const archerSprite = new Image();
 let archerSpriteReady = false;
 loadGameImage(
   archerSprite,
-  [ASSET_PATHS.archerSprite],
+  [ASSET_PATHS.archerSprite, "archer_spritesheet_v2.png", "pixeldefense_runtime_clean/archer_spritesheet_v2.png"],
   (ready) => { archerSpriteReady = ready; },
   "궁수 스프라이트"
-);
-
-const heroSprite = new Image();
-let heroSpriteReady = false;
-loadGameImage(
-  heroSprite,
-  [ASSET_PATHS.heroSprite, "assets/animations/hero/zeus_hero_spritesheet_latest.png", "zeus_hero_spritesheet_latest.png"],
-  (ready) => { heroSpriteReady = ready; },
-  "메인 오퍼레이터 제우스 스프라이트"
 );
 
 const guardSprite = new Image();
 let guardSpriteReady = false;
 loadGameImage(
   guardSprite,
-  [ASSET_PATHS.guardSprite],
+  [ASSET_PATHS.guardSprite, "guard_spritesheet_v2.png", "pixeldefense_runtime_clean/guard_spritesheet_v2.png"],
   (ready) => { guardSpriteReady = ready; },
   "방패병 SD 기사 스프라이트"
-);
-
-const mageSprite = new Image();
-let mageSpriteReady = false;
-loadGameImage(
-  mageSprite,
-  [ASSET_PATHS.mageSprite],
-  (ready) => { mageSpriteReady = ready; },
-  "마법사 스프라이트"
-);
-
-const saintessSprite = new Image();
-let saintessSpriteReady = false;
-loadGameImage(
-  saintessSprite,
-  [ASSET_PATHS.saintessSprite],
-  (ready) => { saintessSpriteReady = ready; },
-  "성녀 스프라이트"
-);
-
-const stage1EnemySprite = new Image();
-let stage1EnemySpriteReady = false;
-loadGameImage(
-  stage1EnemySprite,
-  [ASSET_PATHS.stage1EnemySprite],
-  (ready) => { stage1EnemySpriteReady = ready; },
-  "Stage 1 enemy sprite"
 );
 
 const stage1ForestBg = new Image();
 let stage1ForestBgReady = false;
 loadGameImage(
   stage1ForestBg,
-  [ASSET_PATHS.stage1ForestBg],
+  [ASSET_PATHS.stage1ForestBg, "stage1_forest_bg_v2.png", "pixeldefense_runtime_clean/stage1_forest_bg_v2.png"],
   (ready) => { stage1ForestBgReady = ready; },
   "Stage 1 숲 배경"
 );
@@ -168,7 +123,7 @@ const playerCastleImage = new Image();
 let playerCastleReady = false;
 loadGameImage(
   playerCastleImage,
-  [ASSET_PATHS.playerCastle],
+  [ASSET_PATHS.playerCastle, "중세_판타지_성_탑_3d_모델.png"],
   (ready) => { playerCastleReady = ready; },
   "플레이어 성"
 );
@@ -177,150 +132,33 @@ const enemyCastleImage = new Image();
 let enemyCastleReady = false;
 loadGameImage(
   enemyCastleImage,
-  [ASSET_PATHS.enemyCastle],
+  [ASSET_PATHS.enemyCastle, "원시_부족_풍의_나무_감시탑.png"],
   (ready) => { enemyCastleReady = ready; },
   "적국의 성"
 );
 
 const GUARD_SPRITE = {
   // SD 기사형 방패병 전용 스프라이트 시트입니다.
-  // 6열 x 5행: idle / walk / attack / unused hurt / death 순서입니다.
-  // 프레임마다 몸통 중심이 조금씩 달라서 공격 시 잔상처럼 보이지 않도록
-  // 애니메이션별 좌우 보정값을 따로 둡니다.
+  // 6열 x 5행: idle / walk / attack / hurt / death 순서입니다.
   frameW: 229,
   frameH: 229,
   drawW: 88,
   drawH: 88,
-  fps: { idle: 5, walk: 8, attack: 11, death: 6 },
-  rows: { idle: 0, walk: 1, attack: 2, death: 4 },
-  frames: { idle: 6, walk: 6, attack: 6, death: 6 },
-  baseOffset: { x: 8, y: 0 },
-  offsets: {
-    idle: [
-      { x: -6, y: 0 },
-      { x: -7, y: 0 },
-      { x: -3, y: 0 },
-      { x: 2, y: 0 },
-      { x: 6, y: 0 },
-      { x: 6, y: 0 },
-    ],
-    walk: [
-      { x: -5, y: 0 },
-      { x: -7, y: 0 },
-      { x: -2, y: 0 },
-      { x: 2, y: 0 },
-      { x: 6, y: 0 },
-      { x: 7, y: 0 },
-    ],
-    attack: [
-      { x: 0, y: 0 },
-      { x: -8, y: 0 },
-      { x: -6, y: 0 },
-      { x: -5, y: 0 },
-      { x: -5, y: 0 },
-      { x: -4, y: 0 },
-    ],
-    death: [
-      { x: 2, y: 0 },
-      { x: 0, y: 0 },
-      { x: -1, y: 0 },
-      { x: -3, y: 0 },
-      { x: -2, y: 0 },
-      { x: -2, y: 0 },
-    ],
-  },
+  fps: { idle: 5, walk: 8, attack: 11, hurt: 7, death: 6 },
+  rows: { idle: 0, walk: 1, attack: 2, hurt: 3, death: 4 },
+  frames: { idle: 6, walk: 6, attack: 6, hurt: 4, death: 6 },
 };
 
 const ARCHER_SPRITE = {
-  // 6 columns x 5 rows, aligned to the guard sprite frame size.
+  // 6열 x 5행으로 다시 정렬한 궁수 전용 스프라이트 시트입니다.
+  // 각 프레임의 발 위치를 같은 기준선에 맞춰 걷기/공격 중 흔들림을 줄였습니다.
   frameW: 229,
   frameH: 229,
-  drawW: 88,
-  drawH: 88,
-  fps: { idle: 1, walk: 8, attack: 10, death: 6 },
-  rows: { idle: 0, walk: 1, attack: 2, death: 4 },
-  frames: { idle: 1, walk: 6, attack: 6, death: 6 },
-};
-
-const MAGE_SPRITE = {
-  // 6 columns x 5 rows, aligned to the guard sprite frame size.
-  frameW: 229,
-  frameH: 229,
-  drawW: 88,
-  drawH: 88,
-  fps: { idle: 5, walk: 8, attack: 10, death: 6 },
-  rows: { idle: 0, walk: 1, attack: 2, death: 4 },
-  frames: { idle: 6, walk: 6, attack: 6, death: 6 },
-};
-
-const SAINTESS_SPRITE = {
-  // 6 columns x 5 rows, aligned to the guard sprite frame size.
-  frameW: 229,
-  frameH: 229,
-  drawW: 88,
-  drawH: 88,
-  fps: { idle: 5, walk: 8, attack: 10, death: 6 },
-  rows: { idle: 0, walk: 1, attack: 2, death: 4 },
-  frames: { idle: 6, walk: 6, attack: 6, death: 6 },
-};
-
-
-const HERO_ZEUS_SPRITE = {
-  // 검은 배경을 제거하고 각 프레임의 좌우 간격을 다시 맞춘 최신 제우스 스프라이트입니다.
-  // 시트 크기: 1536 x 1024, 6열 x 5행 기준
-  frameW: 256,
-  frameH: 204,
-  drawW: 150,
-  drawH: 150,
-  fps: { idle: 5, walk: 8, attack: 10, hurt: 7, death: 6 },
+  drawW: 90,
+  drawH: 90,
+  fps: { idle: 5, walk: 8, attack: 10, hurt: 7 },
   rows: { idle: 0, walk: 1, attack: 2, hurt: 3, death: 4 },
   frames: { idle: 6, walk: 6, attack: 6, hurt: 6, death: 6 },
-  walkFrameOrder: [0, 1, 2, 3, 4, 5],
-  walkOffsets: [
-    { x: 0, y: 0 },
-    { x: 0, y: -1 },
-    { x: 0, y: 0 },
-    { x: 0, y: 1 },
-    { x: 0, y: 0 },
-    { x: 0, y: -1 },
-  ],
-};
-
-const STAGE1_ENEMY_SPRITE = {
-  columns: 6,
-  rowCount: 3,
-  rows: { walk: 0, attack: 1, death: 2 },
-  frames: { walk: 6, attack: 6, death: 6 },
-  fps: { walk: 8, attack: 11, death: 8 },
-  drawW: 150,
-  drawH: 94,
-  healthBarOffsetY: 96,
-  offsets: {
-    walk: [
-      { x: 0, y: 0 },
-      { x: 0, y: 0 },
-      { x: 0, y: 0 },
-      { x: 0, y: 0 },
-      { x: 0, y: 0 },
-      { x: 0, y: 0 },
-    ],
-    attack: [
-      { x: 0, y: 0 },
-      { x: -3, y: 0 },
-      { x: -6, y: 0 },
-      { x: -9, y: 0 },
-      { x: -5, y: 0 },
-      { x: -2, y: 0 },
-    ],
-    death: [
-      { x: 0, y: 0 },
-      { x: 0, y: 2 },
-      { x: 1, y: 4 },
-      { x: 2, y: 5 },
-      { x: 3, y: 5 },
-      { x: 3, y: 5 },
-    ],
-  },
 };
 
 
@@ -388,42 +226,10 @@ function createInitialState() {
     enemiesToSpawn: stageConfig.baseEnemiesToSpawn,
     spawnedInWave: 0,
     waveBreakTimer: 0,
-    hero: createMainHero(),
     particles: [],
     projectiles: [],
     units: [],
     enemies: [],
-  };
-}
-
-function createMainHero() {
-  return {
-    type: "hero",
-    name: "제우스",
-    x: PLAYER_BASE_X + 112,
-    y: GROUND_Y,
-    w: 38,
-    h: 62,
-    hp: 120,
-    maxHp: 120,
-    speed: 150,
-    damage: 22,
-    range: 265,
-    cooldown: 0,
-    attackSpeed: 0.5,
-    attackAnimTimer: 0,
-    attackAnimDuration: 0.56,
-    pendingHeroShot: false,
-    shotTarget: null,
-    hurtAnimTimer: 0,
-    animTime: 0,
-    animState: "idle",
-    animStateTime: 0,
-    moving: false,
-    face: 1,
-    dead: false,
-    respawnTimer: 0,
-    lastHp: 120,
   };
 }
 
@@ -881,7 +687,7 @@ function startGame(stageNumber = selectedStage) {
   document.body.classList.add("game-started");
   document.body.classList.remove("in-lobby", "in-stage-select", "in-shop", "in-recruit", "in-formation");
   gameState.running = true;
-  gameState.message = `Stage ${selectedStage} - Wave ${gameState.wave} 시작! 영웅을 보조하며 병사를 소환하세요`;
+  gameState.message = `Stage ${selectedStage} - Wave ${gameState.wave} 시작! 병사를 소환하세요`;
   gameState.messageTimer = 1.2;
   updateHud();
   updateButtons();
@@ -932,27 +738,7 @@ function updateButtons() {
     summonArcherBtn.title = unitLimitReached ? "아군 병사가 사망하면 다시 소환할 수 있습니다." : "궁수를 소환합니다.";
   }
 
-  if (summonMageBtn) {
-    summonMageBtn.textContent = unitLimitReached ? `마법사 소환 제한 ${slotText}` : `마법사 소환 100G · ${slotText}`;
-    summonMageBtn.disabled = disabled || unitLimitReached || gameState.gold < 100;
-    summonMageBtn.title = unitLimitReached ? "아군 병사가 사망하면 다시 소환할 수 있습니다." : "마법사를 소환합니다.";
-  }
-
-  if (summonSaintessBtn) {
-    summonSaintessBtn.textContent = unitLimitReached ? `성녀 소환 제한 ${slotText}` : `성녀 소환 120G · ${slotText}`;
-    summonSaintessBtn.disabled = disabled || unitLimitReached || gameState.gold < 120;
-    summonSaintessBtn.title = unitLimitReached ? "아군 병사가 사망하면 다시 소환할 수 있습니다." : "주변 아군을 회복하는 성녀를 소환합니다.";
-  }
-
-  if (skillBtn) {
-    const hero = gameState.hero;
-    const heroReady = hero && !hero.dead && hero.hp > 0 && hero.cooldown <= 0;
-    skillBtn.textContent = hero && hero.dead
-      ? `영웅 부활 ${Math.ceil(hero.respawnTimer)}초`
-      : "영웅 공격 Space";
-    skillBtn.disabled = disabled || !heroReady;
-    skillBtn.title = "메인 영웅이 가장 가까운 적에게 화살을 발사합니다.";
-  }
+  if (skillBtn) skillBtn.disabled = true;
   if (startBtn) {
     startBtn.textContent = gameState.running ? "진행 중" : "게임 시작";
     startBtn.disabled = gameState.running && !gameState.gameOver && !gameState.clear;
@@ -996,10 +782,8 @@ function summonGuard() {
     attackAnimDuration: 0.46,
     attackImpactPending: false,
     attackTarget: null,
-    dead: false,
-    deathAnimTimer: 0,
-    deathAnimDuration: 0.85,
-    deathRewarded: false,
+    hurtAnimTimer: 0,
+    lastHp: 90,
   });
 }
 
@@ -1031,133 +815,19 @@ function summonArcher() {
     attackAnimDuration: 0.58,
     pendingArrowShot: false,
     shotTarget: null,
-    dead: false,
-    deathAnimTimer: 0,
-    deathAnimDuration: 0.85,
-    deathRewarded: false,
+    hurtAnimTimer: 0,
+    lastHp: 48,
   });
-}
-
-function summonMage() {
-  if (!hasSummonSlot()) {
-    showSummonLimitMessage();
-    updateHud();
-    updateButtons();
-    return;
-  }
-  if (!spendGold(100)) return;
-  gameState.units.push({
-    type: "mage",
-    name: "마법사",
-    x: PLAYER_BASE_X + 58,
-    y: GROUND_Y,
-    w: 32,
-    h: 52,
-    hp: 42,
-    maxHp: 42,
-    speed: 38,
-    damage: 16,
-    range: 155,
-    cooldown: 0,
-    attackSpeed: 1.18,
-    animTime: 0,
-    moving: false,
-    attackAnimTimer: 0,
-    attackAnimDuration: 0.72,
-    pendingMageShot: false,
-    shotTarget: null,
-    dead: false,
-    deathAnimTimer: 0,
-    deathAnimDuration: 0.85,
-    deathRewarded: false,
-  });
-}
-
-function summonSaintess() {
-  if (!hasSummonSlot()) {
-    showSummonLimitMessage();
-    updateHud();
-    updateButtons();
-    return;
-  }
-  if (!spendGold(120)) return;
-  gameState.units.push({
-    type: "saintess",
-    name: "성녀",
-    x: PLAYER_BASE_X + 56,
-    y: GROUND_Y,
-    w: 32,
-    h: 52,
-    hp: 54,
-    maxHp: 54,
-    speed: 36,
-    damage: 0,
-    range: 0,
-    cooldown: 0,
-    attackSpeed: 1.2,
-    healRange: 130,
-    healAmount: 8,
-    healInterval: 1.2,
-    healCooldown: 0,
-    animTime: 0,
-    moving: false,
-    attackAnimTimer: 0,
-    attackAnimDuration: 0.72,
-    pendingHealPulse: false,
-    dead: false,
-    deathAnimTimer: 0,
-    deathAnimDuration: 0.85,
-    deathRewarded: false,
-  });
-}
-
-
-function isCombatAlive(entity) {
-  return Boolean(entity && !entity.dead && entity.hp > 0);
-}
-
-function startUnitDeath(unit) {
-  if (!unit || unit.dead) return;
-  unit.dead = true;
-  unit.hp = 0;
-  unit.moving = false;
-  unit.cooldown = 0;
-  unit.attackAnimTimer = 0;
-  unit.pendingArrowShot = false;
-  unit.pendingMageShot = false;
-  unit.pendingHealPulse = false;
-  unit.attackImpactPending = false;
-  unit.shotTarget = null;
-  unit.attackTarget = null;
-  unit.deathAnimDuration = unit.deathAnimDuration || 0.85;
-  unit.deathAnimTimer = unit.deathAnimDuration;
-}
-
-function startEnemyDeath(enemy) {
-  if (!enemy || enemy.dead) return;
-  enemy.dead = true;
-  enemy.hp = 0;
-  enemy.moving = false;
-  enemy.cooldown = 0;
-  enemy.attackAnimTimer = 0;
-  enemy.deathAnimDuration = enemy.deathAnimDuration || 0.55;
-  enemy.deathAnimTimer = enemy.deathAnimDuration;
-
-  if (!enemy.deathRewarded) {
-    gameState.gold += 18;
-    enemy.deathRewarded = true;
-  }
 }
 
 function castHolySlash() {
-  heroAttack();
+  // 전투 개편: 플레이어 직접 스킬은 제거했습니다.
 }
 
 function spawnEnemy() {
   const wave = gameState.wave;
-  const isStageOne = Number(gameState.stage) === 1;
-  const isBrute = !isStageOne && wave >= 2 && Math.random() < 0.32;
-  const isFast = !isStageOne && wave >= 3 && Math.random() < 0.25;
+  const isBrute = wave >= 2 && Math.random() < 0.32;
+  const isFast = wave >= 3 && Math.random() < 0.25;
 
   if (isBrute) {
     gameState.enemies.push({
@@ -1173,14 +843,6 @@ function spawnEnemy() {
       range: 45,
       cooldown: 0,
       attackSpeed: 0.9,
-      animTime: 0,
-      moving: false,
-      attackAnimTimer: 0,
-      attackAnimDuration: 0.34,
-      dead: false,
-      deathAnimTimer: 0,
-      deathAnimDuration: 0.55,
-      deathRewarded: false,
     });
     return;
   }
@@ -1198,14 +860,6 @@ function spawnEnemy() {
     range: 38,
     cooldown: 0,
     attackSpeed: isFast ? 0.52 : 0.78,
-    animTime: 0,
-    moving: false,
-    attackAnimTimer: 0,
-    attackAnimDuration: isStageOne ? 0.48 : 0.34,
-    dead: false,
-    deathAnimTimer: 0,
-    deathAnimDuration: isStageOne ? 0.8 : 0.55,
-    deathRewarded: false,
   });
 }
 
@@ -1213,7 +867,6 @@ function findNearestEnemy(fromX, range) {
   let target = null;
   let bestDistance = Infinity;
   for (const enemy of gameState.enemies) {
-    if (!isCombatAlive(enemy)) continue;
     const distance = enemy.x - fromX;
     if (distance >= -20 && distance <= range && distance < bestDistance) {
       target = enemy;
@@ -1224,11 +877,7 @@ function findNearestEnemy(fromX, range) {
 }
 
 function findNearestAlly(fromX, range) {
-  const candidates = gameState.units.filter(isCombatAlive);
-  if (gameState.hero && !gameState.hero.dead && gameState.hero.hp > 0) {
-    candidates.push(gameState.hero);
-  }
-
+  const candidates = [...gameState.units];
   let target = null;
   let bestDistance = Infinity;
   for (const ally of candidates) {
@@ -1241,43 +890,8 @@ function findNearestAlly(fromX, range) {
   return target;
 }
 
-function fireHeroArrow(hero) {
-  const shotTarget = isCombatAlive(hero.shotTarget)
-    ? hero.shotTarget
-    : findNearestEnemy(hero.x, hero.range);
-
-  if (shotTarget) {
-    gameState.projectiles.push({
-      type: "heroBolt",
-      x: hero.x + 28,
-      y: hero.y - 56,
-      vx: 620,
-      damage: hero.damage,
-      target: shotTarget,
-    });
-  } else if (ENEMY_BASE_X - hero.x <= hero.range + 25) {
-    gameState.enemyBaseHp -= hero.damage * 0.65;
-    spawnHit(ENEMY_BASE_X - 38, GROUND_Y - 78, "#9fe8ff");
-  } else {
-    gameState.message = "사거리 안에 적이 없습니다.";
-    gameState.messageTimer = 0.8;
-  }
-
-  hero.pendingHeroShot = false;
-  hero.shotTarget = null;
-}
-
 function heroAttack() {
-  if (!gameState || !gameState.running || gameState.gameOver || gameState.clear) return;
-  const hero = gameState.hero;
-  if (!hero || hero.dead || hero.hp <= 0 || hero.cooldown > 0) return;
-
-  hero.face = 1;
-  hero.cooldown = hero.attackSpeed;
-  hero.attackAnimDuration = 0.56;
-  hero.attackAnimTimer = hero.attackAnimDuration;
-  hero.pendingHeroShot = true;
-  hero.shotTarget = findNearestEnemy(hero.x, hero.range);
+  // 전투 개편: 플레이어 직접 공격은 제거했습니다.
 }
 
 function spawnHit(x, y, color) {
@@ -1295,98 +909,8 @@ function spawnHit(x, y, color) {
   }
 }
 
-function spawnHeal(x, y) {
-  for (let i = 0; i < 7; i++) {
-    gameState.particles.push({
-      type: "heal",
-      x: x + (Math.random() - 0.5) * 24,
-      y: y + (Math.random() - 0.5) * 12,
-      vx: (Math.random() - 0.5) * 18,
-      life: 0.55,
-      maxLife: 0.55,
-      size: 3 + Math.random() * 3,
-      color: i % 2 === 0 ? "#fff1a8" : "#8ff7ff",
-    });
-  }
-}
-
-function getHeroVisualAnim(hero) {
-  if (!hero || hero.dead || hero.hp <= 0) return "death";
-  if (hero.hurtAnimTimer > 0) return "hurt";
-  if (hero.attackAnimTimer > 0) return "attack";
-  if (hero.moving) return "walk";
-  return "idle";
-}
-
-function syncHeroAnimState(hero, dt) {
-  const nextAnim = getHeroVisualAnim(hero);
-  if (hero.animState !== nextAnim) {
-    hero.animState = nextAnim;
-    hero.animStateTime = 0;
-    return;
-  }
-  hero.animStateTime = (hero.animStateTime || 0) + dt;
-}
-
 function updateHero(dt) {
-  const hero = gameState.hero;
-  if (!hero) return;
-
-  hero.animTime = (hero.animTime || 0) + dt;
-  hero.cooldown = Math.max(0, hero.cooldown - dt);
-  hero.attackAnimTimer = Math.max(0, (hero.attackAnimTimer || 0) - dt);
-  hero.hurtAnimTimer = Math.max(0, (hero.hurtAnimTimer || 0) - dt);
-  hero.moving = false;
-
-  if (hero.hp <= 0) {
-    if (!hero.dead) {
-      hero.dead = true;
-      hero.respawnTimer = HERO_RESPAWN_SECONDS;
-      hero.pendingHeroShot = false;
-      gameState.message = `메인 영웅 쓰러짐 · ${HERO_RESPAWN_SECONDS}초 후 부활`;
-      gameState.messageTimer = 1.2;
-    }
-
-    hero.respawnTimer = Math.max(0, hero.respawnTimer - dt);
-    if (hero.respawnTimer <= 0) {
-      Object.assign(hero, createMainHero());
-      gameState.message = "메인 영웅 부활! 다시 조작할 수 있습니다.";
-      gameState.messageTimer = 1.2;
-    }
-    return;
-  }
-
-  if (typeof hero.lastHp === "number" && hero.hp < hero.lastHp) {
-    hero.hurtAnimTimer = 0.3;
-  }
-  hero.lastHp = hero.hp;
-
-  const moveLeft = keys.ArrowLeft || keys.KeyA;
-  const moveRight = keys.ArrowRight || keys.KeyD;
-  let moveDir = 0;
-  if (moveLeft) moveDir -= 1;
-  if (moveRight) moveDir += 1;
-
-  if (moveDir !== 0) {
-    hero.x += moveDir * hero.speed * dt;
-    hero.x = Math.max(HERO_MIN_X, Math.min(HERO_MAX_X, hero.x));
-    hero.moving = true;
-    hero.face = moveDir > 0 ? 1 : -1;
-  }
-
-  if (keys.Space) {
-    heroAttack();
-  }
-
-  if (hero.pendingHeroShot) {
-    const duration = hero.attackAnimDuration || 0.56;
-    const progress = hero.attackAnimTimer > 0 ? 1 - hero.attackAnimTimer / duration : 1;
-    if (progress >= 0.58 || hero.attackAnimTimer <= 0) {
-      fireHeroArrow(hero);
-    }
-  }
-
-  syncHeroAnimState(hero, dt);
+  // 전투 개편: 직접 조작 메인 유닛을 사용하지 않습니다.
 }
 
 function updateWave(dt) {
@@ -1425,7 +949,7 @@ function updateWave(dt) {
 }
 
 function fireArcherArrow(unit) {
-  const shotTarget = isCombatAlive(unit.shotTarget)
+  const shotTarget = unit.shotTarget && unit.shotTarget.hp > 0
     ? unit.shotTarget
     : findNearestEnemy(unit.x, unit.range + 40);
 
@@ -1448,132 +972,47 @@ function fireArcherArrow(unit) {
   unit.shotTarget = null;
 }
 
-function fireMageBolt(unit) {
-  const shotTarget = isCombatAlive(unit.shotTarget)
-    ? unit.shotTarget
-    : findNearestEnemy(unit.x, unit.range + 35);
-
-  if (!shotTarget) {
-    unit.pendingMageShot = false;
-    unit.shotTarget = null;
-    return;
-  }
-
-  gameState.projectiles.push({
-    type: "mageBolt",
-    x: unit.x + 32,
-    y: unit.y - 48,
-    vx: 360,
-    damage: unit.damage,
-    target: shotTarget,
-  });
-
-  unit.pendingMageShot = false;
-  unit.shotTarget = null;
-}
-
-function findSaintessHealTargets(unit) {
-  const candidates = [];
-  if (isCombatAlive(gameState.hero)) candidates.push(gameState.hero);
-
-  for (const ally of gameState.units) {
-    if (ally !== unit && isCombatAlive(ally)) candidates.push(ally);
-  }
-
-  return candidates
-    .filter((ally) => ally.hp < ally.maxHp && Math.abs(ally.x - unit.x) <= unit.healRange)
-    .sort((a, b) => Math.abs(a.x - unit.x) - Math.abs(b.x - unit.x));
-}
-
-function performSaintessHeal(unit) {
-  const targets = findSaintessHealTargets(unit);
-  if (!targets.length) {
-    unit.pendingHealPulse = false;
-    return;
-  }
-
-  for (const ally of targets) {
-    ally.hp = Math.min(ally.maxHp, ally.hp + unit.healAmount);
-    spawnHeal(ally.x, ally.y - 50);
-  }
-
-  unit.pendingHealPulse = false;
-}
-
 function updateUnits(dt) {
   for (const unit of gameState.units) {
-    unit.animTime = (unit.animTime || 0) + dt;
-
-    if (unit.hp <= 0 || unit.dead) {
-      startUnitDeath(unit);
-      unit.deathAnimTimer = Math.max(0, (unit.deathAnimTimer || 0) - dt);
-      continue;
-    }
-
     unit.cooldown = Math.max(0, unit.cooldown - dt);
-    unit.moving = false;
 
-    const previousAttackTimer = unit.attackAnimTimer || 0;
-    unit.attackAnimDuration = unit.attackAnimDuration || (unit.type === "guard" ? 0.46 : (unit.type === "mage" || unit.type === "saintess") ? 0.72 : 0.58);
-    unit.attackAnimTimer = Math.max(0, previousAttackTimer - dt);
+    if (unit.type === "archer" || unit.type === "guard") {
+      unit.animTime = (unit.animTime || 0) + dt;
+      unit.moving = false;
 
-    const attackProgress = unit.attackAnimTimer > 0
-      ? 1 - unit.attackAnimTimer / unit.attackAnimDuration
-      : 1;
+      const previousAttackTimer = unit.attackAnimTimer || 0;
+      unit.attackAnimDuration = unit.attackAnimDuration || (unit.type === "guard" ? 0.46 : 0.58);
+      unit.attackAnimTimer = Math.max(0, previousAttackTimer - dt);
+      unit.hurtAnimTimer = Math.max(0, (unit.hurtAnimTimer || 0) - dt);
 
-    // 쫄병은 피격 모션이 없습니다. 공격 / 걷기 / 사망 모션만 사용합니다.
-    // 궁수는 활시위를 놓는 타이밍에 화살 발사
-    if (unit.type === "archer" && unit.pendingArrowShot && (attackProgress >= 0.62 || unit.attackAnimTimer <= 0)) {
-      fireArcherArrow(unit);
-    }
+      if (typeof unit.lastHp === "number" && unit.hp < unit.lastHp) {
+        unit.hurtAnimTimer = 0.28;
+      }
+      unit.lastHp = unit.hp;
 
-    if (unit.type === "mage" && unit.pendingMageShot && (attackProgress >= 0.66 || unit.attackAnimTimer <= 0)) {
-      fireMageBolt(unit);
-    }
+      const attackProgress = unit.attackAnimTimer > 0
+        ? 1 - unit.attackAnimTimer / unit.attackAnimDuration
+        : 1;
 
-    if (unit.type === "saintess") {
-      unit.healCooldown = Math.max(0, (unit.healCooldown || 0) - dt);
-
-      if (unit.pendingHealPulse && (attackProgress >= 0.62 || unit.attackAnimTimer <= 0)) {
-        performSaintessHeal(unit);
+      // 궁수는 활시위를 놓는 타이밍에 화살 발사
+      if (unit.type === "archer" && unit.pendingArrowShot && (attackProgress >= 0.62 || unit.attackAnimTimer <= 0)) {
+        fireArcherArrow(unit);
       }
 
-      if (unit.attackAnimTimer > 0) {
-        continue;
+      // 방패병은 검이 앞으로 나가는 프레임에 근접 피해 적용
+      if (unit.type === "guard" && unit.attackImpactPending && (attackProgress >= 0.48 || unit.attackAnimTimer <= 0)) {
+        const attackTarget = unit.attackTarget && unit.attackTarget.hp > 0
+          ? unit.attackTarget
+          : findNearestEnemy(unit.x, unit.range + 12);
+
+        if (attackTarget) {
+          attackTarget.hp -= unit.damage;
+          spawnHit(attackTarget.x, attackTarget.y - 30, "#b7f7ff");
+        }
+
+        unit.attackImpactPending = false;
+        unit.attackTarget = null;
       }
-
-      const healTargets = findSaintessHealTargets(unit);
-      if (healTargets.length && unit.healCooldown <= 0) {
-        unit.healCooldown = unit.healInterval || 1.2;
-        unit.attackAnimDuration = 0.72;
-        unit.attackAnimTimer = unit.attackAnimDuration;
-        unit.pendingHealPulse = true;
-        continue;
-      }
-
-      unit.x += unit.speed * dt;
-      unit.moving = true;
-
-      if (unit.x > ENEMY_BASE_X - 35) {
-        gameState.enemyBaseHp -= 4 * dt;
-        unit.x = ENEMY_BASE_X - 35;
-        unit.moving = false;
-      }
-      continue;
-    }
-
-    // 방패병은 검이 앞으로 나가는 프레임에 근접 피해 적용
-    if (unit.type === "guard" && unit.attackImpactPending && (attackProgress >= 0.48 || unit.attackAnimTimer <= 0)) {
-      const attackTarget = isCombatAlive(unit.attackTarget)
-        ? unit.attackTarget
-        : findNearestEnemy(unit.x, unit.range + 12);
-
-      if (attackTarget) {
-        attackTarget.hp -= unit.damage;
-      }
-
-      unit.attackImpactPending = false;
-      unit.attackTarget = null;
     }
 
     const target = findNearestEnemy(unit.x, unit.range);
@@ -1586,11 +1025,6 @@ function updateUnits(dt) {
           unit.attackAnimTimer = unit.attackAnimDuration;
           unit.pendingArrowShot = true;
           unit.shotTarget = target;
-        } else if (unit.type === "mage") {
-          unit.attackAnimDuration = 0.72;
-          unit.attackAnimTimer = unit.attackAnimDuration;
-          unit.pendingMageShot = true;
-          unit.shotTarget = target;
         } else if (unit.type === "guard") {
           unit.attackAnimDuration = 0.46;
           unit.attackAnimTimer = unit.attackAnimDuration;
@@ -1598,57 +1032,40 @@ function updateUnits(dt) {
           unit.attackTarget = target;
         } else {
           target.hp -= unit.damage;
+          spawnHit(target.x, target.y - 30, "#b7f7ff");
         }
       }
     } else {
       unit.x += unit.speed * dt;
-      unit.moving = true;
+      if (unit.type === "archer" || unit.type === "guard") unit.moving = true;
     }
 
     if (unit.x > ENEMY_BASE_X - 35) {
-      gameState.enemyBaseHp -= unit.type === "guard" ? 18 * dt : unit.type === "mage" ? 10 * dt : 8 * dt;
+      gameState.enemyBaseHp -= unit.type === "archer" ? 8 * dt : 18 * dt;
       unit.x = ENEMY_BASE_X - 35;
-      unit.moving = false;
+      if (unit.type === "archer" || unit.type === "guard") unit.moving = false;
     }
   }
 }
 
 function updateEnemies(dt) {
   for (const enemy of gameState.enemies) {
-    enemy.animTime = (enemy.animTime || 0) + dt;
-
-    if (enemy.hp <= 0 || enemy.dead) {
-      startEnemyDeath(enemy);
-      enemy.deathAnimTimer = Math.max(0, (enemy.deathAnimTimer || 0) - dt);
-      continue;
-    }
-
     enemy.cooldown = Math.max(0, enemy.cooldown - dt);
-    enemy.attackAnimTimer = Math.max(0, (enemy.attackAnimTimer || 0) - dt);
-    enemy.moving = false;
-
     const target = findNearestAlly(enemy.x, enemy.range);
 
     if (target) {
       if (enemy.cooldown <= 0) {
         enemy.cooldown = enemy.attackSpeed;
-        enemy.attackAnimTimer = enemy.attackAnimDuration || 0.34;
         target.hp -= enemy.damage;
-
-        // 피격 시스템은 메인 영웅에게만 적용합니다.
-        if (target.type === "hero") {
-          spawnHit(target.x, target.y - 38, "#ff9090");
-        }
+        spawnHit(target.x, target.y - 38, "#ff9090");
       }
     } else {
       enemy.x -= enemy.speed * dt;
-      enemy.moving = true;
     }
 
     if (enemy.x < PLAYER_BASE_X + 28) {
       gameState.playerBaseHp -= enemy.damage * dt * 0.8;
       enemy.x = PLAYER_BASE_X + 28;
-      enemy.moving = false;
     }
   }
 }
@@ -1656,12 +1073,10 @@ function updateEnemies(dt) {
 function updateProjectiles(dt) {
   for (const projectile of gameState.projectiles) {
     projectile.x += projectile.vx * dt;
-    if (isCombatAlive(projectile.target) && Math.abs(projectile.x - projectile.target.x) < 18) {
+    if (projectile.target && projectile.target.hp > 0 && Math.abs(projectile.x - projectile.target.x) < 18) {
       projectile.target.hp -= projectile.damage;
-      if (projectile.type === "mageBolt") {
-        spawnHit(projectile.target.x, projectile.target.y - 46, "#68eaff");
-      }
       projectile.dead = true;
+      spawnHit(projectile.target.x, projectile.target.y - 35, "#c6f7ff");
     }
     if (projectile.x > canvas.width + 50) projectile.dead = true;
   }
@@ -1675,27 +1090,20 @@ function updateParticles(dt) {
       particle.x += particle.vx * dt;
       particle.y += particle.vy * dt;
       particle.vy += 260 * dt;
-    } else if (particle.type === "heal") {
-      particle.x += particle.vx * dt;
-      particle.y -= 28 * dt;
     }
   }
   gameState.particles = gameState.particles.filter((p) => p.life > 0);
 }
 
 function cleanupDeadEntities() {
-  for (const enemy of gameState.enemies) {
-    if (enemy.hp <= 0) startEnemyDeath(enemy);
-  }
-
-  for (const unit of gameState.units) {
-    if (unit.hp <= 0 || unit.x >= ENEMY_BASE_X - 15) startUnitDeath(unit);
-  }
+  const beforeEnemies = gameState.enemies.length;
+  gameState.enemies = gameState.enemies.filter((enemy) => enemy.hp > 0);
+  const killed = beforeEnemies - gameState.enemies.length;
+  if (killed > 0) gameState.gold += killed * 18;
 
   // 소환 제한 슬롯은 살아있는 병사 수를 기준으로 계산합니다.
-  // 병사가 죽는 순간 hp가 0이 되므로, 사망 모션이 남아 있어도 빈 자리는 즉시 생깁니다.
-  gameState.enemies = gameState.enemies.filter((enemy) => !enemy.dead || enemy.deathAnimTimer > 0);
-  gameState.units = gameState.units.filter((unit) => !unit.dead || unit.deathAnimTimer > 0);
+  // 병사가 죽으면 이 정리 단계 이후 자동으로 빈 자리가 생깁니다.
+  gameState.units = gameState.units.filter((unit) => unit.hp > 0 && unit.x < ENEMY_BASE_X - 15);
 }
 
 
@@ -1734,7 +1142,6 @@ function update(dt) {
   }
 
   updateWave(dt);
-  updateHero(dt);
   updateUnits(dt);
   updateEnemies(dt);
   updateProjectiles(dt);
@@ -1887,99 +1294,99 @@ function drawHealthBar(x, y, w, hp, maxHp, color) {
 }
 
 function drawHero(hero) {
-  if (!hero || hero.dead || hero.hp <= 0) return;
-
   ctx.save();
   ctx.translate(hero.x, hero.y);
+  const bob = Math.sin(performance.now() * 0.008) * 2;
 
-  const isHeroWalking = hero.animState === "walk" || hero.moving;
-  const walkShadowPulse = isHeroWalking
-    ? Math.abs(Math.sin((hero.animStateTime || 0) * HERO_ZEUS_SPRITE.fps.walk * Math.PI))
-    : 0;
-
-  ctx.fillStyle = "rgba(0,0,0,0.24)";
+  ctx.fillStyle = "rgba(0,0,0,0.22)";
   ctx.beginPath();
-  ctx.ellipse(0, 4, 28 + walkShadowPulse * 2, 8 - walkShadowPulse * 0.8, 0, 0, Math.PI * 2);
+  ctx.ellipse(0, 4, 32, 9, 0, 0, Math.PI * 2);
   ctx.fill();
 
-  if (heroSpriteReady) {
+  // 주인공도 임시로 SD 기사 스프라이트를 사용합니다.
+  // 이렇게 해야 전투 시작 직후에도 캐릭터가 네모 도형처럼 보이지 않습니다.
+  if (guardSpriteReady) {
     drawHeroSprite(hero);
     ctx.restore();
-    drawHealthBar(hero.x, hero.y - 118, 58, hero.hp, hero.maxHp, "#79ff7a");
+    drawHealthBar(hero.x, hero.y - 88, 54, hero.hp, hero.maxHp, "#79ff7a");
     return;
   }
 
-  const bob = Math.sin(performance.now() * 0.008) * 2;
   ctx.translate(0, bob);
-  ctx.fillStyle = "#355f1f";
-  ctx.fillRect(-15, -42, 30, 34);
-  ctx.fillStyle = "#f0c78a";
-  ctx.fillRect(-10, -58, 20, 18);
-  ctx.fillStyle = "#244017";
-  ctx.fillRect(-18, -50, 36, 16);
-  ctx.strokeStyle = "#6a3e1f";
-  ctx.lineWidth = 3;
+  ctx.fillStyle = "#fff7d0";
+  ctx.fillRect(-16, -52, 32, 38);
+  ctx.fillStyle = "#684027";
+  ctx.fillRect(-14, -74, 28, 22);
+  ctx.fillStyle = "#ffe1b2";
+  ctx.fillRect(-12, -68, 24, 21);
+  ctx.fillStyle = "#2f4b95";
+  ctx.fillRect(-18, -30, 36, 22);
+  ctx.fillStyle = "#47311d";
+  ctx.fillRect(-18, -12, 12, 14);
+  ctx.fillRect(6, -12, 12, 14);
+
+  ctx.strokeStyle = "#f7f2ff";
+  ctx.lineWidth = 4;
   ctx.beginPath();
-  ctx.arc(22, -35, 18, -1.2, 1.2);
+  ctx.moveTo(14, -43);
+  ctx.lineTo(48, -64);
   ctx.stroke();
+
+  ctx.fillStyle = "#222";
+  ctx.fillRect(3, -61, 4, 4);
   ctx.restore();
 
-  drawHealthBar(hero.x, hero.y - 118, 58, hero.hp, hero.maxHp, "#79ff7a");
+  drawHealthBar(hero.x, hero.y - 88, 54, hero.hp, hero.maxHp, "#79ff7a");
 }
 
 function drawHeroSprite(hero) {
-  const anim = hero.animState || getHeroVisualAnim(hero);
-  const frameCount = HERO_ZEUS_SPRITE.frames[anim] || 1;
-  const fps = HERO_ZEUS_SPRITE.fps[anim] || 8;
-  const animTime = hero.animStateTime || hero.animTime || 0;
-  let frame = Math.floor(animTime * fps) % frameCount;
+  let anim = "idle";
+  if (hero.hurtAnimTimer > 0) anim = "hurt";
+  else if (hero.attackAnimTimer > 0) anim = "attack";
+  else if (hero.moving) anim = "walk";
 
-  if (anim === "walk") {
-    const order = HERO_ZEUS_SPRITE.walkFrameOrder || [0, 1, 2, 3, 4, 5];
-    const orderIndex = Math.floor(animTime * fps) % order.length;
-    frame = order[orderIndex] % frameCount;
-  }
+  const frameCount = GUARD_SPRITE.frames[anim];
+  const fps = GUARD_SPRITE.fps[anim] || 8;
+  let frame = Math.floor((hero.animTime || 0) * fps) % frameCount;
 
   if (anim === "attack") {
-    const duration = hero.attackAnimDuration || 0.56;
+    const duration = hero.attackAnimDuration || 0.42;
     const progress = 1 - hero.attackAnimTimer / duration;
     frame = Math.min(frameCount - 1, Math.max(0, Math.floor(progress * frameCount)));
   }
 
-  const sx = frame * HERO_ZEUS_SPRITE.frameW;
-  const sy = HERO_ZEUS_SPRITE.rows[anim] * HERO_ZEUS_SPRITE.frameH;
-  const dw = HERO_ZEUS_SPRITE.drawW;
-  const dh = HERO_ZEUS_SPRITE.drawH;
-  const walkOffset = anim === "walk"
-    ? HERO_ZEUS_SPRITE.walkOffsets[frame] || { x: 0, y: 0 }
-    : { x: 0, y: 0 };
+  const sx = frame * GUARD_SPRITE.frameW;
+  const sy = GUARD_SPRITE.rows[anim] * GUARD_SPRITE.frameH;
+  const dw = 96;
+  const dh = 96;
 
   ctx.save();
   if (hero.face < 0) ctx.scale(-1, 1);
-  ctx.imageSmoothingEnabled = false;
+  ctx.imageSmoothingEnabled = true;
   ctx.drawImage(
-    heroSprite,
+    guardSprite,
     sx,
     sy,
-    HERO_ZEUS_SPRITE.frameW,
-    HERO_ZEUS_SPRITE.frameH,
-    -dw / 2 + 2 + walkOffset.x,
-    -dh + 10 + walkOffset.y,
+    GUARD_SPRITE.frameW,
+    GUARD_SPRITE.frameH,
+    -dw / 2,
+    -dh + 10,
     dw,
     dh
   );
   ctx.restore();
 }
 
+
 function drawGuardSprite(unit) {
   if (!guardSpriteReady) return false;
 
   let anim = "idle";
-  if (unit.dead || unit.hp <= 0) anim = "death";
+  if (unit.hurtAnimTimer > 0) anim = "hurt";
   else if (unit.attackAnimTimer > 0) anim = "attack";
   else if (unit.moving) anim = "walk";
 
-  const frameCount = GUARD_SPRITE.frames[anim] || 1;
+  const frameCount = GUARD_SPRITE.frames[anim];
   const fps = GUARD_SPRITE.fps[anim] || 8;
   let frame = Math.floor((unit.animTime || 0) * fps) % frameCount;
 
@@ -1987,28 +1394,22 @@ function drawGuardSprite(unit) {
     const duration = unit.attackAnimDuration || 0.46;
     const progress = 1 - unit.attackAnimTimer / duration;
     frame = Math.min(frameCount - 1, Math.max(0, Math.floor(progress * frameCount)));
-  } else if (anim === "death") {
-    const duration = unit.deathAnimDuration || 0.85;
-    const progress = 1 - Math.max(0, unit.deathAnimTimer || 0) / duration;
-    frame = Math.min(frameCount - 1, Math.max(0, Math.floor(progress * frameCount)));
   }
 
   const sx = frame * GUARD_SPRITE.frameW;
   const sy = GUARD_SPRITE.rows[anim] * GUARD_SPRITE.frameH;
   const dw = GUARD_SPRITE.drawW;
   const dh = GUARD_SPRITE.drawH;
-  const baseOffset = GUARD_SPRITE.baseOffset || { x: 0, y: 0 };
-  const frameOffset = (GUARD_SPRITE.offsets[anim] && GUARD_SPRITE.offsets[anim][frame]) || { x: 0, y: 0 };
 
-  ctx.imageSmoothingEnabled = false;
+  ctx.imageSmoothingEnabled = true;
   ctx.drawImage(
     guardSprite,
     sx,
     sy,
     GUARD_SPRITE.frameW,
     GUARD_SPRITE.frameH,
-    -dw / 2 + baseOffset.x + frameOffset.x,
-    -dh + 9 + baseOffset.y + frameOffset.y,
+    -dw / 2,
+    -dh + 9,
     dw,
     dh
   );
@@ -2020,21 +1421,17 @@ function drawArcherSprite(unit) {
   if (!archerSpriteReady) return false;
 
   let anim = "idle";
-  if (unit.dead || unit.hp <= 0) anim = "death";
+  if (unit.hurtAnimTimer > 0) anim = "hurt";
   else if (unit.attackAnimTimer > 0) anim = "attack";
   else if (unit.moving) anim = "walk";
 
-  const frameCount = ARCHER_SPRITE.frames[anim] || 1;
+  const frameCount = ARCHER_SPRITE.frames[anim];
   const fps = ARCHER_SPRITE.fps[anim] || 8;
   let frame = Math.floor((unit.animTime || 0) * fps) % frameCount;
 
   if (anim === "attack") {
     const duration = unit.attackAnimDuration || 0.58;
     const progress = 1 - unit.attackAnimTimer / duration;
-    frame = Math.min(frameCount - 1, Math.max(0, Math.floor(progress * frameCount)));
-  } else if (anim === "death") {
-    const duration = unit.deathAnimDuration || 0.85;
-    const progress = 1 - Math.max(0, unit.deathAnimTimer || 0) / duration;
     frame = Math.min(frameCount - 1, Math.max(0, Math.floor(progress * frameCount)));
   }
 
@@ -2059,122 +1456,16 @@ function drawArcherSprite(unit) {
   return true;
 }
 
-function drawMageSprite(unit) {
-  if (!mageSpriteReady) return false;
-
-  let anim = "idle";
-  if (unit.dead || unit.hp <= 0) anim = "death";
-  else if (unit.attackAnimTimer > 0) anim = "attack";
-  else if (unit.moving) anim = "walk";
-
-  const frameCount = MAGE_SPRITE.frames[anim] || 1;
-  const fps = MAGE_SPRITE.fps[anim] || 8;
-  let frame = Math.floor((unit.animTime || 0) * fps) % frameCount;
-
-  if (anim === "attack") {
-    const duration = unit.attackAnimDuration || 0.72;
-    const progress = 1 - unit.attackAnimTimer / duration;
-    frame = Math.min(frameCount - 1, Math.max(0, Math.floor(progress * frameCount)));
-  } else if (anim === "death") {
-    const duration = unit.deathAnimDuration || 0.85;
-    const progress = 1 - Math.max(0, unit.deathAnimTimer || 0) / duration;
-    frame = Math.min(frameCount - 1, Math.max(0, Math.floor(progress * frameCount)));
-  }
-
-  const sx = frame * MAGE_SPRITE.frameW;
-  const sy = MAGE_SPRITE.rows[anim] * MAGE_SPRITE.frameH;
-  const dw = MAGE_SPRITE.drawW;
-  const dh = MAGE_SPRITE.drawH;
-
-  ctx.imageSmoothingEnabled = false;
-  ctx.drawImage(
-    mageSprite,
-    sx,
-    sy,
-    MAGE_SPRITE.frameW,
-    MAGE_SPRITE.frameH,
-    -dw / 2 + 2,
-    -dh + 8,
-    dw,
-    dh
-  );
-
-  return true;
-}
-
-function drawSaintessSprite(unit) {
-  if (!saintessSpriteReady) return false;
-
-  let anim = "idle";
-  if (unit.dead || unit.hp <= 0) anim = "death";
-  else if (unit.attackAnimTimer > 0) anim = "attack";
-  else if (unit.moving) anim = "walk";
-
-  const frameCount = SAINTESS_SPRITE.frames[anim] || 1;
-  const fps = SAINTESS_SPRITE.fps[anim] || 8;
-  let frame = Math.floor((unit.animTime || 0) * fps) % frameCount;
-
-  if (anim === "attack") {
-    const duration = unit.attackAnimDuration || 0.72;
-    const progress = 1 - unit.attackAnimTimer / duration;
-    frame = Math.min(frameCount - 1, Math.max(0, Math.floor(progress * frameCount)));
-  } else if (anim === "death") {
-    const duration = unit.deathAnimDuration || 0.85;
-    const progress = 1 - Math.max(0, unit.deathAnimTimer || 0) / duration;
-    frame = Math.min(frameCount - 1, Math.max(0, Math.floor(progress * frameCount)));
-  }
-
-  const sx = frame * SAINTESS_SPRITE.frameW;
-  const sy = SAINTESS_SPRITE.rows[anim] * SAINTESS_SPRITE.frameH;
-  const dw = SAINTESS_SPRITE.drawW;
-  const dh = SAINTESS_SPRITE.drawH;
-
-  ctx.imageSmoothingEnabled = false;
-  ctx.drawImage(
-    saintessSprite,
-    sx,
-    sy,
-    SAINTESS_SPRITE.frameW,
-    SAINTESS_SPRITE.frameH,
-    -dw / 2 + 2,
-    -dh + 8,
-    dw,
-    dh
-  );
-
-  return true;
-}
-
 function drawUnit(unit) {
   ctx.save();
   ctx.translate(unit.x, unit.y);
-  const isDying = unit.dead || unit.hp <= 0;
-  const bob = isDying ? 0 : Math.sin((performance.now() + unit.x * 10) * 0.01) * 2;
-
-  if (isDying) {
-    const duration = unit.deathAnimDuration || 0.85;
-    const progress = 1 - Math.max(0, unit.deathAnimTimer || 0) / duration;
-    ctx.globalAlpha = Math.max(0.25, 1 - progress * 0.45);
-  }
+  const bob = Math.sin((performance.now() + unit.x * 10) * 0.01) * 2;
 
   // 그림자는 땅에 고정합니다. 그림자가 캐릭터와 같이 흔들리면 걷기 모션이 더 어색해 보입니다.
   ctx.fillStyle = "rgba(0,0,0,0.2)";
   ctx.beginPath();
   ctx.ellipse(0, 3, 22, 7, 0, 0, Math.PI * 2);
   ctx.fill();
-
-  if (!isDying && unit.type === "saintess" && unit.attackAnimTimer > 0) {
-    ctx.save();
-    ctx.globalAlpha = 0.55;
-    ctx.strokeStyle = "#fff1a8";
-    ctx.shadowColor = "rgba(255, 241, 168, 0.85)";
-    ctx.shadowBlur = 10;
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.ellipse(0, -28, 35, 20, 0, 0, Math.PI * 2);
-    ctx.stroke();
-    ctx.restore();
-  }
 
   if (unit.type === "guard") {
     const drewSprite = drawGuardSprite(unit);
@@ -2195,7 +1486,7 @@ function drawUnit(unit) {
       ctx.lineTo(42, -54);
       ctx.stroke();
     }
-  } else if (unit.type === "archer") {
+  } else {
     const drewSprite = drawArcherSprite(unit);
 
     if (!drewSprite) {
@@ -2211,153 +1502,17 @@ function drawUnit(unit) {
       ctx.arc(18, -35, 17, -1.2, 1.2);
       ctx.stroke();
     }
-  } else if (unit.type === "mage") {
-    const drewSprite = drawMageSprite(unit);
-
-    if (!drewSprite) {
-      ctx.translate(0, bob);
-
-      ctx.fillStyle = "#573aa8";
-      ctx.fillRect(-13, -39, 26, 31);
-      ctx.fillStyle = "#f04444";
-      ctx.fillRect(-12, -56, 24, 18);
-      ctx.strokeStyle = "#7b4a23";
-      ctx.lineWidth = 3;
-      ctx.beginPath();
-      ctx.moveTo(18, -14);
-      ctx.lineTo(26, -58);
-      ctx.stroke();
-      ctx.fillStyle = "#68eaff";
-      ctx.beginPath();
-      ctx.arc(27, -61, 5, 0, Math.PI * 2);
-      ctx.fill();
-    }
-  } else if (unit.type === "saintess") {
-    const drewSprite = drawSaintessSprite(unit);
-
-    if (!drewSprite) {
-      ctx.translate(0, bob);
-
-      ctx.fillStyle = "#fff1c7";
-      ctx.fillRect(-13, -39, 26, 31);
-      ctx.fillStyle = "#f6c2d9";
-      ctx.fillRect(-10, -56, 20, 18);
-      ctx.strokeStyle = "#c99a35";
-      ctx.lineWidth = 3;
-      ctx.beginPath();
-      ctx.moveTo(18, -14);
-      ctx.lineTo(26, -58);
-      ctx.stroke();
-      ctx.fillStyle = "#8ff7ff";
-      ctx.beginPath();
-      ctx.arc(27, -61, 5, 0, Math.PI * 2);
-      ctx.fill();
-    }
   }
 
   ctx.restore();
-  if (!isDying) drawHealthBar(unit.x, unit.y - 68, 42, unit.hp, unit.maxHp, "#68d8ff");
-}
-
-function canDrawStage1EnemySprite(enemy) {
-  return stage1EnemySpriteReady
-    && Number(gameState.stage) === 1
-    && enemy.type === "normal";
-}
-
-function drawStage1EnemySprite(enemy) {
-  if (!canDrawStage1EnemySprite(enemy)) return false;
-
-  let anim = "walk";
-  if (enemy.dead || enemy.hp <= 0) anim = "death";
-  else if (enemy.attackAnimTimer > 0) anim = "attack";
-
-  const frameCount = STAGE1_ENEMY_SPRITE.frames[anim] || 1;
-  const fps = STAGE1_ENEMY_SPRITE.fps[anim] || 8;
-  let frame = Math.floor((enemy.animTime || 0) * fps) % frameCount;
-
-  if (anim === "attack") {
-    const duration = enemy.attackAnimDuration || 0.48;
-    const progress = 1 - Math.max(0, enemy.attackAnimTimer || 0) / duration;
-    frame = Math.min(frameCount - 1, Math.max(0, Math.floor(progress * frameCount)));
-  } else if (anim === "death") {
-    const duration = enemy.deathAnimDuration || 0.8;
-    const progress = 1 - Math.max(0, enemy.deathAnimTimer || 0) / duration;
-    frame = Math.min(frameCount - 1, Math.max(0, Math.floor(progress * frameCount)));
-  }
-
-  const frameW = stage1EnemySprite.naturalWidth / STAGE1_ENEMY_SPRITE.columns;
-  const frameH = stage1EnemySprite.naturalHeight / STAGE1_ENEMY_SPRITE.rowCount;
-  const sx = frame * frameW;
-  const sy = STAGE1_ENEMY_SPRITE.rows[anim] * frameH;
-  const dw = STAGE1_ENEMY_SPRITE.drawW;
-  const dh = STAGE1_ENEMY_SPRITE.drawH;
-  const frameOffset = (STAGE1_ENEMY_SPRITE.offsets[anim] && STAGE1_ENEMY_SPRITE.offsets[anim][frame]) || { x: 0, y: 0 };
-
-  ctx.save();
-  ctx.translate(enemy.x, enemy.y);
-
-  if (anim === "death") {
-    const duration = enemy.deathAnimDuration || 0.8;
-    const progress = 1 - Math.max(0, enemy.deathAnimTimer || 0) / duration;
-    ctx.globalAlpha = Math.max(0.25, 1 - progress * 0.35);
-  }
-
-  ctx.fillStyle = "rgba(0,0,0,0.22)";
-  ctx.beginPath();
-  ctx.ellipse(0, 4, anim === "death" ? 34 : 28, 8, 0, 0, Math.PI * 2);
-  ctx.fill();
-
-  ctx.scale(-1, 1);
-  ctx.imageSmoothingEnabled = false;
-  ctx.drawImage(
-    stage1EnemySprite,
-    sx,
-    sy,
-    frameW,
-    frameH,
-    -dw / 2 + frameOffset.x,
-    -dh + 8 + frameOffset.y,
-    dw,
-    dh
-  );
-
-  ctx.restore();
-  return true;
+  drawHealthBar(unit.x, unit.y - 68, 42, unit.hp, unit.maxHp, "#68d8ff");
 }
 
 function drawEnemy(enemy) {
-  const usedStage1Sprite = drawStage1EnemySprite(enemy);
-  if (usedStage1Sprite) {
-    const isDying = enemy.dead || enemy.hp <= 0;
-    if (!isDying) {
-      drawHealthBar(
-        enemy.x,
-        enemy.y - STAGE1_ENEMY_SPRITE.healthBarOffsetY,
-        46,
-        enemy.hp,
-        enemy.maxHp,
-        "#ff6868"
-      );
-    }
-    return;
-  }
-
   ctx.save();
   ctx.translate(enemy.x, enemy.y);
-
-  const isDying = enemy.dead || enemy.hp <= 0;
-  const duration = enemy.deathAnimDuration || 0.55;
-  const deathProgress = isDying ? 1 - Math.max(0, enemy.deathAnimTimer || 0) / duration : 0;
-  const bob = isDying ? 0 : Math.sin((performance.now() + enemy.x * 11) * 0.012) * 2;
-
-  if (isDying) {
-    ctx.globalAlpha = Math.max(0.1, 1 - deathProgress * 0.85);
-    ctx.translate(0, deathProgress * 20);
-    ctx.scale(1, Math.max(0.25, 1 - deathProgress * 0.65));
-  } else {
-    ctx.translate(0, bob);
-  }
+  const bob = Math.sin((performance.now() + enemy.x * 11) * 0.012) * 2;
+  ctx.translate(0, bob);
 
   ctx.fillStyle = "rgba(0,0,0,0.22)";
   ctx.beginPath();
@@ -2388,46 +1543,11 @@ function drawEnemy(enemy) {
   ctx.fillRect(4, -52, 5, 4);
 
   ctx.restore();
-  if (!isDying) drawHealthBar(enemy.x, enemy.y - enemy.h - 18, 44, enemy.hp, enemy.maxHp, "#ff6868");
+  drawHealthBar(enemy.x, enemy.y - enemy.h - 18, 44, enemy.hp, enemy.maxHp, "#ff6868");
 }
 
 function drawProjectiles() {
   for (const projectile of gameState.projectiles) {
-    if (projectile.type === "heroBolt") {
-      ctx.save();
-      ctx.strokeStyle = "#9fe8ff";
-      ctx.shadowColor = "rgba(120, 220, 255, 0.95)";
-      ctx.shadowBlur = 10;
-      ctx.lineWidth = 4;
-      ctx.beginPath();
-      ctx.moveTo(projectile.x - 18, projectile.y + 2);
-      ctx.lineTo(projectile.x - 10, projectile.y - 9);
-      ctx.lineTo(projectile.x - 1, projectile.y + 1);
-      ctx.lineTo(projectile.x + 8, projectile.y - 10);
-      ctx.lineTo(projectile.x + 18, projectile.y);
-      ctx.stroke();
-      ctx.restore();
-      continue;
-    }
-
-    if (projectile.type === "mageBolt") {
-      ctx.save();
-      ctx.fillStyle = "#68eaff";
-      ctx.shadowColor = "rgba(104, 234, 255, 0.95)";
-      ctx.shadowBlur = 14;
-      ctx.beginPath();
-      ctx.arc(projectile.x, projectile.y, 7, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.strokeStyle = "rgba(225, 255, 255, 0.9)";
-      ctx.lineWidth = 2;
-      ctx.beginPath();
-      ctx.moveTo(projectile.x - 18, projectile.y + 2);
-      ctx.lineTo(projectile.x - 7, projectile.y - 4);
-      ctx.stroke();
-      ctx.restore();
-      continue;
-    }
-
     ctx.strokeStyle = "#f2fdff";
     ctx.lineWidth = 3;
     ctx.beginPath();
@@ -2463,13 +1583,6 @@ function drawParticles() {
     } else if (particle.type === "hit") {
       ctx.fillStyle = particle.color;
       ctx.fillRect(particle.x, particle.y, 5, 5);
-    } else if (particle.type === "heal") {
-      ctx.fillStyle = particle.color;
-      ctx.shadowColor = particle.color;
-      ctx.shadowBlur = 8;
-      ctx.beginPath();
-      ctx.arc(particle.x, particle.y, particle.size || 4, 0, Math.PI * 2);
-      ctx.fill();
     }
 
     ctx.restore();
@@ -2502,15 +1615,9 @@ function draw() {
   drawHealthBar(playerBaseUi.hpX, playerBaseUi.hpY, playerBaseUi.hpW, gameState.playerBaseHp, 100, "#79ff7a");
   drawHealthBar(enemyBaseUi.hpX, enemyBaseUi.hpY, enemyBaseUi.hpW, gameState.enemyBaseHp, gameState.enemyBaseMaxHp, "#ff6868");
 
-  const drawList = [
-    ...(gameState.hero && !gameState.hero.dead && gameState.hero.hp > 0 ? [gameState.hero] : []),
-    ...gameState.units,
-    ...gameState.enemies,
-  ].sort((a, b) => a.y - b.y || a.x - b.x);
-
+  const drawList = [...gameState.units, ...gameState.enemies].sort((a, b) => a.y - b.y || a.x - b.x);
   for (const entity of drawList) {
-    if (entity === gameState.hero) drawHero(entity);
-    else if (gameState.units.includes(entity)) drawUnit(entity);
+    if (gameState.units.includes(entity)) drawUnit(entity);
     else drawEnemy(entity);
   }
 
@@ -2528,7 +1635,7 @@ function gameLoop(now) {
 }
 
 window.addEventListener("keydown", (event) => {
-  const playableKeys = ["Space", "ArrowLeft", "ArrowRight"];
+  const playableKeys = ["Space"];
   if (playableKeys.includes(event.code)) event.preventDefault();
 
   if (isTitleVisible()) {
@@ -2589,12 +1696,6 @@ window.addEventListener("keydown", (event) => {
     return;
   }
 
-  keys[event.code] = true;
-
-  if (event.code === "Space") {
-    event.preventDefault();
-    heroAttack();
-  }
   if (event.code === "Digit1") {
     event.preventDefault();
     summonGuard();
@@ -2602,14 +1703,6 @@ window.addEventListener("keydown", (event) => {
   if (event.code === "Digit2") {
     event.preventDefault();
     summonArcher();
-  }
-  if (event.code === "Digit3") {
-    event.preventDefault();
-    summonMage();
-  }
-  if (event.code === "Digit4") {
-    event.preventDefault();
-    summonSaintess();
   }
 });
 
@@ -2661,8 +1754,6 @@ restartBtn.addEventListener("click", restartGame);
 if (stageSelectBtn) stageSelectBtn.addEventListener("click", showStageSelect);
 summonGuardBtn.addEventListener("click", summonGuard);
 summonArcherBtn.addEventListener("click", summonArcher);
-if (summonMageBtn) summonMageBtn.addEventListener("click", summonMage);
-if (summonSaintessBtn) summonSaintessBtn.addEventListener("click", summonSaintess);
 if (skillBtn) skillBtn.addEventListener("click", castHolySlash);
 // 전투 개편: 캔버스 터치 직접 공격은 제거했습니다.
 
