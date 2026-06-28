@@ -1,5 +1,25 @@
 ﻿// Main hero data, growth hooks, combat, and rendering.
 
+const GOD_HEROES = [
+  { id: "zeus", name: "제우스", essenceKey: "lightningEssence", essenceName: "번개의 정수", role: "공격", level: 1, star: 1, starProgress: 0 },
+  { id: "poseidon", name: "포세이돈", essenceKey: "seaEssence", essenceName: "바다의 정수", role: "제어", level: 1, star: 1, starProgress: 0 },
+  { id: "hades", name: "하데스", essenceKey: "soulEssence", essenceName: "영혼의 정수", role: "공격", level: 1, star: 1, starProgress: 0 },
+  { id: "athena", name: "아테나", essenceKey: "wisdomEssence", essenceName: "지혜의 정수", role: "지원", level: 1, star: 1, starProgress: 0 },
+  { id: "ares", name: "아레스", essenceKey: "warEssence", essenceName: "전쟁의 정수", role: "전사", level: 1, star: 1, starProgress: 0 },
+  { id: "heracles", name: "헤라클레스", essenceKey: "strengthEssence", essenceName: "힘의 정수", role: "방어", level: 1, star: 1, starProgress: 0 },
+];
+
+function getGodHeroes() {
+  return GOD_HEROES.map((hero) => ({ ...hero }));
+}
+
+function getGodHeroById(heroId) {
+  const hero = GOD_HEROES.find(({ id }) => id === heroId);
+  return hero ? { ...hero } : null;
+}
+
+window.HeroAPI = { heroes: GOD_HEROES, getGodHeroes, getGodHeroById };
+
 const HERO_ZEUS_SPRITE = {
   // 寃? 諛곌꼍???쒓굅?섍퀬 媛??꾨젅?꾩쓽 醫뚯슦 媛꾧꺽???ㅼ떆 留욎텣 理쒖떊 ?쒖슦???ㅽ봽?쇱씠?몄엯?덈떎.
   // ?쒗듃 ?ш린: 1536 x 1024, 6??x 5??湲곗?

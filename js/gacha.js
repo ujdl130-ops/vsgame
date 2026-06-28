@@ -1,5 +1,47 @@
 ﻿// Recruit/gacha screen and door animation.
 
+const GOD_DESCENT_SSR_RATE = 0.03;
+const DUPLICATE_GOD_ESSENCE_AMOUNT = 10;
+
+function summonGodDescentOnce(random = Math.random) {
+  if (random() >= GOD_DESCENT_SSR_RATE) {
+    return [{ rarity: "R", type: "normal", hero: null, isDuplicate: false, convertedEssence: null }];
+  }
+  const hero = GOD_HEROES[Math.floor(random() * GOD_HEROES.length)];
+  const isDuplicate = Boolean(playerProgress.ownedGods[hero.id]);
+  let convertedEssence = null;
+  if (isDuplicate) {
+    convertedEssence = { key: hero.essenceKey, name: hero.essenceName, amount: DUPLICATE_GOD_ESSENCE_AMOUNT };
+    grantPlayerRewards({ essences: { [hero.essenceKey]: DUPLICATE_GOD_ESSENCE_AMOUNT } });
+  } else {
+    playerProgress.ownedGods[hero.id] = { ...hero };
+    saveProgress();
+  }
+  return [{ rarity: "SSR", type: "god", hero: { ...hero }, isDuplicate, convertedEssence }];
+}
+
+function summonGodDescentTen(random = Math.random) {
+  return Array.from({ length: 10 }, () => summonGodDescentOnce(random)[0]);
+}
+
+function renderGachaResult(results, container = null) {
+  const list = Array.isArray(results) ? results : [];
+  if (!container) return list;
+  container.replaceChildren(...list.map((result) => {
+    const item = document.createElement("div");
+    item.className = `gacha-result gacha-result-${result.rarity.toLowerCase()}`;
+    item.textContent = result.hero
+      ? `${result.rarity} ${result.hero.name}${result.isDuplicate ? ` → ${result.convertedEssence.name} ${result.convertedEssence.amount}개` : ""}`
+      : result.rarity;
+    return item;
+  }));
+  return list;
+}
+
+function openGachaScreen() {
+  showRecruit();
+}
+
 function showRecruit() {
   if (titleScreen) titleScreen.classList.add("is-hidden");
   if (lobbyScreen) lobbyScreen.classList.add("is-hidden");
@@ -28,7 +70,7 @@ function getRecruitThreeStarResult(count) {
   return Math.random() < chance;
 }
 
-function startRecruitDoorAnimation(count) {
+function startRecruitDoorAnimation(count, results = null) {
   if (!recruitDoorScene) {
     if (recruitNotice) recruitNotice.textContent = `${count}??紐⑥쭛 湲곕뒫??以鍮?以묒엯?덈떎.`;
     return;
@@ -38,7 +80,9 @@ function startRecruitDoorAnimation(count) {
     active: true,
     tapCount: 0,
     pullCount: count,
-    hasThreeStar: getRecruitThreeStarResult(count),
+    hasThreeStar: Array.isArray(results)
+      ? results.some((result) => result.rarity === "SSR")
+      : getRecruitThreeStarResult(count),
     opened: false,
   };
 
@@ -144,3 +188,12 @@ function showRecruitPullNotice(count) {
 function showRecruitNotice() {
   showRecruit();
 }
+
+window.GachaAPI = {
+  SSR_RATE: GOD_DESCENT_SSR_RATE,
+  DUPLICATE_ESSENCE_AMOUNT: DUPLICATE_GOD_ESSENCE_AMOUNT,
+  summonGodDescentOnce,
+  summonGodDescentTen,
+  renderGachaResult,
+  openGachaScreen,
+};
