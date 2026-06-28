@@ -1,4 +1,4 @@
-﻿// Formation screen interactions.
+// Formation screen interactions.
 
 function showFormation() {
   if (titleScreen) titleScreen.classList.add("is-hidden");
@@ -18,7 +18,7 @@ function showFormation() {
   }
 
   if (formationNotice) {
-    formationNotice.textContent = "?좊떅???곗튂?섎㈃ 鍮??щ’??諛곗튂?????덈룄濡??뺤옣???덉젙?낅땲??";
+    formationNotice.textContent = "유닛을 터치하면 빈 슬롯에 배치할 수 있도록 확장할 예정입니다.";
   }
 }
 
@@ -32,9 +32,9 @@ function setFormationCategoryTab(tabName) {
   });
 
   if (!formationNotice) return;
-  if (tabName === "deck") formationNotice.textContent = "????엯?덈떎. 鍮??щ’???좊떅??諛곗튂?섎뒗 援ъ“濡??뺤옣???덉젙?낅땲??";
-  else if (tabName === "unit") formationNotice.textContent = "?좊떅 ??엯?덈떎. 蹂댁쑀 ?좊떅 紐⑸줉怨??뺣젹 湲곕뒫???ш린???곌껐?????덉뒿?덈떎.";
-  else formationNotice.textContent = "?????엯?덈떎. 異뷀썑 諛⑹뼱 ????몄꽦 UI瑜??곌껐?????덉뒿?덈떎.";
+  if (tabName === "deck") formationNotice.textContent = "덱 탭입니다. 빈 슬롯에 유닛을 배치하는 구조로 확장할 예정입니다.";
+  else if (tabName === "unit") formationNotice.textContent = "유닛 탭입니다. 보유 유닛 목록과 정렬 기능을 여기에 연결할 수 있습니다.";
+  else formationNotice.textContent = "타워 탭입니다. 추후 방어 타워 편성 UI를 연결할 수 있습니다.";
 }
 
 function setFormationDeckPage(page) {
@@ -42,7 +42,7 @@ function setFormationDeckPage(page) {
     tab.classList.toggle("is-active", tab.dataset.deckPage === String(page));
   });
   if (formationNotice) {
-    formationNotice.textContent = `??${page} ?섏씠吏?낅땲?? ?꾩옱??UI ?쒖븞 ?④퀎???щ’??鍮꾩썙???덉뒿?덈떎.`;
+    formationNotice.textContent = `덱 ${page} 페이지입니다. 현재는 UI 시안 단계라 슬롯이 비워져 있습니다.`;
   }
 }
 
@@ -51,6 +51,6 @@ function handleFormationSlotClick(index) {
   const target = formationSlots[index];
   if (target) target.classList.add("is-selected");
   if (formationNotice) {
-    formationNotice.textContent = `${index + 1}踰??щ’???좏깮?섏뿀?듬땲?? ?댄썑 ?좊떅 諛곗튂 湲곕뒫???곌껐?????덉뒿?덈떎.`;
+    formationNotice.textContent = `${index + 1}번 슬롯이 선택되었습니다. 이후 유닛 배치 기능을 연결할 수 있습니다.`;
   }
 }

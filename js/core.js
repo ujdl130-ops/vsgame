@@ -1,4 +1,4 @@
-﻿// Shared DOM references, constants, and asset loading.
+// Shared DOM references, constants, and asset loading.
 
 const canvas = document.getElementById("gameCanvas");
 const ctx = canvas.getContext("2d");
@@ -24,14 +24,14 @@ const summonArcherBtn = document.getElementById("summonArcherBtn");
 const summonMageBtn = document.getElementById("summonMageBtn");
 const summonSaintessBtn = document.getElementById("summonSaintessBtn");
 let summonThiefBtn = document.getElementById("summonThiefBtn");
-const skillBtn = document.getElementById("skillBtn"); // ?꾩옱 ?꾪닾 媛쒗렪?쇰줈 ?ㅽ궗 踰꾪듉? ?ъ슜?섏? ?딆뒿?덈떎.
+const skillBtn = document.getElementById("skillBtn"); // 전투 개편 후 스킬 버튼은 기본 공격 버튼으로 사용합니다.
 const zeusSkillBtn = document.getElementById("zeusSkillBtn");
 
 if (!summonThiefBtn && skillBtn && skillBtn.parentElement) {
   summonThiefBtn = document.createElement("button");
   summonThiefBtn.id = "summonThiefBtn";
   summonThiefBtn.type = "button";
-  summonThiefBtn.textContent = "?꾩쟻 ?뚰솚";
+  summonThiefBtn.textContent = "도적 소환";
   skillBtn.parentElement.insertBefore(summonThiefBtn, skillBtn);
 }
 
@@ -106,7 +106,7 @@ function loadGameImage(image, sourceList, setReady, label) {
 
   image.onload = () => {
     setReady(true);
-    console.log(`${label} 濡쒕뱶 ?깃났: ${image.src}`);
+    console.log(`${label} 로드 성공: ${image.src}`);
   };
 
   image.onerror = () => {
@@ -116,7 +116,7 @@ function loadGameImage(image, sourceList, setReady, label) {
       return;
     }
     setReady(false);
-    console.warn(`${label} 濡쒕뱶 ?ㅽ뙣. 湲곕낯 ?꾪삎?쇰줈 ?쒖떆?⑸땲??`);
+    console.warn(`${label} 로드 실패. 기본 도형으로 표시합니다.`);
   };
 
   image.src = sourceList[sourceIndex];
@@ -182,7 +182,7 @@ loadGameImage(
   stage1ForestBg,
   [ASSET_PATHS.stage1ForestBg],
   (ready) => { stage1ForestBgReady = ready; },
-  "Stage 1 ??諛곌꼍"
+  "Stage 1 숲 배경"
 );
 
 const playerCastleImage = new Image();

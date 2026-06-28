@@ -1,22 +1,22 @@
-﻿// Stage selection, waves, progress, and battlefield scenery.
+// Stage selection, waves, progress, and battlefield scenery.
 
 const STAGE_CONFIGS = {
   1: {
-    title: "????낃뎄",
+    title: "초원의 입구",
     maxWave: 3,
     startGold: 220,
     enemyBaseHp: 90,
     baseEnemiesToSpawn: 4,
   },
   2: {
-    title: "紐ъ뒪???몃뜒",
+    title: "모스 숲 언덕",
     maxWave: 3,
     startGold: 190,
     enemyBaseHp: 120,
     baseEnemiesToSpawn: 6,
   },
   3: {
-    title: "留덉솗???꾩큹湲곗?",
+    title: "마왕군 전초기지",
     maxWave: 3,
     startGold: 170,
     enemyBaseHp: 150,
@@ -57,22 +57,22 @@ function updateStageUI() {
     card.setAttribute("aria-disabled", unlocked ? "false" : "true");
 
     if (status) {
-      if (cleared) status.textContent = "?대━???꾨즺";
+      if (cleared) status.textContent = "클리어 완료";
       else if (unlocked) status.textContent = "도전 가능";
-      else status.textContent = `Stage ${stageNumber - 1} ?대━???꾩슂`;
+      else status.textContent = `Stage ${stageNumber - 1} 클리어 필요`;
     }
 
     if (lockIcon) {
       if (cleared) lockIcon.textContent = "완료";
       else if (unlocked) lockIcon.textContent = "열림";
-      else lockIcon.textContent = "?뵏";
+      else lockIcon.textContent = "잠김";
     }
   });
 }
 
 function showStageLockedNotice(stageNumber) {
   if (!stageSelectNotice) return;
-  stageSelectNotice.textContent = `Stage ${stageNumber}???꾩쭅 ?좉꺼?덉뒿?덈떎. 癒쇱? Stage ${stageNumber - 1}???대━?댄븯?몄슂.`;
+  stageSelectNotice.textContent = `Stage ${stageNumber}는 아직 잠겨 있습니다. 먼저 Stage ${stageNumber - 1}을 클리어하세요.`;
 }
 
 function showStageSelect() {
@@ -96,7 +96,7 @@ function showStageSelect() {
   }
 
   if (stageSelectNotice) {
-    stageSelectNotice.textContent = "Chapter 1???좏깮???꾪닾 吏??쓣 ?뺤씤?섏꽭??";
+    stageSelectNotice.textContent = "Chapter 1을 선택해 전투 지역을 확인하세요.";
   }
   updateStageUI();
 }
@@ -104,7 +104,7 @@ function showStageSelect() {
 function showChapterStages() {
   if (chapterPanel) chapterPanel.classList.add("is-hidden");
   if (stagePanel) stagePanel.classList.remove("is-hidden");
-  if (stageSelectNotice) stageSelectNotice.textContent = "Stage 1遺???쒖꽌?濡??대━?댄븯硫??ㅼ쓬 ?ㅽ뀒?댁?媛 ?대┰?덈떎.";
+  if (stageSelectNotice) stageSelectNotice.textContent = "Stage 1부터 순서대로 클리어하면 다음 스테이지가 열립니다.";
   updateStageUI();
 }
 
@@ -121,14 +121,14 @@ function updateWave(dt) {
   if (gameState.waveBreakTimer > 0) {
     gameState.waveBreakTimer -= dt;
     const remain = Math.ceil(gameState.waveBreakTimer);
-    gameState.message = `?ㅼ쓬 ?⑥씠釉뚭퉴吏 ${remain}`;
+    gameState.message = `다음 웨이브까지 ${remain}`;
     if (gameState.waveBreakTimer <= 0) {
       gameState.wave += 1;
       gameState.enemySpawnTimer = 0;
       gameState.spawnedInWave = 0;
       gameState.enemiesToSpawn = gameState.baseEnemiesToSpawn + gameState.wave * 3;
       gameState.enemyBaseHp = Math.min(gameState.enemyBaseMaxHp, gameState.enemyBaseHp + 18);
-      gameState.message = `Wave ${gameState.wave} ?쒖옉!`;
+      gameState.message = `Wave ${gameState.wave} 시작!`;
       gameState.messageTimer = 1.1;
     }
     return;
@@ -148,7 +148,7 @@ function updateWave(dt) {
     gameState.waveBreakTimer = 3;
     gameState.gold += 60;
   } else if (waveFinished && gameState.wave >= gameState.maxWave) {
-    completeStage(`STAGE ${selectedStage} CLEAR! 紐⑤뱺 ?⑥씠釉?諛⑹뼱 ?깃났`);
+    completeStage(`STAGE ${selectedStage} CLEAR! 모든 웨이브 방어 성공`);
   }
 }
 
@@ -156,7 +156,7 @@ function completeStage(message) {
   if (gameState.clear) return;
   gameState.clear = true;
   gameState.running = false;
-  gameState.message = `${message} 쨌 ?ㅽ뀒?댁? ?좏깮 踰꾪듉?쇰줈 ?ㅼ쓬 吏???꾩쟾`;
+  gameState.message = `${message} · 스테이지 선택 버튼으로 다음 지역에 도전`;
   unlockStageProgress(selectedStage);
   updateButtons();
 }
@@ -170,7 +170,7 @@ function drawBackground() {
     ctx.imageSmoothingEnabled = true;
     ctx.drawImage(stage1ForestBg, 0, 0, canvas.width, canvas.height);
 
-    // ?꾪닾 ?쇱씤???댁쭩 蹂댁젙?댁꽌 罹먮┃?곌? 諛곌꼍??臾삵엳吏 ?딅룄濡?泥섎━?⑸땲??
+    // 전투 라인을 살짝 보정해서 캐릭터가 배경에 묻히지 않도록 처리합니다.
     const laneGradient = ctx.createLinearGradient(0, GROUND_Y - 120, 0, canvas.height);
     laneGradient.addColorStop(0, "rgba(255, 255, 255, 0.00)");
     laneGradient.addColorStop(0.42, "rgba(255, 244, 179, 0.10)");

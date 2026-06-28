@@ -1,4 +1,4 @@
-﻿// Battle helpers, update pipeline, and draw pipeline.
+// Battle helpers, update pipeline, and draw pipeline.
 
 function isCombatAlive(entity) {
   return Boolean(entity && !entity.dead && entity.hp > 0);
@@ -78,15 +78,15 @@ function cleanupDeadEntities() {
     if (unit.hp <= 0 || unit.x >= ENEMY_BASE_X - 15) startUnitDeath(unit);
   }
 
-  // ?뚰솚 ?쒗븳 ?щ’? ?댁븘?덈뒗 蹂묒궗 ?섎? 湲곗??쇰줈 怨꾩궛?⑸땲??
-  // 蹂묒궗媛 二쎈뒗 ?쒓컙 hp媛 0???섎?濡? ?щ쭩 紐⑥뀡???⑥븘 ?덉뼱??鍮??먮━??利됱떆 ?앷퉩?덈떎.
+  // 소환 제한 슬롯은 살아있는 병사 수를 기준으로 계산합니다.
+  // 병사가 사망 모션 중이어도 빈 자리는 즉시 다시 사용할 수 있습니다.
   gameState.enemies = gameState.enemies.filter((enemy) => !enemy.dead || enemy.deathAnimTimer > 0);
   gameState.units = gameState.units.filter((unit) => !unit.dead || unit.deathAnimTimer > 0);
 }
 
 function checkEndConditions() {
   if (gameState.enemyBaseHp <= 0) {
-    completeStage(`STAGE ${selectedStage} CLEAR! ??湲곗? ?뚭눼`);
+    completeStage(`STAGE ${selectedStage} CLEAR! 적 기지 파괴`);
   }
 
   if (gameState.playerBaseHp <= 0) {

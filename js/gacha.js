@@ -1,4 +1,4 @@
-﻿// Recruit/gacha screen and door animation.
+// Recruit/gacha screen and door animation.
 
 function showRecruit() {
   if (titleScreen) titleScreen.classList.add("is-hidden");
@@ -17,20 +17,20 @@ function showRecruit() {
   }
 
   if (recruitNotice) {
-    recruitNotice.textContent = "?뺢뎅 湲곗궗?⑥뿉 ?⑸쪟???곸썒??紐⑥쭛?섏꽭??";
+    recruitNotice.textContent = "왕국 기사단에 합류할 영웅을 모집하세요.";
   }
 }
 
 function getRecruitThreeStarResult(count) {
-  // 1李??곗텧 ?꾨줈?좏??낆슜 ?꾩떆 ?뺣쪧?낅땲??
-  // 10??紐⑥쭛? ?뚯뒪?멸? ??蹂댁씠?꾨줉 3???곗텧 ?뺣쪧??議곌툑 ?믪??듬땲??
+  // 1회 모집 연출용 임시 확률입니다.
+  // 10회 모집은 테스트용으로 3성 연출 확률을 조금 높입니다.
   const chance = count >= 10 ? 0.45 : 0.18;
   return Math.random() < chance;
 }
 
 function startRecruitDoorAnimation(count) {
   if (!recruitDoorScene) {
-    if (recruitNotice) recruitNotice.textContent = `${count}??紐⑥쭛 湲곕뒫??以鍮?以묒엯?덈떎.`;
+    if (recruitNotice) recruitNotice.textContent = `${count}회 모집 기능은 준비 중입니다.`;
     return;
   }
 
@@ -45,8 +45,8 @@ function startRecruitDoorAnimation(count) {
   recruitDoorScene.classList.remove("is-hidden", "is-knock", "knock-one", "knock-two", "is-opening", "is-three-star", "is-normal");
   if (doorTapGuide) doorTapGuide.textContent = "문을 터치하세요";
   if (doorResultText) doorResultText.textContent = "";
-  if (doorKnockText) doorKnockText.textContent = "苡?";
-  if (recruitNotice) recruitNotice.textContent = `${count}??紐⑥쭛 ?곗텧 吏꾪뻾 以?쨌 臾몄쓣 3踰??곗튂?섏꽭??`;
+  if (doorKnockText) doorKnockText.textContent = "쾅!";
+  if (recruitNotice) recruitNotice.textContent = `${count}회 모집 연출 진행 중 · 문을 3번 터치하세요.`;
 }
 
 function hideRecruitDoorScene(silent = false) {
@@ -57,7 +57,7 @@ function hideRecruitDoorScene(silent = false) {
   recruitDoorState.opened = false;
   recruitDoorState.tapCount = 0;
   if (!silent && recruitNotice) {
-    recruitNotice.textContent = "?뺢뎅 湲곗궗?⑥뿉 ?⑸쪟???곸썒??紐⑥쭛?섏꽭??";
+    recruitNotice.textContent = "왕국 기사단에 합류할 영웅을 모집하세요.";
   }
 }
 
@@ -69,12 +69,12 @@ function playDoorKnockStep() {
   recruitDoorScene.classList.add("is-knock");
 
   if (doorKnockText) {
-    doorKnockText.textContent = recruitDoorState.tapCount === 1 ? "苡?" : "苡낆푷!";
+    doorKnockText.textContent = recruitDoorState.tapCount === 1 ? "쾅!" : "쾅쾅!";
   }
 
   if (doorTapGuide) {
     const remain = 3 - recruitDoorState.tapCount;
-    doorTapGuide.textContent = remain > 0 ? `臾몄씠 ?붾뱾由쎈땲??쨌 ${remain}踰????곗튂` : "臾몄씠 ?대┰?덈떎!";
+    doorTapGuide.textContent = remain > 0 ? `문이 흔들립니다 · ${remain}번 더 터치` : "문이 열립니다!";
   }
 
   clearTimeout(playDoorKnockStep.timer);
@@ -91,19 +91,19 @@ function openRecruitDoor() {
   recruitDoorScene.classList.add("is-opening", recruitDoorState.hasThreeStar ? "is-three-star" : "is-normal");
 
   if (doorTapGuide) {
-    doorTapGuide.textContent = recruitDoorState.hasThreeStar ? "?⑷툑鍮쏆씠 ?잛븘吏묐땲??" : "蹂대옃鍮쏆씠 ?섎윭?섏샃?덈떎!";
+    doorTapGuide.textContent = recruitDoorState.hasThreeStar ? "황금빛이 쏟아집니다!" : "보랏빛이 흘러나옵니다!";
   }
 
   if (doorResultText) {
     doorResultText.textContent = recruitDoorState.hasThreeStar
-      ? "?? ?쎌뾽 ?곸썒 ?깆옣!"
-      : "?곸썒 紐⑥쭛 ?꾨즺";
+      ? "★ 3성 픽업 영웅 등장!"
+      : "영웅 모집 완료";
   }
 
   if (recruitNotice) {
     recruitNotice.textContent = recruitDoorState.hasThreeStar
-      ? `${recruitDoorState.pullCount}??紐⑥쭛 寃곌낵 쨌 3???곸썒 ?띾뱷!`
-      : `${recruitDoorState.pullCount}??紐⑥쭛 寃곌낵 쨌 ?ㅼ쓬 湲고쉶瑜??몃젮蹂댁꽭??`;
+      ? `${recruitDoorState.pullCount}회 모집 결과 · 3성 영웅 획득!`
+      : `${recruitDoorState.pullCount}회 모집 결과 · 다음 기회를 노려보세요`;
   }
 }
 

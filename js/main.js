@@ -1,4 +1,4 @@
-﻿// Game lifecycle and event binding.
+// Game lifecycle and event binding.
 
 function resetGame() {
   if (animationId) cancelAnimationFrame(animationId);
@@ -201,6 +201,6 @@ if (summonSaintessBtn) summonSaintessBtn.addEventListener("click", summonSaintes
 if (summonThiefBtn) summonThiefBtn.addEventListener("click", showThiefSummonPlaceholder);
 if (skillBtn) skillBtn.addEventListener("click", castHolySlash);
 if (zeusSkillBtn) zeusSkillBtn.addEventListener("click", showZeusSkillPlaceholder);
-// ?꾪닾 媛쒗렪: 罹붾쾭???곗튂 吏곸젒 怨듦꺽? ?쒓굅?덉뒿?덈떎.
+// 전투 개편: 캔버스 직접 터치 공격은 제거했습니다.
 
 resetGame();
