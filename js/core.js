@@ -1,4 +1,4 @@
-// Shared DOM references, constants, and asset loading.
+﻿// Shared DOM references, constants, and asset loading.
 
 const canvas = document.getElementById("gameCanvas");
 const ctx = canvas.getContext("2d");
@@ -24,14 +24,14 @@ const summonArcherBtn = document.getElementById("summonArcherBtn");
 const summonMageBtn = document.getElementById("summonMageBtn");
 const summonSaintessBtn = document.getElementById("summonSaintessBtn");
 let summonThiefBtn = document.getElementById("summonThiefBtn");
-const skillBtn = document.getElementById("skillBtn"); // 현재 전투 개편으로 스킬 버튼은 사용하지 않습니다.
+const skillBtn = document.getElementById("skillBtn"); // ?꾩옱 ?꾪닾 媛쒗렪?쇰줈 ?ㅽ궗 踰꾪듉? ?ъ슜?섏? ?딆뒿?덈떎.
 const zeusSkillBtn = document.getElementById("zeusSkillBtn");
 
 if (!summonThiefBtn && skillBtn && skillBtn.parentElement) {
   summonThiefBtn = document.createElement("button");
   summonThiefBtn.id = "summonThiefBtn";
   summonThiefBtn.type = "button";
-  summonThiefBtn.textContent = "도적 소환";
+  summonThiefBtn.textContent = "?꾩쟻 ?뚰솚";
   skillBtn.parentElement.insertBefore(summonThiefBtn, skillBtn);
 }
 
@@ -106,7 +106,7 @@ function loadGameImage(image, sourceList, setReady, label) {
 
   image.onload = () => {
     setReady(true);
-    console.log(`${label} 로드 성공: ${image.src}`);
+    console.log(`${label} 濡쒕뱶 ?깃났: ${image.src}`);
   };
 
   image.onerror = () => {
@@ -116,7 +116,7 @@ function loadGameImage(image, sourceList, setReady, label) {
       return;
     }
     setReady(false);
-    console.warn(`${label} 로드 실패. 기본 도형으로 표시됩니다.`);
+    console.warn(`${label} 濡쒕뱶 ?ㅽ뙣. 湲곕낯 ?꾪삎?쇰줈 ?쒖떆?⑸땲??`);
   };
 
   image.src = sourceList[sourceIndex];
@@ -128,7 +128,7 @@ loadGameImage(
   archerSprite,
   [ASSET_PATHS.archerSprite],
   (ready) => { archerSpriteReady = ready; },
-  "궁수 스프라이트"
+  "Archer sprite"
 );
 
 const heroSprite = new Image();
@@ -137,7 +137,7 @@ loadGameImage(
   heroSprite,
   [ASSET_PATHS.heroSprite, "assets/animations/hero/zeus_hero_spritesheet_latest.png", "zeus_hero_spritesheet_latest.png"],
   (ready) => { heroSpriteReady = ready; },
-  "메인 오퍼레이터 제우스 스프라이트"
+  "Hero Zeus sprite"
 );
 
 const guardSprite = new Image();
@@ -146,7 +146,7 @@ loadGameImage(
   guardSprite,
   [ASSET_PATHS.guardSprite],
   (ready) => { guardSpriteReady = ready; },
-  "방패병 SD 기사 스프라이트"
+  "Guard sprite"
 );
 
 const mageSprite = new Image();
@@ -155,7 +155,7 @@ loadGameImage(
   mageSprite,
   [ASSET_PATHS.mageSprite],
   (ready) => { mageSpriteReady = ready; },
-  "마법사 스프라이트"
+  "Mage sprite"
 );
 
 const saintessSprite = new Image();
@@ -164,7 +164,7 @@ loadGameImage(
   saintessSprite,
   [ASSET_PATHS.saintessSprite],
   (ready) => { saintessSpriteReady = ready; },
-  "성녀 스프라이트"
+  "Saintess sprite"
 );
 
 const stage1EnemySprite = new Image();
@@ -182,7 +182,7 @@ loadGameImage(
   stage1ForestBg,
   [ASSET_PATHS.stage1ForestBg],
   (ready) => { stage1ForestBgReady = ready; },
-  "Stage 1 숲 배경"
+  "Stage 1 ??諛곌꼍"
 );
 
 const playerCastleImage = new Image();
@@ -191,7 +191,7 @@ loadGameImage(
   playerCastleImage,
   [ASSET_PATHS.playerCastle],
   (ready) => { playerCastleReady = ready; },
-  "플레이어 성"
+  "Player castle"
 );
 
 const enemyCastleImage = new Image();
@@ -200,5 +200,5 @@ loadGameImage(
   enemyCastleImage,
   [ASSET_PATHS.enemyCastle],
   (ready) => { enemyCastleReady = ready; },
-  "적국의 성"
+  "Enemy castle"
 );

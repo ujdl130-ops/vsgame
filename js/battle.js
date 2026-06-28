@@ -1,4 +1,4 @@
-// Battle helpers, update pipeline, and draw pipeline.
+﻿// Battle helpers, update pipeline, and draw pipeline.
 
 function isCombatAlive(entity) {
   return Boolean(entity && !entity.dead && entity.hp > 0);
@@ -78,21 +78,21 @@ function cleanupDeadEntities() {
     if (unit.hp <= 0 || unit.x >= ENEMY_BASE_X - 15) startUnitDeath(unit);
   }
 
-  // 소환 제한 슬롯은 살아있는 병사 수를 기준으로 계산합니다.
-  // 병사가 죽는 순간 hp가 0이 되므로, 사망 모션이 남아 있어도 빈 자리는 즉시 생깁니다.
+  // ?뚰솚 ?쒗븳 ?щ’? ?댁븘?덈뒗 蹂묒궗 ?섎? 湲곗??쇰줈 怨꾩궛?⑸땲??
+  // 蹂묒궗媛 二쎈뒗 ?쒓컙 hp媛 0???섎?濡? ?щ쭩 紐⑥뀡???⑥븘 ?덉뼱??鍮??먮━??利됱떆 ?앷퉩?덈떎.
   gameState.enemies = gameState.enemies.filter((enemy) => !enemy.dead || enemy.deathAnimTimer > 0);
   gameState.units = gameState.units.filter((unit) => !unit.dead || unit.deathAnimTimer > 0);
 }
 
 function checkEndConditions() {
   if (gameState.enemyBaseHp <= 0) {
-    completeStage(`STAGE ${selectedStage} CLEAR! 적 기지 파괴`);
+    completeStage(`STAGE ${selectedStage} CLEAR! ??湲곗? ?뚭눼`);
   }
 
   if (gameState.playerBaseHp <= 0) {
     gameState.gameOver = true;
     gameState.running = false;
-    gameState.message = "GAME OVER! 아군 기지가 파괴됨";
+    gameState.message = "GAME OVER! 아군 기지가 파괴되었습니다.";
   }
 }
 

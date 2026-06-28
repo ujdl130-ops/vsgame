@@ -1,4 +1,4 @@
-// Friendly unit summoning, behavior, and rendering.
+﻿// Friendly unit summoning, behavior, and rendering.
 
 function summonGuard() {
   if (!hasSummonSlot()) {
@@ -45,7 +45,7 @@ function summonArcher() {
   if (!spendGold(75)) return;
   gameState.units.push({
     type: "archer",
-    name: "궁수",
+    name: "沅곸닔",
     x: PLAYER_BASE_X + 62,
     y: GROUND_Y,
     w: 32,
@@ -115,7 +115,7 @@ function summonSaintess() {
   if (!spendGold(120)) return;
   gameState.units.push({
     type: "saintess",
-    name: "성녀",
+    name: "?깅?",
     x: PLAYER_BASE_X + 56,
     y: GROUND_Y,
     w: 32,
@@ -145,7 +145,7 @@ function summonSaintess() {
 
 function showThiefSummonPlaceholder() {
   if (!gameState || !gameState.running || gameState.gameOver || gameState.clear) return;
-  gameState.message = "도적 소환은 아직 준비 중입니다.";
+  gameState.message = "?꾩쟻 ?뚰솚? ?꾩쭅 以鍮?以묒엯?덈떎.";
   gameState.messageTimer = 1.25;
 }
 
@@ -198,8 +198,8 @@ function updateUnits(dt) {
       ? 1 - unit.attackAnimTimer / unit.attackAnimDuration
       : 1;
 
-    // 쫄병은 피격 모션이 없습니다. 공격 / 걷기 / 사망 모션만 사용합니다.
-    // 궁수는 활시위를 놓는 타이밍에 화살 발사
+    // 已꾨퀝? ?쇨꺽 紐⑥뀡???놁뒿?덈떎. 怨듦꺽 / 嫄룰린 / ?щ쭩 紐⑥뀡留??ъ슜?⑸땲??
+    // 沅곸닔???쒖떆?꾨? ?볥뒗 ??대컢???붿궡 諛쒖궗
     if (unit.type === "archer" && unit.pendingArrowShot && (attackProgress >= 0.62 || unit.attackAnimTimer <= 0)) {
       fireArcherArrow(unit);
     }
@@ -239,7 +239,7 @@ function updateUnits(dt) {
       continue;
     }
 
-    // 방패병은 검이 앞으로 나가는 프레임에 근접 피해 적용
+    // 諛⑺뙣蹂묒? 寃???욎쑝濡??섍????꾨젅?꾩뿉 洹쇱젒 ?쇳빐 ?곸슜
     if (unit.type === "guard" && unit.attackImpactPending && (attackProgress >= 0.48 || unit.attackAnimTimer <= 0)) {
       const attackTarget = isCombatAlive(unit.attackTarget)
         ? unit.attackTarget
@@ -476,7 +476,7 @@ function drawUnit(unit) {
     ctx.globalAlpha = Math.max(0.25, 1 - progress * 0.45);
   }
 
-  // 그림자는 땅에 고정합니다. 그림자가 캐릭터와 같이 흔들리면 걷기 모션이 더 어색해 보입니다.
+  // 洹몃┝?먮뒗 ?낆뿉 怨좎젙?⑸땲?? 洹몃┝?먭? 罹먮┃?곗? 媛숈씠 ?붾뱾由щ㈃ 嫄룰린 紐⑥뀡?????댁깋??蹂댁엯?덈떎.
   ctx.fillStyle = "rgba(0,0,0,0.2)";
   ctx.beginPath();
   ctx.ellipse(0, 3, 22, 7, 0, 0, Math.PI * 2);

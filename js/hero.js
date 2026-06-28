@@ -1,8 +1,8 @@
-// Main hero data, growth hooks, combat, and rendering.
+﻿// Main hero data, growth hooks, combat, and rendering.
 
 const HERO_ZEUS_SPRITE = {
-  // 검은 배경을 제거하고 각 프레임의 좌우 간격을 다시 맞춘 최신 제우스 스프라이트입니다.
-  // 시트 크기: 1536 x 1024, 6열 x 5행 기준
+  // 寃? 諛곌꼍???쒓굅?섍퀬 媛??꾨젅?꾩쓽 醫뚯슦 媛꾧꺽???ㅼ떆 留욎텣 理쒖떊 ?쒖슦???ㅽ봽?쇱씠?몄엯?덈떎.
+  // ?쒗듃 ?ш린: 1536 x 1024, 6??x 5??湲곗?
   frameW: 256,
   frameH: 204,
   drawW: 150,
@@ -56,7 +56,7 @@ function createMainHero() {
 
 function showZeusSkillPlaceholder() {
   if (!gameState || !gameState.running || gameState.gameOver || gameState.clear) return;
-  gameState.message = "제우스 스킬은 아직 준비 중입니다.";
+  gameState.message = "?쒖슦???ㅽ궗? ?꾩쭅 以鍮?以묒엯?덈떎.";
   gameState.messageTimer = 1.25;
 }
 
@@ -83,7 +83,7 @@ function fireHeroArrow(hero) {
     gameState.enemyBaseHp -= hero.damage * 0.65;
     spawnHit(ENEMY_BASE_X - 38, GROUND_Y - 78, "#9fe8ff");
   } else {
-    gameState.message = "사거리 안에 적이 없습니다.";
+    gameState.message = "?ш굅由??덉뿉 ?곸씠 ?놁뒿?덈떎.";
     gameState.messageTimer = 0.8;
   }
 
@@ -137,14 +137,14 @@ function updateHero(dt) {
       hero.dead = true;
       hero.respawnTimer = HERO_RESPAWN_SECONDS;
       hero.pendingHeroShot = false;
-      gameState.message = `메인 영웅 쓰러짐 · ${HERO_RESPAWN_SECONDS}초 후 부활`;
+      gameState.message = `메인 영웅이 쓰러졌습니다. ${HERO_RESPAWN_SECONDS}초 후 부활`;
       gameState.messageTimer = 1.2;
     }
 
     hero.respawnTimer = Math.max(0, hero.respawnTimer - dt);
     if (hero.respawnTimer <= 0) {
       Object.assign(hero, createMainHero());
-      gameState.message = "메인 영웅 부활! 다시 조작할 수 있습니다.";
+      gameState.message = "硫붿씤 ?곸썒 遺?? ?ㅼ떆 議곗옉?????덉뒿?덈떎.";
       gameState.messageTimer = 1.2;
     }
     return;

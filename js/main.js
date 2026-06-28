@@ -1,4 +1,4 @@
-// Game lifecycle and event binding.
+﻿// Game lifecycle and event binding.
 
 function resetGame() {
   if (animationId) cancelAnimationFrame(animationId);
@@ -31,7 +31,7 @@ function startGame(stageNumber = selectedStage) {
   document.body.classList.add("game-started");
   document.body.classList.remove("in-lobby", "in-stage-select", "in-shop", "in-recruit", "in-formation");
   gameState.running = true;
-  gameState.message = `Stage ${selectedStage} - Wave ${gameState.wave} 시작! 영웅을 보조하며 병사를 소환하세요`;
+  gameState.message = `Stage ${selectedStage} - Wave ${gameState.wave} 시작! 영웅을 보조하며 병사를 소환하세요.`;
   gameState.messageTimer = 1.2;
   updateHud();
   updateButtons();
@@ -201,5 +201,5 @@ if (summonSaintessBtn) summonSaintessBtn.addEventListener("click", summonSaintes
 if (summonThiefBtn) summonThiefBtn.addEventListener("click", showThiefSummonPlaceholder);
 if (skillBtn) skillBtn.addEventListener("click", castHolySlash);
 if (zeusSkillBtn) zeusSkillBtn.addEventListener("click", showZeusSkillPlaceholder);
-// 전투 개편: 캔버스 터치 직접 공격은 제거했습니다.
+// ?꾪닾 媛쒗렪: 罹붾쾭???곗튂 吏곸젒 怨듦꺽? ?쒓굅?덉뒿?덈떎.
 
