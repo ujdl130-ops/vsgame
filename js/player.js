@@ -10,6 +10,12 @@ let animationId = null;
 let keys = {};
 let gameOptionsWasRunning = false;
 let recruitDoorState = {
+  active: false,
+  tapCount: 0,
+  pullCount: 1,
+  hasThreeStar: false,
+  opened: false,
+};
 
 function createInitialState() {
   const stageConfig = getStageConfig(selectedStage);

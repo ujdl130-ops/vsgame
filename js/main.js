@@ -203,3 +203,4 @@ if (skillBtn) skillBtn.addEventListener("click", castHolySlash);
 if (zeusSkillBtn) zeusSkillBtn.addEventListener("click", showZeusSkillPlaceholder);
 // ?꾪닾 媛쒗렪: 罹붾쾭???곗튂 吏곸젒 怨듦꺽? ?쒓굅?덉뒿?덈떎.
 
+resetGame();
