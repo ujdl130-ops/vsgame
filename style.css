@@ -78,7 +78,7 @@ h2 {
 
 .hud {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(2, 1fr);
   gap: 10px;
   margin-bottom: 12px;
 }
@@ -107,7 +107,7 @@ h2 {
 
 @media (max-width: 900px) {
   .hud {
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(2, 1fr);
   }
 }
 
@@ -136,6 +136,42 @@ canvas {
 .battle-stage-frame canvas {
   max-width: none;
   margin: 0;
+}
+
+.battle-wave-badge {
+  position: absolute;
+  left: 18px;
+  top: 18px;
+  z-index: 3;
+  min-width: 138px;
+  height: 54px;
+  padding: 8px 14px;
+  border: 3px solid rgba(16, 21, 46, 0.94);
+  background:
+    linear-gradient(180deg, rgba(8, 12, 30, 0.88), rgba(10, 16, 34, 0.72)),
+    linear-gradient(90deg, rgba(112, 247, 255, 0.22), rgba(255, 214, 107, 0.12));
+  box-shadow:
+    inset 0 0 0 2px rgba(255, 255, 255, 0.16),
+    0 4px 0 rgba(0, 0, 0, 0.34),
+    0 0 0 3px rgba(112, 247, 255, 0.18);
+  pointer-events: none;
+}
+
+.battle-wave-badge span {
+  display: block;
+  margin-bottom: 2px;
+  color: rgba(255, 255, 255, 0.76);
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+}
+
+.battle-wave-badge strong {
+  display: block;
+  color: #fff0a7;
+  font-size: 25px;
+  line-height: 1;
+  text-shadow: 2px 2px 0 #000;
 }
 
 .game-options-btn {
@@ -713,6 +749,23 @@ canvas {
 }
 
 @media (max-width: 720px) {
+  .battle-wave-badge {
+    left: 10px;
+    top: 10px;
+    min-width: 96px;
+    height: 40px;
+    padding: 5px 9px;
+    border-width: 2px;
+  }
+
+  .battle-wave-badge span {
+    font-size: 9px;
+  }
+
+  .battle-wave-badge strong {
+    font-size: 18px;
+  }
+
   .battle-command-panel {
     --battle-unit-zone: 64%;
     height: 112px;

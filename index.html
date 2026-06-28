@@ -366,12 +366,15 @@
 
   <main class="game-wrap">
     <section class="hud">
-      <div><span>Wave</span><strong id="waveText">1 / 3</strong></div>
       <div><span>Gold</span><strong id="goldText">100</strong></div>
       <div><span>Units</span><strong id="unitCountText">0 / 5</strong></div>
     </section>
 
     <div class="battle-stage-frame">
+      <div class="battle-wave-badge" aria-label="웨이브 진행도">
+        <span>WAVE</span>
+        <strong id="waveText">1 / 3</strong>
+      </div>
       <canvas id="gameCanvas" width="960" height="540" aria-label="픽셀디펜스 게임 화면"></canvas>
       <button id="gameOptionsBtn" class="game-options-btn" type="button" aria-expanded="false" aria-controls="gameOptionsMenu">게임 옵션</button>
       <div id="gameOptionsMenu" class="game-options-menu is-hidden" aria-label="게임 옵션 메뉴">
