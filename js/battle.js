@@ -28,6 +28,7 @@ function startEnemyDeath(enemy) {
   enemy.moving = false;
   enemy.cooldown = 0;
   enemy.attackAnimTimer = 0;
+  enemy.paralyzeTimer = 0;
   enemy.deathAnimDuration = enemy.deathAnimDuration || 0.55;
   enemy.deathAnimTimer = enemy.deathAnimDuration;
 
@@ -245,6 +246,12 @@ function applyZeusThunderstormDamage() {
     if (!isEnemyTouchedByZeusLightning(enemy, effect)) continue;
 
     enemy.hp -= ZEUS_THUNDERSTORM_SKILL.damage;
+    enemy.paralyzeTimer = Math.max(
+      enemy.paralyzeTimer || 0,
+      ZEUS_THUNDERSTORM_SKILL.paralysisDuration
+    );
+    enemy.moving = false;
+    enemy.attackAnimTimer = 0;
     effect.hitEnemies.add(enemy);
     spawnHit(enemy.x, enemy.y - Math.max(34, enemy.h * 0.65), "#ffe36a");
   }

@@ -205,7 +205,7 @@ function renderRoundCommand(button, labelText, label, title) {
     const isSkill = button.classList.contains("zeus-skill-btn");
     button.innerHTML = `
       <span class="zeus-action-icon ${isSkill ? "skill" : "basic"}" aria-hidden="true"></span>
-      <span class="zeus-action-label">${isSkill ? "제우스 스킬" : "기본공격"}</span>
+      <span class="zeus-action-label">${isSkill ? "천벌" : "기본공격"}</span>
       <span class="zeus-action-key">${labelText}</span>
     `;
     return;
@@ -271,8 +271,8 @@ function refreshCommandButtonMarkup() {
   renderRoundCommand(
     zeusSkillBtn,
     zeusEffectActive ? "CAST" : "READY",
-    "제우스 스킬",
-    zeusEffectActive ? "번개 폭풍 연출 중입니다." : "거대한 먹구름과 번개 폭풍을 소환합니다."
+    "천벌",
+    zeusEffectActive ? "천벌 발동 중입니다." : "천벌로 적에게 피해를 주고 2초간 마비시킵니다."
   );
 }
 
@@ -328,7 +328,7 @@ function updateButtons() {
     const heroReady = hero && !hero.dead && hero.hp > 0;
     const zeusEffectActive = Boolean(gameState.zeusSkillEffect && gameState.zeusSkillEffect.active);
     zeusSkillBtn.disabled = disabled || !heroReady || zeusEffectActive;
-    zeusSkillBtn.title = zeusEffectActive ? "번개 폭풍 연출 중입니다." : "거대한 먹구름과 번개 폭풍을 소환합니다.";
+    zeusSkillBtn.title = zeusEffectActive ? "천벌 발동 중입니다." : "천벌로 적에게 피해를 주고 2초간 마비시킵니다.";
   }
   if (startBtn) {
     startBtn.textContent = gameState.running ? "진행 중" : "게임 시작";

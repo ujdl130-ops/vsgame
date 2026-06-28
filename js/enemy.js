@@ -62,6 +62,7 @@ function spawnEnemy() {
       moving: false,
       attackAnimTimer: 0,
       attackAnimDuration: 0.34,
+      paralyzeTimer: 0,
       dead: false,
       deathAnimTimer: 0,
       deathAnimDuration: 0.55,
@@ -87,6 +88,7 @@ function spawnEnemy() {
     moving: false,
     attackAnimTimer: 0,
     attackAnimDuration: isStageOne ? 0.48 : 0.34,
+    paralyzeTimer: 0,
     dead: false,
     deathAnimTimer: 0,
     deathAnimDuration: isStageOne ? 0.8 : 0.55,
@@ -106,7 +108,14 @@ function updateEnemies(dt) {
 
     enemy.cooldown = Math.max(0, enemy.cooldown - dt);
     enemy.attackAnimTimer = Math.max(0, (enemy.attackAnimTimer || 0) - dt);
+    enemy.paralyzeTimer = Math.max(0, (enemy.paralyzeTimer || 0) - dt);
     enemy.moving = false;
+
+    if (enemy.paralyzeTimer > 0) {
+      enemy.animTime = Math.max(0, (enemy.animTime || 0) - dt);
+      enemy.attackAnimTimer = 0;
+      continue;
+    }
 
     const target = findNearestAlly(enemy.x, enemy.range);
 
@@ -225,7 +234,7 @@ function drawEnemy(enemy) {
   const isDying = enemy.dead || enemy.hp <= 0;
   const duration = enemy.deathAnimDuration || 0.55;
   const deathProgress = isDying ? 1 - Math.max(0, enemy.deathAnimTimer || 0) / duration : 0;
-  const bob = isDying ? 0 : Math.sin((performance.now() + enemy.x * 11) * 0.012) * 2;
+  const bob = isDying || enemy.paralyzeTimer > 0 ? 0 : Math.sin((performance.now() + enemy.x * 11) * 0.012) * 2;
 
   if (isDying) {
     ctx.globalAlpha = Math.max(0.1, 1 - deathProgress * 0.85);

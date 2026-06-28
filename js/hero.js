@@ -22,6 +22,7 @@ const HERO_ZEUS_SPRITE = {
 };
 
 const ZEUS_THUNDERSTORM_SKILL = {
+  name: "천벌",
   frameCount: 8,
   duration: 1.8,
   cloudBuildTime: 0.75,
@@ -30,6 +31,7 @@ const ZEUS_THUNDERSTORM_SKILL = {
   clusterRadius: 150,
   framePadX: 28,
   damage: 45,
+  paralysisDuration: 2,
   lightningColumnRadius: 20,
   lightningHitColumns: [
     [0.24, 0.72],
@@ -119,7 +121,7 @@ function castZeusThunderstorm() {
     x: findZeusThunderstormTargetX(),
     hitEnemies: new Set(),
   };
-  gameState.message = "제우스 스킬! 번개 폭풍";
+  gameState.message = `${ZEUS_THUNDERSTORM_SKILL.name}!`;
   gameState.messageTimer = 0.65;
   updateButtons();
 }
