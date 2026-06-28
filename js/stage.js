@@ -57,15 +57,15 @@ function updateStageUI() {
     card.setAttribute("aria-disabled", unlocked ? "false" : "true");
 
     if (status) {
-      if (cleared) status.textContent = "클리어 완료";
-      else if (unlocked) status.textContent = "도전 가능";
-      else status.textContent = `Stage ${stageNumber - 1} 클리어 필요`;
+      if (cleared) status.textContent = "완료";
+      else if (unlocked) status.textContent = "도전";
+      else status.textContent = "잠김";
     }
 
     if (lockIcon) {
-      if (cleared) lockIcon.textContent = "완료";
-      else if (unlocked) lockIcon.textContent = "열림";
-      else lockIcon.textContent = "잠김";
+      if (cleared) lockIcon.textContent = "✓";
+      else if (unlocked) lockIcon.textContent = "▶";
+      else lockIcon.textContent = "🔒";
     }
   });
 }
@@ -84,8 +84,8 @@ function showStageSelect() {
   if (recruitScreen) recruitScreen.classList.add("is-hidden");
   if (formationScreen) formationScreen.classList.add("is-hidden");
   hideRecruitDoorScene(true);
-  if (chapterPanel) chapterPanel.classList.remove("is-hidden");
-  if (stagePanel) stagePanel.classList.add("is-hidden");
+  if (chapterPanel) chapterPanel.classList.add("is-hidden");
+  if (stagePanel) stagePanel.classList.remove("is-hidden");
   document.body.classList.remove("game-started", "in-lobby", "in-shop", "in-recruit", "in-formation");
   document.body.classList.add("in-stage-select");
 
@@ -96,7 +96,7 @@ function showStageSelect() {
   }
 
   if (stageSelectNotice) {
-    stageSelectNotice.textContent = "Chapter 1을 선택해 전투 지역을 확인하세요.";
+    stageSelectNotice.textContent = "Stage 1부터 순서대로 클리어하면 다음 스테이지가 열립니다.";
   }
   updateStageUI();
 }
