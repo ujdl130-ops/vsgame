@@ -58,8 +58,13 @@ function showRecruit() {
     updateButtons();
   }
 
+  const goldAmount = document.getElementById("recruitGoldAmount");
+  const diamondAmount = document.getElementById("recruitDiamondAmount");
+  if (goldAmount) goldAmount.textContent = Number(playerProgress.gold || 0).toLocaleString("ko-KR");
+  if (diamondAmount) diamondAmount.textContent = Number(playerProgress.diamonds || 0).toLocaleString("ko-KR");
+
   if (recruitNotice) {
-    recruitNotice.textContent = "?뺢뎅 湲곗궗?⑥뿉 ?⑸쪟???곸썒??紐⑥쭛?섏꽭??";
+    recruitNotice.innerHTML = "<strong>SSR 확률 3%</strong><span>중복 신 획득 시 해당 신의 정수로 변환됩니다.</span>";
   }
 }
 
@@ -101,7 +106,7 @@ function hideRecruitDoorScene(silent = false) {
   recruitDoorState.opened = false;
   recruitDoorState.tapCount = 0;
   if (!silent && recruitNotice) {
-    recruitNotice.textContent = "?뺢뎅 湲곗궗?⑥뿉 ?⑸쪟???곸썒??紐⑥쭛?섏꽭??";
+    recruitNotice.innerHTML = "<strong>SSR 확률 3%</strong><span>중복 신 획득 시 해당 신의 정수로 변환됩니다.</span>";
   }
 }
 
