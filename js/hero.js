@@ -23,7 +23,13 @@ const HERO_ZEUS_SPRITE = {
 
 const ZEUS_THUNDERSTORM_SKILL = {
   frameCount: 8,
-  duration: 1.35,
+  duration: 1.8,
+  cloudBuildTime: 0.75,
+  lightningStartTime: 0.82,
+  lightningDuration: 0.72,
+  clusterRadius: 150,
+  framePadX: 28,
+  fallbackX: ENEMY_BASE_X - 120,
 };
 
 
@@ -59,6 +65,35 @@ function createMainHero() {
 }
 
 
+function findZeusThunderstormTargetX() {
+  const enemies = gameState.enemies.filter(isCombatAlive);
+  if (enemies.length === 0) return ZEUS_THUNDERSTORM_SKILL.fallbackX;
+
+  let bestX = enemies[0].x;
+  let bestScore = -Infinity;
+
+  for (const candidate of enemies) {
+    let weightedX = 0;
+    let weightTotal = 0;
+
+    for (const enemy of enemies) {
+      const distance = Math.abs(enemy.x - candidate.x);
+      if (distance > ZEUS_THUNDERSTORM_SKILL.clusterRadius) continue;
+
+      const weight = 1 - distance / ZEUS_THUNDERSTORM_SKILL.clusterRadius;
+      weightedX += enemy.x * weight;
+      weightTotal += weight;
+    }
+
+    if (weightTotal > bestScore) {
+      bestScore = weightTotal;
+      bestX = weightedX / weightTotal;
+    }
+  }
+
+  return Math.max(130, Math.min(canvas.width - 130, bestX));
+}
+
 function castZeusThunderstorm() {
   if (!gameState || !gameState.running || gameState.gameOver || gameState.clear) return;
   const hero = gameState.hero;
@@ -69,9 +104,10 @@ function castZeusThunderstorm() {
     active: true,
     timer: 0,
     duration: ZEUS_THUNDERSTORM_SKILL.duration,
+    x: findZeusThunderstormTargetX(),
   };
   gameState.message = "제우스 스킬! 번개 폭풍";
-  gameState.messageTimer = 1.05;
+  gameState.messageTimer = 0.65;
   updateButtons();
 }
 

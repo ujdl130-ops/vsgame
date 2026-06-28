@@ -151,30 +151,64 @@ function drawMessage() {
 
 function drawZeusThunderstormEffect() {
   const effect = gameState.zeusSkillEffect;
-  if (!effect || !effect.active || !zeusStormSpriteReady) return;
+  if (!effect || !effect.active || !zeusStormCloudSpriteReady) return;
 
   const duration = effect.duration || ZEUS_THUNDERSTORM_SKILL.duration;
-  const progress = Math.max(0, Math.min(0.999, effect.timer / duration));
   const frameCount = ZEUS_THUNDERSTORM_SKILL.frameCount;
-  const frame = Math.min(frameCount - 1, Math.floor(progress * frameCount));
-  const frameW = zeusStormSprite.naturalWidth / frameCount;
-  const frameH = zeusStormSprite.naturalHeight;
-  const fadeIn = Math.min(1, progress / 0.12);
+  const progress = Math.max(0, Math.min(0.999, effect.timer / duration));
+  const cloudProgress = Math.max(0, Math.min(1, effect.timer / ZEUS_THUNDERSTORM_SKILL.cloudBuildTime));
+  const cloudFrame = Math.min(frameCount - 1, Math.floor(cloudProgress * frameCount));
+  const framePadX = ZEUS_THUNDERSTORM_SKILL.framePadX || 0;
+  const rawCloudFrameW = zeusStormCloudSprite.naturalWidth / frameCount;
+  const cloudFrameW = rawCloudFrameW - framePadX * 2;
+  const cloudFrameH = zeusStormCloudSprite.naturalHeight;
+  const drawW = cloudFrameW;
+  const drawH = cloudFrameH;
+  const drawX = Math.max(-40, Math.min(canvas.width - drawW + 40, effect.x - drawW / 2));
+  const drawY = -92 - (1 - cloudProgress) * 14;
   const fadeOut = Math.min(1, (1 - progress) / 0.18);
+  const cloudAlpha = Math.min(0.95, cloudProgress * cloudProgress * (3 - 2 * cloudProgress)) * fadeOut;
 
   ctx.save();
-  ctx.globalAlpha = Math.max(0, Math.min(0.96, fadeIn, fadeOut));
+  ctx.globalAlpha = cloudAlpha;
   ctx.imageSmoothingEnabled = true;
   ctx.drawImage(
-    zeusStormSprite,
-    frame * frameW,
+    zeusStormCloudSprite,
+    cloudFrame * rawCloudFrameW + framePadX,
     0,
-    frameW,
-    frameH,
+    cloudFrameW,
+    cloudFrameH,
+    drawX,
+    drawY,
+    drawW,
+    drawH
+  );
+  ctx.restore();
+
+  if (!zeusStormLightningSpriteReady || effect.timer < ZEUS_THUNDERSTORM_SKILL.lightningStartTime) return;
+
+  const lightningTime = effect.timer - ZEUS_THUNDERSTORM_SKILL.lightningStartTime;
+  const lightningProgress = Math.max(0, Math.min(0.999, lightningTime / ZEUS_THUNDERSTORM_SKILL.lightningDuration));
+  const lightningFrame = Math.min(frameCount - 1, Math.floor(lightningProgress * frameCount));
+  const rawLightningFrameW = zeusStormLightningSprite.naturalWidth / frameCount;
+  const lightningFrameW = rawLightningFrameW - framePadX * 2;
+  const lightningFrameH = zeusStormLightningSprite.naturalHeight;
+  const lightningAlpha = Math.min(1, (1 - lightningProgress) / 0.22)
+    * (0.72 + 0.28 * Math.sin(lightningProgress * Math.PI * 5));
+
+  ctx.save();
+  ctx.globalAlpha = Math.max(0, Math.min(1, lightningAlpha));
+  ctx.imageSmoothingEnabled = true;
+  ctx.drawImage(
+    zeusStormLightningSprite,
+    lightningFrame * rawLightningFrameW + framePadX,
     0,
-    -28,
-    canvas.width,
-    canvas.height * 1.04
+    lightningFrameW,
+    lightningFrameH,
+    drawX,
+    drawY,
+    drawW,
+    drawH
   );
   ctx.restore();
 }

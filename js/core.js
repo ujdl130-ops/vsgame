@@ -96,7 +96,8 @@ const ASSET_PATHS = {
   saintessSprite: "assets/animations/saintess/saintess_spritesheet_aligned.png",
   thiefSprite: "assets/animations/thief/female_thief_spritesheet.png",
   heroSprite: "assets/animations/hero/zeus_hero_spritesheet_latest_transparent_aligned.png",
-  zeusStormSprite: "assets/effects/zeus_thunderstorm_spritesheet.png",
+  zeusStormCloudSprite: "assets/effects/zeus_storm_cloud_spritesheet.png",
+  zeusStormLightningSprite: "assets/effects/zeus_storm_lightning_spritesheet.png",
   stage1EnemySprite: "assets/animations/enemy/stage1_goblin_spritesheet.png",
   stage1ForestBg: "assets/maps/stage1/stage1_forest_bg_v2.png",
   playerCastle: "assets/maps/stage1/player_castle_stage1.png",
@@ -142,13 +143,22 @@ loadGameImage(
   "Hero Zeus sprite"
 );
 
-const zeusStormSprite = new Image();
-let zeusStormSpriteReady = false;
+const zeusStormCloudSprite = new Image();
+let zeusStormCloudSpriteReady = false;
 loadGameImage(
-  zeusStormSprite,
-  [ASSET_PATHS.zeusStormSprite],
-  (ready) => { zeusStormSpriteReady = ready; },
-  "Zeus thunderstorm sprite"
+  zeusStormCloudSprite,
+  [ASSET_PATHS.zeusStormCloudSprite],
+  (ready) => { zeusStormCloudSpriteReady = ready; },
+  "Zeus storm cloud sprite"
+);
+
+const zeusStormLightningSprite = new Image();
+let zeusStormLightningSpriteReady = false;
+loadGameImage(
+  zeusStormLightningSprite,
+  [ASSET_PATHS.zeusStormLightningSprite],
+  (ready) => { zeusStormLightningSpriteReady = ready; },
+  "Zeus storm lightning sprite"
 );
 
 const guardSprite = new Image();
