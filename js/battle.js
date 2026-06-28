@@ -96,11 +96,166 @@ function checkEndConditions() {
   }
 }
 
+let zeusLightningMask = null;
+let zeusLightningMaskFailed = false;
+
+function getZeusStormRenderMetrics(effect, sprite) {
+  if (!effect || !sprite || !sprite.naturalWidth || !sprite.naturalHeight) return null;
+
+  const frameCount = ZEUS_THUNDERSTORM_SKILL.frameCount;
+  const cloudProgress = Math.max(0, Math.min(1, effect.timer / ZEUS_THUNDERSTORM_SKILL.cloudBuildTime));
+  const framePadX = ZEUS_THUNDERSTORM_SKILL.framePadX || 0;
+  const rawFrameW = sprite.naturalWidth / frameCount;
+  const frameW = rawFrameW - framePadX * 2;
+  const frameH = sprite.naturalHeight;
+
+  return {
+    frameCount,
+    cloudProgress,
+    framePadX,
+    rawFrameW,
+    frameW,
+    frameH,
+    drawW: frameW,
+    drawH: frameH,
+    drawX: Math.max(-40, Math.min(canvas.width - frameW + 40, effect.x - frameW / 2)),
+    drawY: -92 - (1 - cloudProgress) * 14,
+  };
+}
+
+function getZeusLightningFrameInfo(effect) {
+  if (!effect || effect.timer < ZEUS_THUNDERSTORM_SKILL.lightningStartTime) return null;
+
+  const lightningTime = effect.timer - ZEUS_THUNDERSTORM_SKILL.lightningStartTime;
+  const lightningProgress = Math.max(0, Math.min(0.999, lightningTime / ZEUS_THUNDERSTORM_SKILL.lightningDuration));
+  const frame = Math.min(
+    ZEUS_THUNDERSTORM_SKILL.frameCount - 1,
+    Math.floor(lightningProgress * ZEUS_THUNDERSTORM_SKILL.frameCount)
+  );
+
+  return { frame, progress: lightningProgress };
+}
+
+function getZeusLightningMask() {
+  if (zeusLightningMask || zeusLightningMaskFailed) return zeusLightningMask;
+  if (!zeusStormLightningSpriteReady || !zeusStormLightningSprite.naturalWidth) return null;
+
+  const maskCanvas = document.createElement("canvas");
+  maskCanvas.width = zeusStormLightningSprite.naturalWidth;
+  maskCanvas.height = zeusStormLightningSprite.naturalHeight;
+  const maskCtx = maskCanvas.getContext("2d");
+
+  try {
+    maskCtx.drawImage(zeusStormLightningSprite, 0, 0);
+    const imageData = maskCtx.getImageData(0, 0, maskCanvas.width, maskCanvas.height);
+    zeusLightningMask = {
+      width: maskCanvas.width,
+      height: maskCanvas.height,
+      data: imageData.data,
+    };
+  } catch (error) {
+    zeusLightningMaskFailed = true;
+    console.warn("Zeus lightning hit mask could not be prepared.", error);
+  }
+
+  return zeusLightningMask;
+}
+
+function hasZeusLightningAlphaAt(mask, x, y, radius = 5) {
+  const centerX = Math.round(x);
+  const centerY = Math.round(y);
+
+  for (let sampleY = centerY - radius; sampleY <= centerY + radius; sampleY += 2) {
+    if (sampleY < 0 || sampleY >= mask.height) continue;
+    for (let sampleX = centerX - radius; sampleX <= centerX + radius; sampleX += 2) {
+      if (sampleX < 0 || sampleX >= mask.width) continue;
+      const alpha = mask.data[(sampleY * mask.width + sampleX) * 4 + 3];
+      if (alpha > 35) return true;
+    }
+  }
+
+  return false;
+}
+
+function isEnemyNearZeusLightningColumn(enemy, frameInfo, metrics) {
+  const columns = ZEUS_THUNDERSTORM_SKILL.lightningHitColumns[frameInfo.frame] || [0.5];
+  const radius = ZEUS_THUNDERSTORM_SKILL.lightningColumnRadius || 18;
+  const halfW = Math.max(enemy.w * 0.9, 24);
+  const enemyLeft = enemy.x - halfW;
+  const enemyRight = enemy.x + halfW;
+  const enemyTop = enemy.y - Math.max(enemy.h + 24, 76);
+  const enemyBottom = enemy.y - 6;
+  const boltTop = metrics.drawY + metrics.frameH * 0.28;
+  const boltBottom = metrics.drawY + metrics.frameH * 0.74;
+
+  if (enemyBottom < boltTop || enemyTop > boltBottom) return false;
+
+  for (const column of columns) {
+    const boltX = metrics.drawX + metrics.drawW * column;
+    if (boltX >= enemyLeft - radius && boltX <= enemyRight + radius) return true;
+  }
+
+  return false;
+}
+
+function isEnemyTouchedByZeusLightning(enemy, effect) {
+  if (!isCombatAlive(enemy) || !zeusStormLightningSpriteReady) return false;
+
+  const frameInfo = getZeusLightningFrameInfo(effect);
+  const metrics = getZeusStormRenderMetrics(effect, zeusStormLightningSprite);
+  if (!frameInfo || !metrics) return false;
+
+  const mask = getZeusLightningMask();
+  if (!mask) return isEnemyNearZeusLightningColumn(enemy, frameInfo, metrics);
+
+  const halfW = Math.max(enemy.w * 0.9, 24);
+  const topY = enemy.y - Math.max(enemy.h + 24, 76);
+  const bottomY = enemy.y - 6;
+  const sampleXs = [-0.85, -0.45, 0, 0.45, 0.85];
+  const sampleYs = [0.12, 0.3, 0.48, 0.66, 0.84];
+
+  for (const xRatio of sampleXs) {
+    const screenX = enemy.x + halfW * xRatio;
+    if (screenX < metrics.drawX || screenX > metrics.drawX + metrics.drawW) continue;
+
+    for (const yRatio of sampleYs) {
+      const screenY = topY + (bottomY - topY) * yRatio;
+      if (screenY < metrics.drawY || screenY > metrics.drawY + metrics.drawH) continue;
+
+      const sourceX = frameInfo.frame * metrics.rawFrameW
+        + metrics.framePadX
+        + (screenX - metrics.drawX) * (metrics.frameW / metrics.drawW);
+      const sourceY = (screenY - metrics.drawY) * (metrics.frameH / metrics.drawH);
+
+      if (hasZeusLightningAlphaAt(mask, sourceX, sourceY)) return true;
+    }
+  }
+
+  return false;
+}
+
+function applyZeusThunderstormDamage() {
+  const effect = gameState.zeusSkillEffect;
+  if (!effect || !effect.active) return;
+
+  if (!effect.hitEnemies) effect.hitEnemies = new Set();
+
+  for (const enemy of gameState.enemies) {
+    if (!isCombatAlive(enemy) || effect.hitEnemies.has(enemy)) continue;
+    if (!isEnemyTouchedByZeusLightning(enemy, effect)) continue;
+
+    enemy.hp -= ZEUS_THUNDERSTORM_SKILL.damage;
+    effect.hitEnemies.add(enemy);
+    spawnHit(enemy.x, enemy.y - Math.max(34, enemy.h * 0.65), "#ffe36a");
+  }
+}
+
 function updateZeusThunderstormEffect(dt) {
   const effect = gameState.zeusSkillEffect;
   if (!effect || !effect.active) return;
 
   effect.timer += dt;
+  applyZeusThunderstormDamage();
   if (effect.timer >= effect.duration) {
     gameState.zeusSkillEffect = null;
     updateButtons();
@@ -154,61 +309,56 @@ function drawZeusThunderstormEffect() {
   if (!effect || !effect.active || !zeusStormCloudSpriteReady) return;
 
   const duration = effect.duration || ZEUS_THUNDERSTORM_SKILL.duration;
-  const frameCount = ZEUS_THUNDERSTORM_SKILL.frameCount;
   const progress = Math.max(0, Math.min(0.999, effect.timer / duration));
-  const cloudProgress = Math.max(0, Math.min(1, effect.timer / ZEUS_THUNDERSTORM_SKILL.cloudBuildTime));
-  const cloudFrame = Math.min(frameCount - 1, Math.floor(cloudProgress * frameCount));
-  const framePadX = ZEUS_THUNDERSTORM_SKILL.framePadX || 0;
-  const rawCloudFrameW = zeusStormCloudSprite.naturalWidth / frameCount;
-  const cloudFrameW = rawCloudFrameW - framePadX * 2;
-  const cloudFrameH = zeusStormCloudSprite.naturalHeight;
-  const drawW = cloudFrameW;
-  const drawH = cloudFrameH;
-  const drawX = Math.max(-40, Math.min(canvas.width - drawW + 40, effect.x - drawW / 2));
-  const drawY = -92 - (1 - cloudProgress) * 14;
+  const cloudMetrics = getZeusStormRenderMetrics(effect, zeusStormCloudSprite);
+  if (!cloudMetrics) return;
+
+  const cloudFrame = Math.min(
+    cloudMetrics.frameCount - 1,
+    Math.floor(cloudMetrics.cloudProgress * cloudMetrics.frameCount)
+  );
   const fadeOut = Math.min(1, (1 - progress) / 0.18);
-  const cloudAlpha = Math.min(0.95, cloudProgress * cloudProgress * (3 - 2 * cloudProgress)) * fadeOut;
+  const cloudEase = cloudMetrics.cloudProgress * cloudMetrics.cloudProgress * (3 - 2 * cloudMetrics.cloudProgress);
+  const cloudAlpha = Math.min(0.95, cloudEase) * fadeOut;
 
   ctx.save();
   ctx.globalAlpha = cloudAlpha;
   ctx.imageSmoothingEnabled = true;
   ctx.drawImage(
     zeusStormCloudSprite,
-    cloudFrame * rawCloudFrameW + framePadX,
+    cloudFrame * cloudMetrics.rawFrameW + cloudMetrics.framePadX,
     0,
-    cloudFrameW,
-    cloudFrameH,
-    drawX,
-    drawY,
-    drawW,
-    drawH
+    cloudMetrics.frameW,
+    cloudMetrics.frameH,
+    cloudMetrics.drawX,
+    cloudMetrics.drawY,
+    cloudMetrics.drawW,
+    cloudMetrics.drawH
   );
   ctx.restore();
 
   if (!zeusStormLightningSpriteReady || effect.timer < ZEUS_THUNDERSTORM_SKILL.lightningStartTime) return;
 
-  const lightningTime = effect.timer - ZEUS_THUNDERSTORM_SKILL.lightningStartTime;
-  const lightningProgress = Math.max(0, Math.min(0.999, lightningTime / ZEUS_THUNDERSTORM_SKILL.lightningDuration));
-  const lightningFrame = Math.min(frameCount - 1, Math.floor(lightningProgress * frameCount));
-  const rawLightningFrameW = zeusStormLightningSprite.naturalWidth / frameCount;
-  const lightningFrameW = rawLightningFrameW - framePadX * 2;
-  const lightningFrameH = zeusStormLightningSprite.naturalHeight;
-  const lightningAlpha = Math.min(1, (1 - lightningProgress) / 0.22)
-    * (0.72 + 0.28 * Math.sin(lightningProgress * Math.PI * 5));
+  const lightningFrameInfo = getZeusLightningFrameInfo(effect);
+  const lightningMetrics = getZeusStormRenderMetrics(effect, zeusStormLightningSprite);
+  if (!lightningFrameInfo || !lightningMetrics) return;
+
+  const lightningAlpha = Math.min(1, (1 - lightningFrameInfo.progress) / 0.22)
+    * (0.72 + 0.28 * Math.sin(lightningFrameInfo.progress * Math.PI * 5));
 
   ctx.save();
   ctx.globalAlpha = Math.max(0, Math.min(1, lightningAlpha));
   ctx.imageSmoothingEnabled = true;
   ctx.drawImage(
     zeusStormLightningSprite,
-    lightningFrame * rawLightningFrameW + framePadX,
+    lightningFrameInfo.frame * lightningMetrics.rawFrameW + lightningMetrics.framePadX,
     0,
-    lightningFrameW,
-    lightningFrameH,
-    drawX,
-    drawY,
-    drawW,
-    drawH
+    lightningMetrics.frameW,
+    lightningMetrics.frameH,
+    lightningMetrics.drawX,
+    lightningMetrics.drawY,
+    lightningMetrics.drawW,
+    lightningMetrics.drawH
   );
   ctx.restore();
 }

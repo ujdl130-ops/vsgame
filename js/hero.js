@@ -29,6 +29,18 @@ const ZEUS_THUNDERSTORM_SKILL = {
   lightningDuration: 0.72,
   clusterRadius: 150,
   framePadX: 28,
+  damage: 45,
+  lightningColumnRadius: 20,
+  lightningHitColumns: [
+    [0.24, 0.72],
+    [0.42, 0.72],
+    [0.28, 0.66],
+    [0.24, 0.56],
+    [0.36, 0.68],
+    [0.36, 0.76],
+    [0.18, 0.72],
+    [0.54, 0.78],
+  ],
   fallbackX: ENEMY_BASE_X - 120,
 };
 
@@ -105,6 +117,7 @@ function castZeusThunderstorm() {
     timer: 0,
     duration: ZEUS_THUNDERSTORM_SKILL.duration,
     x: findZeusThunderstormTargetX(),
+    hitEnemies: new Set(),
   };
   gameState.message = "제우스 스킬! 번개 폭풍";
   gameState.messageTimer = 0.65;
