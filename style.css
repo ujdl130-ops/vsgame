@@ -140,12 +140,12 @@ canvas {
 
 .battle-wave-badge {
   position: absolute;
-  left: 18px;
-  top: 18px;
+  left: 16px;
+  top: 14px;
   z-index: 3;
-  min-width: 138px;
-  height: 54px;
-  padding: 8px 14px;
+  min-width: 82px;
+  height: 42px;
+  padding: 5px 10px;
   border: 3px solid rgba(16, 21, 46, 0.94);
   background:
     linear-gradient(180deg, rgba(8, 12, 30, 0.88), rgba(10, 16, 34, 0.72)),
@@ -159,9 +159,9 @@ canvas {
 
 .battle-wave-badge span {
   display: block;
-  margin-bottom: 2px;
+  margin-bottom: 1px;
   color: rgba(255, 255, 255, 0.76);
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 900;
   letter-spacing: 0.12em;
 }
@@ -169,7 +169,7 @@ canvas {
 .battle-wave-badge strong {
   display: block;
   color: #fff0a7;
-  font-size: 25px;
+  font-size: 20px;
   line-height: 1;
   text-shadow: 2px 2px 0 #000;
 }
@@ -752,9 +752,9 @@ canvas {
   .battle-wave-badge {
     left: 10px;
     top: 10px;
-    min-width: 96px;
-    height: 40px;
-    padding: 5px 9px;
+    min-width: 74px;
+    height: 36px;
+    padding: 4px 8px;
     border-width: 2px;
   }
 
@@ -763,7 +763,7 @@ canvas {
   }
 
   .battle-wave-badge strong {
-    font-size: 18px;
+    font-size: 16px;
   }
 
   .battle-command-panel {
