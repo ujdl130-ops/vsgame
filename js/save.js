@@ -69,6 +69,25 @@ const LEVEL_UP_GOLD_MILESTONES = [
 
 const HERO_LEVEL_UP_COST_MULTIPLIER = 1.25;
 
+const CHARACTER_FRAGMENT_KEYS = {
+  guard: "guardFragment",
+  archer: "archerFragment",
+  thief: "thiefFragment",
+  mage: "mageFragment",
+  saintess: "saintessFragment",
+  hero: "heroFragment",
+};
+
+const TRANSCENDENCE_FRAGMENT_COSTS = {
+  2: 20,
+  3: 30,
+};
+
+const HERO_TRANSCENDENCE_FRAGMENT_COSTS = {
+  2: 40,
+  3: 40,
+};
+
 function resolveGrowthType(type) {
   return GROWTH_TYPE_ALIASES[type] || type;
 }
@@ -83,6 +102,11 @@ function clampTranscendenceStar(star) {
 
 function isHeroGrowthType(type) {
   return resolveGrowthType(type) === "hero";
+}
+
+function getCharacterFragmentKey(type) {
+  const growthType = resolveGrowthType(type);
+  return CHARACTER_FRAGMENT_KEYS[growthType] || `${growthType}Fragment`;
 }
 
 function getBaseCumulativeLevelUpGold(level) {
@@ -116,6 +140,35 @@ function getLevelUpGoldCost(type, fromLevel, toLevel = Number(fromLevel) + 1) {
 
 function getNextLevelUpGoldCost(type, growthState = getStoredGrowthState(type)) {
   return getLevelUpGoldCost(type, growthState.level, growthState.level + 1);
+}
+
+function getTranscendenceFragmentCosts(type) {
+  return isHeroGrowthType(type) ? HERO_TRANSCENDENCE_FRAGMENT_COSTS : TRANSCENDENCE_FRAGMENT_COSTS;
+}
+
+function getTranscendenceFragmentAmount(type, fromStar, toStar = Number(fromStar) + 1) {
+  const fragmentCosts = getTranscendenceFragmentCosts(type);
+  const startStar = clampTranscendenceStar(fromStar);
+  const targetStar = clampTranscendenceStar(toStar);
+  if (targetStar <= startStar) return 0;
+
+  let amount = 0;
+  for (let star = startStar + 1; star <= targetStar; star += 1) {
+    if (typeof fragmentCosts[star] !== "number") return null;
+    amount += fragmentCosts[star];
+  }
+  return amount;
+}
+
+function getTranscendenceCost(type, fromStar, toStar = Number(fromStar) + 1) {
+  return {
+    fragmentKey: getCharacterFragmentKey(type),
+    amount: getTranscendenceFragmentAmount(type, fromStar, toStar),
+  };
+}
+
+function getNextTranscendenceCost(type, growthState = getStoredGrowthState(type)) {
+  return getTranscendenceCost(type, growthState.star, growthState.star + 1);
 }
 
 function getStoredGrowthState(type) {
