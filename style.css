@@ -1237,8 +1237,9 @@ button:disabled {
     0 0 0 5px #111632,
     0 0 0 10px rgba(255, 214, 107, 0.6),
     16px 16px 0 rgba(0, 0, 0, 0.45);
-  background:
-    linear-gradient(to bottom, #76bfff 0 48%, #8be075 48% 76%, #5d3a24 76% 100%);
+  background-image: url('assets/maps/lobby/background.png'), linear-gradient(to bottom, #76bfff 0 48%, #8be075 48% 76%, #5d3a24 76% 100%);
+  background-size: cover, auto;
+  background-position: center center, 0 0;
   overflow: hidden;
   image-rendering: pixelated;
 }
@@ -1368,24 +1369,30 @@ button:disabled {
   border-radius: 18px 18px 0 0;
 }
 
-.lobby-hero-pixel,
+.lobby-hero,
 .lobby-guard-pixel {
   position: absolute;
   bottom: 82px;
   image-rendering: pixelated;
-  animation: lobbyIdle 0.75s steps(2) infinite;
 }
 
-.lobby-hero-pixel {
-  left: 46%;
-  width: 30px;
-  height: 48px;
-  background: #fff7d0;
-  box-shadow:
-    0 -16px 0 #ffe1b2,
-    0 -25px 0 #684027,
-    0 12px 0 #2f4b95,
-    23px -12px 0 -7px #f7f2ff;
+.lobby-hero {
+  left: 50%;
+  width: 64px;
+  height: 96px;
+  transform: translateX(-50%) translateY(0);
+  pointer-events: none;
+}
+
+.lobby-hero-sprite {
+  width: 100%;
+  height: 100%;
+  background-image: url('assets/animations/hero/zeus_hero_spritesheet_latest_transparent_aligned.png');
+  background-position: 0 0;
+  background-repeat: no-repeat;
+  background-size: auto;
+  image-rendering: pixelated;
+  animation: lobbyHeroBreath 2.4s ease-in-out infinite;
 }
 
 .lobby-guard-pixel {
@@ -1395,6 +1402,12 @@ button:disabled {
   background: #5db7ff;
   box-shadow: 0 -14px 0 #ffd7ac, 18px 3px 0 -5px #d6f1ff;
   animation-delay: 0.2s;
+}
+
+@keyframes lobbyHeroBreath {
+  0% { transform: translateX(-50%) translateY(0) scale(1); }
+  50% { transform: translateX(-50%) translateY(-4px) scale(1.02); }
+  100% { transform: translateX(-50%) translateY(0) scale(1); }
 }
 
 .lobby-flag {
