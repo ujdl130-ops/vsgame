@@ -142,8 +142,7 @@ function updateBattleViewportScale() {
   const baseHeight = 540;
   const maxScale = 2;
   const availableWidth = Math.max(1, window.innerWidth);
-  const availableHeight = Math.max(1, window.innerHeight);
-  const scale = Math.min(maxScale, availableWidth / baseWidth, availableHeight / baseHeight);
+  const scale = Math.min(maxScale, availableWidth / baseWidth);
   const rootStyle = document.documentElement.style;
 
   rootStyle.setProperty("--battle-visual-scale", scale.toFixed(4));

@@ -147,8 +147,10 @@ canvas {
 }
 
 body.game-started:not(.in-lobby):not(.in-stage-select):not(.in-shop):not(.in-recruit):not(.in-formation) {
+  align-items: flex-start;
   padding: 0;
-  overflow: hidden;
+  overflow-x: hidden;
+  overflow-y: auto;
 }
 
 body.game-started:not(.in-lobby):not(.in-stage-select):not(.in-shop):not(.in-recruit):not(.in-formation) .game-wrap {
