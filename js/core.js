@@ -8,6 +8,8 @@ const goldText = document.getElementById("goldText");
 const unitCountText = document.getElementById("unitCountText");
 const commandUnitText = document.getElementById("commandUnitText");
 const commandGoldText = document.getElementById("commandGoldText");
+const zeusManaText = document.getElementById("zeusManaText");
+const zeusManaFill = document.getElementById("zeusManaFill");
 const playerHpText = document.getElementById("playerHpText");
 const enemyHpText = document.getElementById("enemyHpText");
 

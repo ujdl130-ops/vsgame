@@ -161,6 +161,14 @@ function updateHud() {
 
   waveText.textContent = `${gameState.wave} / ${gameState.maxWave}`;
   goldText.textContent = `${Math.floor(gameState.gold)}G`;
+  if (zeusManaText) {
+    const zeusMana = Math.floor(gameState.zeusMana || 0);
+    const zeusManaMax = gameState.zeusManaMax || ZEUS_MANA_MAX;
+    zeusManaText.textContent = `${zeusMana}/${zeusManaMax}`;
+    if (zeusManaFill) {
+      zeusManaFill.style.width = `${Math.max(0, Math.min(100, (zeusMana / zeusManaMax) * 100))}%`;
+    }
+  }
   if (unitCountText) unitCountText.textContent = `${activeUnits} / ${MAX_SUMMONED_UNITS}`;
   if (commandUnitText) commandUnitText.textContent = `${activeUnits} / ${MAX_SUMMONED_UNITS}`;
   if (commandGoldText) commandGoldText.textContent = `${Math.floor(gameState.gold)}G`;
@@ -271,7 +279,6 @@ function refreshCommandButtonMarkup() {
   const hero = gameState && gameState.hero;
   const zeusEffectActive = Boolean(gameState && gameState.zeusSkillEffect && gameState.zeusSkillEffect.active);
   const zeusMana = Math.floor(gameState && gameState.zeusMana || 0);
-  const zeusManaLabel = zeusMana >= ZEUS_MANA_COST ? "READY" : `${zeusMana}/${ZEUS_MANA_COST}`;
   renderRoundCommand(
     skillBtn,
     hero && hero.dead ? `부활 ${Math.ceil(hero.respawnTimer)}` : "SPACE",
@@ -280,7 +287,7 @@ function refreshCommandButtonMarkup() {
   );
   renderRoundCommand(
     zeusSkillBtn,
-    zeusEffectActive ? "CAST" : zeusManaLabel,
+    zeusEffectActive ? "CAST" : "READY",
     "천벌",
     zeusEffectActive
       ? "천벌 발동 중입니다."
