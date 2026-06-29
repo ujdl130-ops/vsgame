@@ -33,6 +33,8 @@ function createInitialState() {
     wave: 1,
     gold: stageConfig.startGold,
     goldTimer: 0,
+    zeusMana: 0,
+    zeusManaMax: ZEUS_MANA_MAX,
     playerBaseHp: 100,
     enemyBaseHp: stageConfig.enemyBaseHp,
     enemyBaseMaxHp: stageConfig.enemyBaseHp,

@@ -113,6 +113,14 @@ function castZeusThunderstorm() {
   const hero = gameState.hero;
   if (!hero || hero.dead || hero.hp <= 0) return;
   if (gameState.zeusSkillEffect && gameState.zeusSkillEffect.active) return;
+  if ((gameState.zeusMana || 0) < ZEUS_MANA_COST) {
+    gameState.message = `마나 부족! 천벌은 ${ZEUS_MANA_COST}마나가 필요합니다.`;
+    gameState.messageTimer = 0.85;
+    updateButtons();
+    return;
+  }
+
+  gameState.zeusMana = Math.max(0, (gameState.zeusMana || 0) - ZEUS_MANA_COST);
 
   gameState.zeusSkillEffect = {
     active: true,

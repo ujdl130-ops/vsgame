@@ -88,6 +88,9 @@ const MAX_SUMMONED_UNITS = 5;
 const HERO_MIN_X = PLAYER_BASE_X + 72;
 const HERO_MAX_X = ENEMY_BASE_X - 74;
 const HERO_RESPAWN_SECONDS = 4;
+const ZEUS_MANA_MAX = 50;
+const ZEUS_MANA_COST = 50;
+const ZEUS_MANA_REGEN_PER_SECOND = 10;
 
 const ASSET_PATHS = {
   archerSprite: "assets/animations/archer/elf_archer_guard_size_spritesheet.png",

@@ -269,6 +269,16 @@ function updateZeusThunderstormEffect(dt) {
   }
 }
 
+function updateZeusMana(dt) {
+  if (!gameState) return;
+
+  const maxMana = gameState.zeusManaMax || ZEUS_MANA_MAX;
+  gameState.zeusMana = Math.min(
+    maxMana,
+    (gameState.zeusMana || 0) + ZEUS_MANA_REGEN_PER_SECOND * dt
+  );
+}
+
 function update(dt) {
   if (!gameState.running) {
     updateParticles(dt);
@@ -281,6 +291,7 @@ function update(dt) {
     gameState.gold += 12;
     gameState.goldTimer = 0;
   }
+  updateZeusMana(dt);
 
   updateWave(dt);
   updateHero(dt);

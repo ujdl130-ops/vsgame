@@ -270,6 +270,8 @@ function refreshCommandButtonMarkup() {
 
   const hero = gameState && gameState.hero;
   const zeusEffectActive = Boolean(gameState && gameState.zeusSkillEffect && gameState.zeusSkillEffect.active);
+  const zeusMana = Math.floor(gameState && gameState.zeusMana || 0);
+  const zeusManaLabel = zeusMana >= ZEUS_MANA_COST ? "READY" : `${zeusMana}/${ZEUS_MANA_COST}`;
   renderRoundCommand(
     skillBtn,
     hero && hero.dead ? `부활 ${Math.ceil(hero.respawnTimer)}` : "SPACE",
@@ -278,9 +280,11 @@ function refreshCommandButtonMarkup() {
   );
   renderRoundCommand(
     zeusSkillBtn,
-    zeusEffectActive ? "CAST" : "READY",
+    zeusEffectActive ? "CAST" : zeusManaLabel,
     "천벌",
-    zeusEffectActive ? "천벌 발동 중입니다." : "천벌로 적에게 피해를 주고 2초간 마비시킵니다."
+    zeusEffectActive
+      ? "천벌 발동 중입니다."
+      : `마나 ${zeusMana}/${ZEUS_MANA_COST} · 50마나를 소모해 적에게 피해를 주고 2초간 마비시킵니다.`
   );
 }
 
@@ -335,8 +339,14 @@ function updateButtons() {
     const hero = gameState.hero;
     const heroReady = hero && !hero.dead && hero.hp > 0;
     const zeusEffectActive = Boolean(gameState.zeusSkillEffect && gameState.zeusSkillEffect.active);
-    zeusSkillBtn.disabled = disabled || !heroReady || zeusEffectActive;
-    zeusSkillBtn.title = zeusEffectActive ? "천벌 발동 중입니다." : "천벌로 적에게 피해를 주고 2초간 마비시킵니다.";
+    const zeusMana = Math.floor(gameState.zeusMana || 0);
+    const zeusManaReady = zeusMana >= ZEUS_MANA_COST;
+    zeusSkillBtn.disabled = disabled || !heroReady || zeusEffectActive || !zeusManaReady;
+    zeusSkillBtn.title = zeusEffectActive
+      ? "천벌 발동 중입니다."
+      : zeusManaReady
+        ? "50마나를 소모해 천벌을 사용합니다."
+        : `마나 충전 중 ${zeusMana}/${ZEUS_MANA_COST}`;
   }
   if (startBtn) {
     startBtn.textContent = gameState.running ? "진행 중" : "게임 시작";
