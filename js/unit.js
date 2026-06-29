@@ -88,7 +88,7 @@ function summonMage() {
     hp: 42,
     maxHp: 42,
     speed: 38,
-    damage: 16,
+    damage: 8,
     range: 155,
     cooldown: 0,
     attackSpeed: 1.18,
@@ -618,7 +618,7 @@ function drawUnit(unit) {
       ctx.moveTo(18, -14);
       ctx.lineTo(26, -58);
       ctx.stroke();
-      ctx.fillStyle = "#68eaff";
+      ctx.fillStyle = "#ffbd35";
       ctx.beginPath();
       ctx.arc(27, -61, 5, 0, Math.PI * 2);
       ctx.fill();
