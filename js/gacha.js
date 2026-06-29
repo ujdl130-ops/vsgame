@@ -69,39 +69,180 @@ function showRecruit() {
 }
 
 function getRecruitThreeStarResult(count) {
-  // 1李??곗텧 ?꾨줈?좏??낆슜 ?꾩떆 ?뺣쪧?낅땲??
-  // 10??紐⑥쭛? ?뚯뒪?멸? ??蹂댁씠?꾨줉 3???곗텧 ?뺣쪧??議곌툑 ?믪??듬땲??
   const chance = count >= 10 ? 0.45 : 0.18;
   return Math.random() < chance;
 }
 
+const recruitAnimationTimers = [];
+
+function scheduleRecruitAnimation(callback, delay) {
+  const timer = setTimeout(callback, delay);
+  recruitAnimationTimers.push(timer);
+}
+
+function clearRecruitAnimationTimers() {
+  recruitAnimationTimers.splice(0).forEach(clearTimeout);
+}
+
+function ensureRecruitAnimationUI() {
+  if (!recruitDoorScene || recruitDoorScene.querySelector(".gacha-result-layer")) return;
+
+  const particles = document.createElement("div");
+  particles.className = "summon-particles";
+  particles.setAttribute("aria-hidden", "true");
+  for (let index = 0; index < 32; index += 1) {
+    const particle = document.createElement("i");
+    particle.style.setProperty("--particle-index", index);
+    particle.style.setProperty("--particle-x", `${8 + ((index * 29) % 84)}%`);
+    particle.style.setProperty("--particle-delay", `${(index % 8) * 0.08}s`);
+    particles.appendChild(particle);
+  }
+
+  const flash = document.createElement("div");
+  flash.className = "summon-white-flash";
+  flash.setAttribute("aria-hidden", "true");
+
+  const heavenStrike = document.createElement("div");
+  heavenStrike.className = "summon-heaven-strike";
+  heavenStrike.setAttribute("aria-hidden", "true");
+  heavenStrike.innerHTML = `
+    <div class="summon-divine-floor">
+      <i class="divine-floor-halo"></i>
+      <i class="divine-floor-runes"></i>
+      <i class="divine-floor-rays"></i>
+      <i class="divine-altar-step step-back"></i>
+      <i class="divine-altar-step step-middle"></i>
+      <i class="divine-altar-step step-front"></i>
+      <i class="divine-altar-core"></i>
+    </div>
+    <i class="summon-heaven-beam"></i>
+    <i class="summon-impact-core"></i>
+    <i class="summon-impact-ring ring-one"></i>
+    <i class="summon-impact-ring ring-two"></i>
+  `;
+
+  const resultLayer = document.createElement("section");
+  resultLayer.className = "gacha-result-layer";
+  resultLayer.setAttribute("aria-label", "강림 결과");
+  resultLayer.innerHTML = `
+    <h2>강림 결과</h2>
+    <div class="gacha-result-grid"></div>
+    <button class="gacha-result-confirm" type="button">확인</button>
+  `;
+  resultLayer.querySelector(".gacha-result-confirm").addEventListener("click", () => {
+    hideRecruitDoorScene();
+    showRecruit();
+  });
+
+  recruitDoorScene.append(particles, heavenStrike, flash, resultLayer);
+}
+
+function getGodEssenceIcon(heroId) {
+  const iconNames = {
+    zeus: "zeus",
+    poseidon: "poseidon",
+    hades: "hades",
+    athena: "athena",
+    ares: "ares",
+    heracles: "hercules",
+  };
+  return iconNames[heroId] ? `assets/icons/essence_${iconNames[heroId]}.png` : "";
+}
+
+function renderRecruitResultCards(results) {
+  const grid = recruitDoorScene?.querySelector(".gacha-result-grid");
+  if (!grid) return;
+  const list = Array.isArray(results) ? results : [];
+  grid.classList.toggle("is-ten-pull", list.length === 10);
+  grid.replaceChildren(...list.map((result, index) => {
+    const card = document.createElement("article");
+    card.className = `gacha-reveal-card is-${result.rarity.toLowerCase()}`;
+    card.style.setProperty("--card-index", index);
+
+    const rarity = document.createElement("strong");
+    rarity.className = "gacha-card-rarity";
+    rarity.textContent = result.rarity;
+
+    const icon = document.createElement("div");
+    icon.className = "gacha-card-icon";
+    const iconPath = result.hero ? getGodEssenceIcon(result.hero.id) : "";
+    if (iconPath) {
+      const image = document.createElement("img");
+      image.src = iconPath;
+      image.alt = "";
+      icon.appendChild(image);
+    } else {
+      icon.textContent = "✦";
+    }
+
+    const name = document.createElement("span");
+    name.className = "gacha-card-name";
+    name.textContent = result.hero ? result.hero.name : "강림의 흔적";
+
+    card.append(rarity, icon, name);
+    if (result.isDuplicate && result.convertedEssence) {
+      const conversion = document.createElement("small");
+      conversion.textContent = `${result.convertedEssence.name} ${result.convertedEssence.amount}개`;
+      card.appendChild(conversion);
+    }
+    return card;
+  }));
+}
+
 function startRecruitDoorAnimation(count, results = null) {
   if (!recruitDoorScene) {
-    if (recruitNotice) recruitNotice.textContent = `${count}??紐⑥쭛 湲곕뒫??以鍮?以묒엯?덈떎.`;
     return;
   }
 
+  clearRecruitAnimationTimers();
+  ensureRecruitAnimationUI();
+  const summonResults = Array.isArray(results) ? results : [];
   recruitDoorState = {
     active: true,
     tapCount: 0,
     pullCount: count,
-    hasThreeStar: Array.isArray(results)
-      ? results.some((result) => result.rarity === "SSR")
+    results: summonResults,
+    hasThreeStar: summonResults.length
+      ? summonResults.some((result) => result.rarity === "SSR")
       : getRecruitThreeStarResult(count),
     opened: false,
   };
 
-  recruitDoorScene.classList.remove("is-hidden", "is-knock", "knock-one", "knock-two", "is-opening", "is-three-star", "is-normal");
-  if (doorTapGuide) doorTapGuide.textContent = "문을 터치하세요";
+  recruitDoorScene.className = `recruit-door-scene is-summoning ${recruitDoorState.hasThreeStar ? "is-three-star" : "is-normal"}`;
+  if (recruitDoorCloseBtn) recruitDoorCloseBtn.textContent = "닫기";
+  if (doorTapGuide) doorTapGuide.textContent = "올림포스에 신성한 빛이 내립니다...";
   if (doorResultText) doorResultText.textContent = "";
-  if (doorKnockText) doorKnockText.textContent = "苡?";
-  if (recruitNotice) recruitNotice.textContent = `${count}??紐⑥쭛 ?곗텧 吏꾪뻾 以?쨌 臾몄쓣 3踰??곗튂?섏꽭??`;
+  if (doorKnockText) doorKnockText.textContent = "";
+  renderRecruitResultCards(summonResults);
+
+  scheduleRecruitAnimation(() => recruitDoorScene.classList.add("is-door-visible", "is-auto-shake"), 120);
+  scheduleRecruitAnimation(() => recruitDoorScene.classList.remove("is-auto-shake"), 620);
+  scheduleRecruitAnimation(() => recruitDoorScene.classList.add("is-charging"), 500);
+  scheduleRecruitAnimation(() => recruitDoorScene.classList.add("is-light-leak", "is-screen-shake"), 1050);
+  scheduleRecruitAnimation(() => recruitDoorScene.classList.add("is-heaven-strike"), 1280);
+  scheduleRecruitAnimation(() => {
+    recruitDoorScene.classList.add("is-impact-spread");
+    openRecruitDoor();
+  }, 1720);
+  scheduleRecruitAnimation(() => recruitDoorScene.classList.add("is-flashing"), 2000);
+  scheduleRecruitAnimation(() => {
+    recruitDoorScene.classList.add("is-results-visible");
+  }, 2250);
+  scheduleRecruitAnimation(() => {
+    recruitDoorScene.classList.remove("is-flashing", "is-screen-shake");
+  }, 2500);
 }
 
 function hideRecruitDoorScene(silent = false) {
   if (!recruitDoorScene) return;
+  clearRecruitAnimationTimers();
   recruitDoorScene.classList.add("is-hidden");
-  recruitDoorScene.classList.remove("is-knock", "knock-one", "knock-two", "is-opening", "is-three-star", "is-normal");
+  recruitDoorScene.classList.remove(
+    "is-summoning", "is-door-visible", "is-auto-shake", "is-charging",
+    "is-light-leak", "is-screen-shake", "is-opening", "is-flashing",
+    "is-heaven-strike", "is-impact-spread", "is-results-visible",
+    "is-three-star", "is-normal"
+  );
   recruitDoorState.active = false;
   recruitDoorState.opened = false;
   recruitDoorState.tapCount = 0;
@@ -111,49 +252,14 @@ function hideRecruitDoorScene(silent = false) {
 }
 
 function playDoorKnockStep() {
-  if (!recruitDoorScene) return;
-
-  recruitDoorScene.classList.remove("is-knock");
-  void recruitDoorScene.offsetWidth;
-  recruitDoorScene.classList.add("is-knock");
-
-  if (doorKnockText) {
-    doorKnockText.textContent = recruitDoorState.tapCount === 1 ? "苡?" : "苡낆푷!";
-  }
-
-  if (doorTapGuide) {
-    const remain = 3 - recruitDoorState.tapCount;
-    doorTapGuide.textContent = remain > 0 ? `臾몄씠 ?붾뱾由쎈땲??쨌 ${remain}踰????곗튂` : "臾몄씠 ?대┰?덈떎!";
-  }
-
-  clearTimeout(playDoorKnockStep.timer);
-  playDoorKnockStep.timer = setTimeout(() => {
-    recruitDoorScene.classList.remove("is-knock");
-  }, 420);
+  // The enhanced summon sequence advances automatically.
 }
 
 function openRecruitDoor() {
-  if (!recruitDoorScene) return;
+  if (!recruitDoorScene || recruitDoorState.opened) return;
 
   recruitDoorState.opened = true;
-  recruitDoorScene.classList.remove("is-knock", "knock-one", "knock-two");
-  recruitDoorScene.classList.add("is-opening", recruitDoorState.hasThreeStar ? "is-three-star" : "is-normal");
-
-  if (doorTapGuide) {
-    doorTapGuide.textContent = recruitDoorState.hasThreeStar ? "?⑷툑鍮쏆씠 ?잛븘吏묐땲??" : "蹂대옃鍮쏆씠 ?섎윭?섏샃?덈떎!";
-  }
-
-  if (doorResultText) {
-    doorResultText.textContent = recruitDoorState.hasThreeStar
-      ? "?? ?쎌뾽 ?곸썒 ?깆옣!"
-      : "?곸썒 紐⑥쭛 ?꾨즺";
-  }
-
-  if (recruitNotice) {
-    recruitNotice.textContent = recruitDoorState.hasThreeStar
-      ? `${recruitDoorState.pullCount}??紐⑥쭛 寃곌낵 쨌 3???곸썒 ?띾뱷!`
-      : `${recruitDoorState.pullCount}??紐⑥쭛 寃곌낵 쨌 ?ㅼ쓬 湲고쉶瑜??몃젮蹂댁꽭??`;
-  }
+  recruitDoorScene.classList.add("is-opening");
 }
 
 function handleRecruitDoorTap(event) {
@@ -162,28 +268,7 @@ function handleRecruitDoorTap(event) {
     event.stopPropagation();
   }
 
-  if (!recruitDoorScene || recruitDoorScene.classList.contains("is-hidden")) return;
-
-  if (recruitDoorState.opened) {
-    return;
-  }
-
-  recruitDoorState.tapCount += 1;
-
-  if (recruitDoorState.tapCount === 1) {
-    recruitDoorScene.classList.add("knock-one");
-    playDoorKnockStep();
-    return;
-  }
-
-  if (recruitDoorState.tapCount === 2) {
-    recruitDoorScene.classList.remove("knock-one");
-    recruitDoorScene.classList.add("knock-two");
-    playDoorKnockStep();
-    return;
-  }
-
-  openRecruitDoor();
+  // No interaction is required; the sequence is intentionally automatic.
 }
 
 function showRecruitPullNotice(count) {
