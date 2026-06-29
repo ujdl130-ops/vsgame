@@ -173,10 +173,10 @@ canvas {
 .battle-gold-badge {
   position: absolute;
   left: 118px;
-  bottom: 166px;
+  bottom: 148px;
   z-index: 6;
   width: 210px;
-  height: 34px;
+  height: 31px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -213,7 +213,7 @@ canvas {
 .battle-gold-badge strong {
   display: block;
   color: #fff8d4;
-  font-size: 21px;
+  font-size: 19px;
   font-weight: 900;
   line-height: 1;
   text-align: center;
@@ -277,7 +277,7 @@ canvas {
   right: 0;
   bottom: 0;
   z-index: 3;
-  height: 220px;
+  height: 200px;
   border: 0;
   background-image: url("assets/ChatGPT Image 2026년 6월 29일 오후 09_17_46.png");
   background-size: 100% 100%;
@@ -302,10 +302,10 @@ canvas {
 .battle-mana-gauge {
   position: absolute;
   z-index: 6;
-  top: 22px;
+  top: 20px;
   left: 63.5%;
   right: 6%;
-  height: 18px;
+  height: 17px;
   display: grid;
   grid-template-columns: auto 1fr auto;
   align-items: center;
@@ -373,12 +373,12 @@ canvas {
   z-index: 6;
   left: 58px;
   right: auto;
-  top: 44px;
+  top: 40px;
   display: grid;
   grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: 7px;
   width: 515px;
-  height: 72px;
+  height: 65px;
 }
 
 .battle-command-panel button {
@@ -403,7 +403,7 @@ canvas {
 .command-slot {
   position: relative;
   z-index: 1;
-  height: 72px;
+  height: 65px;
   border: 2px solid rgba(105, 207, 255, 0.22);
   background: rgba(3, 10, 18, 0.12);
   box-shadow: none;
@@ -576,16 +576,16 @@ canvas {
   left: 0;
   right: 0;
   bottom: 0;
-  height: 220px;
+  height: 200px;
   pointer-events: none;
 }
 
 .battle-arrow-btn {
   position: absolute;
   pointer-events: auto;
-  bottom: 30px;
+  bottom: 27px;
   width: 154px;
-  height: 54px;
+  height: 49px;
   border: 0;
   background: transparent;
   box-shadow: none;
@@ -623,7 +623,7 @@ canvas {
   position: absolute;
   pointer-events: auto;
   right: 42px;
-  bottom: 56px;
+  bottom: 51px;
   display: flex;
   align-items: center;
   gap: 42px;
@@ -632,7 +632,7 @@ canvas {
 .zeus-action-btn {
   position: relative;
   width: 112px;
-  height: 92px;
+  height: 84px;
   border: 0;
   background: transparent;
   box-shadow: none;
@@ -818,22 +818,22 @@ canvas {
 
   .battle-gold-badge {
     left: 82px;
-    bottom: 114px;
+    bottom: 103px;
     width: 160px;
-    height: 29px;
+    height: 26px;
     padding: 0;
     border-width: 0;
     box-shadow: none;
   }
 
   .battle-gold-badge strong {
-    font-size: 17px;
+    font-size: 16px;
     line-height: 1;
   }
 
   .battle-command-panel {
     --battle-unit-zone: 64%;
-    height: 154px;
+    height: 140px;
   }
 
   .battle-command-top {
@@ -843,10 +843,10 @@ canvas {
   }
 
   .battle-mana-gauge {
-    top: 15px;
+    top: 14px;
     left: 63.5%;
     right: 6%;
-    height: 16px;
+    height: 15px;
     gap: 4px;
     padding: 2px 5px;
     border-width: 2px;
@@ -881,14 +881,14 @@ canvas {
   .battle-slot-row {
     left: 42px;
     right: auto;
-    top: 31px;
+    top: 28px;
     width: 50%;
-    height: 50px;
+    height: 45px;
     gap: 4px;
   }
 
   .command-slot {
-    height: 50px;
+    height: 45px;
     border-width: 1px;
   }
 
@@ -905,13 +905,13 @@ canvas {
     left: 0;
     right: 0;
     bottom: 0;
-    height: 154px;
+    height: 140px;
   }
 
   .battle-arrow-btn {
-    bottom: 22px;
-    width: 88px;
-    height: 38px;
+    bottom: 20px;
+    width: 84px;
+    height: 35px;
   }
 
   .arrow-left {
@@ -929,13 +929,13 @@ canvas {
 
   .battle-round-group {
     right: 22px;
-    bottom: 39px;
+    bottom: 35px;
     gap: 18px;
   }
 
   .zeus-action-btn {
-    width: 72px;
-    height: 60px;
+    width: 68px;
+    height: 55px;
     border-width: 0;
   }
 
