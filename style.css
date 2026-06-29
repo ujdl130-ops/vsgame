@@ -12,6 +12,9 @@
   --pink: #ff6bd6;
   --green: #75ff8f;
   --ink: #111426;
+  --battle-visual-scale: 2;
+  --battle-visual-width: 1920px;
+  --battle-visual-height: 1080px;
 }
 
 body {
@@ -149,8 +152,8 @@ body.game-started:not(.in-lobby):not(.in-stage-select):not(.in-shop):not(.in-rec
 }
 
 body.game-started:not(.in-lobby):not(.in-stage-select):not(.in-shop):not(.in-recruit):not(.in-formation) .game-wrap {
-  width: 1920px;
-  height: 1080px;
+  width: var(--battle-visual-width);
+  height: var(--battle-visual-height);
   max-width: none;
   flex: 0 0 auto;
 }
@@ -160,7 +163,7 @@ body.game-started:not(.in-lobby):not(.in-stage-select):not(.in-shop):not(.in-rec
   height: 540px;
   max-width: none;
   margin: 0;
-  transform: scale(2);
+  transform: scale(var(--battle-visual-scale));
   transform-origin: top left;
 }
 

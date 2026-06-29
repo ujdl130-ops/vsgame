@@ -137,6 +137,20 @@ function handleOptionRestart() {
   restartGame();
 }
 
+function updateBattleViewportScale() {
+  const baseWidth = 960;
+  const baseHeight = 540;
+  const maxScale = 2;
+  const availableWidth = Math.max(1, window.innerWidth);
+  const availableHeight = Math.max(1, window.innerHeight);
+  const scale = Math.min(maxScale, availableWidth / baseWidth, availableHeight / baseHeight);
+  const rootStyle = document.documentElement.style;
+
+  rootStyle.setProperty("--battle-visual-scale", scale.toFixed(4));
+  rootStyle.setProperty("--battle-visual-width", `${baseWidth * scale}px`);
+  rootStyle.setProperty("--battle-visual-height", `${baseHeight * scale}px`);
+}
+
 function bindMovementJoystick(joystick) {
   if (!joystick) return;
 

@@ -32,6 +32,7 @@ function startGame(stageNumber = selectedStage) {
   hideRecruitDoorScene(true);
   document.body.classList.add("game-started");
   document.body.classList.remove("in-lobby", "in-stage-select", "in-shop", "in-recruit", "in-formation");
+  updateBattleViewportScale();
   gameState.running = true;
   gameState.message = `Stage ${selectedStage} - Wave ${gameState.wave} 시작! 영웅을 보조하며 병사를 소환하세요.`;
   gameState.messageTimer = 1.2;
@@ -147,6 +148,9 @@ window.addEventListener("keydown", (event) => {
 window.addEventListener("keyup", (event) => {
   if (event.code === "Space") keys.Space = false;
 });
+
+window.addEventListener("resize", updateBattleViewportScale);
+window.addEventListener("orientationchange", updateBattleViewportScale);
 
 function bindSummonButton(button, summonFn) {
   if (!button || typeof summonFn !== "function") return;
