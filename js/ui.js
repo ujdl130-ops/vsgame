@@ -254,10 +254,10 @@ function refreshCommandButtonMarkup() {
   );
   renderCommandSlot(
     summonThiefBtn,
-    "?",
-    "준비",
-    "?꾩쟻 ?뚰솚",
-    "?꾩쟻 ?뚰솚 湲곕뒫? 以鍮?以묒엯?덈떎."
+    "90",
+    slotText,
+    unitLimitReached ? `도적 소환 제한 ${activeUnits}/${MAX_SUMMONED_UNITS}` : "도적 소환",
+    unitLimitReached ? limitTitle : "빠른 근접 도적을 소환합니다."
   );
 
   const hero = gameState && gameState.hero;
@@ -306,9 +306,9 @@ function updateButtons() {
   }
 
   if (summonThiefBtn) {
-    summonThiefBtn.textContent = "?꾩쟻 ?뚰솚";
-    summonThiefBtn.disabled = disabled;
-    summonThiefBtn.title = "?꾩쟻 ?뚰솚 湲곕뒫? 以鍮?以묒엯?덈떎.";
+    summonThiefBtn.textContent = unitLimitReached ? `도적 소환 제한 ${slotText}` : `도적 소환 90G 쨌 ${slotText}`;
+    summonThiefBtn.disabled = disabled || unitLimitReached || gameState.gold < 90;
+    summonThiefBtn.title = unitLimitReached ? "?꾧뎔 蹂묒궗媛 ?щ쭩?섎㈃ ?ㅼ떆 ?뚰솚?????덉뒿?덈떎." : "빠른 근접 도적을 소환합니다.";
   }
 
   if (skillBtn) {

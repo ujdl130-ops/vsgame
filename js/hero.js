@@ -30,13 +30,13 @@ function createMainHero() {
     y: GROUND_Y,
     w: 38,
     h: 62,
-    hp: 120,
-    maxHp: 120,
-    speed: 150,
-    damage: 22,
-    range: 265,
+    hp: 180,
+    maxHp: 180,
+    speed: 145,
+    damage: 34,
+    range: 275,
     cooldown: 0,
-    attackSpeed: 0.5,
+    attackSpeed: 0.48,
     attackAnimTimer: 0,
     attackAnimDuration: 0.56,
     pendingHeroShot: false,
@@ -49,7 +49,7 @@ function createMainHero() {
     face: 1,
     dead: false,
     respawnTimer: 0,
-    lastHp: 120,
+    lastHp: 180,
   };
 }
 

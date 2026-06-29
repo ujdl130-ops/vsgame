@@ -141,6 +141,10 @@ window.addEventListener("keydown", (event) => {
     event.preventDefault();
     summonSaintess();
   }
+  if (event.code === "Digit5") {
+    event.preventDefault();
+    summonThief();
+  }
 });
 
 window.addEventListener("keyup", (event) => {
@@ -198,7 +202,7 @@ summonGuardBtn.addEventListener("click", summonGuard);
 summonArcherBtn.addEventListener("click", summonArcher);
 if (summonMageBtn) summonMageBtn.addEventListener("click", summonMage);
 if (summonSaintessBtn) summonSaintessBtn.addEventListener("click", summonSaintess);
-if (summonThiefBtn) summonThiefBtn.addEventListener("click", showThiefSummonPlaceholder);
+if (summonThiefBtn) summonThiefBtn.addEventListener("click", summonThief);
 if (skillBtn) skillBtn.addEventListener("click", castHolySlash);
 if (zeusSkillBtn) zeusSkillBtn.addEventListener("click", showZeusSkillPlaceholder);
 // ?꾪닾 媛쒗렪: 罹붾쾭???곗튂 吏곸젒 怨듦꺽? ?쒓굅?덉뒿?덈떎.

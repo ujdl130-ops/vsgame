@@ -15,13 +15,13 @@ function summonGuard() {
     y: GROUND_Y,
     w: 34,
     h: 56,
-    hp: 90,
-    maxHp: 90,
-    speed: 52,
-    damage: 13,
+    hp: 115,
+    maxHp: 115,
+    speed: 48,
+    damage: 10,
     range: 42,
     cooldown: 0,
-    attackSpeed: 0.75,
+    attackSpeed: 1.0,
     animTime: 0,
     moving: false,
     attackAnimTimer: 0,
@@ -53,10 +53,10 @@ function summonArcher() {
     hp: 48,
     maxHp: 48,
     speed: 42,
-    damage: 10,
-    range: 170,
+    damage: 13,
+    range: 175,
     cooldown: 0,
-    attackSpeed: 1.05,
+    attackSpeed: 0.85,
     animTime: 0,
     moving: false,
     attackAnimTimer: 0,
@@ -88,10 +88,10 @@ function summonMage() {
     hp: 42,
     maxHp: 42,
     speed: 38,
-    damage: 16,
+    damage: 15,
     range: 155,
     cooldown: 0,
-    attackSpeed: 1.18,
+    attackSpeed: 1.2,
     animTime: 0,
     moving: false,
     attackAnimTimer: 0,
@@ -124,7 +124,7 @@ function summonSaintess() {
     maxHp: 54,
     speed: 36,
     damage: 0,
-    range: 0,
+    range: 130,
     cooldown: 0,
     attackSpeed: 1.2,
     healRange: 130,
@@ -143,10 +143,39 @@ function summonSaintess() {
   });
 }
 
-function showThiefSummonPlaceholder() {
-  if (!gameState || !gameState.running || gameState.gameOver || gameState.clear) return;
-  gameState.message = "?꾩쟻 ?뚰솚? ?꾩쭅 以鍮?以묒엯?덈떎.";
-  gameState.messageTimer = 1.25;
+function summonThief() {
+  if (!hasSummonSlot()) {
+    showSummonLimitMessage();
+    updateHud();
+    updateButtons();
+    return;
+  }
+  if (!spendGold(90)) return;
+  gameState.units.push({
+    type: "thief",
+    name: "도적",
+    x: PLAYER_BASE_X + 64,
+    y: GROUND_Y,
+    w: 30,
+    h: 52,
+    hp: 58,
+    maxHp: 58,
+    speed: 72,
+    damage: 28,
+    range: 36,
+    cooldown: 0,
+    attackSpeed: 1.35,
+    animTime: 0,
+    moving: false,
+    attackAnimTimer: 0,
+    attackAnimDuration: 0.42,
+    attackImpactPending: false,
+    attackTarget: null,
+    dead: false,
+    deathAnimTimer: 0,
+    deathAnimDuration: 0.78,
+    deathRewarded: false,
+  });
 }
 
 function findSaintessHealTargets(unit) {
@@ -191,7 +220,7 @@ function updateUnits(dt) {
     unit.moving = false;
 
     const previousAttackTimer = unit.attackAnimTimer || 0;
-    unit.attackAnimDuration = unit.attackAnimDuration || (unit.type === "guard" ? 0.46 : (unit.type === "mage" || unit.type === "saintess") ? 0.72 : 0.58);
+    unit.attackAnimDuration = unit.attackAnimDuration || (unit.type === "guard" ? 0.46 : unit.type === "thief" ? 0.42 : (unit.type === "mage" || unit.type === "saintess") ? 0.72 : 0.58);
     unit.attackAnimTimer = Math.max(0, previousAttackTimer - dt);
 
     const attackProgress = unit.attackAnimTimer > 0
@@ -240,7 +269,7 @@ function updateUnits(dt) {
     }
 
     // 諛⑺뙣蹂묒? 寃???욎쑝濡??섍????꾨젅?꾩뿉 洹쇱젒 ?쇳빐 ?곸슜
-    if (unit.type === "guard" && unit.attackImpactPending && (attackProgress >= 0.48 || unit.attackAnimTimer <= 0)) {
+    if ((unit.type === "guard" || unit.type === "thief") && unit.attackImpactPending && (attackProgress >= 0.48 || unit.attackAnimTimer <= 0)) {
       const attackTarget = isCombatAlive(unit.attackTarget)
         ? unit.attackTarget
         : findNearestEnemy(unit.x, unit.range + 12);
@@ -268,8 +297,8 @@ function updateUnits(dt) {
           unit.attackAnimTimer = unit.attackAnimDuration;
           unit.pendingMageShot = true;
           unit.shotTarget = target;
-        } else if (unit.type === "guard") {
-          unit.attackAnimDuration = 0.46;
+        } else if (unit.type === "guard" || unit.type === "thief") {
+          unit.attackAnimDuration = unit.type === "guard" ? 0.46 : 0.42;
           unit.attackAnimTimer = unit.attackAnimDuration;
           unit.attackImpactPending = true;
           unit.attackTarget = target;
@@ -283,7 +312,7 @@ function updateUnits(dt) {
     }
 
     if (unit.x > ENEMY_BASE_X - 35) {
-      gameState.enemyBaseHp -= unit.type === "guard" ? 18 * dt : unit.type === "mage" ? 10 * dt : 8 * dt;
+      gameState.enemyBaseHp -= unit.type === "guard" ? 18 * dt : unit.type === "thief" ? 14 * dt : unit.type === "mage" ? 10 * dt : 8 * dt;
       unit.x = ENEMY_BASE_X - 35;
       unit.moving = false;
     }
@@ -464,6 +493,49 @@ function drawSaintessSprite(unit) {
   return true;
 }
 
+function drawThiefSprite(unit) {
+  if (!thiefSpriteReady) return false;
+
+  let anim = "idle";
+  if (unit.dead || unit.hp <= 0) anim = "death";
+  else if (unit.attackAnimTimer > 0) anim = "attack";
+  else if (unit.moving) anim = "walk";
+
+  const frameCount = THIEF_SPRITE.frames[anim] || 1;
+  const fps = THIEF_SPRITE.fps[anim] || 8;
+  let frame = Math.floor((unit.animTime || 0) * fps) % frameCount;
+
+  if (anim === "attack") {
+    const duration = unit.attackAnimDuration || 0.42;
+    const progress = 1 - unit.attackAnimTimer / duration;
+    frame = Math.min(frameCount - 1, Math.max(0, Math.floor(progress * frameCount)));
+  } else if (anim === "death") {
+    const duration = unit.deathAnimDuration || 0.78;
+    const progress = 1 - Math.max(0, unit.deathAnimTimer || 0) / duration;
+    frame = Math.min(frameCount - 1, Math.max(0, Math.floor(progress * frameCount)));
+  }
+
+  const sx = frame * THIEF_SPRITE.frameW;
+  const sy = THIEF_SPRITE.rows[anim] * THIEF_SPRITE.frameH;
+  const dw = THIEF_SPRITE.drawW;
+  const dh = THIEF_SPRITE.drawH;
+
+  ctx.imageSmoothingEnabled = false;
+  ctx.drawImage(
+    thiefSprite,
+    sx,
+    sy,
+    THIEF_SPRITE.frameW,
+    THIEF_SPRITE.frameH,
+    -dw / 2 + 2,
+    -dh + 8,
+    dw,
+    dh
+  );
+
+  return true;
+}
+
 function drawUnit(unit) {
   ctx.save();
   ctx.translate(unit.x, unit.y);
@@ -571,6 +643,25 @@ function drawUnit(unit) {
       ctx.beginPath();
       ctx.arc(27, -61, 5, 0, Math.PI * 2);
       ctx.fill();
+    }
+  } else if (unit.type === "thief") {
+    const drewSprite = drawThiefSprite(unit);
+
+    if (!drewSprite) {
+      ctx.translate(0, bob);
+
+      ctx.fillStyle = "#2f2a42";
+      ctx.fillRect(-12, -38, 24, 30);
+      ctx.fillStyle = "#ffd7ac";
+      ctx.fillRect(-10, -54, 20, 17);
+      ctx.fillStyle = "#503a7d";
+      ctx.fillRect(-14, -31, 28, 13);
+      ctx.strokeStyle = "#d9d7f6";
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.moveTo(14, -24);
+      ctx.lineTo(32, -38);
+      ctx.stroke();
     }
   }
 
