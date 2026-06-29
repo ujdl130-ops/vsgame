@@ -163,14 +163,11 @@ function completeStage(message) {
 
 
 function drawBackground() {
-  const isStage1 = gameState && Number(gameState.stage) === 1;
-
-  if (isStage1 && stage1ForestBgReady) {
+  if (gameState && stageBackgroundReady) {
     ctx.save();
     ctx.imageSmoothingEnabled = true;
-    ctx.drawImage(stage1ForestBg, 0, 0, canvas.width, canvas.height);
+    ctx.drawImage(stageBackgroundImage, 0, 0, canvas.width, canvas.height);
 
-    // ?꾪닾 ?쇱씤???댁쭩 蹂댁젙?댁꽌 罹먮┃?곌? 諛곌꼍??臾삵엳吏 ?딅룄濡?泥섎━?⑸땲??
     const laneGradient = ctx.createLinearGradient(0, GROUND_Y - 120, 0, canvas.height);
     laneGradient.addColorStop(0, "rgba(255, 255, 255, 0.00)");
     laneGradient.addColorStop(0.42, "rgba(255, 244, 179, 0.10)");

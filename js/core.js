@@ -96,9 +96,10 @@ const ASSET_PATHS = {
   saintessSprite: "assets/animations/saintess/saintess_spritesheet_aligned.png",
   heroSprite: "assets/animations/hero/zeus_hero_spritesheet_latest_transparent_aligned.png",
   stage1EnemySprite: "assets/animations/enemy/stage1_goblin_spritesheet.png",
-  stage1ForestBg: "assets/maps/stage1/stage1_forest_bg_v2.png",
-  playerCastle: "assets/maps/stage1/player_castle_stage1.png",
-  enemyCastle: "assets/maps/stage1/enemy_castle_stage1.png",
+  stage1Background: "assets/maps/stage1/stage1_forest_bg_v2.png",
+  stageBackgroundTemplate: "assets/maps/stage{stage}/stage{stage}_background.png",
+  playerCastleTemplate: "assets/maps/stage{stage}/player_castle_stage1.png",
+  enemyCastleTemplate: "assets/maps/stage{stage}/enemy_castle_stage1.png",
 };
 
 function loadGameImage(image, sourceList, setReady, label) {
@@ -176,29 +177,46 @@ loadGameImage(
   "Stage 1 enemy sprite"
 );
 
-const stage1ForestBg = new Image();
-let stage1ForestBgReady = false;
-loadGameImage(
-  stage1ForestBg,
-  [ASSET_PATHS.stage1ForestBg],
-  (ready) => { stage1ForestBgReady = ready; },
-  "Stage 1 ??諛곌꼍"
-);
+function resolveStageAssetPath(stageNumber, templateKey) {
+  const stage = Math.min(Math.max(1, Number(stageNumber) || 1), 3);
+  return ASSET_PATHS[templateKey].replace(/{stage}/g, String(stage));
+}
 
+const stageBackgroundImage = new Image();
+let stageBackgroundReady = false;
 const playerCastleImage = new Image();
 let playerCastleReady = false;
-loadGameImage(
-  playerCastleImage,
-  [ASSET_PATHS.playerCastle],
-  (ready) => { playerCastleReady = ready; },
-  "Player castle"
-);
-
 const enemyCastleImage = new Image();
 let enemyCastleReady = false;
-loadGameImage(
-  enemyCastleImage,
-  [ASSET_PATHS.enemyCastle],
-  (ready) => { enemyCastleReady = ready; },
-  "Enemy castle"
-);
+
+function loadStageAssets(stageNumber) {
+  const stage = Math.min(Math.max(1, Number(stageNumber) || 1), 3);
+  stageBackgroundReady = false;
+  playerCastleReady = false;
+  enemyCastleReady = false;
+
+  const backgroundPath = stage === 1
+    ? ASSET_PATHS.stage1Background
+    : resolveStageAssetPath(stage, "stageBackgroundTemplate");
+
+  loadGameImage(
+    stageBackgroundImage,
+    [backgroundPath],
+    (ready) => { stageBackgroundReady = ready; },
+    `Stage ${stage} background`
+  );
+
+  loadGameImage(
+    playerCastleImage,
+    [resolveStageAssetPath(stage, "playerCastleTemplate")],
+    (ready) => { playerCastleReady = ready; },
+    `Player castle (stage ${stage})`
+  );
+
+  loadGameImage(
+    enemyCastleImage,
+    [resolveStageAssetPath(stage, "enemyCastleTemplate")],
+    (ready) => { enemyCastleReady = ready; },
+    `Enemy castle (stage ${stage})`
+  );
+}
