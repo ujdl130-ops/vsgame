@@ -580,46 +580,6 @@ canvas {
   pointer-events: none;
 }
 
-.battle-arrow-btn {
-  display: none;
-  position: absolute;
-  pointer-events: none;
-  bottom: 22px;
-  width: 123px;
-  height: 39px;
-  border: 0;
-  background: transparent;
-  box-shadow: none;
-}
-
-.arrow-left {
-  left: 59px;
-}
-
-.arrow-right {
-  left: 226px;
-}
-
-.battle-arrow-btn span {
-  display: none;
-}
-
-.battle-arrow-btn span::before {
-  display: none;
-}
-
-.arrow-left span::before {
-  left: -18px;
-  border-right: 0;
-  border-top: 0;
-}
-
-.arrow-right span::before {
-  right: -18px;
-  border-left: 0;
-  border-bottom: 0;
-}
-
 .battle-round-group {
   position: absolute;
   pointer-events: auto;
@@ -907,25 +867,6 @@ canvas {
     right: 0;
     bottom: 0;
     height: 112px;
-  }
-
-  .battle-arrow-btn {
-    bottom: 16px;
-    width: 67px;
-    height: 28px;
-  }
-
-  .arrow-left {
-    left: 38px;
-  }
-
-  .arrow-right {
-    left: 141px;
-  }
-
-  .battle-arrow-btn span {
-    width: 45px;
-    height: 13px;
   }
 
   .battle-round-group {
