@@ -147,6 +147,30 @@ window.addEventListener("keyup", (event) => {
   keys[event.code] = false;
 });
 
+function bindSummonButton(button, summonFn) {
+  if (!button || typeof summonFn !== "function") return;
+
+  let lastPointerSummonAt = 0;
+
+  button.addEventListener("pointerdown", (event) => {
+    if (event.button !== undefined && event.button !== 0) return;
+    if (button.disabled) return;
+
+    event.preventDefault();
+    lastPointerSummonAt = performance.now();
+    summonFn();
+  });
+
+  button.addEventListener("click", (event) => {
+    if (performance.now() - lastPointerSummonAt < 500) {
+      event.preventDefault();
+      return;
+    }
+
+    summonFn();
+  });
+}
+
 if (startBtn) startBtn.addEventListener("click", () => startGame(selectedStage));
 if (gameOptionsBtn) gameOptionsBtn.addEventListener("click", toggleGameOptionsMenu);
 if (optionStageSelectBtn) optionStageSelectBtn.addEventListener("click", handleOptionStageSelect);
@@ -194,11 +218,11 @@ stageCards.forEach((card) => {
 });
 if (restartBtn) restartBtn.addEventListener("click", restartGame);
 if (stageSelectBtn) stageSelectBtn.addEventListener("click", showStageSelect);
-summonGuardBtn.addEventListener("click", summonGuard);
-summonArcherBtn.addEventListener("click", summonArcher);
-if (summonMageBtn) summonMageBtn.addEventListener("click", summonMage);
-if (summonSaintessBtn) summonSaintessBtn.addEventListener("click", summonSaintess);
-if (summonThiefBtn) summonThiefBtn.addEventListener("click", summonThief);
+bindSummonButton(summonGuardBtn, summonGuard);
+bindSummonButton(summonArcherBtn, summonArcher);
+bindSummonButton(summonMageBtn, summonMage);
+bindSummonButton(summonSaintessBtn, summonSaintess);
+bindSummonButton(summonThiefBtn, summonThief);
 if (skillBtn) skillBtn.addEventListener("click", castHolySlash);
 if (zeusSkillBtn) zeusSkillBtn.addEventListener("click", castZeusThunderstorm);
 // 전투 개편: 캔버스 직접 터치 공격은 제거했습니다.

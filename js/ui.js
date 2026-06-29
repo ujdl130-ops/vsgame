@@ -203,6 +203,10 @@ function renderRoundCommand(button, labelText, label, title) {
 
   if (button.classList.contains("zeus-action-btn")) {
     const isSkill = button.classList.contains("zeus-skill-btn");
+    const renderKey = `zeus|${labelText}|${label}|${isSkill ? "skill" : "basic"}`;
+    if (button.dataset.renderKey === renderKey) return;
+
+    button.dataset.renderKey = renderKey;
     button.innerHTML = `
       <span class="zeus-action-icon ${isSkill ? "skill" : "basic"}" aria-hidden="true"></span>
       <span class="zeus-action-label">${isSkill ? "천벌" : "기본공격"}</span>
@@ -212,6 +216,10 @@ function renderRoundCommand(button, labelText, label, title) {
   }
 
   if (!button.classList.contains("battle-round-btn")) return;
+  const renderKey = `round|${labelText}|${label}`;
+  if (button.dataset.renderKey === renderKey) return;
+
+  button.dataset.renderKey = renderKey;
   button.innerHTML = `
     <span class="round-icon" aria-hidden="true"></span>
     <span class="round-label">${labelText}</span>
