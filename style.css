@@ -1381,7 +1381,7 @@ button:disabled {
 }
 
 .lobby-hero {
-  left: calc(50% + 12px);
+  left: calc(50% + 28px);
   width: 150px;
   height: 150px;
   transform: translateX(-50%) translateY(0);

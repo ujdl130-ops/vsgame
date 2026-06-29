@@ -95,6 +95,7 @@ const ASSET_PATHS = {
   mageSprite: "assets/animations/mage/red_wizard_spritesheet.png",
   saintessSprite: "assets/animations/saintess/saintess_spritesheet_aligned.png",
   heroSprite: "assets/animations/hero/zeus_hero_spritesheet_latest_transparent_aligned.png",
+  lobbyHeroIdle: "assets/animations/hero/zeus_lobby_idle.png",
   stage1EnemySprite: "assets/animations/enemy/stage1_goblin_spritesheet.png",
   stage1Background: "assets/maps/stage1/stage1_forest_bg_v2.png",
   stageBackgroundTemplate: "assets/maps/stage{stage}/stage{stage}_background.png",
@@ -139,6 +140,20 @@ loadGameImage(
   [ASSET_PATHS.heroSprite, "assets/animations/hero/zeus_hero_spritesheet_latest.png", "zeus_hero_spritesheet_latest.png"],
   (ready) => { heroSpriteReady = ready; },
   "Hero Zeus sprite"
+);
+
+const lobbyHeroImage = new Image();
+let lobbyHeroReady = false;
+loadGameImage(
+  lobbyHeroImage,
+  [ASSET_PATHS.lobbyHeroIdle],
+  (ready) => {
+    lobbyHeroReady = ready;
+    if (ready && typeof isLobbyVisible === "function" && isLobbyVisible() && typeof renderLobbyHero === "function") {
+      renderLobbyHero();
+    }
+  },
+  "Lobby Zeus idle"
 );
 
 const guardSprite = new Image();
