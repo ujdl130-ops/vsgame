@@ -1382,22 +1382,13 @@ button:disabled {
 
 .lobby-hero {
   left: 50%;
-  width: 64px;
-  height: 96px;
+  width: 150px;
+  height: 150px;
   transform: translateX(-50%) translateY(0);
   pointer-events: none;
 }
 
-.lobby-hero-sprite {
-  width: 100%;
-  height: 100%;
-  background-image: url('assets/animations/hero/zeus_hero_spritesheet_latest_transparent_aligned.png');
-  background-position: 0 0;
-  background-repeat: no-repeat;
-  background-size: auto;
-  image-rendering: pixelated;
-  animation: lobbyHeroBreath 2.4s ease-in-out infinite;
-}
+.lobby-hero-canvas { image-rendering: pixelated; animation: lobbyHeroBreath 2.4s ease-in-out infinite; width:100%; height:100%; }
 
 .lobby-guard-pixel {
   left: calc(46% - 56px);

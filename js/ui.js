@@ -59,11 +59,22 @@ function renderLobbyHero() {
   const c = canvas.getContext('2d');
   c.clearRect(0, 0, canvas.width, canvas.height);
 
-  if (typeof heroSprite !== 'undefined' && heroSprite && heroSprite.complete) {
-    const sw = Math.min(64, heroSprite.naturalWidth);
-    const sh = Math.min(96, heroSprite.naturalHeight);
+  if (typeof heroSprite !== 'undefined' && heroSprite && (typeof heroSpriteReady === 'boolean' ? heroSpriteReady : heroSprite.complete)) {
+    const sW = (typeof HERO_ZEUS_SPRITE !== 'undefined' && HERO_ZEUS_SPRITE.frameW) ? HERO_ZEUS_SPRITE.frameW : heroSprite.naturalWidth;
+    const sH = (typeof HERO_ZEUS_SPRITE !== 'undefined' && HERO_ZEUS_SPRITE.frameH) ? HERO_ZEUS_SPRITE.frameH : heroSprite.naturalHeight;
     c.imageSmoothingEnabled = false;
-    c.drawImage(heroSprite, 0, 0, sw, sh, 0, 0, canvas.width, canvas.height);
+    // Calculate scaled size to fit canvas while preserving aspect ratio
+    const canvasW = canvas.width;
+    const canvasH = canvas.height;
+    let drawW = canvasW;
+    let drawH = Math.round(sH * (canvasW / sW));
+    if (drawH > canvasH) {
+      drawH = canvasH;
+      drawW = Math.round(sW * (canvasH / sH));
+    }
+    const dx = Math.round((canvasW - drawW) / 2);
+    const dy = Math.round((canvasH - drawH) / 2);
+    c.drawImage(heroSprite, 0, 0, sW, sH, dx, dy, drawW, drawH);
     return;
   }
 
