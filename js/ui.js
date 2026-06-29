@@ -251,18 +251,6 @@ function showSummonLimitMessage() {
   gameState.messageTimer = 1.25;
 }
 
-function renderCommandSlot(button, costText, countText, label, title) {
-  if (!button || !button.classList.contains("command-slot")) return;
-
-  button.setAttribute("aria-label", label);
-  button.title = title;
-  button.innerHTML = `
-    <span class="slot-icon" aria-hidden="true"></span>
-    <span class="slot-cost">${costText}</span>
-    <span class="slot-count">${countText}</span>
-  `;
-}
-
 function renderRoundCommand(button, labelText, label, title) {
   if (!button) return;
 
@@ -295,47 +283,6 @@ function renderRoundCommand(button, labelText, label, title) {
 }
 
 function refreshCommandButtonMarkup() {
-  const activeUnits = getActiveUnitCount();
-  const unitLimitReached = activeUnits >= MAX_SUMMONED_UNITS;
-  const slotText = unitLimitReached ? "MAX" : `${activeUnits}/${MAX_SUMMONED_UNITS}`;
-  const limitTitle = "아군 병사가 사망하면 다시 소환할 수 있습니다.";
-
-  renderCommandSlot(
-    summonGuardBtn,
-    "50",
-    slotText,
-    unitLimitReached ? `방패병 소환 제한 ${activeUnits}/${MAX_SUMMONED_UNITS}` : "방패병 소환",
-    unitLimitReached ? limitTitle : "방패병을 소환합니다."
-  );
-  renderCommandSlot(
-    summonArcherBtn,
-    "75",
-    slotText,
-    unitLimitReached ? `궁수 소환 제한 ${activeUnits}/${MAX_SUMMONED_UNITS}` : "궁수 소환",
-    unitLimitReached ? limitTitle : "궁수를 소환합니다."
-  );
-  renderCommandSlot(
-    summonMageBtn,
-    "100",
-    slotText,
-    unitLimitReached ? `마법사 소환 제한 ${activeUnits}/${MAX_SUMMONED_UNITS}` : "마법사 소환",
-    unitLimitReached ? limitTitle : "마법사를 소환합니다."
-  );
-  renderCommandSlot(
-    summonSaintessBtn,
-    "120",
-    slotText,
-    unitLimitReached ? `성녀 소환 제한 ${activeUnits}/${MAX_SUMMONED_UNITS}` : "성녀 소환",
-    unitLimitReached ? limitTitle : "주변 아군을 회복하는 성녀를 소환합니다."
-  );
-  renderCommandSlot(
-    summonThiefBtn,
-    "90",
-    slotText,
-    unitLimitReached ? `도적 소환 제한 ${activeUnits}/${MAX_SUMMONED_UNITS}` : "도적 소환",
-    unitLimitReached ? limitTitle : "빠른 근접 도적을 소환합니다."
-  );
-
   const hero = gameState && gameState.hero;
   const zeusEffectActive = Boolean(gameState && gameState.zeusSkillEffect && gameState.zeusSkillEffect.active);
   const zeusMana = Math.floor(gameState && gameState.zeusMana || 0);
@@ -357,39 +304,6 @@ function refreshCommandButtonMarkup() {
 
 function updateButtons() {
   const disabled = !gameState.running || gameState.gameOver || gameState.clear;
-  const activeUnits = getActiveUnitCount();
-  const unitLimitReached = activeUnits >= MAX_SUMMONED_UNITS;
-  const slotText = `${activeUnits}/${MAX_SUMMONED_UNITS}`;
-
-  if (summonGuardBtn) {
-    summonGuardBtn.textContent = unitLimitReached ? `방패병 소환 제한 ${slotText}` : `방패병 소환 50G · ${slotText}`;
-    summonGuardBtn.disabled = disabled || unitLimitReached || gameState.gold < 50;
-    summonGuardBtn.title = unitLimitReached ? "아군 병사가 사망하면 다시 소환할 수 있습니다." : "방패병을 소환합니다.";
-  }
-
-  if (summonArcherBtn) {
-    summonArcherBtn.textContent = unitLimitReached ? `궁수 소환 제한 ${slotText}` : `궁수 소환 75G · ${slotText}`;
-    summonArcherBtn.disabled = disabled || unitLimitReached || gameState.gold < 75;
-    summonArcherBtn.title = unitLimitReached ? "아군 병사가 사망하면 다시 소환할 수 있습니다." : "궁수를 소환합니다.";
-  }
-
-  if (summonMageBtn) {
-    summonMageBtn.textContent = unitLimitReached ? `마법사 소환 제한 ${slotText}` : `마법사 소환 100G · ${slotText}`;
-    summonMageBtn.disabled = disabled || unitLimitReached || gameState.gold < 100;
-    summonMageBtn.title = unitLimitReached ? "아군 병사가 사망하면 다시 소환할 수 있습니다." : "마법사를 소환합니다.";
-  }
-
-  if (summonSaintessBtn) {
-    summonSaintessBtn.textContent = unitLimitReached ? `성녀 소환 제한 ${slotText}` : `성녀 소환 120G · ${slotText}`;
-    summonSaintessBtn.disabled = disabled || unitLimitReached || gameState.gold < 120;
-    summonSaintessBtn.title = unitLimitReached ? "아군 병사가 사망하면 다시 소환할 수 있습니다." : "주변 아군을 회복하는 성녀를 소환합니다.";
-  }
-
-  if (summonThiefBtn) {
-    summonThiefBtn.textContent = unitLimitReached ? `도적 소환 제한 ${slotText}` : `도적 소환 90G · ${slotText}`;
-    summonThiefBtn.disabled = disabled || unitLimitReached || gameState.gold < 90;
-    summonThiefBtn.title = unitLimitReached ? "아군 병사가 사망하면 다시 소환할 수 있습니다." : "빠른 근접 도적을 소환합니다.";
-  }
 
   if (skillBtn) {
     const hero = gameState.hero;

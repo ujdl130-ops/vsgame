@@ -20,21 +20,8 @@ const optionRestartBtn = document.getElementById("optionRestartBtn");
 const movementJoystick = document.getElementById("movementJoystick");
 const startBtn = document.getElementById("startBtn");
 const restartBtn = document.getElementById("restartBtn");
-const summonGuardBtn = document.getElementById("summonGuardBtn");
-const summonArcherBtn = document.getElementById("summonArcherBtn");
-const summonMageBtn = document.getElementById("summonMageBtn");
-const summonSaintessBtn = document.getElementById("summonSaintessBtn");
-let summonThiefBtn = document.getElementById("summonThiefBtn");
 const skillBtn = document.getElementById("skillBtn"); // 전투 개편 후 스킬 버튼은 기본 공격 버튼으로 사용합니다.
 const zeusSkillBtn = document.getElementById("zeusSkillBtn");
-
-if (!summonThiefBtn && skillBtn && skillBtn.parentElement) {
-  summonThiefBtn = document.createElement("button");
-  summonThiefBtn.id = "summonThiefBtn";
-  summonThiefBtn.type = "button";
-  summonThiefBtn.textContent = "도적 소환";
-  skillBtn.parentElement.insertBefore(summonThiefBtn, skillBtn);
-}
 
 const titleScreen = document.getElementById("titleScreen");
 const titleStartBtn = document.getElementById("titleStartBtn");
