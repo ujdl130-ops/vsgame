@@ -446,6 +446,14 @@ body.game-started:not(.in-lobby):not(.in-stage-select):not(.in-shop):not(.in-rec
   object-fit: fill;
 }
 
+.battle-unit-card-mage {
+  left: 274px;
+  top: 40px;
+  width: 96px;
+  height: 54px;
+  object-fit: fill;
+}
+
 .movement-joystick {
   --stick-x: 0px;
   position: absolute;
@@ -805,6 +813,13 @@ body.game-started:not(.in-lobby):not(.in-stage-select):not(.in-shop):not(.in-rec
 
   .battle-unit-card-archer {
     left: 166px;
+    top: 28px;
+    width: 96px;
+    height: 38px;
+  }
+
+  .battle-unit-card-mage {
+    left: 274px;
     top: 28px;
     width: 96px;
     height: 38px;
