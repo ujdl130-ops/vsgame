@@ -1244,6 +1244,10 @@ button:disabled {
   image-rendering: pixelated;
 }
 
+/* Hide all decorative children so only the background image remains; re-show the hero container. */
+.lobby-stage > * { display: none; }
+.lobby-hero { display: block !important; z-index: 5; }
+
 .lobby-sun {
   position: absolute;
   right: 82px;

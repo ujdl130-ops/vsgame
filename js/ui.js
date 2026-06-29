@@ -46,6 +46,34 @@ function showLobby() {
     lobbyMenuNotice.textContent = "";
     lobbyMenuNotice.classList.remove("is-show");
   }
+  // Ensure lobby hero canvas is drawn when showing lobby
+  requestAnimationFrame(() => {
+    if (typeof renderLobbyHero === 'function') renderLobbyHero();
+  });
+}
+
+// Draw the first (top-left) frame of the hero spritesheet into the lobby canvas.
+function renderLobbyHero() {
+  const canvas = document.getElementById('lobbyHeroCanvas');
+  if (!canvas) return;
+  const c = canvas.getContext('2d');
+  c.clearRect(0, 0, canvas.width, canvas.height);
+
+  if (typeof heroSprite !== 'undefined' && heroSprite && heroSprite.complete) {
+    const sw = Math.min(64, heroSprite.naturalWidth);
+    const sh = Math.min(96, heroSprite.naturalHeight);
+    c.imageSmoothingEnabled = false;
+    c.drawImage(heroSprite, 0, 0, sw, sh, 0, 0, canvas.width, canvas.height);
+    return;
+  }
+
+  // If sprite not yet loaded, draw once when it finishes loading
+  if (typeof heroSprite !== 'undefined' && heroSprite) {
+    heroSprite.addEventListener('load', function onLoad() {
+      heroSprite.removeEventListener('load', onLoad);
+      renderLobbyHero();
+    });
+  }
 }
 
 function showTitle() {
