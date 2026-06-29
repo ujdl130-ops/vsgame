@@ -78,7 +78,7 @@ h2 {
 
 .hud {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: 1fr;
   gap: 10px;
   margin-bottom: 12px;
 }
@@ -107,7 +107,7 @@ h2 {
 
 @media (max-width: 900px) {
   .hud {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: 1fr;
   }
 }
 
@@ -138,9 +138,9 @@ canvas {
   margin: 0;
 }
 
-.battle-wave-badge {
+.battle-wave-badge,
+.battle-unit-badge {
   position: absolute;
-  left: 16px;
   top: 14px;
   z-index: 3;
   min-width: 82px;
@@ -157,7 +157,16 @@ canvas {
   pointer-events: none;
 }
 
-.battle-wave-badge span {
+.battle-wave-badge {
+  left: 16px;
+}
+
+.battle-unit-badge {
+  left: 110px;
+}
+
+.battle-wave-badge span,
+.battle-unit-badge span {
   display: block;
   margin-bottom: 1px;
   color: rgba(255, 255, 255, 0.76);
@@ -166,7 +175,8 @@ canvas {
   letter-spacing: 0.12em;
 }
 
-.battle-wave-badge strong {
+.battle-wave-badge strong,
+.battle-unit-badge strong {
   display: block;
   color: #fff0a7;
   font-size: 17px;
@@ -757,8 +767,8 @@ canvas {
 }
 
 @media (max-width: 720px) {
-  .battle-wave-badge {
-    left: 10px;
+  .battle-wave-badge,
+  .battle-unit-badge {
     top: 10px;
     min-width: 74px;
     height: 36px;
@@ -766,11 +776,21 @@ canvas {
     border-width: 2px;
   }
 
-  .battle-wave-badge span {
+  .battle-wave-badge {
+    left: 10px;
+  }
+
+  .battle-unit-badge {
+    left: 90px;
+  }
+
+  .battle-wave-badge span,
+  .battle-unit-badge span {
     font-size: 9px;
   }
 
-  .battle-wave-badge strong {
+  .battle-wave-badge strong,
+  .battle-unit-badge strong {
     font-size: 14px;
   }
 
@@ -1202,7 +1222,7 @@ button:disabled {
   }
 
   .hud {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: 1fr;
   }
 
   .hud strong {
