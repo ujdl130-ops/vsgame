@@ -440,9 +440,9 @@ body.game-started:not(.in-lobby):not(.in-stage-select):not(.in-shop):not(.in-rec
 
 .battle-unit-card-archer {
   left: 166px;
-  top: 38px;
-  width: 106px;
-  height: 58px;
+  top: 40px;
+  width: 96px;
+  height: 54px;
   object-fit: fill;
 }
 
@@ -805,9 +805,9 @@ body.game-started:not(.in-lobby):not(.in-stage-select):not(.in-shop):not(.in-rec
 
   .battle-unit-card-archer {
     left: 166px;
-    top: 27px;
-    width: 106px;
-    height: 41px;
+    top: 28px;
+    width: 96px;
+    height: 38px;
   }
 
   .movement-joystick {
