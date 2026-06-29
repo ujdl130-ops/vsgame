@@ -447,10 +447,10 @@ body.game-started:not(.in-lobby):not(.in-stage-select):not(.in-shop):not(.in-rec
 }
 
 .battle-unit-card-mage {
-  left: 274px;
-  top: 40px;
-  width: 96px;
-  height: 54px;
+  left: 268px;
+  top: 34px;
+  width: 106px;
+  height: 66px;
   object-fit: fill;
 }
 
@@ -819,10 +819,10 @@ body.game-started:not(.in-lobby):not(.in-stage-select):not(.in-shop):not(.in-rec
   }
 
   .battle-unit-card-mage {
-    left: 274px;
-    top: 28px;
-    width: 96px;
-    height: 38px;
+    left: 268px;
+    top: 24px;
+    width: 106px;
+    height: 46px;
   }
 
   .movement-joystick {
