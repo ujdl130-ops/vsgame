@@ -58,12 +58,11 @@ function renderLobbyHero() {
   if (!canvas) return;
   const c = canvas.getContext('2d');
   c.clearRect(0, 0, canvas.width, canvas.height);
-
-  if (typeof heroSprite !== 'undefined' && heroSprite && (typeof heroSpriteReady === 'boolean' ? heroSpriteReady : heroSprite.complete)) {
-    const sW = (typeof HERO_ZEUS_SPRITE !== 'undefined' && HERO_ZEUS_SPRITE.frameW) ? HERO_ZEUS_SPRITE.frameW : heroSprite.naturalWidth;
-    const sH = (typeof HERO_ZEUS_SPRITE !== 'undefined' && HERO_ZEUS_SPRITE.frameH) ? HERO_ZEUS_SPRITE.frameH : heroSprite.naturalHeight;
+  // If we've already created a transparent hero image, draw it.
+  if (typeof lobbyHeroImage !== 'undefined' && lobbyHeroImage && lobbyHeroReady) {
+    const sW = lobbyHeroImage.naturalWidth;
+    const sH = lobbyHeroImage.naturalHeight;
     c.imageSmoothingEnabled = false;
-    // Calculate scaled size to fit canvas while preserving aspect ratio
     const canvasW = canvas.width;
     const canvasH = canvas.height;
     let drawW = canvasW;
@@ -74,7 +73,51 @@ function renderLobbyHero() {
     }
     const dx = Math.round((canvasW - drawW) / 2);
     const dy = Math.round((canvasH - drawH) / 2);
-    c.drawImage(heroSprite, 0, 0, sW, sH, dx, dy, drawW, drawH);
+    c.drawImage(lobbyHeroImage, 0, 0, sW, sH, dx, dy, drawW, drawH);
+    return;
+  }
+
+  // If hero spritesheet is ready but we haven't produced a transparent hero image yet, create it.
+  if (typeof heroSprite !== 'undefined' && heroSprite && (typeof heroSpriteReady === 'boolean' ? heroSpriteReady : heroSprite.complete) && !lobbyHeroImage) {
+    // get source frame size from HERO_ZEUS_SPRITE if available
+    const sW = (typeof HERO_ZEUS_SPRITE !== 'undefined' && HERO_ZEUS_SPRITE.frameW) ? HERO_ZEUS_SPRITE.frameW : heroSprite.naturalWidth;
+    const sH = (typeof HERO_ZEUS_SPRITE !== 'undefined' && HERO_ZEUS_SPRITE.frameH) ? HERO_ZEUS_SPRITE.frameH : heroSprite.naturalHeight;
+
+    const off = document.createElement('canvas');
+    off.width = sW;
+    off.height = sH;
+    const oc = off.getContext('2d');
+    oc.clearRect(0, 0, sW, sH);
+    // draw top-left frame
+    oc.drawImage(heroSprite, 0, 0, sW, sH, 0, 0, sW, sH);
+
+    try {
+      const imgData = oc.getImageData(0, 0, sW, sH);
+      const data = imgData.data;
+      // Chroma-key green removal: make pixels transparent where green is dominant
+      for (let i = 0; i < data.length; i += 4) {
+        const r = data[i];
+        const g = data[i + 1];
+        const b = data[i + 2];
+        // condition: green significantly higher than red/blue
+        if (g > 160 && g > r + 50 && g > b + 50) {
+          data[i + 3] = 0; // alpha = 0
+        }
+      }
+      oc.putImageData(imgData, 0, 0);
+    } catch (e) {
+      // getImageData can fail on cross-origin images; fallback to drawing sprite directly
+      console.warn('Could not access sprite pixels for chroma keying:', e);
+    }
+
+    // Create image from the processed canvas
+    lobbyHeroImage = new Image();
+    lobbyHeroReady = false;
+    lobbyHeroImage.onload = function () {
+      lobbyHeroReady = true;
+      renderLobbyHero();
+    };
+    lobbyHeroImage.src = off.toDataURL('image/png');
     return;
   }
 
