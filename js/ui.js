@@ -157,10 +157,12 @@ function bindMovementJoystick(joystick) {
 
   const updateJoystick = (clientX) => {
     const rect = joystick.getBoundingClientRect();
+    const visualScale = rect.width / Math.max(1, joystick.offsetWidth);
     const centerX = rect.left + rect.width / 2;
-    const maxOffset = rect.width * 0.32;
-    const deadZone = rect.width * 0.11;
-    const offset = Math.max(-maxOffset, Math.min(maxOffset, clientX - centerX));
+    const maxOffset = joystick.offsetWidth * 0.32;
+    const deadZone = joystick.offsetWidth * 0.11;
+    const localOffset = (clientX - centerX) / Math.max(1, visualScale);
+    const offset = Math.max(-maxOffset, Math.min(maxOffset, localOffset));
 
     joystick.style.setProperty("--stick-x", `${offset}px`);
 

@@ -143,6 +143,32 @@ canvas {
   margin: 0;
 }
 
+body.game-started:not(.in-lobby):not(.in-stage-select):not(.in-shop):not(.in-recruit):not(.in-formation) {
+  padding: 0;
+  overflow: hidden;
+}
+
+body.game-started:not(.in-lobby):not(.in-stage-select):not(.in-shop):not(.in-recruit):not(.in-formation) .game-wrap {
+  width: 1920px;
+  height: 1080px;
+  max-width: none;
+  flex: 0 0 auto;
+}
+
+body.game-started:not(.in-lobby):not(.in-stage-select):not(.in-shop):not(.in-recruit):not(.in-formation) .battle-stage-frame {
+  width: 960px;
+  height: 540px;
+  max-width: none;
+  margin: 0;
+  transform: scale(2);
+  transform-origin: top left;
+}
+
+body.game-started:not(.in-lobby):not(.in-stage-select):not(.in-shop):not(.in-recruit):not(.in-formation) .battle-stage-frame canvas {
+  width: 960px;
+  height: 540px;
+}
+
 .battle-wave-badge,
 .battle-unit-badge {
   position: absolute;
