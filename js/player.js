@@ -20,6 +20,7 @@ function normalizePlayerData(savedData = {}) {
     gold: Math.max(0, Number(savedData.gold) || 0),
     diamonds: Math.max(0, Number(savedData.diamonds) || 0),
     summonTickets: Math.max(0, Number(savedData.summonTickets) || 0),
+    commonEssence: Math.max(0, Number(savedData.commonEssence) || 0),
     soldierFragments: Math.max(0, Number(savedData.soldierFragments) || 0),
     essences,
     ownedGods: savedData.ownedGods && typeof savedData.ownedGods === "object" ? { ...savedData.ownedGods } : {},
@@ -30,7 +31,7 @@ function normalizePlayerData(savedData = {}) {
 playerProgress = normalizePlayerData(playerProgress);
 
 function grantPlayerRewards(rewards = {}) {
-  ["gold", "diamonds", "summonTickets", "soldierFragments"].forEach((key) => {
+  ["gold", "diamonds", "summonTickets", "commonEssence", "soldierFragments"].forEach((key) => {
     if (rewards[key]) playerProgress[key] = Math.max(0, playerProgress[key] + Number(rewards[key]));
   });
   Object.entries(rewards.essences || {}).forEach(([key, amount]) => {
