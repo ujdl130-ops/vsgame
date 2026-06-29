@@ -17,6 +17,7 @@ const gameOptionsBtn = document.getElementById("gameOptionsBtn");
 const gameOptionsMenu = document.getElementById("gameOptionsMenu");
 const optionStageSelectBtn = document.getElementById("optionStageSelectBtn");
 const optionRestartBtn = document.getElementById("optionRestartBtn");
+const movementJoystick = document.getElementById("movementJoystick");
 const startBtn = document.getElementById("startBtn");
 const restartBtn = document.getElementById("restartBtn");
 const summonGuardBtn = document.getElementById("summonGuardBtn");

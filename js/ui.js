@@ -137,23 +137,66 @@ function handleOptionRestart() {
   restartGame();
 }
 
-function bindHoldMovementButton(button, keyCode) {
-  if (!button) return;
+function bindMovementJoystick(joystick) {
+  if (!joystick) return;
 
-  const startMove = (event) => {
-    event.preventDefault();
+  let activePointerId = null;
+
+  const setJoystickInput = (direction) => {
+    keys.ArrowLeft = direction < 0;
+    keys.ArrowRight = direction > 0;
+    joystick.classList.toggle("is-left", direction < 0);
+    joystick.classList.toggle("is-right", direction > 0);
+  };
+
+  const resetJoystick = () => {
+    activePointerId = null;
+    joystick.style.setProperty("--stick-x", "0px");
+    joystick.classList.remove("is-active", "is-left", "is-right");
+    setJoystickInput(0);
+  };
+
+  const updateJoystick = (clientX) => {
+    const rect = joystick.getBoundingClientRect();
+    const centerX = rect.left + rect.width / 2;
+    const maxOffset = rect.width * 0.32;
+    const deadZone = rect.width * 0.11;
+    const offset = Math.max(-maxOffset, Math.min(maxOffset, clientX - centerX));
+
+    joystick.style.setProperty("--stick-x", `${offset}px`);
+
+    if (Math.abs(offset) < deadZone || isGameOptionsOpen()) {
+      setJoystickInput(0);
+      return;
+    }
+    setJoystickInput(offset < 0 ? -1 : 1);
+  };
+
+  joystick.addEventListener("pointerdown", (event) => {
+    if (event.button !== undefined && event.button !== 0) return;
     if (isGameOptionsOpen()) return;
-    keys[keyCode] = true;
-  };
-  const stopMove = () => {
-    keys[keyCode] = false;
-  };
+    event.preventDefault();
+    activePointerId = event.pointerId;
+    joystick.classList.add("is-active");
+    if (joystick.setPointerCapture) joystick.setPointerCapture(event.pointerId);
+    updateJoystick(event.clientX);
+  });
 
-  button.addEventListener("pointerdown", startMove);
-  button.addEventListener("pointerup", stopMove);
-  button.addEventListener("pointerleave", stopMove);
-  button.addEventListener("pointercancel", stopMove);
-  button.addEventListener("blur", stopMove);
+  joystick.addEventListener("pointermove", (event) => {
+    if (activePointerId !== event.pointerId) return;
+    event.preventDefault();
+    updateJoystick(event.clientX);
+  });
+
+  joystick.addEventListener("pointerup", (event) => {
+    if (activePointerId !== event.pointerId) return;
+    resetJoystick();
+  });
+
+  joystick.addEventListener("pointercancel", resetJoystick);
+  joystick.addEventListener("lostpointercapture", resetJoystick);
+  joystick.addEventListener("blur", resetJoystick);
+  window.addEventListener("blur", resetJoystick);
 }
 
 function updateHud() {

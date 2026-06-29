@@ -175,6 +175,7 @@ if (startBtn) startBtn.addEventListener("click", () => startGame(selectedStage))
 if (gameOptionsBtn) gameOptionsBtn.addEventListener("click", toggleGameOptionsMenu);
 if (optionStageSelectBtn) optionStageSelectBtn.addEventListener("click", handleOptionStageSelect);
 if (optionRestartBtn) optionRestartBtn.addEventListener("click", handleOptionRestart);
+bindMovementJoystick(movementJoystick);
 titleStartBtn.addEventListener("click", showLobby);
 if (lobbyBattleBtn) lobbyBattleBtn.addEventListener("click", showStageSelect);
 if (lobbyShopBtn) lobbyShopBtn.addEventListener("click", showShop);

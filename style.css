@@ -580,6 +580,100 @@ canvas {
   pointer-events: none;
 }
 
+.movement-joystick {
+  --stick-x: 0px;
+  position: absolute;
+  left: 62px;
+  bottom: 17px;
+  z-index: 3;
+  width: 330px;
+  height: 52px;
+  border: 3px solid #1b120b;
+  background:
+    linear-gradient(90deg, rgba(13, 8, 5, 0.5), transparent 13%, transparent 87%, rgba(13, 8, 5, 0.5)),
+    linear-gradient(180deg, #6c401e 0%, #2b1a10 46%, #130d08 48%, #4b2a14 100%);
+  box-shadow:
+    inset 0 0 0 2px rgba(194, 128, 48, 0.42),
+    inset 0 8px 0 rgba(255, 194, 92, 0.12),
+    0 0 0 2px rgba(0, 0, 0, 0.45);
+  cursor: grab;
+  pointer-events: auto;
+  touch-action: none;
+  user-select: none;
+}
+
+.movement-joystick:focus-visible {
+  outline: 2px solid #70f7ff;
+  outline-offset: 3px;
+}
+
+.movement-joystick.is-active {
+  cursor: grabbing;
+}
+
+.movement-joystick-track {
+  position: absolute;
+  left: 30px;
+  right: 30px;
+  top: 50%;
+  height: 12px;
+  border: 2px solid #1a1009;
+  background:
+    linear-gradient(90deg, #1c120c, #5d381f 25%, #c08a38 50%, #5d381f 75%, #1c120c),
+    #2a1a10;
+  box-shadow:
+    inset 0 2px 0 rgba(255, 225, 133, 0.28),
+    0 2px 0 rgba(0, 0, 0, 0.55);
+  transform: translateY(-50%);
+}
+
+.movement-joystick-arrow {
+  position: absolute;
+  top: 50%;
+  width: 0;
+  height: 0;
+  filter: drop-shadow(2px 2px 0 #070402);
+  transform: translateY(-50%);
+}
+
+.movement-joystick-arrow-left {
+  left: 15px;
+  border-top: 10px solid transparent;
+  border-bottom: 10px solid transparent;
+  border-right: 16px solid #d69536;
+}
+
+.movement-joystick-arrow-right {
+  right: 15px;
+  border-top: 10px solid transparent;
+  border-bottom: 10px solid transparent;
+  border-left: 16px solid #d69536;
+}
+
+.movement-joystick-knob {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 44px;
+  height: 44px;
+  border: 4px solid #1a110b;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 38% 32%, #e9ffff 0 7%, #66eaff 8% 19%, transparent 20%),
+    radial-gradient(circle at 50% 50%, #139cdf 0 32%, #0b4f96 33% 60%, #042848 61% 100%);
+  box-shadow:
+    inset 0 0 0 3px #d29437,
+    inset 0 -7px 0 rgba(0, 0, 0, 0.32),
+    0 3px 0 #070402,
+    0 0 14px rgba(82, 214, 255, 0.45);
+  transform: translate(calc(-50% + var(--stick-x)), -50%);
+  transition: transform 120ms ease;
+}
+
+.movement-joystick.is-active .movement-joystick-knob {
+  transition: none;
+}
+
 .battle-round-group {
   position: absolute;
   pointer-events: auto;
@@ -867,6 +961,41 @@ canvas {
     right: 0;
     bottom: 0;
     height: 112px;
+  }
+
+  .movement-joystick {
+    left: 38px;
+    bottom: 12px;
+    width: 232px;
+    height: 38px;
+    border-width: 2px;
+  }
+
+  .movement-joystick-track {
+    left: 22px;
+    right: 22px;
+    height: 9px;
+    border-width: 1px;
+  }
+
+  .movement-joystick-arrow-left {
+    left: 10px;
+    border-top-width: 7px;
+    border-bottom-width: 7px;
+    border-right-width: 11px;
+  }
+
+  .movement-joystick-arrow-right {
+    right: 10px;
+    border-top-width: 7px;
+    border-bottom-width: 7px;
+    border-left-width: 11px;
+  }
+
+  .movement-joystick-knob {
+    width: 31px;
+    height: 31px;
+    border-width: 3px;
   }
 
   .battle-round-group {
