@@ -40,6 +40,11 @@ body::before {
   mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.95), rgba(0, 0, 0, 0.2));
 }
 
+body.game-started:not(.in-lobby):not(.in-stage-select):not(.in-shop):not(.in-recruit):not(.in-formation) {
+  align-items: center;
+  align-items: safe center;
+}
+
 .game-wrap {
   width: min(100%, 1040px);
 }
