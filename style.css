@@ -431,6 +431,21 @@ body.game-started:not(.in-lobby):not(.in-stage-select):not(.in-shop):not(.in-rec
   pointer-events: none;
 }
 
+.battle-unit-card-preview {
+  position: absolute;
+  z-index: 2;
+  pointer-events: none;
+  user-select: none;
+}
+
+.battle-unit-card-archer {
+  left: 166px;
+  top: 38px;
+  width: 106px;
+  height: 58px;
+  object-fit: fill;
+}
+
 .movement-joystick {
   --stick-x: 0px;
   position: absolute;
@@ -786,6 +801,13 @@ body.game-started:not(.in-lobby):not(.in-stage-select):not(.in-shop):not(.in-rec
     right: 0;
     bottom: 0;
     height: 112px;
+  }
+
+  .battle-unit-card-archer {
+    left: 166px;
+    top: 27px;
+    width: 106px;
+    height: 41px;
   }
 
   .movement-joystick {
