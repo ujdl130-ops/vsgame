@@ -152,6 +152,29 @@ function getShopItemIcon(item) {
   return `<span class="shop-item-icon ${item.icon ? `shop-icon-${item.icon}` : ""}" aria-hidden="true"><img src="${src}" alt=""></span>`;
 }
 
+function getShopRewardIcons(item) {
+  const rewards = item.rewards || {};
+  const rewardIcons = [
+    { key: "summonTickets", label: "신 모집권", icon: "ticket" },
+    { key: "diamonds", label: "다이아", icon: "gem" },
+    { key: "gold", label: "골드", icon: "coin" },
+    { key: "commonEssence", label: "공통 정수", icon: "essenceAll" },
+  ].filter(({ key }) => Number(rewards[key]) > 0);
+
+  if (!rewardIcons.length) return "";
+
+  return `
+    <span class="shop-reward-icons" aria-label="구성품">
+      ${rewardIcons.map(({ key, label, icon }) => `
+        <span class="shop-reward-chip" title="${label} x${Number(rewards[key]).toLocaleString("ko-KR")}">
+          <img src="${SHOP_ICON_IMAGES[icon]}" alt="">
+          <span>${Number(rewards[key]).toLocaleString("ko-KR")}</span>
+        </span>
+      `).join("")}
+    </span>
+  `;
+}
+
 function renderShopItems(container = null, category = activeShopCategory) {
   const grid = container || document.getElementById("shopItemGrid");
   const items = getShopItems(category);
@@ -168,6 +191,7 @@ function renderShopItems(container = null, category = activeShopCategory) {
       ${item.badge ? `<span class="shop-card-badge">${item.badge}</span>` : ""}
       <strong>${item.name}</strong>
       ${getShopItemIcon(item)}
+      ${getShopRewardIcons(item)}
       <small>${item.description}</small>
       <span class="shop-buy-label">${item.priceLabel}</span>
     `;
