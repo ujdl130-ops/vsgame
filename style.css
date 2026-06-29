@@ -15,6 +15,7 @@
   --battle-visual-scale: 2;
   --battle-visual-width: 1920px;
   --battle-visual-height: 1080px;
+  --battle-frame-height: 540px;
 }
 
 body {
@@ -149,8 +150,7 @@ canvas {
 body.game-started:not(.in-lobby):not(.in-stage-select):not(.in-shop):not(.in-recruit):not(.in-formation) {
   align-items: flex-start;
   padding: 0;
-  overflow-x: hidden;
-  overflow-y: auto;
+  overflow: hidden;
 }
 
 body.game-started:not(.in-lobby):not(.in-stage-select):not(.in-shop):not(.in-recruit):not(.in-formation) .game-wrap {
@@ -162,9 +162,10 @@ body.game-started:not(.in-lobby):not(.in-stage-select):not(.in-shop):not(.in-rec
 
 body.game-started:not(.in-lobby):not(.in-stage-select):not(.in-shop):not(.in-recruit):not(.in-formation) .battle-stage-frame {
   width: 960px;
-  height: 540px;
+  height: var(--battle-frame-height);
   max-width: none;
   margin: 0;
+  overflow: hidden;
   transform: scale(var(--battle-visual-scale));
   transform-origin: top left;
 }

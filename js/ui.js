@@ -142,12 +142,15 @@ function updateBattleViewportScale() {
   const baseHeight = 540;
   const maxScale = 2;
   const availableWidth = Math.max(1, window.innerWidth);
+  const availableHeight = Math.max(1, window.innerHeight);
   const scale = Math.min(maxScale, availableWidth / baseWidth);
+  const frameHeight = Math.min(baseHeight, availableHeight / scale);
   const rootStyle = document.documentElement.style;
 
   rootStyle.setProperty("--battle-visual-scale", scale.toFixed(4));
   rootStyle.setProperty("--battle-visual-width", `${baseWidth * scale}px`);
-  rootStyle.setProperty("--battle-visual-height", `${baseHeight * scale}px`);
+  rootStyle.setProperty("--battle-visual-height", `${frameHeight * scale}px`);
+  rootStyle.setProperty("--battle-frame-height", `${frameHeight}px`);
 }
 
 function bindMovementJoystick(joystick) {
