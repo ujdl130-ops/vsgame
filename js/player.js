@@ -8,6 +8,7 @@ let gameState;
 let lastTime = 0;
 let animationId = null;
 let keys = {};
+let heroMoveInput = 0;
 let gameOptionsWasRunning = false;
 let recruitDoorState = {
   active: false,
