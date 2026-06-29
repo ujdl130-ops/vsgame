@@ -48,7 +48,7 @@ function spawnEnemy() {
     gameState.enemies.push({
       type: "brute",
       x: ENEMY_BASE_X - 45,
-      y: GROUND_Y,
+      y: COMBAT_LINE_Y,
       w: 44,
       h: 66,
       hp: 95 + wave * 8,
@@ -74,7 +74,7 @@ function spawnEnemy() {
   gameState.enemies.push({
     type: isFast ? "fast" : "normal",
     x: ENEMY_BASE_X - 45,
-    y: GROUND_Y,
+    y: COMBAT_LINE_Y,
     w: isFast ? 30 : 34,
     h: isFast ? 46 : 54,
     hp: isFast ? 36 + wave * 6 : 55 + wave * 8,

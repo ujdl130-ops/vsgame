@@ -82,6 +82,7 @@ const stageSelectNotice = document.getElementById("stageSelectNotice");
 const stageCards = document.querySelectorAll(".stage-card");
 
 const GROUND_Y = 300;
+const COMBAT_LINE_Y = GROUND_Y - 42;
 const PLAYER_BASE_X = 40;
 const ENEMY_BASE_X = 900;
 const MAX_WAVE = 3;

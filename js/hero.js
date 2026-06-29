@@ -52,7 +52,7 @@ function createMainHero() {
     type: "hero",
     name: "제우스",
     x: PLAYER_BASE_X + 112,
-    y: GROUND_Y,
+    y: COMBAT_LINE_Y,
     w: 38,
     h: 62,
     hp: 120,
