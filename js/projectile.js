@@ -61,6 +61,34 @@ function spawnFireballBurst(x, y, radius) {
   });
 }
 
+function spawnThiefStrike(x, y) {
+  gameState.particles.push({
+    type: "slash",
+    x: x - 24,
+    y: y - 30,
+    w: 62,
+    life: 0.16,
+    maxLife: 0.16,
+    lineWidth: 7,
+    color: "#cfffff",
+    innerColor: "#ffffff",
+  });
+
+  gameState.particles.push({
+    type: "slash",
+    x: x - 14,
+    y: y - 22,
+    w: 48,
+    life: 0.11,
+    maxLife: 0.11,
+    lineWidth: 4,
+    color: "#8ff7ff",
+    innerColor: "#ffffff",
+  });
+
+  spawnHit(x, y, "#e9fbff");
+}
+
 function fireArcherArrow(unit) {
   const shotTarget = isCombatAlive(unit.shotTarget)
     ? unit.shotTarget
@@ -245,14 +273,14 @@ function drawParticles() {
     ctx.globalAlpha = alpha;
 
     if (particle.type === "slash") {
-      ctx.strokeStyle = "#fff7a8";
-      ctx.lineWidth = 12;
+      ctx.strokeStyle = particle.color || "#fff7a8";
+      ctx.lineWidth = particle.lineWidth || 12;
       ctx.beginPath();
       ctx.moveTo(particle.x, particle.y + 72);
       ctx.quadraticCurveTo(particle.x + particle.w * 0.48, particle.y - 35, particle.x + particle.w, particle.y + 20);
       ctx.stroke();
-      ctx.strokeStyle = "#ffffff";
-      ctx.lineWidth = 4;
+      ctx.strokeStyle = particle.innerColor || "#ffffff";
+      ctx.lineWidth = Math.max(2, Math.floor((particle.lineWidth || 12) * 0.35));
       ctx.stroke();
     } else if (particle.type === "heroAttack") {
       ctx.strokeStyle = "#fff9c7";

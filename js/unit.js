@@ -1,5 +1,12 @@
 // Friendly unit summoning, behavior, and rendering.
 
+const THIEF_HEAVY_ATTACK_DAMAGE = 34;
+const THIEF_HEAVY_ATTACK_SPEED = 1.75;
+const THIEF_HEAVY_ATTACK_DURATION = 0.5;
+const THIEF_RETREAT_DURATION = 0.45;
+const THIEF_RETREAT_SPEED = 190;
+const THIEF_RETREAT_MIN_X = PLAYER_BASE_X + 58;
+
 function summonGuard() {
   if (!hasSummonSlot()) {
     showSummonLimitMessage();
@@ -161,21 +168,30 @@ function summonThief() {
     hp: 58,
     maxHp: 58,
     speed: 78,
-    damage: 15,
-    range: 36,
+    damage: THIEF_HEAVY_ATTACK_DAMAGE,
+    range: 42,
     cooldown: 0,
-    attackSpeed: 0.58,
+    attackSpeed: THIEF_HEAVY_ATTACK_SPEED,
     animTime: 0,
     moving: false,
     attackAnimTimer: 0,
-    attackAnimDuration: 0.42,
+    attackAnimDuration: THIEF_HEAVY_ATTACK_DURATION,
     attackImpactPending: false,
     attackTarget: null,
+    retreatTimer: 0,
+    retreatDuration: THIEF_RETREAT_DURATION,
+    retreatSpeed: THIEF_RETREAT_SPEED,
     dead: false,
     deathAnimTimer: 0,
     deathAnimDuration: 0.78,
     deathRewarded: false,
   });
+}
+
+function startThiefRetreat(unit) {
+  unit.retreatDuration = unit.retreatDuration || THIEF_RETREAT_DURATION;
+  unit.retreatTimer = unit.retreatDuration;
+  unit.moving = true;
 }
 
 function findSaintessHealTargets(unit) {
@@ -220,12 +236,19 @@ function updateUnits(dt) {
     unit.moving = false;
 
     const previousAttackTimer = unit.attackAnimTimer || 0;
-    unit.attackAnimDuration = unit.attackAnimDuration || (unit.type === "guard" ? 0.46 : unit.type === "thief" ? 0.42 : (unit.type === "mage" || unit.type === "saintess") ? 0.72 : 0.58);
+    unit.attackAnimDuration = unit.attackAnimDuration || (unit.type === "guard" ? 0.46 : unit.type === "thief" ? THIEF_HEAVY_ATTACK_DURATION : (unit.type === "mage" || unit.type === "saintess") ? 0.72 : 0.58);
     unit.attackAnimTimer = Math.max(0, previousAttackTimer - dt);
 
     const attackProgress = unit.attackAnimTimer > 0
       ? 1 - unit.attackAnimTimer / unit.attackAnimDuration
       : 1;
+
+    if (unit.type === "thief" && (unit.retreatTimer || 0) > 0) {
+      unit.retreatTimer = Math.max(0, unit.retreatTimer - dt);
+      unit.x = Math.max(THIEF_RETREAT_MIN_X, unit.x - (unit.retreatSpeed || THIEF_RETREAT_SPEED) * dt);
+      unit.moving = true;
+      continue;
+    }
 
     // 궁수는 별도의 공격 모션이 없습니다. 공격 / 걷기 / 사망 모션만 사용합니다.
     // 궁수는 지정한 타이밍에 투사체를 발사합니다.
@@ -276,10 +299,18 @@ function updateUnits(dt) {
 
       if (attackTarget) {
         attackTarget.hp -= unit.damage;
+        if (unit.type === "thief") {
+          spawnThiefStrike(attackTarget.x, attackTarget.y - Math.max(34, attackTarget.h * 0.65));
+          startThiefRetreat(unit);
+        }
       }
 
       unit.attackImpactPending = false;
       unit.attackTarget = null;
+
+      if (unit.type === "thief" && (unit.retreatTimer || 0) > 0) {
+        continue;
+      }
     }
 
     const target = findNearestEnemy(unit.x, unit.range);
@@ -298,7 +329,7 @@ function updateUnits(dt) {
           unit.pendingMageShot = true;
           unit.shotTarget = target;
         } else if (unit.type === "guard" || unit.type === "thief") {
-          unit.attackAnimDuration = unit.type === "guard" ? 0.46 : 0.42;
+          unit.attackAnimDuration = unit.type === "guard" ? 0.46 : THIEF_HEAVY_ATTACK_DURATION;
           unit.attackAnimTimer = unit.attackAnimDuration;
           unit.attackImpactPending = true;
           unit.attackTarget = target;
@@ -506,7 +537,7 @@ function drawThiefSprite(unit) {
   let frame = Math.floor((unit.animTime || 0) * fps) % frameCount;
 
   if (anim === "attack") {
-    const duration = unit.attackAnimDuration || 0.42;
+    const duration = unit.attackAnimDuration || THIEF_HEAVY_ATTACK_DURATION;
     const progress = 1 - unit.attackAnimTimer / duration;
     frame = Math.min(frameCount - 1, Math.max(0, Math.floor(progress * frameCount)));
   } else if (anim === "death") {
@@ -645,6 +676,36 @@ function drawUnit(unit) {
       ctx.fill();
     }
   } else if (unit.type === "thief") {
+    const isRetreating = !isDying && (unit.retreatTimer || 0) > 0;
+
+    if (isRetreating) {
+      const duration = unit.retreatDuration || THIEF_RETREAT_DURATION;
+      const progress = 1 - Math.max(0, unit.retreatTimer || 0) / duration;
+
+      if (thiefSpriteReady) {
+        for (let i = 0; i < 3; i++) {
+          ctx.save();
+          ctx.globalAlpha = Math.max(0, 0.28 - i * 0.06 - progress * 0.08);
+          ctx.translate(18 + i * 17, i % 2 === 0 ? 0 : -2);
+          drawThiefSprite(unit);
+          ctx.restore();
+        }
+      }
+
+      ctx.save();
+      ctx.globalAlpha = 0.55 + Math.abs(Math.sin(progress * Math.PI * 4)) * 0.32;
+      ctx.strokeStyle = "rgba(200, 255, 255, 0.78)";
+      ctx.shadowColor = "rgba(100, 235, 255, 0.75)";
+      ctx.shadowBlur = 8;
+      ctx.lineWidth = 2;
+      for (let i = 0; i < 3; i++) {
+        ctx.beginPath();
+        ctx.moveTo(16 + i * 12, -46 + i * 9);
+        ctx.lineTo(44 + i * 14, -52 + i * 6);
+        ctx.stroke();
+      }
+    }
+
     const drewSprite = drawThiefSprite(unit);
 
     if (!drewSprite) {
@@ -662,6 +723,10 @@ function drawUnit(unit) {
       ctx.moveTo(14, -24);
       ctx.lineTo(32, -38);
       ctx.stroke();
+    }
+
+    if (isRetreating) {
+      ctx.restore();
     }
   }
 

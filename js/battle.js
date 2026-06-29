@@ -15,6 +15,7 @@ function startUnitDeath(unit) {
   unit.pendingMageShot = false;
   unit.pendingHealPulse = false;
   unit.attackImpactPending = false;
+  unit.retreatTimer = 0;
   unit.shotTarget = null;
   unit.attackTarget = null;
   unit.deathAnimDuration = unit.deathAnimDuration || 0.85;
