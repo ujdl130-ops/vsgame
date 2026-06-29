@@ -6058,6 +6058,7 @@ body:not(.game-started) .game-wrap {
   display: grid;
   grid-template-columns: clamp(150px, 13vw, 210px) minmax(0, 1fr);
   gap: clamp(18px, 2vw, 28px);
+  align-items: start;
   flex: 1;
   min-height: 0;
 }
@@ -6098,12 +6099,13 @@ body:not(.game-started) .game-wrap {
 }
 
 .shop-product-panel {
+  align-self: start;
   min-width: 0;
   min-height: 0;
   display: flex;
   flex-direction: column;
-  gap: 16px;
-  padding: clamp(16px, 2vw, 24px);
+  gap: 14px;
+  padding: clamp(14px, 1.5vw, 20px);
   border: 1px solid rgba(224, 190, 105, 0.52);
   border-radius: 5px;
   background: linear-gradient(180deg, rgba(8, 11, 27, 0.72), rgba(4, 6, 17, 0.86));
@@ -6155,13 +6157,15 @@ body:not(.game-started) .game-wrap {
 }
 
 .shop-item-grid {
-  flex: 1;
+  flex: 0 0 auto;
   min-height: 0;
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
-  grid-auto-rows: minmax(260px, 1fr);
-  gap: clamp(12px, 1.35vw, 18px);
-  overflow-y: auto;
+  grid-template-columns: repeat(auto-fill, minmax(210px, 250px));
+  grid-auto-rows: 244px;
+  align-content: start;
+  justify-content: start;
+  gap: clamp(12px, 1.2vw, 16px);
+  overflow: visible;
   padding: 4px 4px 10px;
 }
 
@@ -6177,11 +6181,12 @@ body:not(.game-started) .game-wrap {
 .shop-card {
   position: relative;
   display: grid;
-  grid-template-rows: minmax(42px, auto) 1fr minmax(48px, auto) 48px;
+  grid-template-rows: minmax(38px, auto) 74px minmax(42px, auto) 42px;
   align-items: center;
-  gap: 12px;
-  min-height: 260px;
-  padding: 18px 14px 14px;
+  gap: 9px;
+  min-height: 0;
+  height: 244px;
+  padding: 15px 13px 12px;
   border: 1px solid rgba(239, 203, 119, 0.72);
   border-radius: 5px;
   color: #f6ead2;
@@ -6205,7 +6210,7 @@ body:not(.game-started) .game-wrap {
   min-height: 0;
   color: #fff2ca;
   font-family: "Malgun Gothic", sans-serif;
-  font-size: clamp(17px, 1.25vw, 21px);
+  font-size: clamp(15px, 1.05vw, 18px);
   font-weight: 900;
   line-height: 1.25;
   letter-spacing: 0;
@@ -6218,15 +6223,15 @@ body:not(.game-started) .game-wrap {
   margin: 0;
   color: rgba(238, 230, 214, 0.78);
   font-family: "Malgun Gothic", sans-serif;
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 700;
-  line-height: 1.45;
+  line-height: 1.38;
 }
 
 .shop-buy-label {
   display: grid;
   place-items: center;
-  min-height: 46px;
+  min-height: 40px;
   margin: 0;
   border: 1px solid rgba(255, 228, 155, 0.72);
   border-radius: 4px;
@@ -6234,16 +6239,16 @@ body:not(.game-started) .game-wrap {
   background: linear-gradient(180deg, #fff0b8, #d9a94a 58%, #a9792a);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.58), 0 7px 16px rgba(0, 0, 0, 0.32);
   font-family: "Malgun Gothic", sans-serif;
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 900;
 }
 
 .shop-card-badge {
   position: absolute;
-  top: 12px;
-  right: -7px;
-  min-width: 54px;
-  padding: 5px 8px;
+  top: 10px;
+  right: -6px;
+  min-width: 48px;
+  padding: 4px 7px;
   border: 1px solid rgba(255, 232, 162, 0.75);
   color: #1d1420;
   background: linear-gradient(180deg, #fff0b3, #d69f3f);
@@ -6257,25 +6262,26 @@ body:not(.game-started) .game-wrap {
   display: grid;
   place-items: center;
   justify-self: center;
-  width: min(108px, 42%);
-  min-width: 74px;
+  width: 78px;
+  min-width: 0;
   aspect-ratio: 1;
   margin: 0;
-  border: 1px solid rgba(255, 229, 159, 0.62);
-  border-radius: 50%;
-  background:
-    radial-gradient(circle at 50% 38%, rgba(255, 255, 238, 0.92) 0 10%, rgba(242, 200, 96, 0.78) 11% 34%, rgba(70, 79, 127, 0.32) 35% 60%, rgba(8, 10, 24, 0.1) 61%),
-    linear-gradient(180deg, rgba(36, 40, 68, 0.8), rgba(11, 13, 28, 0.9));
-  box-shadow: inset 0 0 26px rgba(245, 213, 133, 0.2), 0 0 24px rgba(222, 179, 86, 0.18);
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  filter: drop-shadow(0 10px 13px rgba(0, 0, 0, 0.54)) drop-shadow(0 0 13px rgba(224, 185, 91, 0.16));
 }
 
 .shop-item-icon::before {
-  content: "";
-  width: 48%;
-  aspect-ratio: 1;
-  background: linear-gradient(180deg, #fff6cb, #d8a845 58%, #78608e);
-  clip-path: polygon(50% 0, 88% 30%, 74% 86%, 26% 86%, 12% 30%);
-  filter: drop-shadow(0 5px 7px rgba(0, 0, 0, 0.48));
+  content: none;
+}
+
+.shop-item-icon img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
 }
 
 .shop-icon-gem::before { clip-path: polygon(50% 0, 90% 28%, 72% 100%, 28% 100%, 10% 28%); background: linear-gradient(135deg, #f7fbff, #87ddff 42%, #7457e8); }
@@ -6373,7 +6379,7 @@ body:not(.game-started) .game-wrap {
   }
 
   .shop-product-panel {
-    min-height: 620px;
+    min-height: 0;
     overflow: visible;
   }
 
@@ -6390,7 +6396,11 @@ body:not(.game-started) .game-wrap {
 
   .shop-item-grid {
     grid-template-columns: 1fr;
-    grid-auto-rows: minmax(240px, auto);
+    grid-auto-rows: 232px;
     overflow: visible;
+  }
+
+  .shop-card {
+    height: 232px;
   }
 }

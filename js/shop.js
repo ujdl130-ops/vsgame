@@ -98,6 +98,23 @@ const SHOP_ITEMS = [
   { id: "first_purchase_bonus", name: "첫 구매 보너스 패키지", category: "event", badge: "NEW", icon: "gift", description: "첫 공물 보너스: 보석 x1000, 골드 x200000", priceLabel: "₩3,300", rewards: { gold: 200000, diamonds: 1000 } },
 ];
 
+const SHOP_ICON_IMAGES = {
+  altar: "assets/icons/essence_poseidon.png",
+  armory: "assets/icons/essence_ares.png",
+  blessing: "assets/icons/essence_zeus.png",
+  choice: "assets/icons/essence_athena.png",
+  coin: "assets/icons/gold.png",
+  essence: "assets/icons/essence_hades.png",
+  event: "assets/icons/essence_zeus.png",
+  gem: "assets/icons/diamonds.png",
+  gift: "assets/icons/gold.png",
+  growth: "assets/icons/essence_hercules.png",
+  hammer: "assets/icons/essence_ares.png",
+  moon: "assets/icons/essence_athena.png",
+  potion: "assets/icons/essence_poseidon.png",
+  stone: "assets/icons/essence_hades.png",
+};
+
 let activeShopCategory = "recommended";
 
 function getShopItems(category = null) {
@@ -145,7 +162,8 @@ function renderShopCategories() {
 }
 
 function getShopItemIcon(item) {
-  return `<span class="shop-item-icon ${item.icon ? `shop-icon-${item.icon}` : ""}" aria-hidden="true"></span>`;
+  const src = SHOP_ICON_IMAGES[item.icon] || SHOP_ICON_IMAGES.blessing;
+  return `<span class="shop-item-icon ${item.icon ? `shop-icon-${item.icon}` : ""}" aria-hidden="true"><img src="${src}" alt=""></span>`;
 }
 
 function renderShopItems(container = null, category = activeShopCategory) {
