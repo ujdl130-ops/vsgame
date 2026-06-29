@@ -160,7 +160,7 @@ function updateHud() {
   const activeUnits = getActiveUnitCount();
 
   waveText.textContent = `${gameState.wave} / ${gameState.maxWave}`;
-  goldText.textContent = Math.floor(gameState.gold);
+  goldText.textContent = `${Math.floor(gameState.gold)}G`;
   if (unitCountText) unitCountText.textContent = `${activeUnits} / ${MAX_SUMMONED_UNITS}`;
   if (commandUnitText) commandUnitText.textContent = `${activeUnits} / ${MAX_SUMMONED_UNITS}`;
   if (commandGoldText) commandGoldText.textContent = `${Math.floor(gameState.gold)}G`;

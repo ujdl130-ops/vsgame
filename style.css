@@ -144,8 +144,7 @@ canvas {
 }
 
 .battle-wave-badge,
-.battle-unit-badge,
-.battle-gold-badge {
+.battle-unit-badge {
   position: absolute;
   top: 14px;
   z-index: 3;
@@ -172,14 +171,32 @@ canvas {
 }
 
 .battle-gold-badge {
-  left: 16px;
-  top: auto;
-  bottom: 132px;
+  position: absolute;
+  left: 70px;
+  bottom: 105px;
+  z-index: 6;
+  width: 216px;
+  height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px 12px;
+  border: 3px solid #2a1b12;
+  background:
+    linear-gradient(180deg, #fff3c1 0 5px, transparent 5px calc(100% - 5px), #8c561f calc(100% - 5px) 100%),
+    linear-gradient(180deg, #17110c, #050403);
+  box-shadow:
+    inset 0 0 0 2px #ffd979,
+    4px 4px 0 rgba(0, 0, 0, 0.34);
+  pointer-events: none;
+}
+
+.battle-gold-badge span {
+  display: none;
 }
 
 .battle-wave-badge span,
-.battle-unit-badge span,
-.battle-gold-badge span {
+.battle-unit-badge span {
   display: block;
   margin-bottom: 1px;
   color: rgba(255, 255, 255, 0.76);
@@ -189,13 +206,25 @@ canvas {
 }
 
 .battle-wave-badge strong,
-.battle-unit-badge strong,
-.battle-gold-badge strong {
+.battle-unit-badge strong {
   display: block;
   color: #fff0a7;
   font-size: 17px;
   line-height: 0.95;
   text-shadow: 2px 2px 0 #000;
+}
+
+.battle-gold-badge strong {
+  display: block;
+  color: #fff8d4;
+  font-size: 21px;
+  font-weight: 900;
+  line-height: 1;
+  text-align: center;
+  text-shadow:
+    2px 2px 0 #000,
+    -1px -1px 0 #000,
+    1px -1px 0 #000;
 }
 
 .game-options-btn {
@@ -782,8 +811,7 @@ canvas {
 
 @media (max-width: 720px) {
   .battle-wave-badge,
-  .battle-unit-badge,
-  .battle-gold-badge {
+  .battle-unit-badge {
     top: 10px;
     min-width: 74px;
     height: 36px;
@@ -799,22 +827,31 @@ canvas {
     left: 90px;
   }
 
-  .battle-gold-badge {
-    left: 10px;
-    top: auto;
-    bottom: 124px;
-  }
-
   .battle-wave-badge span,
-  .battle-unit-badge span,
-  .battle-gold-badge span {
+  .battle-unit-badge span {
     font-size: 9px;
   }
 
   .battle-wave-badge strong,
-  .battle-unit-badge strong,
-  .battle-gold-badge strong {
+  .battle-unit-badge strong {
     font-size: 14px;
+  }
+
+  .battle-gold-badge {
+    left: 64px;
+    bottom: 100px;
+    width: 176px;
+    height: 29px;
+    padding: 3px 10px;
+    border-width: 2px;
+    box-shadow:
+      inset 0 0 0 2px #ffd979,
+      3px 3px 0 rgba(0, 0, 0, 0.34);
+  }
+
+  .battle-gold-badge strong {
+    font-size: 17px;
+    line-height: 1;
   }
 
   .battle-command-panel {
