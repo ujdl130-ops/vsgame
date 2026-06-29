@@ -6161,7 +6161,7 @@ body:not(.game-started) .game-wrap {
   min-height: 0;
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(210px, 250px));
-  grid-auto-rows: 244px;
+  grid-auto-rows: 216px;
   align-content: start;
   justify-content: start;
   gap: clamp(12px, 1.2vw, 16px);
@@ -6181,12 +6181,12 @@ body:not(.game-started) .game-wrap {
 .shop-card {
   position: relative;
   display: grid;
-  grid-template-rows: minmax(36px, auto) 62px 30px minmax(36px, auto) 40px;
-  align-items: center;
-  gap: 7px;
+  grid-template-rows: 48px 1fr 40px;
+  align-items: stretch;
+  gap: 10px;
   min-height: 0;
-  height: 244px;
-  padding: 15px 13px 12px;
+  height: 216px;
+  padding: 18px 14px 14px;
   border: 1px solid rgba(239, 203, 119, 0.72);
   border-radius: 5px;
   color: #f6ead2;
@@ -6206,7 +6206,9 @@ body:not(.game-started) .game-wrap {
 }
 
 .shop-card strong {
-  display: block;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   min-height: 0;
   color: #fff2ca;
   font-family: "Malgun Gothic", sans-serif;
@@ -6218,52 +6220,69 @@ body:not(.game-started) .game-wrap {
 }
 
 .shop-card small {
-  display: block;
+  display: none;
   min-height: 0;
   margin: 0;
   color: rgba(238, 230, 214, 0.78);
   font-family: "Malgun Gothic", sans-serif;
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 700;
   line-height: 1.38;
 }
 
 .shop-reward-icons {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 5px;
+  display: grid;
+  gap: 3px;
+  align-self: center;
+  justify-self: center;
+  width: min(170px, 100%);
   min-width: 0;
-  flex-wrap: wrap;
 }
 
 .shop-reward-chip {
-  display: inline-flex;
+  display: grid;
+  grid-template-columns: 18px 1fr auto;
   align-items: center;
-  gap: 3px;
-  height: 24px;
-  padding: 2px 6px 2px 3px;
-  border: 1px solid rgba(236, 203, 119, 0.34);
-  border-radius: 14px;
+  gap: 5px;
+  min-height: 20px;
+  padding: 1px 4px;
+  border: 0;
+  border-radius: 4px;
   color: #f7e8bd;
-  background: rgba(5, 8, 20, 0.56);
-  box-shadow: inset 0 0 9px rgba(232, 190, 91, 0.08);
+  background: rgba(5, 8, 20, 0.28);
+  box-shadow: none;
   font-family: "Malgun Gothic", sans-serif;
   font-size: 10px;
   font-weight: 900;
   line-height: 1;
+  text-align: left;
 }
 
 .shop-reward-chip img {
-  width: 19px;
-  height: 19px;
+  width: 18px;
+  height: 18px;
   object-fit: contain;
   filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.55));
+}
+
+.shop-reward-name {
+  color: rgba(241, 232, 208, 0.86);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.shop-reward-amount {
+  color: #fff2bd;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
 }
 
 .shop-buy-label {
   display: grid;
   place-items: center;
+  align-self: end;
+  width: min(160px, 100%);
   min-height: 40px;
   margin: 0;
   border: 1px solid rgba(255, 228, 155, 0.72);
@@ -6274,6 +6293,7 @@ body:not(.game-started) .game-wrap {
   font-family: "Malgun Gothic", sans-serif;
   font-size: 14px;
   font-weight: 900;
+  justify-self: center;
 }
 
 .shop-card-badge {
@@ -6429,11 +6449,11 @@ body:not(.game-started) .game-wrap {
 
   .shop-item-grid {
     grid-template-columns: 1fr;
-    grid-auto-rows: 244px;
+    grid-auto-rows: 216px;
     overflow: visible;
   }
 
   .shop-card {
-    height: 244px;
+    height: 216px;
   }
 }

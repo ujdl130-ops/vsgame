@@ -147,11 +147,6 @@ function renderShopCategories() {
   }));
 }
 
-function getShopItemIcon(item) {
-  const src = SHOP_ICON_IMAGES[item.icon] || SHOP_ICON_IMAGES.gem;
-  return `<span class="shop-item-icon ${item.icon ? `shop-icon-${item.icon}` : ""}" aria-hidden="true"><img src="${src}" alt=""></span>`;
-}
-
 function getShopRewardIcons(item) {
   const rewards = item.rewards || {};
   const rewardIcons = [
@@ -168,7 +163,8 @@ function getShopRewardIcons(item) {
       ${rewardIcons.map(({ key, label, icon }) => `
         <span class="shop-reward-chip" title="${label} x${Number(rewards[key]).toLocaleString("ko-KR")}">
           <img src="${SHOP_ICON_IMAGES[icon]}" alt="">
-          <span>${Number(rewards[key]).toLocaleString("ko-KR")}</span>
+          <span class="shop-reward-name">${label}</span>
+          <span class="shop-reward-amount">x${Number(rewards[key]).toLocaleString("ko-KR")}</span>
         </span>
       `).join("")}
     </span>
@@ -190,9 +186,7 @@ function renderShopItems(container = null, category = activeShopCategory) {
     button.innerHTML = `
       ${item.badge ? `<span class="shop-card-badge">${item.badge}</span>` : ""}
       <strong>${item.name}</strong>
-      ${getShopItemIcon(item)}
       ${getShopRewardIcons(item)}
-      <small>${item.description}</small>
       <span class="shop-buy-label">${item.priceLabel}</span>
     `;
     button.addEventListener("click", () => {
