@@ -10,9 +10,10 @@ function loadProgress() {
     const clearedStages = Array.isArray(saved.clearedStages)
       ? saved.clearedStages.map(Number).filter((stage) => stage >= 1 && stage <= 3)
       : [];
-    return { unlockedStage, clearedStages };
+    const growth = saved.growth && typeof saved.growth === "object" ? saved.growth : {};
+    return { unlockedStage, clearedStages, growth };
   } catch (error) {
-    return { unlockedStage: 1, clearedStages: [] };
+    return { unlockedStage: 1, clearedStages: [], growth: {} };
   }
 }
 

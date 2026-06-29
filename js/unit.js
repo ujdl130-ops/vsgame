@@ -8,17 +8,20 @@ function summonGuard() {
     return;
   }
   if (!spendGold(50)) return;
+  const stats = getGrownStats("guard", { hp: 115, damage: 10 });
   gameState.units.push({
     type: "guard",
     name: "방패병",
+    level: stats.level,
+    star: stats.star,
     x: PLAYER_BASE_X + 70,
     y: GROUND_Y,
     w: 34,
     h: 56,
-    hp: 115,
-    maxHp: 115,
+    hp: stats.hp,
+    maxHp: stats.hp,
     speed: 48,
-    damage: 10,
+    damage: stats.damage,
     range: 42,
     cooldown: 0,
     attackSpeed: 1.0,
@@ -43,17 +46,20 @@ function summonArcher() {
     return;
   }
   if (!spendGold(75)) return;
+  const stats = getGrownStats("archer", { hp: 48, damage: 13 });
   gameState.units.push({
     type: "archer",
     name: "沅곸닔",
+    level: stats.level,
+    star: stats.star,
     x: PLAYER_BASE_X + 62,
     y: GROUND_Y,
     w: 32,
     h: 52,
-    hp: 48,
-    maxHp: 48,
+    hp: stats.hp,
+    maxHp: stats.hp,
     speed: 42,
-    damage: 13,
+    damage: stats.damage,
     range: 175,
     cooldown: 0,
     attackSpeed: 0.85,
@@ -78,17 +84,20 @@ function summonMage() {
     return;
   }
   if (!spendGold(100)) return;
+  const stats = getGrownStats("mage", { hp: 42, damage: 15 });
   gameState.units.push({
     type: "mage",
     name: "마법사",
+    level: stats.level,
+    star: stats.star,
     x: PLAYER_BASE_X + 58,
     y: GROUND_Y,
     w: 32,
     h: 52,
-    hp: 42,
-    maxHp: 42,
+    hp: stats.hp,
+    maxHp: stats.hp,
     speed: 38,
-    damage: 15,
+    damage: stats.damage,
     range: 155,
     cooldown: 0,
     attackSpeed: 1.2,
@@ -113,22 +122,25 @@ function summonSaintess() {
     return;
   }
   if (!spendGold(120)) return;
+  const stats = getGrownStats("saintess", { hp: 54, healAmount: 8 });
   gameState.units.push({
     type: "saintess",
     name: "?깅?",
+    level: stats.level,
+    star: stats.star,
     x: PLAYER_BASE_X + 56,
     y: GROUND_Y,
     w: 32,
     h: 52,
-    hp: 54,
-    maxHp: 54,
+    hp: stats.hp,
+    maxHp: stats.hp,
     speed: 36,
     damage: 0,
     range: 130,
     cooldown: 0,
     attackSpeed: 1.2,
     healRange: 130,
-    healAmount: 8,
+    healAmount: stats.healAmount,
     healInterval: 1.2,
     healCooldown: 0,
     animTime: 0,
@@ -151,17 +163,20 @@ function summonThief() {
     return;
   }
   if (!spendGold(90)) return;
+  const stats = getGrownStats("thief", { hp: 58, damage: 28 });
   gameState.units.push({
     type: "thief",
     name: "도적",
+    level: stats.level,
+    star: stats.star,
     x: PLAYER_BASE_X + 64,
     y: GROUND_Y,
     w: 30,
     h: 52,
-    hp: 58,
-    maxHp: 58,
+    hp: stats.hp,
+    maxHp: stats.hp,
     speed: 72,
-    damage: 28,
+    damage: stats.damage,
     range: 36,
     cooldown: 0,
     attackSpeed: 1.35,

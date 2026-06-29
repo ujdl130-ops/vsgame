@@ -23,17 +23,20 @@ const HERO_ZEUS_SPRITE = {
 
 
 function createMainHero() {
+  const stats = getGrownStats("hero", { hp: 180, damage: 34 });
   return {
     type: "hero",
     name: "제우스",
+    level: stats.level,
+    star: stats.star,
     x: PLAYER_BASE_X + 112,
     y: GROUND_Y,
     w: 38,
     h: 62,
-    hp: 180,
-    maxHp: 180,
+    hp: stats.hp,
+    maxHp: stats.hp,
     speed: 145,
-    damage: 34,
+    damage: stats.damage,
     range: 275,
     cooldown: 0,
     attackSpeed: 0.48,
@@ -49,7 +52,7 @@ function createMainHero() {
     face: 1,
     dead: false,
     respawnTimer: 0,
-    lastHp: 180,
+    lastHp: stats.hp,
   };
 }
 
