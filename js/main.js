@@ -2,6 +2,8 @@
 
 function resetGame() {
   if (animationId) cancelAnimationFrame(animationId);
+  keys = {};
+  heroMoveInput = 0;
   gameState = createInitialState();
   lastTime = performance.now();
   updateHud();
@@ -50,7 +52,7 @@ function gameLoop(now) {
 }
 
 window.addEventListener("keydown", (event) => {
-  const playableKeys = ["Space", "ArrowLeft", "ArrowRight"];
+  const playableKeys = ["Space"];
   if (playableKeys.includes(event.code)) event.preventDefault();
 
   if (isTitleVisible()) {
@@ -119,9 +121,8 @@ window.addEventListener("keydown", (event) => {
     return;
   }
 
-  keys[event.code] = true;
-
   if (event.code === "Space") {
+    keys.Space = true;
     event.preventDefault();
     heroAttack();
   }
@@ -144,7 +145,7 @@ window.addEventListener("keydown", (event) => {
 });
 
 window.addEventListener("keyup", (event) => {
-  keys[event.code] = false;
+  if (event.code === "Space") keys.Space = false;
 });
 
 function bindSummonButton(button, summonFn) {

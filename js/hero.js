@@ -233,11 +233,7 @@ function updateHero(dt) {
   }
   hero.lastHp = hero.hp;
 
-  const moveLeft = keys.ArrowLeft || keys.KeyA;
-  const moveRight = keys.ArrowRight || keys.KeyD;
-  let moveDir = 0;
-  if (moveLeft) moveDir -= 1;
-  if (moveRight) moveDir += 1;
+  const moveDir = Math.max(-1, Math.min(1, heroMoveInput || 0));
 
   if (moveDir !== 0) {
     hero.x += moveDir * hero.speed * dt;

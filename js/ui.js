@@ -143,8 +143,7 @@ function bindMovementJoystick(joystick) {
   let activePointerId = null;
 
   const setJoystickInput = (direction) => {
-    keys.ArrowLeft = direction < 0;
-    keys.ArrowRight = direction > 0;
+    heroMoveInput = direction;
     joystick.classList.toggle("is-left", direction < 0);
     joystick.classList.toggle("is-right", direction > 0);
   };
