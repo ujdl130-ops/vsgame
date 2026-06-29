@@ -60,6 +60,15 @@ const GROWTH_TYPE_ALIASES = {
   zeus: "hero",
 };
 
+const LEVEL_UP_GOLD_MILESTONES = [
+  { level: 1, cumulativeGold: 0 },
+  { level: 10, cumulativeGold: 1970 },
+  { level: 20, cumulativeGold: 12010 },
+  { level: 30, cumulativeGold: 38050 },
+];
+
+const HERO_LEVEL_UP_COST_MULTIPLIER = 1.25;
+
 function resolveGrowthType(type) {
   return GROWTH_TYPE_ALIASES[type] || type;
 }
@@ -70,6 +79,43 @@ function clampGrowthLevel(level) {
 
 function clampTranscendenceStar(star) {
   return Math.min(3, Math.max(1, Math.round(Number(star) || 1)));
+}
+
+function isHeroGrowthType(type) {
+  return resolveGrowthType(type) === "hero";
+}
+
+function getBaseCumulativeLevelUpGold(level) {
+  const targetLevel = clampGrowthLevel(level);
+
+  for (let index = 1; index < LEVEL_UP_GOLD_MILESTONES.length; index += 1) {
+    const previous = LEVEL_UP_GOLD_MILESTONES[index - 1];
+    const next = LEVEL_UP_GOLD_MILESTONES[index];
+
+    if (targetLevel <= next.level) {
+      const levelProgress = (targetLevel - previous.level) / (next.level - previous.level);
+      const goldRange = next.cumulativeGold - previous.cumulativeGold;
+      return Math.round(previous.cumulativeGold + goldRange * levelProgress);
+    }
+  }
+
+  return LEVEL_UP_GOLD_MILESTONES[LEVEL_UP_GOLD_MILESTONES.length - 1].cumulativeGold;
+}
+
+function getCumulativeLevelUpGold(type, level) {
+  const baseCost = getBaseCumulativeLevelUpGold(level);
+  return Math.round(baseCost * (isHeroGrowthType(type) ? HERO_LEVEL_UP_COST_MULTIPLIER : 1));
+}
+
+function getLevelUpGoldCost(type, fromLevel, toLevel = Number(fromLevel) + 1) {
+  const startLevel = clampGrowthLevel(fromLevel);
+  const targetLevel = clampGrowthLevel(toLevel);
+  if (targetLevel <= startLevel) return 0;
+  return getCumulativeLevelUpGold(type, targetLevel) - getCumulativeLevelUpGold(type, startLevel);
+}
+
+function getNextLevelUpGoldCost(type, growthState = getStoredGrowthState(type)) {
+  return getLevelUpGoldCost(type, growthState.level, growthState.level + 1);
 }
 
 function getStoredGrowthState(type) {
