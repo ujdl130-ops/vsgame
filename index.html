@@ -320,13 +320,7 @@
 
     <button id="stageBackBtn" class="stage-ui-btn stage-back-btn" type="button">← 로비</button>
 
-    <div class="stage-title-box">
-      <p class="stage-kicker">BATTLE MAP</p>
-      <h1 class="stage-logo">스테이지 선택</h1>
-      <p id="stageSelectNotice">Chapter 1을 선택해 전투 지역을 확인하세요.</p>
-    </div>
-
-    <div id="chapterPanel" class="chapter-panel">
+    <div id="chapterPanel" class="chapter-panel is-hidden">
       <button id="chapter1Btn" class="chapter-card" type="button">
         <span class="chapter-tag">OPEN</span>
         <strong>Chapter 1</strong>
@@ -336,29 +330,32 @@
     </div>
 
     <div id="stagePanel" class="stage-panel is-hidden">
-      <button id="chapterBackBtn" class="stage-ui-btn chapter-back-btn" type="button">← Chapter</button>
-      <h2>Chapter 1</h2>
-      <p class="stage-panel-copy">이전 스테이지를 클리어하면 다음 스테이지가 열립니다.</p>
+      <div class="stage-map-tabs" aria-label="챕터 정보">
+        <span class="stage-part-tab">✓ 파트 1</span>
+        <span class="stage-chapter-tab">챕터 1</span>
+      </div>
+
+      <p id="stageSelectNotice" class="stage-map-notice">Stage 1부터 순서대로 클리어하면 다음 스테이지가 열립니다.</p>
 
       <div class="stage-road" aria-hidden="true"></div>
 
       <div class="stage-card-wrap">
         <button class="stage-card" type="button" data-stage="1">
-          <span class="stage-number">STAGE 1</span>
+          <span class="stage-number">1</span>
           <strong>풀숲 입구</strong>
           <small class="stage-status">도전 가능</small>
           <span class="lock-icon">▶</span>
         </button>
 
         <button class="stage-card" type="button" data-stage="2">
-          <span class="stage-number">STAGE 2</span>
+          <span class="stage-number">2</span>
           <strong>몬스터 언덕</strong>
           <small class="stage-status">잠김</small>
           <span class="lock-icon">🔒</span>
         </button>
 
         <button class="stage-card" type="button" data-stage="3">
-          <span class="stage-number">STAGE 3</span>
+          <span class="stage-number">3</span>
           <strong>마왕의 전초기지</strong>
           <small class="stage-status">잠김</small>
           <span class="lock-icon">🔒</span>
@@ -368,21 +365,15 @@
   </section>
 
   <main class="game-wrap">
-    <section class="title-card">
-      <p class="eyebrow">PIXEL DEFENSE · PROTOTYPE</p>
-      <h2>픽셀디펜스</h2>
-      <p>아군 병사를 소환해 적 기지를 밀어붙이는 횡스크롤 디펜스 데모입니다.</p>
-    </section>
-
-    <section class="hud">
-      <div><span>Wave</span><strong id="waveText">1 / 3</strong></div>
-      <div><span>Gold</span><strong id="goldText">100</strong></div>
-      <div><span>Units</span><strong id="unitCountText">0 / 5</strong></div>
-      <div><span>Player Base</span><strong id="playerHpText">100</strong></div>
-      <div><span>Enemy Base</span><strong id="enemyHpText">100</strong></div>
-    </section>
-
     <div class="battle-stage-frame">
+      <div class="battle-wave-badge" aria-label="웨이브 진행도">
+        <span>WAVE</span>
+        <strong id="waveText">1 / 3</strong>
+      </div>
+      <div class="battle-unit-badge" aria-label="유닛 제한">
+        <span>UNITS</span>
+        <strong id="unitCountText">0 / 5</strong>
+      </div>
       <canvas id="gameCanvas" width="960" height="540" aria-label="픽셀디펜스 게임 화면"></canvas>
       <button id="gameOptionsBtn" class="game-options-btn" type="button" aria-expanded="false" aria-controls="gameOptionsMenu">게임 옵션</button>
       <div id="gameOptionsMenu" class="game-options-menu is-hidden" aria-label="게임 옵션 메뉴">
@@ -392,63 +383,47 @@
 
       <section class="battle-command-panel" aria-label="전투 명령">
         <div class="battle-command-top">
-          <span class="battle-meter left"><span id="commandUnitText">0 / 5</span></span>
-          <span class="battle-meter right"><span id="commandGoldText">100G</span></span>
         </div>
-
-        <div class="battle-slot-row">
-          <button id="summonGuardBtn" class="command-slot slot-guard" type="button" aria-label="방패병 소환">
-            <span class="slot-icon" aria-hidden="true"></span>
-            <span class="slot-cost">50</span>
-            <span class="slot-count">0/5</span>
-          </button>
-          <button id="summonArcherBtn" class="command-slot slot-archer" type="button" aria-label="궁수 소환">
-            <span class="slot-icon" aria-hidden="true"></span>
-            <span class="slot-cost">75</span>
-            <span class="slot-count">0/5</span>
-          </button>
-          <button id="summonMageBtn" class="command-slot slot-mage" type="button" aria-label="마법사 소환">
-            <span class="slot-icon" aria-hidden="true"></span>
-            <span class="slot-cost">100</span>
-            <span class="slot-count">0/5</span>
-          </button>
-          <button id="summonSaintessBtn" class="command-slot slot-saintess" type="button" aria-label="성녀 소환">
-            <span class="slot-icon" aria-hidden="true"></span>
-            <span class="slot-cost">120</span>
-            <span class="slot-count">0/5</span>
-          </button>
-          <button id="summonThiefBtn" class="command-slot slot-thief" type="button" aria-label="도적 소환">
-            <span class="slot-icon" aria-hidden="true"></span>
-            <span class="slot-cost">?</span>
-            <span class="slot-count">준비</span>
-          </button>
+        <div class="battle-runestone-gauge" aria-label="룬스톤 게이지">
+          <span id="runestoneGaugeFill" class="battle-runestone-fill" aria-hidden="true"></span>
+          <strong id="runestoneGaugeText">0/150</strong>
+        </div>
+        <div class="battle-mana-gauge" aria-label="제우스 마나">
+          <span class="battle-mana-label">MP</span>
+          <div class="battle-mana-track" aria-hidden="true">
+            <span id="zeusManaFill" class="battle-mana-fill"></span>
+          </div>
+          <strong id="zeusManaText">0/50</strong>
         </div>
 
         <div class="battle-command-bottom">
-          <button id="moveLeftBtn" class="battle-arrow-btn arrow-left" type="button" aria-label="왼쪽 이동"><span aria-hidden="true"></span></button>
-          <button id="moveRightBtn" class="battle-arrow-btn arrow-right" type="button" aria-label="오른쪽 이동"><span aria-hidden="true"></span></button>
-          <div class="battle-round-group">
-            <button id="skillBtn" class="zeus-action-btn zeus-basic-btn" type="button" aria-label="제우스 기본공격">
-              <span class="zeus-action-icon basic" aria-hidden="true"></span>
-              <span class="zeus-action-label">기본공격</span>
-              <span class="zeus-action-key">SPACE</span>
+          <button id="summonGuardSlotBtn" class="battle-unit-slot-button battle-unit-slot-guard" type="button" aria-label="기사 소환" data-cost="50"></button>
+          <button id="summonArcherSlotBtn" class="battle-unit-slot-button battle-unit-slot-archer" type="button" aria-label="궁수 소환" data-cost="75"></button>
+          <button id="summonMageSlotBtn" class="battle-unit-slot-button battle-unit-slot-mage" type="button" aria-label="마법사 소환" data-cost="100"></button>
+          <button id="summonSaintessSlotBtn" class="battle-unit-slot-button battle-unit-slot-saintess" type="button" aria-label="성녀 소환" data-cost="120"></button>
+          <button id="summonThiefSlotBtn" class="battle-unit-slot-button battle-unit-slot-thief" type="button" aria-label="도적 소환" data-cost="90"></button>
+          <img class="battle-unit-card-preview battle-unit-card-archer" src="assets/ArcherUI.png" alt="" aria-hidden="true">
+          <img class="battle-unit-card-preview battle-unit-card-mage" src="assets/MageUI.png" alt="" aria-hidden="true">
+          <img class="battle-unit-card-preview battle-unit-card-saint" src="assets/SaintUI.png" alt="" aria-hidden="true">
+          <img class="battle-unit-card-preview battle-unit-card-thief" src="assets/ChatGPT Image 2026년 6월 30일 오전 12_48_30.png" alt="" aria-hidden="true">
+          <div class="battle-action-icon-layer">
+            <button id="zeusSkillIconBtn" class="battle-action-icon-slot battle-action-icon-skill" type="button" aria-label="Zeus skill">
+              <img src="assets/SkillIcon_transparent.png" alt="">
             </button>
-            <button id="zeusSkillBtn" class="zeus-action-btn zeus-skill-btn" type="button" aria-label="제우스 스킬">
-              <span class="zeus-action-icon skill" aria-hidden="true"></span>
-              <span class="zeus-action-label">제우스 스킬</span>
-              <span class="zeus-action-key">READY</span>
+            <button id="basicAttackIconBtn" class="battle-action-icon-slot battle-action-icon-basic" type="button" aria-label="Basic attack">
+              <img src="assets/AttackIcon.png" alt="">
             </button>
+          </div>
+          <div id="movementJoystick" class="movement-joystick" role="application" tabindex="0" aria-label="영웅 이동 조이스틱">
+            <span class="movement-joystick-track" aria-hidden="true"></span>
+            <span class="movement-joystick-arrow movement-joystick-arrow-left" aria-hidden="true"></span>
+            <span class="movement-joystick-arrow movement-joystick-arrow-right" aria-hidden="true"></span>
+            <span class="movement-joystick-knob" aria-hidden="true"></span>
           </div>
         </div>
       </section>
     </div>
 
-    <section class="guide">
-      <p><b>조작:</b> A/D 또는 ←/→ 메인 영웅 이동 · Space 메인 영웅 공격 · 1 방패병 소환 · 2 궁수 소환 · 3 마법사 소환 · 4 성녀 소환</p>
-      <p><b>전투 규칙:</b> 쫄병과 몬스터는 공격 / 걷기 / 사망만 사용합니다. 피격 모션과 피격 경직은 메인 영웅에게만 적용됩니다.</p>
-      <p><b>소환 제한:</b> 아군 병사는 최대 5명까지 유지됩니다. 병사가 사망하면 빈 자리가 다시 생깁니다.</p>
-      <p><b>목표:</b> 메인 영웅을 보조하며 병사를 소환해 3웨이브를 버티고 적 기지를 파괴하면 승리</p>
-    </section>
   </main>
 
   <script src="js/core.js"></script>

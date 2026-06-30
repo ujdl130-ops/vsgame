@@ -1,4 +1,4 @@
-﻿// Shop screen interactions.
+// Shop screen interactions.
 
 function showShop() {
   if (titleScreen) titleScreen.classList.add("is-hidden");
@@ -18,7 +18,7 @@ function showShop() {
   }
 
   if (shopNotice) {
-    shopNotice.textContent = "?곸젏 ?덈ぉ???좏깮?섏꽭??";
+    shopNotice.textContent = "상점 아이템을 선택하세요.";
   }
 }
 

@@ -1,8 +1,8 @@
-﻿// Main hero data, growth hooks, combat, and rendering.
+// Main hero data, growth hooks, combat, and rendering.
 
 const HERO_ZEUS_SPRITE = {
-  // 寃? 諛곌꼍???쒓굅?섍퀬 媛??꾨젅?꾩쓽 醫뚯슦 媛꾧꺽???ㅼ떆 留욎텣 理쒖떊 ?쒖슦???ㅽ봽?쇱씠?몄엯?덈떎.
-  // ?쒗듃 ?ш린: 1536 x 1024, 6??x 5??湲곗?
+  // 배경을 제거하고 각 프레임의 좌우 간격을 다시 맞춘 제우스 스프라이트입니다.
+  // 시트 크기: 1536 x 1024, 6열 x 5행 기준
   frameW: 256,
   frameH: 204,
   drawW: 150,
@@ -21,13 +21,38 @@ const HERO_ZEUS_SPRITE = {
   ],
 };
 
+const ZEUS_THUNDERSTORM_SKILL = {
+  name: "천벌",
+  frameCount: 8,
+  duration: 1.8,
+  cloudBuildTime: 0.75,
+  lightningStartTime: 0.82,
+  lightningDuration: 0.72,
+  clusterRadius: 150,
+  framePadX: 28,
+  damage: 45,
+  paralysisDuration: 2,
+  lightningColumnRadius: 20,
+  lightningHitColumns: [
+    [0.24, 0.72],
+    [0.42, 0.72],
+    [0.28, 0.66],
+    [0.24, 0.56],
+    [0.36, 0.68],
+    [0.36, 0.76],
+    [0.18, 0.72],
+    [0.54, 0.78],
+  ],
+  fallbackX: ENEMY_BASE_X - 120,
+};
+
 
 function createMainHero() {
   return {
     type: "hero",
     name: "제우스",
     x: PLAYER_BASE_X + 112,
-    y: GROUND_Y,
+    y: COMBAT_LINE_Y,
     w: 38,
     h: 62,
     hp: 120,
@@ -54,10 +79,63 @@ function createMainHero() {
 }
 
 
-function showZeusSkillPlaceholder() {
+function findZeusThunderstormTargetX() {
+  const enemies = gameState.enemies.filter(isCombatAlive);
+  if (enemies.length === 0) return ZEUS_THUNDERSTORM_SKILL.fallbackX;
+
+  let bestX = enemies[0].x;
+  let bestScore = -Infinity;
+
+  for (const candidate of enemies) {
+    let weightedX = 0;
+    let weightTotal = 0;
+
+    for (const enemy of enemies) {
+      const distance = Math.abs(enemy.x - candidate.x);
+      if (distance > ZEUS_THUNDERSTORM_SKILL.clusterRadius) continue;
+
+      const weight = 1 - distance / ZEUS_THUNDERSTORM_SKILL.clusterRadius;
+      weightedX += enemy.x * weight;
+      weightTotal += weight;
+    }
+
+    if (weightTotal > bestScore) {
+      bestScore = weightTotal;
+      bestX = weightedX / weightTotal;
+    }
+  }
+
+  return Math.max(130, Math.min(canvas.width - 130, bestX));
+}
+
+function castZeusThunderstorm() {
   if (!gameState || !gameState.running || gameState.gameOver || gameState.clear) return;
-  gameState.message = "?쒖슦???ㅽ궗? ?꾩쭅 以鍮?以묒엯?덈떎.";
-  gameState.messageTimer = 1.25;
+  const hero = gameState.hero;
+  if (!hero || hero.dead || hero.hp <= 0) return;
+  if (gameState.zeusSkillEffect && gameState.zeusSkillEffect.active) return;
+  if ((gameState.zeusMana || 0) < ZEUS_MANA_COST) {
+    gameState.message = `마나 부족! 천벌은 ${ZEUS_MANA_COST}마나가 필요합니다.`;
+    gameState.messageTimer = 0.85;
+    updateButtons();
+    return;
+  }
+
+  gameState.zeusMana = Math.max(0, (gameState.zeusMana || 0) - ZEUS_MANA_COST);
+
+  gameState.zeusSkillEffect = {
+    active: true,
+    timer: 0,
+    duration: ZEUS_THUNDERSTORM_SKILL.duration,
+    x: findZeusThunderstormTargetX(),
+    hitEnemies: new Set(),
+  };
+  gameState.message = `${ZEUS_THUNDERSTORM_SKILL.name}!`;
+  gameState.messageTimer = 0.65;
+  updateButtons();
+}
+
+function showZeusSkillPlaceholder() {
+  castZeusThunderstorm();
 }
 
 
@@ -83,7 +161,7 @@ function fireHeroArrow(hero) {
     gameState.enemyBaseHp -= hero.damage * 0.65;
     spawnHit(ENEMY_BASE_X - 38, GROUND_Y - 78, "#9fe8ff");
   } else {
-    gameState.message = "?ш굅由??덉뿉 ?곸씠 ?놁뒿?덈떎.";
+    gameState.message = "사거리 안에 적이 없습니다.";
     gameState.messageTimer = 0.8;
   }
 
@@ -144,7 +222,7 @@ function updateHero(dt) {
     hero.respawnTimer = Math.max(0, hero.respawnTimer - dt);
     if (hero.respawnTimer <= 0) {
       Object.assign(hero, createMainHero());
-      gameState.message = "硫붿씤 ?곸썒 遺?? ?ㅼ떆 議곗옉?????덉뒿?덈떎.";
+      gameState.message = "메인 영웅 부활! 다시 조작할 수 있습니다.";
       gameState.messageTimer = 1.2;
     }
     return;
@@ -155,11 +233,7 @@ function updateHero(dt) {
   }
   hero.lastHp = hero.hp;
 
-  const moveLeft = keys.ArrowLeft || keys.KeyA;
-  const moveRight = keys.ArrowRight || keys.KeyD;
-  let moveDir = 0;
-  if (moveLeft) moveDir -= 1;
-  if (moveRight) moveDir += 1;
+  const moveDir = Math.max(-1, Math.min(1, heroMoveInput || 0));
 
   if (moveDir !== 0) {
     hero.x += moveDir * hero.speed * dt;

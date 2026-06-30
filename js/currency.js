@@ -1,8 +1,8 @@
-// Battle currency spending.
+// Battle summon currency spending.
 
-function spendGold(amount) {
-  if (!gameState.running || gameState.gold < amount || gameState.gameOver || gameState.clear) return false;
-  gameState.gold -= amount;
+function spendRunestone(amount) {
+  if (!gameState.running || gameState.runestone < amount || gameState.gameOver || gameState.clear) return false;
+  gameState.runestone -= amount;
   updateHud();
   updateButtons();
   return true;

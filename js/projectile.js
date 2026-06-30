@@ -1,5 +1,8 @@
 // Projectiles, hit effects, healing effects, and particles.
 
+const MAGE_FIREBALL_SPLASH_RADIUS = 52;
+const MAGE_FIREBALL_VERTICAL_RADIUS = 44;
+
 function spawnHit(x, y, color) {
   for (let i = 0; i < 8; i++) {
     gameState.particles.push({
@@ -28,6 +31,62 @@ function spawnHeal(x, y) {
       color: i % 2 === 0 ? "#fff1a8" : "#8ff7ff",
     });
   }
+}
+
+function spawnFireballBurst(x, y, radius) {
+  const colors = ["#fff3a6", "#ffbd35", "#ff7324", "#cf2f12"];
+  for (let i = 0; i < 18; i++) {
+    const angle = (Math.PI * 2 * i) / 18 + (Math.random() - 0.5) * 0.35;
+    const speed = 80 + Math.random() * 120;
+    gameState.particles.push({
+      type: "fireBurst",
+      x,
+      y,
+      vx: Math.cos(angle) * speed,
+      vy: Math.sin(angle) * speed * 0.58 - 30,
+      life: 0.38 + Math.random() * 0.14,
+      maxLife: 0.52,
+      size: 4 + Math.random() * 6,
+      color: colors[i % colors.length],
+    });
+  }
+
+  gameState.particles.push({
+    type: "fireShock",
+    x,
+    y,
+    radius,
+    life: 0.22,
+    maxLife: 0.22,
+  });
+}
+
+function spawnThiefStrike(x, y) {
+  gameState.particles.push({
+    type: "slash",
+    x: x - 24,
+    y: y - 30,
+    w: 62,
+    life: 0.16,
+    maxLife: 0.16,
+    lineWidth: 7,
+    color: "#cfffff",
+    innerColor: "#ffffff",
+  });
+
+  gameState.particles.push({
+    type: "slash",
+    x: x - 14,
+    y: y - 22,
+    w: 48,
+    life: 0.11,
+    maxLife: 0.11,
+    lineWidth: 4,
+    color: "#8ff7ff",
+    innerColor: "#ffffff",
+  });
+
+  spawnHit(x, y, "#e9fbff");
 }
 
 function fireArcherArrow(unit) {
@@ -66,11 +125,14 @@ function fireMageBolt(unit) {
   }
 
   gameState.projectiles.push({
-    type: "mageBolt",
+    type: "mageFireball",
     x: unit.x + 32,
     y: unit.y - 48,
     vx: 360,
     damage: unit.damage,
+    splashRadius: MAGE_FIREBALL_SPLASH_RADIUS,
+    targetX: shotTarget.x,
+    targetY: shotTarget.y - Math.max(34, shotTarget.h * 0.72),
     target: shotTarget,
   });
 
@@ -78,14 +140,59 @@ function fireMageBolt(unit) {
   unit.shotTarget = null;
 }
 
+function getMageFireballImpactPoint(projectile) {
+  if (isCombatAlive(projectile.target)) {
+    projectile.targetX = projectile.target.x;
+    projectile.targetY = projectile.target.y - Math.max(34, projectile.target.h * 0.72);
+  }
+
+  return {
+    x: projectile.targetX || projectile.x,
+    y: projectile.targetY || projectile.y,
+  };
+}
+
+function isEnemyInsideMageFireball(enemy, impactX, impactY, radius) {
+  const enemyHitY = enemy.y - Math.max(30, enemy.h * 0.65);
+  const dx = enemy.x - impactX;
+  const dy = enemyHitY - impactY;
+  return (dx * dx) / (radius * radius) + (dy * dy) / (MAGE_FIREBALL_VERTICAL_RADIUS * MAGE_FIREBALL_VERTICAL_RADIUS) <= 1;
+}
+
+function explodeMageFireball(projectile, impactX, impactY) {
+  const radius = projectile.splashRadius || MAGE_FIREBALL_SPLASH_RADIUS;
+  let hitCount = 0;
+
+  for (const enemy of gameState.enemies) {
+    if (!isCombatAlive(enemy)) continue;
+    if (!isEnemyInsideMageFireball(enemy, impactX, impactY, radius)) continue;
+
+    enemy.hp -= projectile.damage;
+    hitCount += 1;
+    spawnHit(enemy.x, enemy.y - Math.max(34, enemy.h * 0.65), "#ffbd35");
+  }
+
+  spawnFireballBurst(impactX, impactY, radius);
+  if (hitCount === 0) spawnHit(impactX, impactY, "#ff7324");
+}
+
 function updateProjectiles(dt) {
   for (const projectile of gameState.projectiles) {
+    projectile.life = (projectile.life || 0) + dt;
     projectile.x += projectile.vx * dt;
+
+    if (projectile.type === "mageFireball") {
+      const impact = getMageFireballImpactPoint(projectile);
+      if (projectile.x >= impact.x - 16) {
+        explodeMageFireball(projectile, impact.x, impact.y);
+        projectile.dead = true;
+      }
+      if (projectile.x > canvas.width + 50) projectile.dead = true;
+      continue;
+    }
+
     if (isCombatAlive(projectile.target) && Math.abs(projectile.x - projectile.target.x) < 18) {
       projectile.target.hp -= projectile.damage;
-      if (projectile.type === "mageBolt") {
-        spawnHit(projectile.target.x, projectile.target.y - 46, "#68eaff");
-      }
       projectile.dead = true;
     }
     if (projectile.x > canvas.width + 50) projectile.dead = true;
@@ -96,10 +203,10 @@ function updateProjectiles(dt) {
 function updateParticles(dt) {
   for (const particle of gameState.particles) {
     particle.life -= dt;
-    if (particle.type === "hit") {
+    if (particle.type === "hit" || particle.type === "fireBurst") {
       particle.x += particle.vx * dt;
       particle.y += particle.vy * dt;
-      particle.vy += 260 * dt;
+      particle.vy += (particle.type === "fireBurst" ? 170 : 260) * dt;
     } else if (particle.type === "heal") {
       particle.x += particle.vx * dt;
       particle.y -= 28 * dt;
@@ -127,20 +234,25 @@ function drawProjectiles() {
       continue;
     }
 
-    if (projectile.type === "mageBolt") {
+    if (projectile.type === "mageFireball") {
+      const flicker = Math.sin((projectile.life || 0) * 36) * 2;
       ctx.save();
-      ctx.fillStyle = "#68eaff";
-      ctx.shadowColor = "rgba(104, 234, 255, 0.95)";
-      ctx.shadowBlur = 14;
-      ctx.beginPath();
-      ctx.arc(projectile.x, projectile.y, 7, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.strokeStyle = "rgba(225, 255, 255, 0.9)";
-      ctx.lineWidth = 2;
-      ctx.beginPath();
-      ctx.moveTo(projectile.x - 18, projectile.y + 2);
-      ctx.lineTo(projectile.x - 7, projectile.y - 4);
-      ctx.stroke();
+      ctx.translate(projectile.x, projectile.y);
+      ctx.shadowColor = "rgba(255, 117, 24, 0.85)";
+      ctx.shadowBlur = 10;
+
+      ctx.fillStyle = "rgba(162, 39, 14, 0.82)";
+      ctx.fillRect(-30, -4, 18, 8);
+      ctx.fillStyle = "rgba(255, 115, 36, 0.9)";
+      ctx.fillRect(-22, -7, 18, 14);
+      ctx.fillStyle = "#cf2f12";
+      ctx.fillRect(-8, -10 - flicker, 20, 20);
+      ctx.fillStyle = "#ff7324";
+      ctx.fillRect(-4, -8 + flicker * 0.3, 20, 16);
+      ctx.fillStyle = "#ffbd35";
+      ctx.fillRect(2, -5, 14, 10);
+      ctx.fillStyle = "#fff3a6";
+      ctx.fillRect(7, -3, 7, 6);
       ctx.restore();
       continue;
     }
@@ -161,14 +273,14 @@ function drawParticles() {
     ctx.globalAlpha = alpha;
 
     if (particle.type === "slash") {
-      ctx.strokeStyle = "#fff7a8";
-      ctx.lineWidth = 12;
+      ctx.strokeStyle = particle.color || "#fff7a8";
+      ctx.lineWidth = particle.lineWidth || 12;
       ctx.beginPath();
       ctx.moveTo(particle.x, particle.y + 72);
       ctx.quadraticCurveTo(particle.x + particle.w * 0.48, particle.y - 35, particle.x + particle.w, particle.y + 20);
       ctx.stroke();
-      ctx.strokeStyle = "#ffffff";
-      ctx.lineWidth = 4;
+      ctx.strokeStyle = particle.innerColor || "#ffffff";
+      ctx.lineWidth = Math.max(2, Math.floor((particle.lineWidth || 12) * 0.35));
       ctx.stroke();
     } else if (particle.type === "heroAttack") {
       ctx.strokeStyle = "#fff9c7";
@@ -180,6 +292,26 @@ function drawParticles() {
     } else if (particle.type === "hit") {
       ctx.fillStyle = particle.color;
       ctx.fillRect(particle.x, particle.y, 5, 5);
+    } else if (particle.type === "fireBurst") {
+      ctx.fillStyle = particle.color;
+      ctx.shadowColor = particle.color;
+      ctx.shadowBlur = 8;
+      ctx.fillRect(particle.x, particle.y, particle.size || 5, particle.size || 5);
+    } else if (particle.type === "fireShock") {
+      const progress = 1 - alpha;
+      ctx.strokeStyle = `rgba(255, 190, 55, ${0.8 * alpha})`;
+      ctx.lineWidth = 4;
+      ctx.beginPath();
+      ctx.ellipse(
+        particle.x,
+        particle.y + 14,
+        particle.radius * (0.35 + progress * 0.65),
+        12 + progress * 16,
+        0,
+        0,
+        Math.PI * 2
+      );
+      ctx.stroke();
     } else if (particle.type === "heal") {
       ctx.fillStyle = particle.color;
       ctx.shadowColor = particle.color;
