@@ -53,27 +53,69 @@ function showLobby() {
 }
 
 // Draw the lobby-only transparent idle frame.
+function getLobbyHeroImageBounds(image) {
+  if (!image || !image.naturalWidth || !image.naturalHeight) return null;
+  if (image._lobbyBounds) return image._lobbyBounds;
+
+  const sampleCanvas = document.createElement('canvas');
+  sampleCanvas.width = image.naturalWidth;
+  sampleCanvas.height = image.naturalHeight;
+  const sampleCtx = sampleCanvas.getContext('2d');
+  sampleCtx.drawImage(image, 0, 0);
+
+  const { data, width, height } = sampleCtx.getImageData(0, 0, sampleCanvas.width, sampleCanvas.height);
+  let minX = width;
+  let minY = height;
+  let maxX = -1;
+  let maxY = -1;
+
+  for (let y = 0; y < height; y += 1) {
+    for (let x = 0; x < width; x += 1) {
+      if (data[(y * width + x) * 4 + 3] <= 8) continue;
+      if (x < minX) minX = x;
+      if (x > maxX) maxX = x;
+      if (y < minY) minY = y;
+      if (y > maxY) maxY = y;
+    }
+  }
+
+  image._lobbyBounds = maxX >= minX && maxY >= minY
+    ? { x: minX, y: minY, width: maxX - minX + 1, height: maxY - minY + 1 }
+    : { x: 0, y: 0, width, height };
+  return image._lobbyBounds;
+}
+
 function renderLobbyHero() {
   const canvas = document.getElementById('lobbyHeroCanvas');
   if (!canvas) return;
   const c = canvas.getContext('2d');
+  const rect = canvas.getBoundingClientRect();
+  const canvasW = Math.max(1, Math.round(rect.width || canvas.width));
+  const canvasH = Math.max(1, Math.round(rect.height || canvas.height));
+  if (canvas.width !== canvasW || canvas.height !== canvasH) {
+    canvas.width = canvasW;
+    canvas.height = canvasH;
+  }
   c.clearRect(0, 0, canvas.width, canvas.height);
 
   if (typeof lobbyHeroImage !== 'undefined' && lobbyHeroImage && lobbyHeroReady) {
-    const sW = lobbyHeroImage.naturalWidth;
-    const sH = lobbyHeroImage.naturalHeight;
-    c.imageSmoothingEnabled = false;
-    const canvasW = canvas.width;
-    const canvasH = canvas.height;
-    let drawW = canvasW;
-    let drawH = Math.round(sH * (canvasW / sW));
-    if (drawH > canvasH) {
-      drawH = canvasH;
-      drawW = Math.round(sW * (canvasH / sH));
+    const bounds = getLobbyHeroImageBounds(lobbyHeroImage);
+    const sW = bounds.width;
+    const sH = bounds.height;
+    c.imageSmoothingEnabled = true;
+    c.imageSmoothingQuality = 'high';
+    const padding = Math.round(canvasW * 0.02);
+    const maxDrawW = canvasW - padding * 2;
+    const maxDrawH = canvasH - padding * 2;
+    let drawW = maxDrawW;
+    let drawH = Math.round(sH * (drawW / sW));
+    if (drawH > maxDrawH) {
+      drawH = maxDrawH;
+      drawW = Math.round(sW * (drawH / sH));
     }
     const dx = Math.round((canvasW - drawW) / 2);
-    const dy = Math.round((canvasH - drawH) / 2);
-    c.drawImage(lobbyHeroImage, 0, 0, sW, sH, dx, dy, drawW, drawH);
+    const dy = Math.round(canvasH - drawH - padding);
+    c.drawImage(lobbyHeroImage, bounds.x, bounds.y, sW, sH, dx, dy, drawW, drawH);
     return;
   }
 
