@@ -220,7 +220,6 @@ function updateHud() {
   const activeUnits = getActiveUnitCount();
 
   waveText.textContent = `${gameState.wave} / ${gameState.maxWave}`;
-  runestoneText.textContent = `${Math.floor(gameState.runestone)}R`;
   if (zeusManaText) {
     const zeusMana = Math.floor(gameState.zeusMana || 0);
     const zeusManaMax = gameState.zeusManaMax || ZEUS_MANA_MAX;
@@ -231,7 +230,6 @@ function updateHud() {
   }
   if (unitCountText) unitCountText.textContent = `${activeUnits} / ${MAX_SUMMONED_UNITS}`;
   if (commandUnitText) commandUnitText.textContent = `${activeUnits} / ${MAX_SUMMONED_UNITS}`;
-  if (commandRunestoneText) commandRunestoneText.textContent = `${Math.floor(gameState.runestone)}R`;
   if (playerHpText) playerHpText.textContent = Math.max(0, Math.ceil(gameState.playerBaseHp));
   if (enemyHpText) enemyHpText.textContent = Math.max(0, Math.ceil(gameState.enemyBaseHp));
 }

@@ -201,27 +201,6 @@ body.game-started:not(.in-lobby):not(.in-stage-select):not(.in-shop):not(.in-rec
   left: 134px;
 }
 
-.battle-runestone-badge {
-  position: absolute;
-  left: 104px;
-  bottom: 118px;
-  z-index: 6;
-  width: 188px;
-  height: 25px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0;
-  border: 0;
-  background: transparent;
-  box-shadow: none;
-  pointer-events: none;
-}
-
-.battle-runestone-badge span {
-  display: none;
-}
-
 .battle-wave-badge span,
 .battle-unit-badge span {
   display: block;
@@ -242,19 +221,6 @@ body.game-started:not(.in-lobby):not(.in-stage-select):not(.in-shop):not(.in-rec
   line-height: 1;
   white-space: nowrap;
   text-shadow: 2px 2px 0 #000;
-}
-
-.battle-runestone-badge strong {
-  display: block;
-  color: #fff8d4;
-  font-size: 16px;
-  font-weight: 900;
-  line-height: 1;
-  text-align: center;
-  text-shadow:
-    2px 2px 0 #000,
-    -1px -1px 0 #000,
-    1px -1px 0 #000;
 }
 
 .game-options-btn {
@@ -839,21 +805,6 @@ body.game-started:not(.in-lobby):not(.in-stage-select):not(.in-shop):not(.in-rec
   .battle-wave-badge strong,
   .battle-unit-badge strong {
     font-size: 11px;
-  }
-
-  .battle-runestone-badge {
-    left: 66px;
-    bottom: 82px;
-    width: 128px;
-    height: 21px;
-    padding: 0;
-    border-width: 0;
-    box-shadow: none;
-  }
-
-  .battle-runestone-badge strong {
-    font-size: 13px;
-    line-height: 1;
   }
 
   .battle-command-panel {
