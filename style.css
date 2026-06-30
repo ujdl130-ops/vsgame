@@ -1238,8 +1238,8 @@ button:disabled {
     0 0 0 10px rgba(255, 214, 107, 0.6),
     16px 16px 0 rgba(0, 0, 0, 0.45);
   background-image: url('assets/maps/lobby/background.png'), linear-gradient(to bottom, #76bfff 0 48%, #8be075 48% 76%, #5d3a24 76% 100%);
-  background-size: cover, auto;
-  background-position: center center, 0 0;
+  background-size: 120% auto, auto;
+  background-position: center 56%, 0 0;
   overflow: hidden;
   image-rendering: pixelated;
 }
@@ -1381,9 +1381,10 @@ button:disabled {
 }
 
 .lobby-hero {
-  left: calc(50% + 28px);
-  width: 150px;
-  height: 150px;
+  left: 50%;
+  width: clamp(160px, 20vw, 184px);
+  height: clamp(160px, 20vw, 184px);
+  bottom: clamp(36px, 10.5%, 48px);
   transform: translateX(-50%) translateY(0);
   pointer-events: none;
 }
