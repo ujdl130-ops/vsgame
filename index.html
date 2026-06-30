@@ -137,52 +137,65 @@
   </section>
 
 
-  <section id="shopScreen" class="shop-screen is-hidden" aria-label="신전 상점 화면">
-    <div class="shop-divine-overlay" aria-hidden="true"></div>
+  <section id="shopScreen" class="shop-screen is-hidden" aria-label="픽셀디펜스 상점 화면">
+    <div class="shop-scanline" aria-hidden="true"></div>
 
-    <header class="shop-topbar">
-      <div class="shop-heading">
-        <button id="shopBackBtn" class="shop-ui-btn shop-back-btn" type="button">← 로비</button>
-        <div class="shop-title-box">
-          <p class="shop-kicker">MYTH GENESIS OFFERING HALL</p>
-          <h1 class="shop-logo">상점</h1>
-        </div>
+    <button id="shopBackBtn" class="shop-ui-btn shop-back-btn" type="button">← 로비</button>
+    <button id="shopCloseBtn" class="shop-ui-btn shop-close-btn" type="button">닫기</button>
+
+    <div class="shop-title-box">
+      <p class="shop-kicker">PIXEL FANTASY WESTERN SHOP</p>
+      <h1 class="shop-logo">황야의 상점</h1>
+      <p>마법 장비와 서부 개척 장비가 함께 놓인 픽셀 상점</p>
+    </div>
+
+    <div class="shop-scene" aria-hidden="true">
+      <div class="shop-moon"></div>
+      <div class="shop-cloud shop-cloud-a"></div>
+      <div class="shop-cloud shop-cloud-b"></div>
+      <div class="shop-saloon">
+        <span class="shop-sign-board">SHOP</span>
+        <span class="shop-door"></span>
+        <span class="shop-window left"></span>
+        <span class="shop-window right"></span>
+      </div>
+      <div class="shop-wagon">
+        <span></span>
+      </div>
+      <div class="shopkeeper"></div>
+      <div class="shop-hero"></div>
+      <div class="shop-ground"></div>
+    </div>
+
+    <div class="shop-board">
+      <div class="shop-wallet">
+        <span>보유 코인</span>
+        <strong>준비중</strong>
       </div>
 
-      <aside class="shop-wallet" aria-label="보유 재화">
-        <div class="shop-currency">
-          <img src="assets/icons/diamonds.png" alt="">
-          <span>다이아</span>
-          <strong id="shopDiamondAmount">0</strong>
-        </div>
-        <div class="shop-currency">
-          <img src="assets/icons/gold.png" alt="">
-          <span>골드</span>
-          <strong id="shopGoldAmount">0</strong>
-        </div>
-        <div class="shop-currency shop-ticket-currency">
-          <span class="shop-ticket-icon" aria-hidden="true">T</span>
-          <span>소환권</span>
-          <strong id="shopTicketAmount">0</strong>
-        </div>
-      </aside>
+      <div class="shop-item-grid">
+        <button class="shop-card" type="button" data-item="비트">
+          <span class="shop-item-icon bit-icon" aria-hidden="true"></span>
+          <strong>비트</strong>
+        </button>
 
-      <button id="shopCloseBtn" class="shop-ui-btn shop-close-btn" type="button">닫기</button>
-    </header>
+        <button class="shop-card" type="button" data-item="픽셀코어">
+          <span class="shop-item-icon pixelcore-icon" aria-hidden="true"></span>
+          <strong>픽셀코어</strong>
+        </button>
 
-    <div class="shop-layout">
-      <nav id="shopCategoryList" class="shop-category-list" aria-label="상점 카테고리"></nav>
+        <button class="shop-card" type="button" data-item="픽셀조각">
+          <span class="shop-item-icon pixelshard-icon" aria-hidden="true"></span>
+          <strong>픽셀조각</strong>
+        </button>
 
-      <section class="shop-product-panel" aria-label="상품 목록">
-        <div class="shop-product-head">
-          <div>
-            <p class="shop-section-kicker">신전에 바치는 공물</p>
-            <h2 id="shopCategoryTitle">추천</h2>
-          </div>
-          <p id="shopNotice" class="shop-notice" aria-live="polite">상품을 선택하세요.</p>
-        </div>
-        <div id="shopItemGrid" class="shop-item-grid"></div>
-      </section>
+        <button class="shop-card" type="button" data-item="픽셀토큰">
+          <span class="shop-item-icon pixeltoken-icon" aria-hidden="true"></span>
+          <strong>픽셀토큰</strong>
+        </button>
+      </div>
+
+      <p id="shopNotice" class="shop-notice">상점 품목을 선택하세요.</p>
     </div>
   </section>
 
