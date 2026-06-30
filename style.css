@@ -431,6 +431,38 @@ body.game-started:not(.in-lobby):not(.in-stage-select):not(.in-shop):not(.in-rec
   pointer-events: none;
 }
 
+.battle-unit-slot-button {
+  position: absolute;
+  z-index: 5;
+  border: 0;
+  padding: 0;
+  margin: 0;
+  background: transparent;
+  box-shadow: none;
+  color: transparent;
+  font-size: 0;
+  line-height: 0;
+  cursor: pointer;
+  pointer-events: auto;
+  touch-action: manipulation;
+}
+
+.battle-unit-slot-button:disabled {
+  cursor: default;
+}
+
+.battle-unit-slot-button:focus-visible {
+  outline: 2px solid rgba(112, 247, 255, 0.65);
+  outline-offset: -4px;
+}
+
+.battle-unit-slot-guard {
+  left: 52px;
+  top: 34px;
+  width: 108px;
+  height: 68px;
+}
+
 .battle-unit-card-preview {
   position: absolute;
   z-index: 2;
@@ -825,6 +857,13 @@ body.game-started:not(.in-lobby):not(.in-stage-select):not(.in-shop):not(.in-rec
     right: 0;
     bottom: 0;
     height: 112px;
+  }
+
+  .battle-unit-slot-guard {
+    left: 52px;
+    top: 24px;
+    width: 108px;
+    height: 48px;
   }
 
   .battle-unit-card-archer {

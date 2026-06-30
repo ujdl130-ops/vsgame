@@ -152,6 +152,31 @@ window.addEventListener("keyup", (event) => {
 window.addEventListener("resize", updateBattleViewportScale);
 window.addEventListener("orientationchange", updateBattleViewportScale);
 
+function bindUnitSlotButton(button, summonFn) {
+  if (!button || typeof summonFn !== "function") return;
+
+  let lastPointerSummonAt = 0;
+  const triggerSummon = () => {
+    if (button.disabled || isGameOptionsOpen()) return;
+    summonFn();
+  };
+
+  button.addEventListener("pointerdown", (event) => {
+    if (event.button !== undefined && event.button !== 0) return;
+    event.preventDefault();
+    event.stopPropagation();
+    lastPointerSummonAt = performance.now();
+    triggerSummon();
+  });
+
+  button.addEventListener("click", (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+    if (performance.now() - lastPointerSummonAt < 450) return;
+    triggerSummon();
+  });
+}
+
 if (startBtn) startBtn.addEventListener("click", () => startGame(selectedStage));
 if (gameOptionsBtn) gameOptionsBtn.addEventListener("click", toggleGameOptionsMenu);
 if (optionStageSelectBtn) optionStageSelectBtn.addEventListener("click", handleOptionStageSelect);
@@ -198,6 +223,7 @@ stageCards.forEach((card) => {
 });
 if (restartBtn) restartBtn.addEventListener("click", restartGame);
 if (stageSelectBtn) stageSelectBtn.addEventListener("click", showStageSelect);
+bindUnitSlotButton(summonGuardSlotBtn, summonGuard);
 if (skillBtn) skillBtn.addEventListener("click", castHolySlash);
 if (zeusSkillBtn) zeusSkillBtn.addEventListener("click", castZeusThunderstorm);
 // 전투 개편: 캔버스 직접 터치 공격은 제거했습니다.
