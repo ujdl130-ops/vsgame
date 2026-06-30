@@ -477,7 +477,7 @@ body.game-started:not(.in-lobby):not(.in-stage-select):not(.in-shop):not(.in-rec
   right: 24px;
   top: 44px;
   width: 354px;
-  height: 100px;
+  height: 70px;
   border-radius: 4px;
   background:
     linear-gradient(180deg, rgba(48, 48, 48, 0.95), rgba(27, 27, 28, 0.98) 46%, rgba(13, 13, 14, 0.98)),
@@ -988,7 +988,7 @@ body.game-started:not(.in-lobby):not(.in-stage-select):not(.in-shop):not(.in-rec
     right: 18px;
     top: 32px;
     width: 336px;
-    height: 70px;
+    height: 48px;
   }
 
   .battle-unit-slot-guard {
