@@ -52,38 +52,31 @@ function showLobby() {
   });
 }
 
-// Draw the lobby-only transparent idle frame.
+const LOBBY_HERO_HD_BOUNDS = {
+  x: 267,
+  y: 51,
+  width: 845,
+  height: 854,
+};
+
 function getLobbyHeroImageBounds(image) {
-  if (!image || !image.naturalWidth || !image.naturalHeight) return null;
-  if (image._lobbyBounds) return image._lobbyBounds;
-
-  const sampleCanvas = document.createElement('canvas');
-  sampleCanvas.width = image.naturalWidth;
-  sampleCanvas.height = image.naturalHeight;
-  const sampleCtx = sampleCanvas.getContext('2d');
-  sampleCtx.drawImage(image, 0, 0);
-
-  const { data, width, height } = sampleCtx.getImageData(0, 0, sampleCanvas.width, sampleCanvas.height);
-  let minX = width;
-  let minY = height;
-  let maxX = -1;
-  let maxY = -1;
-
-  for (let y = 0; y < height; y += 1) {
-    for (let x = 0; x < width; x += 1) {
-      if (data[(y * width + x) * 4 + 3] <= 8) continue;
-      if (x < minX) minX = x;
-      if (x > maxX) maxX = x;
-      if (y < minY) minY = y;
-      if (y > maxY) maxY = y;
-    }
+  if (
+    image
+    && image.naturalWidth === 1536
+    && image.naturalHeight === 1024
+    && typeof ASSET_PATHS !== 'undefined'
+    && ASSET_PATHS.lobbyHeroIdle
+    && ASSET_PATHS.lobbyHeroIdle.includes('zeus_lobby_idle_hd.png')
+  ) {
+    return LOBBY_HERO_HD_BOUNDS;
   }
 
-  image._lobbyBounds = maxX >= minX && maxY >= minY
-    ? { x: minX, y: minY, width: maxX - minX + 1, height: maxY - minY + 1 }
-    : { x: 0, y: 0, width, height };
-  return image._lobbyBounds;
+  return image && image.naturalWidth && image.naturalHeight
+    ? { x: 0, y: 0, width: image.naturalWidth, height: image.naturalHeight }
+    : null;
 }
+
+// Draw the lobby-only transparent idle frame.
 
 function renderLobbyHero() {
   const canvas = document.getElementById('lobbyHeroCanvas');
