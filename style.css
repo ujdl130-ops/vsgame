@@ -463,19 +463,20 @@ body.game-started:not(.in-lobby):not(.in-stage-select):not(.in-shop):not(.in-rec
 .battle-unit-slot-button[data-cost]::after {
   content: attr(data-cost);
   position: absolute;
-  right: 8px;
-  bottom: 3px;
+  right: 15px;
+  bottom: 2px;
   color: #f8fbff;
-  font-size: 15px;
+  font-size: 18px;
   font-weight: 900;
   line-height: 1;
   letter-spacing: 0;
   text-shadow:
-    1px 0 0 #050505,
-    -1px 0 0 #050505,
-    0 1px 0 #050505,
-    0 -1px 0 #050505,
-    1px 1px 0 #050505;
+    2px 0 0 #050505,
+    -2px 0 0 #050505,
+    0 2px 0 #050505,
+    0 -2px 0 #050505,
+    2px 2px 0 #050505,
+    -2px 2px 0 #050505;
 }
 
 .battle-unit-slot-guard {
@@ -921,9 +922,9 @@ body.game-started:not(.in-lobby):not(.in-stage-select):not(.in-shop):not(.in-rec
   }
 
   .battle-unit-slot-button[data-cost]::after {
-    right: 7px;
-    bottom: 2px;
-    font-size: 11px;
+    right: 12px;
+    bottom: 1px;
+    font-size: 13px;
   }
 
   .battle-unit-slot-archer {
