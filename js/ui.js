@@ -220,6 +220,10 @@ function updateHud() {
   const activeUnits = getActiveUnitCount();
 
   waveText.textContent = `${gameState.wave} / ${gameState.maxWave}`;
+  if (runestoneGaugeFill) {
+    const runestone = Math.floor(gameState.runestone || 0);
+    runestoneGaugeFill.style.width = `${Math.max(0, Math.min(100, (runestone / RUNESTONE_GAUGE_MAX) * 100))}%`;
+  }
   if (zeusManaText) {
     const zeusMana = Math.floor(gameState.zeusMana || 0);
     const zeusManaMax = gameState.zeusManaMax || ZEUS_MANA_MAX;
