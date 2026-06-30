@@ -144,6 +144,10 @@ window.addEventListener("keydown", (event) => {
     event.preventDefault();
     summonSaintess();
   }
+  if (event.code === "Digit5") {
+    event.preventDefault();
+    summonThief();
+  }
 });
 
 window.addEventListener("keyup", (event) => {

@@ -88,6 +88,7 @@ function createInitialState() {
     enemiesToSpawn: stageConfig.baseEnemiesToSpawn,
     spawnedInWave: 0,
     waveBreakTimer: 0,
+    growth: playerProgress.growth || {},
     hero: createMainHero(),
     zeusSkillEffect: null,
     particles: [],

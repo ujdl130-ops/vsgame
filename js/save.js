@@ -2,6 +2,264 @@
 
 const STAGE_PROGRESS_KEY = "pixelDefenseStageProgress";
 
+const MIN_GROWTH_LEVEL = 1;
+const MAX_GROWTH_LEVEL = 50;
+const LEVEL_GROWTH_DEFINED_MAX_LEVEL = 30;
+const MIN_TRANSCENDENCE_STAR = 1;
+const MAX_TRANSCENDENCE_STAR = 6;
+
+const CHARACTER_GROWTH_CONFIGS = {
+  guard: {
+    level: { hp: 1.4, damage: 0.8 },
+    transcendence: {
+      1: { hp: 1.0, damage: 1.0 },
+      2: { hp: 1.25, damage: 1.125 },
+      3: { hp: 1.5, damage: 1.25 },
+    },
+  },
+  archer: {
+    level: { hp: 0.8, damage: 1.3 },
+    transcendence: {
+      1: { hp: 1.0, damage: 1.0 },
+      2: { hp: 1.125, damage: 1.25 },
+      3: { hp: 1.25, damage: 1.5 },
+    },
+  },
+  thief: {
+    level: { hp: 0.8, damage: 1.3 },
+    transcendence: {
+      1: { hp: 1.0, damage: 1.0 },
+      2: { hp: 1.15, damage: 1.275 },
+      3: { hp: 1.3, damage: 1.55 },
+    },
+  },
+  mage: {
+    level: { hp: 0.7, damage: 1.15 },
+    transcendence: {
+      1: { hp: 1.0, damage: 1.0 },
+      2: { hp: 1.125, damage: 1.225 },
+      3: { hp: 1.25, damage: 1.45 },
+    },
+  },
+  saintess: {
+    level: { hp: 0.9, healAmount: 1.4 },
+    transcendence: {
+      1: { hp: 1.0, healAmount: 1.0 },
+      2: { hp: 1.175, healAmount: 1.275 },
+      3: { hp: 1.35, healAmount: 1.55 },
+    },
+  },
+  hero: {
+    level: { hp: 1.35, damage: 1.45 },
+    transcendence: {
+      1: { hp: 1.0, damage: 1.0 },
+      2: { hp: 1.25, damage: 1.275 },
+      3: { hp: 1.5, damage: 1.55 },
+    },
+  },
+};
+
+const GROWTH_TYPE_ALIASES = {
+  warrior: "guard",
+  rogue: "thief",
+  healer: "saintess",
+  zeus: "hero",
+};
+
+const LEVEL_UP_GOLD_MILESTONES = [
+  { level: 1, cumulativeGold: 0 },
+  { level: 10, cumulativeGold: 1970 },
+  { level: 20, cumulativeGold: 12010 },
+  { level: 30, cumulativeGold: 38050 },
+];
+
+const HERO_LEVEL_UP_COST_MULTIPLIER = 1.25;
+
+const CHARACTER_FRAGMENT_KEYS = {
+  guard: "guardFragment",
+  archer: "archerFragment",
+  thief: "thiefFragment",
+  mage: "mageFragment",
+  saintess: "saintessFragment",
+  hero: "heroFragment",
+};
+
+const TRANSCENDENCE_FRAGMENT_COSTS = {
+  2: 20,
+  3: 30,
+};
+
+const HERO_TRANSCENDENCE_FRAGMENT_COSTS = {
+  2: 40,
+  3: 40,
+};
+
+function resolveGrowthType(type) {
+  return GROWTH_TYPE_ALIASES[type] || type;
+}
+
+function clampGrowthLevel(level) {
+  return Math.min(MAX_GROWTH_LEVEL, Math.max(MIN_GROWTH_LEVEL, Math.round(Number(level) || MIN_GROWTH_LEVEL)));
+}
+
+function clampTranscendenceStar(star) {
+  return Math.min(
+    MAX_TRANSCENDENCE_STAR,
+    Math.max(MIN_TRANSCENDENCE_STAR, Math.round(Number(star) || MIN_TRANSCENDENCE_STAR))
+  );
+}
+
+function isHeroGrowthType(type) {
+  return resolveGrowthType(type) === "hero";
+}
+
+function getCharacterFragmentKey(type) {
+  const growthType = resolveGrowthType(type);
+  return CHARACTER_FRAGMENT_KEYS[growthType] || `${growthType}Fragment`;
+}
+
+function getBaseCumulativeLevelUpGold(level) {
+  const targetLevel = clampGrowthLevel(level);
+  const lastMilestone = LEVEL_UP_GOLD_MILESTONES[LEVEL_UP_GOLD_MILESTONES.length - 1];
+
+  for (let index = 1; index < LEVEL_UP_GOLD_MILESTONES.length; index += 1) {
+    const previous = LEVEL_UP_GOLD_MILESTONES[index - 1];
+    const next = LEVEL_UP_GOLD_MILESTONES[index];
+
+    if (targetLevel <= next.level) {
+      const levelProgress = (targetLevel - previous.level) / (next.level - previous.level);
+      const goldRange = next.cumulativeGold - previous.cumulativeGold;
+      return Math.round(previous.cumulativeGold + goldRange * levelProgress);
+    }
+  }
+
+  return targetLevel <= lastMilestone.level ? lastMilestone.cumulativeGold : null;
+}
+
+function getCumulativeLevelUpGold(type, level) {
+  const baseCost = getBaseCumulativeLevelUpGold(level);
+  if (baseCost === null) return null;
+  return Math.round(baseCost * (isHeroGrowthType(type) ? HERO_LEVEL_UP_COST_MULTIPLIER : 1));
+}
+
+function getLevelUpGoldCost(type, fromLevel, toLevel = Number(fromLevel) + 1) {
+  const startLevel = clampGrowthLevel(fromLevel);
+  const targetLevel = clampGrowthLevel(toLevel);
+  if (targetLevel <= startLevel) return 0;
+  if (targetLevel > LEVEL_GROWTH_DEFINED_MAX_LEVEL) return null;
+  const targetCost = getCumulativeLevelUpGold(type, targetLevel);
+  const startCost = getCumulativeLevelUpGold(type, startLevel);
+  if (targetCost === null || startCost === null) return null;
+  return targetCost - startCost;
+}
+
+function getNextLevelUpGoldCost(type, growthState = getStoredGrowthState(type)) {
+  return getLevelUpGoldCost(type, growthState.level, growthState.level + 1);
+}
+
+function canLevelUp(type, growthState = getStoredGrowthState(type)) {
+  const currentLevel = clampGrowthLevel(growthState.level);
+  return currentLevel < LEVEL_GROWTH_DEFINED_MAX_LEVEL
+    && getNextLevelUpGoldCost(type, growthState) !== null;
+}
+
+function getTranscendenceFragmentCosts(type) {
+  return isHeroGrowthType(type) ? HERO_TRANSCENDENCE_FRAGMENT_COSTS : TRANSCENDENCE_FRAGMENT_COSTS;
+}
+
+function getTranscendenceFragmentAmount(type, fromStar, toStar = Number(fromStar) + 1) {
+  const fragmentCosts = getTranscendenceFragmentCosts(type);
+  const startStar = clampTranscendenceStar(fromStar);
+  const targetStar = clampTranscendenceStar(toStar);
+  if (targetStar <= startStar) return 0;
+
+  let amount = 0;
+  for (let star = startStar + 1; star <= targetStar; star += 1) {
+    if (typeof fragmentCosts[star] !== "number") return null;
+    amount += fragmentCosts[star];
+  }
+  return amount;
+}
+
+function getTranscendenceCost(type, fromStar, toStar = Number(fromStar) + 1) {
+  return {
+    fragmentKey: getCharacterFragmentKey(type),
+    amount: getTranscendenceFragmentAmount(type, fromStar, toStar),
+  };
+}
+
+function getNextTranscendenceCost(type, growthState = getStoredGrowthState(type)) {
+  return getTranscendenceCost(type, growthState.star, growthState.star + 1);
+}
+
+function getStoredGrowthState(type) {
+  const growthType = resolveGrowthType(type);
+  const progressGrowth = playerProgress && playerProgress.growth;
+  const gameGrowth = gameState && gameState.growth;
+  const saved = (gameGrowth && gameGrowth[growthType])
+    || (progressGrowth && progressGrowth[growthType])
+    || {};
+
+  return {
+    level: clampGrowthLevel(saved.level),
+    star: clampTranscendenceStar(saved.star),
+  };
+}
+
+function getLevelGrowthCoefficient(type, stat, level) {
+  const growthType = resolveGrowthType(type);
+  const config = CHARACTER_GROWTH_CONFIGS[growthType];
+  const levelGrowth = (config && config.level && config.level[stat]) || 0;
+  const definedLevel = Math.min(clampGrowthLevel(level), LEVEL_GROWTH_DEFINED_MAX_LEVEL);
+  return 1 + ((definedLevel - MIN_GROWTH_LEVEL) / (LEVEL_GROWTH_DEFINED_MAX_LEVEL - MIN_GROWTH_LEVEL)) * levelGrowth;
+}
+
+function getTranscendenceCoefficient(type, stat, star) {
+  const growthType = resolveGrowthType(type);
+  const config = CHARACTER_GROWTH_CONFIGS[growthType];
+  let starConfig = null;
+
+  if (config && config.transcendence) {
+    for (let currentStar = clampTranscendenceStar(star); currentStar >= MIN_TRANSCENDENCE_STAR; currentStar -= 1) {
+      if (config.transcendence[currentStar]) {
+        starConfig = config.transcendence[currentStar];
+        break;
+      }
+    }
+  }
+
+  return (starConfig && starConfig[stat]) || 1;
+}
+
+function calculateGrowthStat(type, stat, baseValue, growthState) {
+  const level = growthState ? growthState.level : getStoredGrowthState(type).level;
+  const star = growthState ? growthState.star : getStoredGrowthState(type).star;
+  return Math.round(
+    baseValue
+    * getLevelGrowthCoefficient(type, stat, level)
+    * getTranscendenceCoefficient(type, stat, star)
+  );
+}
+
+function getGrownStats(type, baseStats, growthState = getStoredGrowthState(type)) {
+  const stats = {
+    level: growthState.level,
+    star: growthState.star,
+  };
+
+  if (typeof baseStats.hp === "number") {
+    stats.hp = calculateGrowthStat(type, "hp", baseStats.hp, growthState);
+  }
+  if (typeof baseStats.damage === "number") {
+    stats.damage = calculateGrowthStat(type, "damage", baseStats.damage, growthState);
+  }
+  if (typeof baseStats.healAmount === "number") {
+    stats.healAmount = calculateGrowthStat(type, "healAmount", baseStats.healAmount, growthState);
+  }
+
+  return stats;
+}
+
 function loadProgress() {
   try {
     const saved = JSON.parse(localStorage.getItem(STAGE_PROGRESS_KEY));
@@ -10,9 +268,10 @@ function loadProgress() {
     const clearedStages = Array.isArray(saved.clearedStages)
       ? saved.clearedStages.map(Number).filter((stage) => stage >= 1 && stage <= 3)
       : [];
-    return { ...saved, unlockedStage, clearedStages };
+    const growth = saved.growth && typeof saved.growth === "object" ? saved.growth : {};
+    return { ...saved, unlockedStage, clearedStages, growth };
   } catch (error) {
-    return { unlockedStage: 1, clearedStages: [] };
+    return { unlockedStage: 1, clearedStages: [], growth: {} };
   }
 }
 
