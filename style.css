@@ -1154,11 +1154,14 @@ button:disabled {
   z-index: 18;
   overflow: hidden;
   color: #fff;
-  background:
+  background-image:
+    url('assets/maps/lobby/background.png'),
     linear-gradient(rgba(255, 255, 255, 0.025) 50%, rgba(0, 0, 0, 0.07) 50%),
     radial-gradient(circle at 50% 18%, rgba(112, 247, 255, 0.22), transparent 30%),
     linear-gradient(180deg, #18205a 0%, #0b1030 58%, #070914 100%);
-  background-size: 100% 4px, auto, auto;
+  background-size: cover, 100% 4px, auto, auto;
+  background-position: center center, 0 0, center center, center center;
+  background-repeat: no-repeat, repeat, no-repeat, no-repeat;
   transition: opacity 0.35s ease, visibility 0.35s ease;
 }
 
@@ -1226,25 +1229,19 @@ button:disabled {
 
 .lobby-stage {
   position: absolute;
-  left: 50%;
-  top: 52%;
-  transform: translate(-50%, -45%);
-  width: min(88vw, 880px);
-  height: min(50vh, 330px);
-  min-height: 250px;
-  border: 5px solid #f8f2ff;
-  box-shadow:
-    0 0 0 5px #111632,
-    0 0 0 10px rgba(255, 214, 107, 0.6),
-    16px 16px 0 rgba(0, 0, 0, 0.45);
-  background-image: url('assets/maps/lobby/background.png'), linear-gradient(to bottom, #76bfff 0 48%, #8be075 48% 76%, #5d3a24 76% 100%);
-  background-size: 120% auto, auto;
-  background-position: center 56%, 0 0;
-  overflow: hidden;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  min-height: 0;
+  border: 0;
+  box-shadow: none;
+  background: transparent;
+  overflow: visible;
   image-rendering: pixelated;
+  pointer-events: none;
 }
 
-/* Hide all decorative children so only the background image remains; re-show the hero container. */
+/* Keep the old lobby-stage markup as a transparent hero layer. */
 .lobby-stage > * { display: none; }
 .lobby-hero { display: block !important; z-index: 5; }
 
@@ -2393,17 +2390,14 @@ body:not(.game-started) .game-wrap {
 
 /* 로비 화면 정리: 제목/설명 제거 후 모바일 기준 버튼 재배치 */
 .lobby-stage {
-  top: 45%;
-  transform: translate(-50%, -50%);
-  width: min(92vw, 900px);
-  height: min(56vh, 380px);
-  min-height: 270px;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  min-height: 0;
 }
 
 .lobby-shop,
 .lobby-battle {
-  bottom: auto;
-  top: calc(50% + min(28vh, 190px) + 8px);
   min-height: 64px;
   padding: 15px 24px;
   touch-action: manipulation;
@@ -2424,11 +2418,10 @@ body:not(.game-started) .game-wrap {
 
 @media (max-width: 720px) {
   .lobby-stage {
-    top: 43%;
-    width: 94vw;
-    height: 48vh;
-    min-height: 250px;
-    max-height: 360px;
+    width: 100vw;
+    height: 100vh;
+    min-height: 0;
+    max-height: none;
   }
 
   .lobby-shop,
@@ -2452,9 +2445,8 @@ body:not(.game-started) .game-wrap {
 
 @media (max-height: 620px) {
   .lobby-stage {
-    top: 41%;
-    height: 44vh;
-    min-height: 220px;
+    height: 100vh;
+    min-height: 0;
   }
 
   .lobby-shop,
@@ -3712,9 +3704,9 @@ body:not(.game-started) .game-wrap {
 
 /* 로비 5버튼 메뉴 확장: 상점 · 편성 · 모집 · 미션 · 전투 */
 .lobby-menu-bar {
-  position: absolute;
+  position: fixed;
   left: 50%;
-  top: calc(50% + min(28vh, 190px) + 8px);
+  bottom: max(18px, calc(18px + env(safe-area-inset-bottom)));
   z-index: 6;
   width: min(94vw, 900px);
   display: grid;
@@ -3776,9 +3768,9 @@ body:not(.game-started) .game-wrap {
 }
 
 .lobby-menu-notice {
-  position: absolute;
+  position: fixed;
   left: 50%;
-  top: calc(50% + min(28vh, 190px) + 86px);
+  bottom: max(96px, calc(96px + env(safe-area-inset-bottom)));
   z-index: 7;
   width: min(86vw, 430px);
   margin: 0;
@@ -3803,7 +3795,6 @@ body:not(.game-started) .game-wrap {
 
 @media (max-width: 720px) {
   .lobby-menu-bar {
-    top: auto;
     bottom: max(18px, calc(18px + env(safe-area-inset-bottom)));
     width: min(96vw, 620px);
     gap: 5px;
@@ -3822,7 +3813,6 @@ body:not(.game-started) .game-wrap {
   }
 
   .lobby-menu-notice {
-    top: auto;
     bottom: max(82px, calc(82px + env(safe-area-inset-bottom)));
     width: min(92vw, 400px);
     font-size: 12px;
@@ -3846,7 +3836,7 @@ body:not(.game-started) .game-wrap {
 
 @media (max-height: 620px) and (min-width: 721px) {
   .lobby-menu-bar {
-    top: calc(50% + min(22vh, 150px) + 8px);
+    bottom: max(12px, calc(12px + env(safe-area-inset-bottom)));
   }
 
   .lobby-menu-bar .lobby-btn {
@@ -3856,7 +3846,7 @@ body:not(.game-started) .game-wrap {
   }
 
   .lobby-menu-notice {
-    top: calc(50% + min(22vh, 150px) + 72px);
+    bottom: max(76px, calc(76px + env(safe-area-inset-bottom)));
   }
 }
 
