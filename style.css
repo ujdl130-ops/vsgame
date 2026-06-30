@@ -4764,3 +4764,182 @@ body:not(.game-started) .game-wrap {
     min-height: 190px;
   }
 }
+
+/* =========================================================
+   Store prototype UI fixes 2026-06-30
+   - remove button/card white backing
+   - add category icons
+   - add purchase confirm popup
+   ========================================================= */
+.shop-category-btn,
+.shop-item-card {
+  background: transparent !important;
+  background-image: none !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  overflow: hidden;
+  isolation: isolate;
+}
+
+.shop-category-btn::before,
+.shop-item-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background-image: var(--shop-bg-image);
+  background-repeat: no-repeat;
+  background-position: center center;
+  background-size: 122% 122%;
+}
+
+.shop-category-btn::before {
+  background-size: 116% 116%;
+}
+
+.shop-category-btn::after,
+.shop-item-card::after {
+  display: none !important;
+}
+
+.shop-category-icon,
+.shop-category-label {
+  position: relative;
+  z-index: 2;
+}
+
+.shop-category-btn {
+  justify-content: flex-start !important;
+  gap: clamp(8px, 0.8vw, 14px);
+  padding-left: clamp(18px, 2vw, 30px) !important;
+  padding-right: 12px !important;
+}
+
+.shop-category-icon {
+  flex: 0 0 auto;
+  width: clamp(24px, 2.2vw, 38px);
+  height: clamp(24px, 2.2vw, 38px);
+  display: grid;
+  place-items: center;
+  color: #f4dfbc;
+  font-size: clamp(17px, 1.6vw, 26px);
+  line-height: 1;
+  text-shadow: 0 2px 0 rgba(0,0,0,.85);
+  background-image: var(--shop-icon-image);
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: contain;
+  filter: drop-shadow(0 2px 0 rgba(0,0,0,.65));
+}
+
+.shop-category-icon.has-image {
+  font-size: 0;
+}
+
+.shop-category-btn.is-selected .shop-category-icon {
+  color: #664215;
+  text-shadow: 0 1px 0 rgba(255,255,255,.5);
+}
+
+.shop-category-label {
+  white-space: nowrap;
+}
+
+.shop-item-card::before {
+  transform: scale(1.08);
+}
+
+.shop-purchase-popup {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: rgba(8, 5, 10, 0.62);
+  backdrop-filter: blur(2px);
+}
+
+.shop-purchase-popup.is-hidden {
+  display: none;
+}
+
+.shop-purchase-window {
+  width: min(92vw, 440px);
+  padding: 30px 28px 26px;
+  text-align: center;
+  color: #2f2117;
+  border: 4px solid #6f4a22;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.28), rgba(255,255,255,0) 34%),
+    linear-gradient(180deg, #fff1c2, #d9a96b);
+  box-shadow:
+    inset 0 0 0 3px rgba(255, 248, 214, 0.82),
+    0 0 0 5px rgba(37, 24, 22, 0.92),
+    0 18px 40px rgba(0,0,0,.44);
+}
+
+.shop-purchase-window h2 {
+  margin: 0 0 14px;
+  color: #2c180c;
+  font-size: clamp(24px, 3vw, 34px);
+  letter-spacing: -0.06em;
+  text-shadow: 0 2px 0 rgba(255,255,255,.65);
+}
+
+.shop-purchase-text {
+  margin: 0 0 22px;
+  color: #52371d;
+  font-size: 17px;
+  font-weight: 900;
+  line-height: 1.45;
+}
+
+.shop-purchase-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+}
+
+.shop-purchase-btn {
+  min-width: 118px;
+  padding: 13px 18px;
+  border: 3px solid #2a1a12 !important;
+  color: #21150d;
+  font-size: 18px;
+  font-weight: 900;
+  box-shadow:
+    inset 0 2px 0 rgba(255,255,255,.62),
+    0 5px 0 rgba(81, 47, 19, .9) !important;
+}
+
+.shop-purchase-cancel {
+  background: linear-gradient(180deg, #f5eee0, #b8a08b) !important;
+}
+
+.shop-purchase-confirm {
+  background: linear-gradient(180deg, #fff1a6, #e8a034) !important;
+}
+
+@media (max-width: 720px) {
+  .shop-category-btn {
+    justify-content: center !important;
+    padding-left: 8px !important;
+  }
+
+  .shop-category-icon {
+    width: 22px;
+    height: 22px;
+  }
+
+  .shop-purchase-actions {
+    flex-direction: column-reverse;
+  }
+
+  .shop-purchase-btn {
+    width: 100%;
+  }
+}
+

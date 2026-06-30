@@ -1,17 +1,86 @@
 // Shop screen interactions.
-// 프로토타입용 상점 UI: 좌측 카테고리 6개 + 빈 상품 카드 5개를 자동 생성합니다.
+// 프로토타입용 상점 UI: 좌측 카테고리 6개 + 빈 상품 카드 5개 + 구매 확인 팝업을 자동 생성합니다.
 
 const SHOP_CATEGORY_LIST = [
-  { id: "recommend", label: "추천" },
-  { id: "currency", label: "재화" },
-  { id: "gacha", label: "가챠" },
-  { id: "fragment", label: "영웅조각" },
-  { id: "item", label: "아이템" },
-  { id: "normal", label: "일반" },
+  {
+    id: "recommend",
+    label: "추천",
+    fallbackIcon: "★",
+    iconPaths: [
+      "assets/maps/store/category/icon_recommend.png",
+      "assets/maps/shop/category/icon_recommend.png",
+      "assets/maps/store/icon_recommend.png",
+      "assets/maps/shop/icon_recommend.png",
+    ],
+  },
+  {
+    id: "currency",
+    label: "재화",
+    fallbackIcon: "◆",
+    iconPaths: [
+      "assets/maps/store/category/icon_money.png",
+      "assets/maps/shop/category/icon_money.png",
+      "assets/maps/store/icon_money.png",
+      "assets/maps/shop/icon_money.png",
+    ],
+  },
+  {
+    id: "gacha",
+    label: "가챠",
+    fallbackIcon: "✦",
+    iconPaths: [
+      "assets/maps/store/category/icon_gacha.png",
+      "assets/maps/shop/category/icon_gacha.png",
+      "assets/maps/store/icon_gacha.png",
+      "assets/maps/shop/icon_gacha.png",
+      "assets/maps/store/category/icon_recommend.png",
+      "assets/maps/shop/category/icon_recommend.png",
+    ],
+  },
+  {
+    id: "fragment",
+    label: "영웅조각",
+    fallbackIcon: "◈",
+    iconPaths: [
+      "assets/maps/store/category/icon_fragment.png",
+      "assets/maps/shop/category/icon_fragment.png",
+      "assets/maps/store/icon_fragment.png",
+      "assets/maps/shop/icon_fragment.png",
+      "assets/maps/store/category/icon_money.png",
+      "assets/maps/shop/category/icon_money.png",
+    ],
+  },
+  {
+    id: "item",
+    label: "아이템",
+    fallbackIcon: "▣",
+    iconPaths: [
+      "assets/maps/store/category/icon_item.png",
+      "assets/maps/shop/category/icon_item.png",
+      "assets/maps/store/icon_item.png",
+      "assets/maps/shop/icon_item.png",
+      "assets/maps/store/category/icon_money.png",
+      "assets/maps/shop/category/icon_money.png",
+    ],
+  },
+  {
+    id: "normal",
+    label: "일반",
+    fallbackIcon: "✤",
+    iconPaths: [
+      "assets/maps/store/category/icon_normal.png",
+      "assets/maps/shop/category/icon_normal.png",
+      "assets/maps/store/icon_normal.png",
+      "assets/maps/shop/icon_normal.png",
+      "assets/maps/store/category/icon_recommend.png",
+      "assets/maps/shop/category/icon_recommend.png",
+    ],
+  },
 ];
 
 const SHOP_ITEM_COUNT = 5;
 let selectedShopCategory = "recommend";
+let selectedShopItemName = "";
 
 const SHOP_ASSET_PATHS = {
   categoryNormal: [
@@ -83,7 +152,20 @@ function setShopBackground(element, paths) {
 
   resolveShopAsset(paths, (src) => {
     if (!src) return;
-    element.style.backgroundImage = `url('${src}')`;
+    element.style.setProperty("--shop-bg-image", `url('${src}')`);
+  });
+}
+
+function setShopIcon(iconElement, category) {
+  if (!iconElement || !category) return;
+
+  iconElement.textContent = category.fallbackIcon || "";
+
+  resolveShopAsset(category.iconPaths || [], (src) => {
+    if (!src) return;
+    iconElement.textContent = "";
+    iconElement.style.setProperty("--shop-icon-image", `url('${src}')`);
+    iconElement.classList.add("has-image");
   });
 }
 
@@ -113,6 +195,7 @@ function showShop() {
   }
 
   renderShopUI();
+  bindShopPurchasePopup();
 
   if (shopNotice) {
     shopNotice.textContent = "상점 품목을 선택하세요.";
@@ -134,8 +217,19 @@ function renderShopUI() {
 
     button.type = "button";
     button.className = `shop-category-btn${isSelected ? " is-selected" : ""}`;
-    button.textContent = category.label;
     button.setAttribute("aria-pressed", isSelected ? "true" : "false");
+
+    const icon = document.createElement("span");
+    icon.className = "shop-category-icon";
+    icon.setAttribute("aria-hidden", "true");
+    setShopIcon(icon, category);
+
+    const label = document.createElement("span");
+    label.className = "shop-category-label";
+    label.textContent = category.label;
+
+    button.appendChild(icon);
+    button.appendChild(label);
 
     setShopBackground(
       button,
@@ -156,14 +250,16 @@ function renderShopUI() {
 
   for (let i = 0; i < SHOP_ITEM_COUNT; i += 1) {
     const card = document.createElement("button");
+    const itemName = `${getSelectedShopCategoryLabel()} 상품 ${i + 1}`;
+
     card.type = "button";
     card.className = "shop-item-card";
-    card.setAttribute("aria-label", `${getSelectedShopCategoryLabel()} 상품 ${i + 1}`);
+    card.setAttribute("aria-label", itemName);
 
     setShopBackground(card, SHOP_ASSET_PATHS.itemCard);
 
     card.addEventListener("click", () => {
-      showShopItemNotice(`${getSelectedShopCategoryLabel()} 상품 ${i + 1}`);
+      openShopPurchasePopup(itemName);
     });
 
     itemWrap.appendChild(card);
@@ -175,9 +271,64 @@ function getSelectedShopCategoryLabel() {
   return category ? category.label : "상점";
 }
 
+function bindShopPurchasePopup() {
+  const popup = document.getElementById("shopPurchasePopup");
+  const cancelBtn = document.getElementById("shopPurchaseCancelBtn");
+  const confirmBtn = document.getElementById("shopPurchaseConfirmBtn");
+
+  if (!popup) return;
+
+  if (cancelBtn && !cancelBtn.dataset.shopBound) {
+    cancelBtn.dataset.shopBound = "true";
+    cancelBtn.addEventListener("click", closeShopPurchasePopup);
+  }
+
+  if (confirmBtn && !confirmBtn.dataset.shopBound) {
+    confirmBtn.dataset.shopBound = "true";
+    confirmBtn.addEventListener("click", confirmShopPurchase);
+  }
+
+  if (!popup.dataset.shopBound) {
+    popup.dataset.shopBound = "true";
+    popup.addEventListener("click", (event) => {
+      if (event.target === popup) closeShopPurchasePopup();
+    });
+  }
+}
+
+function openShopPurchasePopup(itemName) {
+  const popup = document.getElementById("shopPurchasePopup");
+  const text = document.getElementById("shopPurchaseText");
+
+  selectedShopItemName = itemName || "선택한 상품";
+
+  if (text) {
+    text.textContent = `${selectedShopItemName}을(를) 구매하시겠습니까?`;
+  }
+
+  if (popup) {
+    popup.classList.remove("is-hidden");
+  }
+
+  if (shopNotice) {
+    shopNotice.textContent = `${selectedShopItemName} 선택됨`;
+  }
+}
+
+function closeShopPurchasePopup() {
+  const popup = document.getElementById("shopPurchasePopup");
+  if (popup) popup.classList.add("is-hidden");
+}
+
+function confirmShopPurchase() {
+  if (shopNotice) {
+    shopNotice.textContent = `${selectedShopItemName || "상품"} 구매 완료!`;
+  }
+  closeShopPurchasePopup();
+}
+
 function showShopItemNotice(itemName) {
-  if (!shopNotice) return;
-  shopNotice.textContent = `${itemName} 선택됨`;
+  openShopPurchasePopup(itemName);
 }
 
 function showShopNotice() {
