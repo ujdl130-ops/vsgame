@@ -227,6 +227,7 @@ bindUnitSlotButton(summonGuardSlotBtn, summonGuard);
 bindUnitSlotButton(summonArcherSlotBtn, summonArcher);
 bindUnitSlotButton(summonMageSlotBtn, summonMage);
 bindUnitSlotButton(summonSaintessSlotBtn, summonSaintess);
+bindUnitSlotButton(summonThiefSlotBtn, summonThief);
 if (skillBtn) skillBtn.addEventListener("click", castHolySlash);
 if (zeusSkillBtn) zeusSkillBtn.addEventListener("click", castZeusThunderstorm);
 // 전투 개편: 캔버스 직접 터치 공격은 제거했습니다.
