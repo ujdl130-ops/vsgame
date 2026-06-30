@@ -463,8 +463,8 @@ body.game-started:not(.in-lobby):not(.in-stage-select):not(.in-shop):not(.in-rec
 .battle-unit-slot-button[data-cost]::after {
   content: attr(data-cost);
   position: absolute;
-  right: 15px;
-  bottom: 2px;
+  right: 11px;
+  bottom: 5px;
   color: #f8fbff;
   font-size: 18px;
   font-weight: 900;
@@ -922,8 +922,8 @@ body.game-started:not(.in-lobby):not(.in-stage-select):not(.in-shop):not(.in-rec
   }
 
   .battle-unit-slot-button[data-cost]::after {
-    right: 12px;
-    bottom: 1px;
+    right: 9px;
+    bottom: 4px;
     font-size: 13px;
   }
 
