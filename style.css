@@ -303,6 +303,24 @@ body.game-started:not(.in-lobby):not(.in-stage-select):not(.in-shop):not(.in-rec
   pointer-events: none;
 }
 
+.battle-command-panel::after {
+  content: "";
+  position: absolute;
+  z-index: 2;
+  left: 74px;
+  top: 4px;
+  width: 54px;
+  height: 30px;
+  border-radius: 999px;
+  background:
+    url("assets/runestone_icon.png") center / 39px 31px no-repeat,
+    #060504;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.04),
+    0 1px 2px rgba(0, 0, 0, 0.55);
+  pointer-events: none;
+}
+
 .battle-command-top {
   display: none;
 }
@@ -829,6 +847,14 @@ body.game-started:not(.in-lobby):not(.in-stage-select):not(.in-shop):not(.in-rec
     top: 11px;
     width: 263px;
     height: 11px;
+  }
+
+  .battle-command-panel::after {
+    left: 74px;
+    top: 3px;
+    width: 54px;
+    height: 22px;
+    background-size: 31px 24px, auto;
   }
 
   .battle-command-top {
