@@ -1,4 +1,6 @@
-﻿// Friendly unit summoning, behavior, and rendering.
+// Friendly unit summoning, behavior, and rendering.
+
+const THIEF_ATTACK_DURATION = 0.42;
 
 function summonGuard() {
   if (!hasSummonSlot()) {
@@ -7,7 +9,7 @@ function summonGuard() {
     updateButtons();
     return;
   }
-  if (!spendGold(50)) return;
+  if (!spendRunestone(50)) return;
   const stats = getGrownStats("guard", { hp: 115, damage: 10 });
   gameState.units.push({
     type: "guard",
@@ -15,7 +17,7 @@ function summonGuard() {
     level: stats.level,
     star: stats.star,
     x: PLAYER_BASE_X + 70,
-    y: GROUND_Y,
+    y: COMBAT_LINE_Y,
     w: 34,
     h: 56,
     hp: stats.hp,
@@ -45,15 +47,15 @@ function summonArcher() {
     updateButtons();
     return;
   }
-  if (!spendGold(75)) return;
+  if (!spendRunestone(75)) return;
   const stats = getGrownStats("archer", { hp: 48, damage: 13 });
   gameState.units.push({
     type: "archer",
-    name: "沅곸닔",
+    name: "궁수",
     level: stats.level,
     star: stats.star,
     x: PLAYER_BASE_X + 62,
-    y: GROUND_Y,
+    y: COMBAT_LINE_Y,
     w: 32,
     h: 52,
     hp: stats.hp,
@@ -83,7 +85,7 @@ function summonMage() {
     updateButtons();
     return;
   }
-  if (!spendGold(100)) return;
+  if (!spendRunestone(100)) return;
   const stats = getGrownStats("mage", { hp: 42, damage: 15 });
   gameState.units.push({
     type: "mage",
@@ -91,7 +93,7 @@ function summonMage() {
     level: stats.level,
     star: stats.star,
     x: PLAYER_BASE_X + 58,
-    y: GROUND_Y,
+    y: COMBAT_LINE_Y,
     w: 32,
     h: 52,
     hp: stats.hp,
@@ -121,15 +123,15 @@ function summonSaintess() {
     updateButtons();
     return;
   }
-  if (!spendGold(120)) return;
+  if (!spendRunestone(120)) return;
   const stats = getGrownStats("saintess", { hp: 54, healAmount: 8 });
   gameState.units.push({
     type: "saintess",
-    name: "?깅?",
+    name: "성녀",
     level: stats.level,
     star: stats.star,
     x: PLAYER_BASE_X + 56,
-    y: GROUND_Y,
+    y: COMBAT_LINE_Y,
     w: 32,
     h: 52,
     hp: stats.hp,
@@ -162,7 +164,7 @@ function summonThief() {
     updateButtons();
     return;
   }
-  if (!spendGold(90)) return;
+  if (!spendRunestone(90)) return;
   const stats = getGrownStats("thief", { hp: 58, damage: 28 });
   gameState.units.push({
     type: "thief",
@@ -170,7 +172,7 @@ function summonThief() {
     level: stats.level,
     star: stats.star,
     x: PLAYER_BASE_X + 64,
-    y: GROUND_Y,
+    y: COMBAT_LINE_Y,
     w: 30,
     h: 52,
     hp: stats.hp,
@@ -183,7 +185,7 @@ function summonThief() {
     animTime: 0,
     moving: false,
     attackAnimTimer: 0,
-    attackAnimDuration: 0.42,
+    attackAnimDuration: THIEF_ATTACK_DURATION,
     attackImpactPending: false,
     attackTarget: null,
     dead: false,
@@ -235,15 +237,15 @@ function updateUnits(dt) {
     unit.moving = false;
 
     const previousAttackTimer = unit.attackAnimTimer || 0;
-    unit.attackAnimDuration = unit.attackAnimDuration || (unit.type === "guard" ? 0.46 : unit.type === "thief" ? 0.42 : (unit.type === "mage" || unit.type === "saintess") ? 0.72 : 0.58);
+    unit.attackAnimDuration = unit.attackAnimDuration || (unit.type === "guard" ? 0.46 : unit.type === "thief" ? THIEF_ATTACK_DURATION : (unit.type === "mage" || unit.type === "saintess") ? 0.72 : 0.58);
     unit.attackAnimTimer = Math.max(0, previousAttackTimer - dt);
 
     const attackProgress = unit.attackAnimTimer > 0
       ? 1 - unit.attackAnimTimer / unit.attackAnimDuration
       : 1;
 
-    // 已꾨퀝? ?쇨꺽 紐⑥뀡???놁뒿?덈떎. 怨듦꺽 / 嫄룰린 / ?щ쭩 紐⑥뀡留??ъ슜?⑸땲??
-    // 沅곸닔???쒖떆?꾨? ?볥뒗 ??대컢???붿궡 諛쒖궗
+    // 궁수는 별도의 공격 모션이 없습니다. 공격 / 걷기 / 사망 모션만 사용합니다.
+    // 궁수는 지정한 타이밍에 투사체를 발사합니다.
     if (unit.type === "archer" && unit.pendingArrowShot && (attackProgress >= 0.62 || unit.attackAnimTimer <= 0)) {
       fireArcherArrow(unit);
     }
@@ -283,7 +285,7 @@ function updateUnits(dt) {
       continue;
     }
 
-    // 諛⑺뙣蹂묒? 寃???욎쑝濡??섍????꾨젅?꾩뿉 洹쇱젒 ?쇳빐 ?곸슜
+    // 근접 유닛은 무기를 앞으로 내미는 프레임에 피해를 적용합니다.
     if ((unit.type === "guard" || unit.type === "thief") && unit.attackImpactPending && (attackProgress >= 0.48 || unit.attackAnimTimer <= 0)) {
       const attackTarget = isCombatAlive(unit.attackTarget)
         ? unit.attackTarget
@@ -291,6 +293,9 @@ function updateUnits(dt) {
 
       if (attackTarget) {
         attackTarget.hp -= unit.damage;
+        if (unit.type === "thief") {
+          spawnThiefStrike(attackTarget.x, attackTarget.y - Math.max(34, attackTarget.h * 0.65));
+        }
       }
 
       unit.attackImpactPending = false;
@@ -313,7 +318,7 @@ function updateUnits(dt) {
           unit.pendingMageShot = true;
           unit.shotTarget = target;
         } else if (unit.type === "guard" || unit.type === "thief") {
-          unit.attackAnimDuration = unit.type === "guard" ? 0.46 : 0.42;
+          unit.attackAnimDuration = unit.type === "guard" ? 0.46 : THIEF_ATTACK_DURATION;
           unit.attackAnimTimer = unit.attackAnimDuration;
           unit.attackImpactPending = true;
           unit.attackTarget = target;
@@ -521,7 +526,7 @@ function drawThiefSprite(unit) {
   let frame = Math.floor((unit.animTime || 0) * fps) % frameCount;
 
   if (anim === "attack") {
-    const duration = unit.attackAnimDuration || 0.42;
+    const duration = unit.attackAnimDuration || THIEF_ATTACK_DURATION;
     const progress = 1 - unit.attackAnimTimer / duration;
     frame = Math.min(frameCount - 1, Math.max(0, Math.floor(progress * frameCount)));
   } else if (anim === "death") {
@@ -563,7 +568,7 @@ function drawUnit(unit) {
     ctx.globalAlpha = Math.max(0.25, 1 - progress * 0.45);
   }
 
-  // 洹몃┝?먮뒗 ?낆뿉 怨좎젙?⑸땲?? 洹몃┝?먭? 罹먮┃?곗? 媛숈씠 ?붾뱾由щ㈃ 嫄룰린 紐⑥뀡?????댁깋??蹂댁엯?덈떎.
+  // 그림자는 바닥에 고정합니다. 그림자가 캐릭터와 같이 흔들리면 걷기 모션이 어색해 보입니다.
   ctx.fillStyle = "rgba(0,0,0,0.2)";
   ctx.beginPath();
   ctx.ellipse(0, 3, 22, 7, 0, 0, Math.PI * 2);
@@ -633,7 +638,7 @@ function drawUnit(unit) {
       ctx.moveTo(18, -14);
       ctx.lineTo(26, -58);
       ctx.stroke();
-      ctx.fillStyle = "#68eaff";
+      ctx.fillStyle = "#ffbd35";
       ctx.beginPath();
       ctx.arc(27, -61, 5, 0, Math.PI * 2);
       ctx.fill();

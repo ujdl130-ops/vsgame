@@ -1,13 +1,15 @@
-﻿// Shared DOM references, constants, and asset loading.
+// Shared DOM references, constants, and asset loading.
 
 const canvas = document.getElementById("gameCanvas");
 const ctx = canvas.getContext("2d");
 
 const waveText = document.getElementById("waveText");
-const goldText = document.getElementById("goldText");
 const unitCountText = document.getElementById("unitCountText");
 const commandUnitText = document.getElementById("commandUnitText");
-const commandGoldText = document.getElementById("commandGoldText");
+const runestoneGaugeFill = document.getElementById("runestoneGaugeFill");
+const runestoneGaugeText = document.getElementById("runestoneGaugeText");
+const zeusManaText = document.getElementById("zeusManaText");
+const zeusManaFill = document.getElementById("zeusManaFill");
 const playerHpText = document.getElementById("playerHpText");
 const enemyHpText = document.getElementById("enemyHpText");
 
@@ -15,25 +17,18 @@ const gameOptionsBtn = document.getElementById("gameOptionsBtn");
 const gameOptionsMenu = document.getElementById("gameOptionsMenu");
 const optionStageSelectBtn = document.getElementById("optionStageSelectBtn");
 const optionRestartBtn = document.getElementById("optionRestartBtn");
-const moveLeftBtn = document.getElementById("moveLeftBtn");
-const moveRightBtn = document.getElementById("moveRightBtn");
+const movementJoystick = document.getElementById("movementJoystick");
 const startBtn = document.getElementById("startBtn");
 const restartBtn = document.getElementById("restartBtn");
-const summonGuardBtn = document.getElementById("summonGuardBtn");
-const summonArcherBtn = document.getElementById("summonArcherBtn");
-const summonMageBtn = document.getElementById("summonMageBtn");
-const summonSaintessBtn = document.getElementById("summonSaintessBtn");
-let summonThiefBtn = document.getElementById("summonThiefBtn");
-const skillBtn = document.getElementById("skillBtn"); // ?꾩옱 ?꾪닾 媛쒗렪?쇰줈 ?ㅽ궗 踰꾪듉? ?ъ슜?섏? ?딆뒿?덈떎.
+const summonGuardSlotBtn = document.getElementById("summonGuardSlotBtn");
+const summonArcherSlotBtn = document.getElementById("summonArcherSlotBtn");
+const summonMageSlotBtn = document.getElementById("summonMageSlotBtn");
+const summonSaintessSlotBtn = document.getElementById("summonSaintessSlotBtn");
+const summonThiefSlotBtn = document.getElementById("summonThiefSlotBtn");
+const basicAttackIconBtn = document.getElementById("basicAttackIconBtn");
+const zeusSkillIconBtn = document.getElementById("zeusSkillIconBtn");
+const skillBtn = document.getElementById("skillBtn"); // 전투 개편 후 스킬 버튼은 기본 공격 버튼으로 사용합니다.
 const zeusSkillBtn = document.getElementById("zeusSkillBtn");
-
-if (!summonThiefBtn && skillBtn && skillBtn.parentElement) {
-  summonThiefBtn = document.createElement("button");
-  summonThiefBtn.id = "summonThiefBtn";
-  summonThiefBtn.type = "button";
-  summonThiefBtn.textContent = "?꾩쟻 ?뚰솚";
-  skillBtn.parentElement.insertBefore(summonThiefBtn, skillBtn);
-}
 
 const titleScreen = document.getElementById("titleScreen");
 const titleStartBtn = document.getElementById("titleStartBtn");
@@ -81,6 +76,7 @@ const stageSelectNotice = document.getElementById("stageSelectNotice");
 const stageCards = document.querySelectorAll(".stage-card");
 
 const GROUND_Y = 300;
+const COMBAT_LINE_Y = GROUND_Y - 42;
 const PLAYER_BASE_X = 40;
 const ENEMY_BASE_X = 900;
 const MAX_WAVE = 3;
@@ -88,6 +84,10 @@ const MAX_SUMMONED_UNITS = 5;
 const HERO_MIN_X = PLAYER_BASE_X + 72;
 const HERO_MAX_X = ENEMY_BASE_X - 74;
 const HERO_RESPAWN_SECONDS = 4;
+const RUNESTONE_GAUGE_MAX = 150;
+const ZEUS_MANA_MAX = 50;
+const ZEUS_MANA_COST = 50;
+const ZEUS_MANA_REGEN_PER_SECOND = 10;
 
 const ASSET_PATHS = {
   archerSprite: "assets/animations/archer/elf_archer_guard_size_spritesheet.png",
@@ -96,10 +96,14 @@ const ASSET_PATHS = {
   saintessSprite: "assets/animations/saintess/saintess_spritesheet_aligned.png",
   thiefSprite: "assets/animations/thief/female_thief_spritesheet.png",
   heroSprite: "assets/animations/hero/zeus_hero_spritesheet_latest_transparent_aligned.png",
+  lobbyHeroIdle: "assets/animations/hero/zeus_lobby_idle_hd.png",
+  zeusStormCloudSprite: "assets/effects/zeus_storm_cloud_spritesheet.png",
+  zeusStormLightningSprite: "assets/effects/zeus_storm_lightning_spritesheet.png",
   stage1EnemySprite: "assets/animations/enemy/stage1_goblin_spritesheet.png",
-  stage1ForestBg: "assets/maps/stage1/stage1_forest_bg_v2.png",
-  playerCastle: "assets/maps/stage1/player_castle_stage1.png",
-  enemyCastle: "assets/maps/stage1/enemy_castle_stage1.png",
+  stage1Background: "assets/maps/stage1/stage1_forest_bg_v2.png",
+  stageBackgroundTemplate: "assets/maps/stage{stage}/stage{stage}_background.png",
+  playerCastleTemplate: "assets/maps/stage{stage}/player_castle_stage1.png",
+  enemyCastleTemplate: "assets/maps/stage{stage}/enemy_castle_stage1.png",
 };
 
 function loadGameImage(image, sourceList, setReady, label) {
@@ -107,7 +111,7 @@ function loadGameImage(image, sourceList, setReady, label) {
 
   image.onload = () => {
     setReady(true);
-    console.log(`${label} 濡쒕뱶 ?깃났: ${image.src}`);
+    console.log(`${label} 로드 성공: ${image.src}`);
   };
 
   image.onerror = () => {
@@ -117,7 +121,7 @@ function loadGameImage(image, sourceList, setReady, label) {
       return;
     }
     setReady(false);
-    console.warn(`${label} 濡쒕뱶 ?ㅽ뙣. 湲곕낯 ?꾪삎?쇰줈 ?쒖떆?⑸땲??`);
+    console.warn(`${label} 로드 실패. 기본 도형으로 표시합니다.`);
   };
 
   image.src = sourceList[sourceIndex];
@@ -139,6 +143,38 @@ loadGameImage(
   [ASSET_PATHS.heroSprite, "assets/animations/hero/zeus_hero_spritesheet_latest.png", "zeus_hero_spritesheet_latest.png"],
   (ready) => { heroSpriteReady = ready; },
   "Hero Zeus sprite"
+);
+
+const lobbyHeroImage = new Image();
+let lobbyHeroReady = false;
+loadGameImage(
+  lobbyHeroImage,
+  [ASSET_PATHS.lobbyHeroIdle],
+  (ready) => {
+    lobbyHeroReady = ready;
+    if (ready && typeof isLobbyVisible === "function" && isLobbyVisible() && typeof renderLobbyHero === "function") {
+      renderLobbyHero();
+    }
+  },
+  "Lobby Zeus idle"
+);
+
+const zeusStormCloudSprite = new Image();
+let zeusStormCloudSpriteReady = false;
+loadGameImage(
+  zeusStormCloudSprite,
+  [ASSET_PATHS.zeusStormCloudSprite],
+  (ready) => { zeusStormCloudSpriteReady = ready; },
+  "Zeus storm cloud sprite"
+);
+
+const zeusStormLightningSprite = new Image();
+let zeusStormLightningSpriteReady = false;
+loadGameImage(
+  zeusStormLightningSprite,
+  [ASSET_PATHS.zeusStormLightningSprite],
+  (ready) => { zeusStormLightningSpriteReady = ready; },
+  "Zeus storm lightning sprite"
 );
 
 const guardSprite = new Image();
@@ -186,29 +222,46 @@ loadGameImage(
   "Stage 1 enemy sprite"
 );
 
-const stage1ForestBg = new Image();
-let stage1ForestBgReady = false;
-loadGameImage(
-  stage1ForestBg,
-  [ASSET_PATHS.stage1ForestBg],
-  (ready) => { stage1ForestBgReady = ready; },
-  "Stage 1 ??諛곌꼍"
-);
+function resolveStageAssetPath(stageNumber, templateKey) {
+  const stage = Math.min(Math.max(1, Number(stageNumber) || 1), 3);
+  return ASSET_PATHS[templateKey].replace(/{stage}/g, String(stage));
+}
 
+const stageBackgroundImage = new Image();
+let stageBackgroundReady = false;
 const playerCastleImage = new Image();
 let playerCastleReady = false;
-loadGameImage(
-  playerCastleImage,
-  [ASSET_PATHS.playerCastle],
-  (ready) => { playerCastleReady = ready; },
-  "Player castle"
-);
-
 const enemyCastleImage = new Image();
 let enemyCastleReady = false;
-loadGameImage(
-  enemyCastleImage,
-  [ASSET_PATHS.enemyCastle],
-  (ready) => { enemyCastleReady = ready; },
-  "Enemy castle"
-);
+
+function loadStageAssets(stageNumber) {
+  const stage = Math.min(Math.max(1, Number(stageNumber) || 1), 3);
+  stageBackgroundReady = false;
+  playerCastleReady = false;
+  enemyCastleReady = false;
+
+  const backgroundPath = stage === 1
+    ? ASSET_PATHS.stage1Background
+    : resolveStageAssetPath(stage, "stageBackgroundTemplate");
+
+  loadGameImage(
+    stageBackgroundImage,
+    [backgroundPath],
+    (ready) => { stageBackgroundReady = ready; },
+    `Stage ${stage} background`
+  );
+
+  loadGameImage(
+    playerCastleImage,
+    [resolveStageAssetPath(stage, "playerCastleTemplate")],
+    (ready) => { playerCastleReady = ready; },
+    `Player castle (stage ${stage})`
+  );
+
+  loadGameImage(
+    enemyCastleImage,
+    [resolveStageAssetPath(stage, "enemyCastleTemplate")],
+    (ready) => { enemyCastleReady = ready; },
+    `Enemy castle (stage ${stage})`
+  );
+}
