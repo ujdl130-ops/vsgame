@@ -225,6 +225,7 @@ if (restartBtn) restartBtn.addEventListener("click", restartGame);
 if (stageSelectBtn) stageSelectBtn.addEventListener("click", showStageSelect);
 bindUnitSlotButton(summonGuardSlotBtn, summonGuard);
 bindUnitSlotButton(summonArcherSlotBtn, summonArcher);
+bindUnitSlotButton(summonMageSlotBtn, summonMage);
 if (skillBtn) skillBtn.addEventListener("click", castHolySlash);
 if (zeusSkillBtn) zeusSkillBtn.addEventListener("click", castZeusThunderstorm);
 // 전투 개편: 캔버스 직접 터치 공격은 제거했습니다.

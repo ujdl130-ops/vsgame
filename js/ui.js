@@ -321,6 +321,14 @@ function updateButtons() {
       : "골드, 유닛 제한 또는 전투 상태를 확인하세요.";
   }
 
+  if (summonMageSlotBtn) {
+    const canSummonMage = !disabled && hasSummonSlot() && gameState.gold >= 100;
+    summonMageSlotBtn.disabled = !canSummonMage;
+    summonMageSlotBtn.title = canSummonMage
+      ? "마법사를 소환합니다."
+      : "골드, 유닛 제한 또는 전투 상태를 확인하세요.";
+  }
+
   if (skillBtn) {
     const hero = gameState.hero;
     const heroReady = hero && !hero.dead && hero.hp > 0 && hero.cooldown <= 0;
