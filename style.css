@@ -508,24 +508,33 @@ body.game-started:not(.in-lobby):not(.in-stage-select):not(.in-shop):not(.in-rec
   transform: translateY(-50%);
 }
 
-.battle-action-icon-reserved {
-  right: 190px;
-}
-
-.battle-action-icon-basic {
-  right: 88px;
+.battle-action-icon-basic,
+.battle-action-icon-skill {
   overflow: hidden;
   box-shadow:
     0 0 0 2px rgba(13, 7, 3, 0.78),
     0 4px 8px rgba(0, 0, 0, 0.45);
 }
 
-.battle-action-icon-basic img {
+.battle-action-icon-basic {
+  right: 88px;
+}
+
+.battle-action-icon-skill {
+  right: 190px;
+}
+
+.battle-action-icon-slot img {
   display: block;
   width: 100%;
   height: 100%;
   border-radius: 50%;
   object-fit: cover;
+}
+
+.battle-action-icon-skill img {
+  transform: scale(1.08);
+  transform-origin: center;
 }
 
 .battle-unit-slot-button {
@@ -1042,7 +1051,7 @@ body.game-started:not(.in-lobby):not(.in-stage-select):not(.in-shop):not(.in-rec
     height: 48px;
   }
 
-  .battle-action-icon-reserved {
+  .battle-action-icon-skill {
     right: 174px;
   }
 
