@@ -82,4 +82,15 @@ const SAINTESS_SPRITE = {
   frames: { idle: 6, walk: 6, attack: 6, death: 6 },
 };
 
+const THIEF_SPRITE = {
+  // 6 columns x 5 rows, aligned to the guard sprite frame size.
+  frameW: 229,
+  frameH: 229,
+  drawW: 88,
+  drawH: 88,
+  fps: { idle: 5, walk: 9, attack: 12, death: 6 },
+  rows: { idle: 0, walk: 1, attack: 2, death: 4 },
+  frames: { idle: 6, walk: 6, attack: 6, death: 6 },
+};
+
 

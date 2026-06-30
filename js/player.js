@@ -53,6 +53,7 @@ let gameState;
 let lastTime = 0;
 let animationId = null;
 let keys = {};
+let heroMoveInput = 0;
 let gameOptionsWasRunning = false;
 let recruitDoorState = {
   active: false,
@@ -76,8 +77,10 @@ function createInitialState() {
     message: `Stage ${selectedStage} 준비 완료`,
     messageTimer: 0,
     wave: 1,
-    gold: stageConfig.startGold,
-    goldTimer: 0,
+    runestone: stageConfig.startRunestone,
+    runestoneTimer: 0,
+    zeusMana: 0,
+    zeusManaMax: ZEUS_MANA_MAX,
     playerBaseHp: 100,
     enemyBaseHp: stageConfig.enemyBaseHp,
     enemyBaseMaxHp: stageConfig.enemyBaseHp,
@@ -86,6 +89,7 @@ function createInitialState() {
     spawnedInWave: 0,
     waveBreakTimer: 0,
     hero: createMainHero(),
+    zeusSkillEffect: null,
     particles: [],
     projectiles: [],
     units: [],

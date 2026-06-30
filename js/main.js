@@ -1,7 +1,9 @@
-﻿// Game lifecycle and event binding.
+// Game lifecycle and event binding.
 
 function resetGame() {
   if (animationId) cancelAnimationFrame(animationId);
+  keys = {};
+  heroMoveInput = 0;
   gameState = createInitialState();
   lastTime = performance.now();
   updateHud();
@@ -19,6 +21,7 @@ function startGame(stageNumber = selectedStage) {
     return;
   }
 
+  loadStageAssets(selectedStage);
   closeGameOptionsMenu(false);
   resetGame();
   if (titleScreen) titleScreen.classList.add("is-hidden");
@@ -30,6 +33,7 @@ function startGame(stageNumber = selectedStage) {
   hideRecruitDoorScene(true);
   document.body.classList.add("game-started");
   document.body.classList.remove("in-lobby", "in-stage-select", "in-shop", "in-recruit", "in-formation");
+  updateBattleViewportScale();
   gameState.running = true;
   gameState.message = `Stage ${selectedStage} - Wave ${gameState.wave} 시작! 영웅을 보조하며 병사를 소환하세요.`;
   gameState.messageTimer = 1.2;
@@ -50,7 +54,7 @@ function gameLoop(now) {
 }
 
 window.addEventListener("keydown", (event) => {
-  const playableKeys = ["Space", "ArrowLeft", "ArrowRight"];
+  const playableKeys = ["Space"];
   if (playableKeys.includes(event.code)) event.preventDefault();
 
   if (isTitleVisible()) {
@@ -119,9 +123,8 @@ window.addEventListener("keydown", (event) => {
     return;
   }
 
-  keys[event.code] = true;
-
   if (event.code === "Space") {
+    keys.Space = true;
     event.preventDefault();
     heroAttack();
   }
@@ -144,15 +147,68 @@ window.addEventListener("keydown", (event) => {
 });
 
 window.addEventListener("keyup", (event) => {
-  keys[event.code] = false;
+  if (event.code === "Space") keys.Space = false;
 });
+
+window.addEventListener("resize", updateBattleViewportScale);
+window.addEventListener("orientationchange", updateBattleViewportScale);
+
+function bindUnitSlotButton(button, summonFn) {
+  if (!button || typeof summonFn !== "function") return;
+
+  let lastPointerSummonAt = 0;
+  const triggerSummon = () => {
+    if (button.disabled || isGameOptionsOpen()) return;
+    summonFn();
+  };
+
+  button.addEventListener("pointerdown", (event) => {
+    if (event.button !== undefined && event.button !== 0) return;
+    event.preventDefault();
+    event.stopPropagation();
+    lastPointerSummonAt = performance.now();
+    triggerSummon();
+  });
+
+  button.addEventListener("click", (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+    if (performance.now() - lastPointerSummonAt < 450) return;
+    triggerSummon();
+  });
+}
+
+function bindHeroActionIcon(button, actionFn) {
+  if (!button || typeof actionFn !== "function") return;
+
+  let lastPointerActionAt = 0;
+  const triggerAction = () => {
+    if (button.disabled || isGameOptionsOpen()) return;
+    actionFn();
+    updateButtons();
+  };
+
+  button.addEventListener("pointerdown", (event) => {
+    if (event.button !== undefined && event.button !== 0) return;
+    event.preventDefault();
+    event.stopPropagation();
+    lastPointerActionAt = performance.now();
+    triggerAction();
+  });
+
+  button.addEventListener("click", (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+    if (performance.now() - lastPointerActionAt < 450) return;
+    triggerAction();
+  });
+}
 
 if (startBtn) startBtn.addEventListener("click", () => startGame(selectedStage));
 if (gameOptionsBtn) gameOptionsBtn.addEventListener("click", toggleGameOptionsMenu);
 if (optionStageSelectBtn) optionStageSelectBtn.addEventListener("click", handleOptionStageSelect);
 if (optionRestartBtn) optionRestartBtn.addEventListener("click", handleOptionRestart);
-bindHoldMovementButton(moveLeftBtn, "ArrowLeft");
-bindHoldMovementButton(moveRightBtn, "ArrowRight");
+bindMovementJoystick(movementJoystick);
 titleStartBtn.addEventListener("click", showLobby);
 if (lobbyBattleBtn) lobbyBattleBtn.addEventListener("click", showStageSelect);
 if (lobbyShopBtn) lobbyShopBtn.addEventListener("click", showShop);
@@ -202,13 +258,15 @@ stageCards.forEach((card) => {
 });
 if (restartBtn) restartBtn.addEventListener("click", restartGame);
 if (stageSelectBtn) stageSelectBtn.addEventListener("click", showStageSelect);
-summonGuardBtn.addEventListener("click", summonGuard);
-summonArcherBtn.addEventListener("click", summonArcher);
-if (summonMageBtn) summonMageBtn.addEventListener("click", summonMage);
-if (summonSaintessBtn) summonSaintessBtn.addEventListener("click", summonSaintess);
-if (summonThiefBtn) summonThiefBtn.addEventListener("click", showThiefSummonPlaceholder);
+bindUnitSlotButton(summonGuardSlotBtn, summonGuard);
+bindUnitSlotButton(summonArcherSlotBtn, summonArcher);
+bindUnitSlotButton(summonMageSlotBtn, summonMage);
+bindUnitSlotButton(summonSaintessSlotBtn, summonSaintess);
+bindUnitSlotButton(summonThiefSlotBtn, summonThief);
+bindHeroActionIcon(basicAttackIconBtn, castHolySlash);
+bindHeroActionIcon(zeusSkillIconBtn, castZeusThunderstorm);
 if (skillBtn) skillBtn.addEventListener("click", castHolySlash);
-if (zeusSkillBtn) zeusSkillBtn.addEventListener("click", showZeusSkillPlaceholder);
-// ?꾪닾 媛쒗렪: 罹붾쾭???곗튂 吏곸젒 怨듦꺽? ?쒓굅?덉뒿?덈떎.
+if (zeusSkillBtn) zeusSkillBtn.addEventListener("click", castZeusThunderstorm);
+// 전투 개편: 캔버스 직접 터치 공격은 제거했습니다.
 
 resetGame();

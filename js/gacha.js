@@ -1,4 +1,4 @@
-﻿// Recruit/gacha screen and door animation.
+// Recruit/gacha screen and door animation.
 
 const GOD_DESCENT_SSR_RATE = 0.03;
 const DUPLICATE_GOD_ESSENCE_AMOUNT = 10;
