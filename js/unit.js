@@ -14,7 +14,7 @@ function summonGuard() {
     updateButtons();
     return;
   }
-  if (!spendGold(50)) return;
+  if (!spendRunestone(50)) return;
   gameState.units.push({
     type: "guard",
     name: "방패병",
@@ -49,7 +49,7 @@ function summonArcher() {
     updateButtons();
     return;
   }
-  if (!spendGold(75)) return;
+  if (!spendRunestone(75)) return;
   gameState.units.push({
     type: "archer",
     name: "궁수",
@@ -84,7 +84,7 @@ function summonMage() {
     updateButtons();
     return;
   }
-  if (!spendGold(100)) return;
+  if (!spendRunestone(100)) return;
   gameState.units.push({
     type: "mage",
     name: "마법사",
@@ -119,7 +119,7 @@ function summonSaintess() {
     updateButtons();
     return;
   }
-  if (!spendGold(120)) return;
+  if (!spendRunestone(120)) return;
   gameState.units.push({
     type: "saintess",
     name: "성녀",
@@ -157,7 +157,7 @@ function summonThief() {
     updateButtons();
     return;
   }
-  if (!spendGold(90)) return;
+  if (!spendRunestone(90)) return;
   gameState.units.push({
     type: "thief",
     name: "도적",

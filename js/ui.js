@@ -220,7 +220,7 @@ function updateHud() {
   const activeUnits = getActiveUnitCount();
 
   waveText.textContent = `${gameState.wave} / ${gameState.maxWave}`;
-  goldText.textContent = `${Math.floor(gameState.gold)}G`;
+  runestoneText.textContent = `${Math.floor(gameState.runestone)}R`;
   if (zeusManaText) {
     const zeusMana = Math.floor(gameState.zeusMana || 0);
     const zeusManaMax = gameState.zeusManaMax || ZEUS_MANA_MAX;
@@ -231,7 +231,7 @@ function updateHud() {
   }
   if (unitCountText) unitCountText.textContent = `${activeUnits} / ${MAX_SUMMONED_UNITS}`;
   if (commandUnitText) commandUnitText.textContent = `${activeUnits} / ${MAX_SUMMONED_UNITS}`;
-  if (commandGoldText) commandGoldText.textContent = `${Math.floor(gameState.gold)}G`;
+  if (commandRunestoneText) commandRunestoneText.textContent = `${Math.floor(gameState.runestone)}R`;
   if (playerHpText) playerHpText.textContent = Math.max(0, Math.ceil(gameState.playerBaseHp));
   if (enemyHpText) enemyHpText.textContent = Math.max(0, Math.ceil(gameState.enemyBaseHp));
 }
@@ -306,43 +306,43 @@ function updateButtons() {
   const disabled = !gameState.running || gameState.gameOver || gameState.clear;
 
   if (summonGuardSlotBtn) {
-    const canSummonGuard = !disabled && hasSummonSlot() && gameState.gold >= 50;
+    const canSummonGuard = !disabled && hasSummonSlot() && gameState.runestone >= 50;
     summonGuardSlotBtn.disabled = !canSummonGuard;
     summonGuardSlotBtn.title = canSummonGuard
       ? "기사를 소환합니다."
-      : "골드, 유닛 제한 또는 전투 상태를 확인하세요.";
+      : "룬스톤, 유닛 제한 또는 전투 상태를 확인하세요.";
   }
 
   if (summonArcherSlotBtn) {
-    const canSummonArcher = !disabled && hasSummonSlot() && gameState.gold >= 75;
+    const canSummonArcher = !disabled && hasSummonSlot() && gameState.runestone >= 75;
     summonArcherSlotBtn.disabled = !canSummonArcher;
     summonArcherSlotBtn.title = canSummonArcher
       ? "궁수를 소환합니다."
-      : "골드, 유닛 제한 또는 전투 상태를 확인하세요.";
+      : "룬스톤, 유닛 제한 또는 전투 상태를 확인하세요.";
   }
 
   if (summonMageSlotBtn) {
-    const canSummonMage = !disabled && hasSummonSlot() && gameState.gold >= 100;
+    const canSummonMage = !disabled && hasSummonSlot() && gameState.runestone >= 100;
     summonMageSlotBtn.disabled = !canSummonMage;
     summonMageSlotBtn.title = canSummonMage
       ? "마법사를 소환합니다."
-      : "골드, 유닛 제한 또는 전투 상태를 확인하세요.";
+      : "룬스톤, 유닛 제한 또는 전투 상태를 확인하세요.";
   }
 
   if (summonSaintessSlotBtn) {
-    const canSummonSaintess = !disabled && hasSummonSlot() && gameState.gold >= 120;
+    const canSummonSaintess = !disabled && hasSummonSlot() && gameState.runestone >= 120;
     summonSaintessSlotBtn.disabled = !canSummonSaintess;
     summonSaintessSlotBtn.title = canSummonSaintess
       ? "성녀를 소환합니다."
-      : "골드, 유닛 제한 또는 전투 상태를 확인하세요.";
+      : "룬스톤, 유닛 제한 또는 전투 상태를 확인하세요.";
   }
 
   if (summonThiefSlotBtn) {
-    const canSummonThief = !disabled && hasSummonSlot() && gameState.gold >= 90;
+    const canSummonThief = !disabled && hasSummonSlot() && gameState.runestone >= 90;
     summonThiefSlotBtn.disabled = !canSummonThief;
     summonThiefSlotBtn.title = canSummonThief
       ? "도적을 소환합니다."
-      : "골드, 유닛 제한 또는 전투 상태를 확인하세요.";
+      : "룬스톤, 유닛 제한 또는 전투 상태를 확인하세요.";
   }
 
   if (skillBtn) {

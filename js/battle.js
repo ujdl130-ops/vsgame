@@ -34,7 +34,7 @@ function startEnemyDeath(enemy) {
   enemy.deathAnimTimer = enemy.deathAnimDuration;
 
   if (!enemy.deathRewarded) {
-    gameState.gold += 18;
+    gameState.runestone += 18;
     enemy.deathRewarded = true;
   }
 }
@@ -287,10 +287,10 @@ function update(dt) {
   }
 
   gameState.messageTimer = Math.max(0, gameState.messageTimer - dt);
-  gameState.goldTimer += dt;
-  if (gameState.goldTimer >= 1) {
-    gameState.gold += 12;
-    gameState.goldTimer = 0;
+  gameState.runestoneTimer += dt;
+  if (gameState.runestoneTimer >= 1) {
+    gameState.runestone += 12;
+    gameState.runestoneTimer = 0;
   }
   updateZeusMana(dt);
 

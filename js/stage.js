@@ -4,21 +4,21 @@ const STAGE_CONFIGS = {
   1: {
     title: "초원의 입구",
     maxWave: 3,
-    startGold: 220,
+    startRunestone: 220,
     enemyBaseHp: 90,
     baseEnemiesToSpawn: 4,
   },
   2: {
     title: "모스 숲 언덕",
     maxWave: 3,
-    startGold: 190,
+    startRunestone: 190,
     enemyBaseHp: 120,
     baseEnemiesToSpawn: 6,
   },
   3: {
     title: "마왕군 전초기지",
     maxWave: 3,
-    startGold: 170,
+    startRunestone: 170,
     enemyBaseHp: 150,
     baseEnemiesToSpawn: 8,
   },
@@ -146,7 +146,7 @@ function updateWave(dt) {
   const waveFinished = gameState.spawnedInWave >= gameState.enemiesToSpawn && gameState.enemies.length === 0;
   if (waveFinished && gameState.wave < gameState.maxWave) {
     gameState.waveBreakTimer = 3;
-    gameState.gold += 60;
+    gameState.runestone += 60;
   } else if (waveFinished && gameState.wave >= gameState.maxWave) {
     completeStage(`STAGE ${selectedStage} CLEAR! 모든 웨이브 방어 성공`);
   }

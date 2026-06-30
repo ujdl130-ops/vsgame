@@ -4,10 +4,10 @@ const canvas = document.getElementById("gameCanvas");
 const ctx = canvas.getContext("2d");
 
 const waveText = document.getElementById("waveText");
-const goldText = document.getElementById("goldText");
+const runestoneText = document.getElementById("runestoneText");
 const unitCountText = document.getElementById("unitCountText");
 const commandUnitText = document.getElementById("commandUnitText");
-const commandGoldText = document.getElementById("commandGoldText");
+const commandRunestoneText = document.getElementById("commandRunestoneText");
 const zeusManaText = document.getElementById("zeusManaText");
 const zeusManaFill = document.getElementById("zeusManaFill");
 const playerHpText = document.getElementById("playerHpText");
