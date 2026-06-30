@@ -459,32 +459,30 @@ body.game-started:not(.in-lobby):not(.in-stage-select):not(.in-shop):not(.in-rec
 .battle-unit-slot-button[data-cost]::before {
   content: "";
   position: absolute;
-  right: 0;
-  bottom: 0;
-  width: 32px;
-  height: 22px;
+  right: 2px;
+  bottom: 3px;
+  width: 24px;
+  height: 16px;
   border-radius: 2px;
-  background:
-    radial-gradient(circle at 3px 10px, #28cfff 0 4px, #087cc1 5px 8px, transparent 9px),
-    linear-gradient(90deg, rgba(2, 20, 34, 0.18), #07111f 22%, #07111f 100%);
+  background: #07111f;
 }
 
 .battle-unit-slot-button[data-cost]::after {
   content: attr(data-cost);
   position: absolute;
-  right: -1px;
-  bottom: 1px;
+  right: 2px;
+  bottom: 3px;
   color: #f8fbff;
-  font-size: 21px;
+  font-size: 15px;
   font-weight: 900;
   line-height: 1;
   letter-spacing: 0;
   text-shadow:
-    2px 0 0 #050505,
-    -2px 0 0 #050505,
-    0 2px 0 #050505,
-    0 -2px 0 #050505,
-    2px 2px 0 #050505;
+    1px 0 0 #050505,
+    -1px 0 0 #050505,
+    0 1px 0 #050505,
+    0 -1px 0 #050505,
+    1px 1px 0 #050505;
 }
 
 .battle-unit-slot-guard {
@@ -926,14 +924,16 @@ body.game-started:not(.in-lobby):not(.in-stage-select):not(.in-shop):not(.in-rec
   }
 
   .battle-unit-slot-button[data-cost]::before {
-    width: 28px;
-    height: 17px;
+    right: 2px;
+    bottom: 2px;
+    width: 20px;
+    height: 13px;
   }
 
   .battle-unit-slot-button[data-cost]::after {
-    right: 0;
-    bottom: 0;
-    font-size: 15px;
+    right: 2px;
+    bottom: 2px;
+    font-size: 11px;
   }
 
   .battle-unit-slot-archer {
