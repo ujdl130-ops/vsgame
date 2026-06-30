@@ -1,4 +1,11 @@
-﻿// Friendly unit summoning, behavior, and rendering.
+// Friendly unit summoning, behavior, and rendering.
+
+const THIEF_HEAVY_ATTACK_DAMAGE = 34;
+const THIEF_HEAVY_ATTACK_SPEED = 1.75;
+const THIEF_HEAVY_ATTACK_DURATION = 0.5;
+const THIEF_RETREAT_DURATION = 0.45;
+const THIEF_RETREAT_SPEED = 190;
+const THIEF_RETREAT_MIN_X = PLAYER_BASE_X + 58;
 
 function summonGuard() {
   if (!hasSummonSlot()) {
@@ -7,12 +14,12 @@ function summonGuard() {
     updateButtons();
     return;
   }
-  if (!spendGold(50)) return;
+  if (!spendRunestone(50)) return;
   gameState.units.push({
     type: "guard",
     name: "방패병",
     x: PLAYER_BASE_X + 70,
-    y: GROUND_Y,
+    y: COMBAT_LINE_Y,
     w: 34,
     h: 56,
     hp: 90,
@@ -42,12 +49,12 @@ function summonArcher() {
     updateButtons();
     return;
   }
-  if (!spendGold(75)) return;
+  if (!spendRunestone(75)) return;
   gameState.units.push({
     type: "archer",
-    name: "沅곸닔",
+    name: "궁수",
     x: PLAYER_BASE_X + 62,
-    y: GROUND_Y,
+    y: COMBAT_LINE_Y,
     w: 32,
     h: 52,
     hp: 48,
@@ -77,18 +84,18 @@ function summonMage() {
     updateButtons();
     return;
   }
-  if (!spendGold(100)) return;
+  if (!spendRunestone(100)) return;
   gameState.units.push({
     type: "mage",
     name: "마법사",
     x: PLAYER_BASE_X + 58,
-    y: GROUND_Y,
+    y: COMBAT_LINE_Y,
     w: 32,
     h: 52,
     hp: 42,
     maxHp: 42,
     speed: 38,
-    damage: 16,
+    damage: 8,
     range: 155,
     cooldown: 0,
     attackSpeed: 1.18,
@@ -112,12 +119,12 @@ function summonSaintess() {
     updateButtons();
     return;
   }
-  if (!spendGold(120)) return;
+  if (!spendRunestone(120)) return;
   gameState.units.push({
     type: "saintess",
-    name: "?깅?",
+    name: "성녀",
     x: PLAYER_BASE_X + 56,
-    y: GROUND_Y,
+    y: COMBAT_LINE_Y,
     w: 32,
     h: 52,
     hp: 54,
@@ -143,10 +150,48 @@ function summonSaintess() {
   });
 }
 
-function showThiefSummonPlaceholder() {
-  if (!gameState || !gameState.running || gameState.gameOver || gameState.clear) return;
-  gameState.message = "?꾩쟻 ?뚰솚? ?꾩쭅 以鍮?以묒엯?덈떎.";
-  gameState.messageTimer = 1.25;
+function summonThief() {
+  if (!hasSummonSlot()) {
+    showSummonLimitMessage();
+    updateHud();
+    updateButtons();
+    return;
+  }
+  if (!spendRunestone(90)) return;
+  gameState.units.push({
+    type: "thief",
+    name: "도적",
+    x: PLAYER_BASE_X + 64,
+    y: COMBAT_LINE_Y,
+    w: 30,
+    h: 52,
+    hp: 58,
+    maxHp: 58,
+    speed: 78,
+    damage: THIEF_HEAVY_ATTACK_DAMAGE,
+    range: 42,
+    cooldown: 0,
+    attackSpeed: THIEF_HEAVY_ATTACK_SPEED,
+    animTime: 0,
+    moving: false,
+    attackAnimTimer: 0,
+    attackAnimDuration: THIEF_HEAVY_ATTACK_DURATION,
+    attackImpactPending: false,
+    attackTarget: null,
+    retreatTimer: 0,
+    retreatDuration: THIEF_RETREAT_DURATION,
+    retreatSpeed: THIEF_RETREAT_SPEED,
+    dead: false,
+    deathAnimTimer: 0,
+    deathAnimDuration: 0.78,
+    deathRewarded: false,
+  });
+}
+
+function startThiefRetreat(unit) {
+  unit.retreatDuration = unit.retreatDuration || THIEF_RETREAT_DURATION;
+  unit.retreatTimer = unit.retreatDuration;
+  unit.moving = true;
 }
 
 function findSaintessHealTargets(unit) {
@@ -191,15 +236,22 @@ function updateUnits(dt) {
     unit.moving = false;
 
     const previousAttackTimer = unit.attackAnimTimer || 0;
-    unit.attackAnimDuration = unit.attackAnimDuration || (unit.type === "guard" ? 0.46 : (unit.type === "mage" || unit.type === "saintess") ? 0.72 : 0.58);
+    unit.attackAnimDuration = unit.attackAnimDuration || (unit.type === "guard" ? 0.46 : unit.type === "thief" ? THIEF_HEAVY_ATTACK_DURATION : (unit.type === "mage" || unit.type === "saintess") ? 0.72 : 0.58);
     unit.attackAnimTimer = Math.max(0, previousAttackTimer - dt);
 
     const attackProgress = unit.attackAnimTimer > 0
       ? 1 - unit.attackAnimTimer / unit.attackAnimDuration
       : 1;
 
-    // 已꾨퀝? ?쇨꺽 紐⑥뀡???놁뒿?덈떎. 怨듦꺽 / 嫄룰린 / ?щ쭩 紐⑥뀡留??ъ슜?⑸땲??
-    // 沅곸닔???쒖떆?꾨? ?볥뒗 ??대컢???붿궡 諛쒖궗
+    if (unit.type === "thief" && (unit.retreatTimer || 0) > 0) {
+      unit.retreatTimer = Math.max(0, unit.retreatTimer - dt);
+      unit.x = Math.max(THIEF_RETREAT_MIN_X, unit.x - (unit.retreatSpeed || THIEF_RETREAT_SPEED) * dt);
+      unit.moving = true;
+      continue;
+    }
+
+    // 궁수는 별도의 공격 모션이 없습니다. 공격 / 걷기 / 사망 모션만 사용합니다.
+    // 궁수는 지정한 타이밍에 투사체를 발사합니다.
     if (unit.type === "archer" && unit.pendingArrowShot && (attackProgress >= 0.62 || unit.attackAnimTimer <= 0)) {
       fireArcherArrow(unit);
     }
@@ -239,18 +291,26 @@ function updateUnits(dt) {
       continue;
     }
 
-    // 諛⑺뙣蹂묒? 寃???욎쑝濡??섍????꾨젅?꾩뿉 洹쇱젒 ?쇳빐 ?곸슜
-    if (unit.type === "guard" && unit.attackImpactPending && (attackProgress >= 0.48 || unit.attackAnimTimer <= 0)) {
+    // 근접 유닛은 무기를 앞으로 내미는 프레임에 피해를 적용합니다.
+    if ((unit.type === "guard" || unit.type === "thief") && unit.attackImpactPending && (attackProgress >= 0.48 || unit.attackAnimTimer <= 0)) {
       const attackTarget = isCombatAlive(unit.attackTarget)
         ? unit.attackTarget
         : findNearestEnemy(unit.x, unit.range + 12);
 
       if (attackTarget) {
         attackTarget.hp -= unit.damage;
+        if (unit.type === "thief") {
+          spawnThiefStrike(attackTarget.x, attackTarget.y - Math.max(34, attackTarget.h * 0.65));
+          startThiefRetreat(unit);
+        }
       }
 
       unit.attackImpactPending = false;
       unit.attackTarget = null;
+
+      if (unit.type === "thief" && (unit.retreatTimer || 0) > 0) {
+        continue;
+      }
     }
 
     const target = findNearestEnemy(unit.x, unit.range);
@@ -268,8 +328,8 @@ function updateUnits(dt) {
           unit.attackAnimTimer = unit.attackAnimDuration;
           unit.pendingMageShot = true;
           unit.shotTarget = target;
-        } else if (unit.type === "guard") {
-          unit.attackAnimDuration = 0.46;
+        } else if (unit.type === "guard" || unit.type === "thief") {
+          unit.attackAnimDuration = unit.type === "guard" ? 0.46 : THIEF_HEAVY_ATTACK_DURATION;
           unit.attackAnimTimer = unit.attackAnimDuration;
           unit.attackImpactPending = true;
           unit.attackTarget = target;
@@ -283,7 +343,7 @@ function updateUnits(dt) {
     }
 
     if (unit.x > ENEMY_BASE_X - 35) {
-      gameState.enemyBaseHp -= unit.type === "guard" ? 18 * dt : unit.type === "mage" ? 10 * dt : 8 * dt;
+      gameState.enemyBaseHp -= unit.type === "guard" ? 18 * dt : unit.type === "thief" ? 14 * dt : unit.type === "mage" ? 10 * dt : 8 * dt;
       unit.x = ENEMY_BASE_X - 35;
       unit.moving = false;
     }
@@ -464,6 +524,49 @@ function drawSaintessSprite(unit) {
   return true;
 }
 
+function drawThiefSprite(unit) {
+  if (!thiefSpriteReady) return false;
+
+  let anim = "idle";
+  if (unit.dead || unit.hp <= 0) anim = "death";
+  else if (unit.attackAnimTimer > 0) anim = "attack";
+  else if (unit.moving) anim = "walk";
+
+  const frameCount = THIEF_SPRITE.frames[anim] || 1;
+  const fps = THIEF_SPRITE.fps[anim] || 8;
+  let frame = Math.floor((unit.animTime || 0) * fps) % frameCount;
+
+  if (anim === "attack") {
+    const duration = unit.attackAnimDuration || THIEF_HEAVY_ATTACK_DURATION;
+    const progress = 1 - unit.attackAnimTimer / duration;
+    frame = Math.min(frameCount - 1, Math.max(0, Math.floor(progress * frameCount)));
+  } else if (anim === "death") {
+    const duration = unit.deathAnimDuration || 0.78;
+    const progress = 1 - Math.max(0, unit.deathAnimTimer || 0) / duration;
+    frame = Math.min(frameCount - 1, Math.max(0, Math.floor(progress * frameCount)));
+  }
+
+  const sx = frame * THIEF_SPRITE.frameW;
+  const sy = THIEF_SPRITE.rows[anim] * THIEF_SPRITE.frameH;
+  const dw = THIEF_SPRITE.drawW;
+  const dh = THIEF_SPRITE.drawH;
+
+  ctx.imageSmoothingEnabled = false;
+  ctx.drawImage(
+    thiefSprite,
+    sx,
+    sy,
+    THIEF_SPRITE.frameW,
+    THIEF_SPRITE.frameH,
+    -dw / 2 + 2,
+    -dh + 8,
+    dw,
+    dh
+  );
+
+  return true;
+}
+
 function drawUnit(unit) {
   ctx.save();
   ctx.translate(unit.x, unit.y);
@@ -476,7 +579,7 @@ function drawUnit(unit) {
     ctx.globalAlpha = Math.max(0.25, 1 - progress * 0.45);
   }
 
-  // 洹몃┝?먮뒗 ?낆뿉 怨좎젙?⑸땲?? 洹몃┝?먭? 罹먮┃?곗? 媛숈씠 ?붾뱾由щ㈃ 嫄룰린 紐⑥뀡?????댁깋??蹂댁엯?덈떎.
+  // 그림자는 바닥에 고정합니다. 그림자가 캐릭터와 같이 흔들리면 걷기 모션이 어색해 보입니다.
   ctx.fillStyle = "rgba(0,0,0,0.2)";
   ctx.beginPath();
   ctx.ellipse(0, 3, 22, 7, 0, 0, Math.PI * 2);
@@ -546,7 +649,7 @@ function drawUnit(unit) {
       ctx.moveTo(18, -14);
       ctx.lineTo(26, -58);
       ctx.stroke();
-      ctx.fillStyle = "#68eaff";
+      ctx.fillStyle = "#ffbd35";
       ctx.beginPath();
       ctx.arc(27, -61, 5, 0, Math.PI * 2);
       ctx.fill();
@@ -571,6 +674,59 @@ function drawUnit(unit) {
       ctx.beginPath();
       ctx.arc(27, -61, 5, 0, Math.PI * 2);
       ctx.fill();
+    }
+  } else if (unit.type === "thief") {
+    const isRetreating = !isDying && (unit.retreatTimer || 0) > 0;
+
+    if (isRetreating) {
+      const duration = unit.retreatDuration || THIEF_RETREAT_DURATION;
+      const progress = 1 - Math.max(0, unit.retreatTimer || 0) / duration;
+
+      if (thiefSpriteReady) {
+        for (let i = 0; i < 3; i++) {
+          ctx.save();
+          ctx.globalAlpha = Math.max(0, 0.28 - i * 0.06 - progress * 0.08);
+          ctx.translate(18 + i * 17, i % 2 === 0 ? 0 : -2);
+          drawThiefSprite(unit);
+          ctx.restore();
+        }
+      }
+
+      ctx.save();
+      ctx.globalAlpha = 0.55 + Math.abs(Math.sin(progress * Math.PI * 4)) * 0.32;
+      ctx.strokeStyle = "rgba(200, 255, 255, 0.78)";
+      ctx.shadowColor = "rgba(100, 235, 255, 0.75)";
+      ctx.shadowBlur = 8;
+      ctx.lineWidth = 2;
+      for (let i = 0; i < 3; i++) {
+        ctx.beginPath();
+        ctx.moveTo(16 + i * 12, -46 + i * 9);
+        ctx.lineTo(44 + i * 14, -52 + i * 6);
+        ctx.stroke();
+      }
+    }
+
+    const drewSprite = drawThiefSprite(unit);
+
+    if (!drewSprite) {
+      ctx.translate(0, bob);
+
+      ctx.fillStyle = "#2f2a42";
+      ctx.fillRect(-12, -38, 24, 30);
+      ctx.fillStyle = "#ffd7ac";
+      ctx.fillRect(-10, -54, 20, 17);
+      ctx.fillStyle = "#503a7d";
+      ctx.fillRect(-14, -31, 28, 13);
+      ctx.strokeStyle = "#d9d7f6";
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.moveTo(14, -24);
+      ctx.lineTo(32, -38);
+      ctx.stroke();
+    }
+
+    if (isRetreating) {
+      ctx.restore();
     }
   }
 

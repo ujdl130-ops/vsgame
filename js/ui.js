@@ -1,4 +1,4 @@
-﻿// Screen navigation, options menu, HUD, and command UI.
+// Screen navigation, options menu, HUD, and command UI.
 
 function isTitleVisible() {
   return titleScreen && !titleScreen.classList.contains("is-hidden");
@@ -36,11 +36,11 @@ function showLobby() {
   document.body.classList.add("in-lobby");
   if (gameState) {
     gameState.running = false;
-    gameState.message = "濡쒕퉬?먯꽌 ?꾪닾瑜?以鍮꾪븯?몄슂";
+    gameState.message = "로비에서 전투를 준비하세요";
     updateButtons();
   }
   if (lobbyNotice) {
-    lobbyNotice.textContent = "?곸젏?먯꽌 ?λ퉬瑜??뺤씤?섍굅???꾪닾 踰꾪듉?쇰줈 Chapter 1???좏깮?????덉뒿?덈떎.";
+    lobbyNotice.textContent = "상점에서 장비를 확인하거나 전투 버튼으로 Chapter 1을 선택할 수 있습니다.";
   }
   if (lobbyMenuNotice) {
     lobbyMenuNotice.textContent = "";
@@ -131,14 +131,14 @@ function showTitle() {
   hideRecruitDoorScene(true);
   document.body.classList.remove("game-started", "in-lobby", "in-stage-select", "in-shop", "in-recruit", "in-formation");
   if (lobbyNotice) {
-    lobbyNotice.textContent = "?곸젏?먯꽌 ?λ퉬瑜??뺤씤?섍굅???꾪닾 踰꾪듉?쇰줈 Chapter 1???좏깮?????덉뒿?덈떎.";
+    lobbyNotice.textContent = "상점에서 장비를 확인하거나 전투 버튼으로 Chapter 1을 선택할 수 있습니다.";
   }
 }
 
 
 function showLobbyMenuNotice(label) {
   if (!lobbyMenuNotice) return;
-  const noticeText = `${label} 湲곕뒫? ?ㅼ쓬 ?④퀎?먯꽌 異붽? ?덉젙?낅땲??`;
+  const noticeText = `${label} 기능은 다음 단계에서 추가 예정입니다.`;
   lobbyMenuNotice.textContent = noticeText;
   lobbyMenuNotice.classList.add("is-show");
   clearTimeout(showLobbyMenuNotice.timer);
@@ -183,7 +183,7 @@ function openGameOptionsMenu() {
 
   gameOptionsWasRunning = Boolean(gameState.running);
   gameState.running = false;
-  gameState.message = "寃뚯엫 ?쇱떆?뺤?";
+  gameState.message = "게임 일시정지";
   gameState.messageTimer = 0;
 
   gameOptionsMenu.classList.remove("is-hidden");
@@ -209,35 +209,108 @@ function handleOptionRestart() {
   restartGame();
 }
 
-function bindHoldMovementButton(button, keyCode) {
-  if (!button) return;
+function updateBattleViewportScale() {
+  const baseWidth = 960;
+  const baseHeight = 540;
+  const maxScale = 2;
+  const availableWidth = Math.max(1, window.innerWidth);
+  const availableHeight = Math.max(1, window.innerHeight);
+  const scale = Math.min(maxScale, availableWidth / baseWidth);
+  const frameHeight = Math.min(baseHeight, availableHeight / scale);
+  const rootStyle = document.documentElement.style;
 
-  const startMove = (event) => {
-    event.preventDefault();
+  rootStyle.setProperty("--battle-visual-scale", scale.toFixed(4));
+  rootStyle.setProperty("--battle-visual-width", `${baseWidth * scale}px`);
+  rootStyle.setProperty("--battle-visual-height", `${frameHeight * scale}px`);
+  rootStyle.setProperty("--battle-frame-height", `${frameHeight}px`);
+}
+
+function bindMovementJoystick(joystick) {
+  if (!joystick) return;
+
+  let activePointerId = null;
+
+  const setJoystickInput = (direction) => {
+    heroMoveInput = direction;
+    joystick.classList.toggle("is-left", direction < 0);
+    joystick.classList.toggle("is-right", direction > 0);
+  };
+
+  const resetJoystick = () => {
+    activePointerId = null;
+    joystick.style.setProperty("--stick-x", "0px");
+    joystick.classList.remove("is-active", "is-left", "is-right");
+    setJoystickInput(0);
+  };
+
+  const updateJoystick = (clientX) => {
+    const rect = joystick.getBoundingClientRect();
+    const visualScale = rect.width / Math.max(1, joystick.offsetWidth);
+    const centerX = rect.left + rect.width / 2;
+    const maxOffset = joystick.offsetWidth * 0.32;
+    const deadZone = joystick.offsetWidth * 0.11;
+    const localOffset = (clientX - centerX) / Math.max(1, visualScale);
+    const offset = Math.max(-maxOffset, Math.min(maxOffset, localOffset));
+
+    joystick.style.setProperty("--stick-x", `${offset}px`);
+
+    if (Math.abs(offset) < deadZone || isGameOptionsOpen()) {
+      setJoystickInput(0);
+      return;
+    }
+    setJoystickInput(offset < 0 ? -1 : 1);
+  };
+
+  joystick.addEventListener("pointerdown", (event) => {
+    if (event.button !== undefined && event.button !== 0) return;
     if (isGameOptionsOpen()) return;
-    keys[keyCode] = true;
-  };
-  const stopMove = () => {
-    keys[keyCode] = false;
-  };
+    event.preventDefault();
+    activePointerId = event.pointerId;
+    joystick.classList.add("is-active");
+    if (joystick.setPointerCapture) joystick.setPointerCapture(event.pointerId);
+    updateJoystick(event.clientX);
+  });
 
-  button.addEventListener("pointerdown", startMove);
-  button.addEventListener("pointerup", stopMove);
-  button.addEventListener("pointerleave", stopMove);
-  button.addEventListener("pointercancel", stopMove);
-  button.addEventListener("blur", stopMove);
+  joystick.addEventListener("pointermove", (event) => {
+    if (activePointerId !== event.pointerId) return;
+    event.preventDefault();
+    updateJoystick(event.clientX);
+  });
+
+  joystick.addEventListener("pointerup", (event) => {
+    if (activePointerId !== event.pointerId) return;
+    resetJoystick();
+  });
+
+  joystick.addEventListener("pointercancel", resetJoystick);
+  joystick.addEventListener("lostpointercapture", resetJoystick);
+  joystick.addEventListener("blur", resetJoystick);
+  window.addEventListener("blur", resetJoystick);
 }
 
 function updateHud() {
   const activeUnits = getActiveUnitCount();
 
   waveText.textContent = `${gameState.wave} / ${gameState.maxWave}`;
-  goldText.textContent = Math.floor(gameState.gold);
+  const runestone = Math.floor(gameState.runestone || 0);
+  if (runestoneGaugeFill) {
+    runestoneGaugeFill.style.width = `${Math.max(0, Math.min(100, (runestone / RUNESTONE_GAUGE_MAX) * 100))}%`;
+  }
+  if (runestoneGaugeText) {
+    runestoneGaugeText.textContent = `${runestone}/${RUNESTONE_GAUGE_MAX}`;
+  }
+  if (zeusManaText) {
+    const zeusMana = Math.floor(gameState.zeusMana || 0);
+    const zeusManaMax = gameState.zeusManaMax || ZEUS_MANA_MAX;
+    zeusManaText.textContent = `${zeusMana}/${zeusManaMax}`;
+    if (zeusManaFill) {
+      zeusManaFill.style.width = `${Math.max(0, Math.min(100, (zeusMana / zeusManaMax) * 100))}%`;
+    }
+  }
   if (unitCountText) unitCountText.textContent = `${activeUnits} / ${MAX_SUMMONED_UNITS}`;
   if (commandUnitText) commandUnitText.textContent = `${activeUnits} / ${MAX_SUMMONED_UNITS}`;
-  if (commandGoldText) commandGoldText.textContent = `${Math.floor(gameState.gold)}G`;
-  playerHpText.textContent = Math.max(0, Math.ceil(gameState.playerBaseHp));
-  enemyHpText.textContent = Math.max(0, Math.ceil(gameState.enemyBaseHp));
+  if (playerHpText) playerHpText.textContent = Math.max(0, Math.ceil(gameState.playerBaseHp));
+  if (enemyHpText) enemyHpText.textContent = Math.max(0, Math.ceil(gameState.enemyBaseHp));
 }
 
 function getActiveUnitCount() {
@@ -251,20 +324,8 @@ function hasSummonSlot() {
 
 function showSummonLimitMessage() {
   if (!gameState) return;
-  gameState.message = `?뚰솚 ?쒗븳! 蹂묒궗??理쒕? ${MAX_SUMMONED_UNITS}紐낃퉴吏 ?좎??⑸땲??`;
+  gameState.message = `소환 제한! 병사는 최대 ${MAX_SUMMONED_UNITS}명까지 유지됩니다.`;
   gameState.messageTimer = 1.25;
-}
-
-function renderCommandSlot(button, costText, countText, label, title) {
-  if (!button || !button.classList.contains("command-slot")) return;
-
-  button.setAttribute("aria-label", label);
-  button.title = title;
-  button.innerHTML = `
-    <span class="slot-icon" aria-hidden="true"></span>
-    <span class="slot-cost">${costText}</span>
-    <span class="slot-count">${countText}</span>
-  `;
 }
 
 function renderRoundCommand(button, labelText, label, title) {
@@ -275,15 +336,23 @@ function renderRoundCommand(button, labelText, label, title) {
 
   if (button.classList.contains("zeus-action-btn")) {
     const isSkill = button.classList.contains("zeus-skill-btn");
+    const renderKey = `zeus|${labelText}|${label}|${isSkill ? "skill" : "basic"}`;
+    if (button.dataset.renderKey === renderKey) return;
+
+    button.dataset.renderKey = renderKey;
     button.innerHTML = `
       <span class="zeus-action-icon ${isSkill ? "skill" : "basic"}" aria-hidden="true"></span>
-      <span class="zeus-action-label">${isSkill ? "?쒖슦???ㅽ궗" : "湲곕낯怨듦꺽"}</span>
+      <span class="zeus-action-label">${isSkill ? "천벌" : "기본공격"}</span>
       <span class="zeus-action-key">${labelText}</span>
     `;
     return;
   }
 
   if (!button.classList.contains("battle-round-btn")) return;
+  const renderKey = `round|${labelText}|${label}`;
+  if (button.dataset.renderKey === renderKey) return;
+
+  button.dataset.renderKey = renderKey;
   button.innerHTML = `
     <span class="round-icon" aria-hidden="true"></span>
     <span class="round-label">${labelText}</span>
@@ -291,96 +360,66 @@ function renderRoundCommand(button, labelText, label, title) {
 }
 
 function refreshCommandButtonMarkup() {
-  const activeUnits = getActiveUnitCount();
-  const unitLimitReached = activeUnits >= MAX_SUMMONED_UNITS;
-  const slotText = unitLimitReached ? "MAX" : `${activeUnits}/${MAX_SUMMONED_UNITS}`;
-  const limitTitle = "?꾧뎔 蹂묒궗媛 ?щ쭩?섎㈃ ?ㅼ떆 ?뚰솚?????덉뒿?덈떎.";
-
-  renderCommandSlot(
-    summonGuardBtn,
-    "50",
-    slotText,
-    unitLimitReached ? `諛⑺뙣蹂??뚰솚 ?쒗븳 ${activeUnits}/${MAX_SUMMONED_UNITS}` : "諛⑺뙣蹂??뚰솚",
-    unitLimitReached ? limitTitle : "諛⑺뙣蹂묒쓣 ?뚰솚?⑸땲??"
-  );
-  renderCommandSlot(
-    summonArcherBtn,
-    "75",
-    slotText,
-    unitLimitReached ? `沅곸닔 ?뚰솚 ?쒗븳 ${activeUnits}/${MAX_SUMMONED_UNITS}` : "沅곸닔 ?뚰솚",
-    unitLimitReached ? limitTitle : "沅곸닔瑜??뚰솚?⑸땲??"
-  );
-  renderCommandSlot(
-    summonMageBtn,
-    "100",
-    slotText,
-    unitLimitReached ? `留덈쾿???뚰솚 ?쒗븳 ${activeUnits}/${MAX_SUMMONED_UNITS}` : "留덈쾿???뚰솚",
-    unitLimitReached ? limitTitle : "留덈쾿?щ? ?뚰솚?⑸땲??"
-  );
-  renderCommandSlot(
-    summonSaintessBtn,
-    "120",
-    slotText,
-    unitLimitReached ? `?깅? ?뚰솚 ?쒗븳 ${activeUnits}/${MAX_SUMMONED_UNITS}` : "?깅? ?뚰솚",
-    unitLimitReached ? limitTitle : "二쇰? ?꾧뎔???뚮났?섎뒗 ?깅?瑜??뚰솚?⑸땲??"
-  );
-  renderCommandSlot(
-    summonThiefBtn,
-    "?",
-    "준비",
-    "?꾩쟻 ?뚰솚",
-    "?꾩쟻 ?뚰솚 湲곕뒫? 以鍮?以묒엯?덈떎."
-  );
-
   const hero = gameState && gameState.hero;
+  const zeusEffectActive = Boolean(gameState && gameState.zeusSkillEffect && gameState.zeusSkillEffect.active);
+  const zeusMana = Math.floor(gameState && gameState.zeusMana || 0);
   renderRoundCommand(
     skillBtn,
-    hero && hero.dead ? `遺??${Math.ceil(hero.respawnTimer)}` : "SPACE",
+    hero && hero.dead ? `부활 ${Math.ceil(hero.respawnTimer)}` : "SPACE",
     hero && hero.dead ? `영웅 부활 ${Math.ceil(hero.respawnTimer)}초` : "영웅 공격",
-    "硫붿씤 ?곸썒??媛??媛源뚯슫 ?곸뿉寃??붿궡??諛쒖궗?⑸땲??"
+    "메인 영웅이 가장 가까운 적에게 투사체를 발사합니다."
   );
   renderRoundCommand(
     zeusSkillBtn,
-    "READY",
-    "?쒖슦???ㅽ궗",
-    "?쒖슦???ㅽ궗 湲곕뒫? 以鍮?以묒엯?덈떎."
+    zeusEffectActive ? "CAST" : "READY",
+    "천벌",
+    zeusEffectActive
+      ? "천벌 발동 중입니다."
+      : `마나 ${zeusMana}/${ZEUS_MANA_COST} · 50마나를 소모해 적에게 피해를 주고 2초간 마비시킵니다.`
   );
 }
 
 function updateButtons() {
   const disabled = !gameState.running || gameState.gameOver || gameState.clear;
-  const activeUnits = getActiveUnitCount();
-  const unitLimitReached = activeUnits >= MAX_SUMMONED_UNITS;
-  const slotText = `${activeUnits}/${MAX_SUMMONED_UNITS}`;
 
-  if (summonGuardBtn) {
-    summonGuardBtn.textContent = unitLimitReached ? `諛⑺뙣蹂??뚰솚 ?쒗븳 ${slotText}` : `諛⑺뙣蹂??뚰솚 50G 쨌 ${slotText}`;
-    summonGuardBtn.disabled = disabled || unitLimitReached || gameState.gold < 50;
-    summonGuardBtn.title = unitLimitReached ? "?꾧뎔 蹂묒궗媛 ?щ쭩?섎㈃ ?ㅼ떆 ?뚰솚?????덉뒿?덈떎." : "諛⑺뙣蹂묒쓣 ?뚰솚?⑸땲??";
+  if (summonGuardSlotBtn) {
+    const canSummonGuard = !disabled && hasSummonSlot() && gameState.runestone >= 50;
+    summonGuardSlotBtn.disabled = !canSummonGuard;
+    summonGuardSlotBtn.title = canSummonGuard
+      ? "기사를 소환합니다."
+      : "룬스톤, 유닛 제한 또는 전투 상태를 확인하세요.";
   }
 
-  if (summonArcherBtn) {
-    summonArcherBtn.textContent = unitLimitReached ? `沅곸닔 ?뚰솚 ?쒗븳 ${slotText}` : `沅곸닔 ?뚰솚 75G 쨌 ${slotText}`;
-    summonArcherBtn.disabled = disabled || unitLimitReached || gameState.gold < 75;
-    summonArcherBtn.title = unitLimitReached ? "?꾧뎔 蹂묒궗媛 ?щ쭩?섎㈃ ?ㅼ떆 ?뚰솚?????덉뒿?덈떎." : "沅곸닔瑜??뚰솚?⑸땲??";
+  if (summonArcherSlotBtn) {
+    const canSummonArcher = !disabled && hasSummonSlot() && gameState.runestone >= 75;
+    summonArcherSlotBtn.disabled = !canSummonArcher;
+    summonArcherSlotBtn.title = canSummonArcher
+      ? "궁수를 소환합니다."
+      : "룬스톤, 유닛 제한 또는 전투 상태를 확인하세요.";
   }
 
-  if (summonMageBtn) {
-    summonMageBtn.textContent = unitLimitReached ? `留덈쾿???뚰솚 ?쒗븳 ${slotText}` : `留덈쾿???뚰솚 100G 쨌 ${slotText}`;
-    summonMageBtn.disabled = disabled || unitLimitReached || gameState.gold < 100;
-    summonMageBtn.title = unitLimitReached ? "?꾧뎔 蹂묒궗媛 ?щ쭩?섎㈃ ?ㅼ떆 ?뚰솚?????덉뒿?덈떎." : "留덈쾿?щ? ?뚰솚?⑸땲??";
+  if (summonMageSlotBtn) {
+    const canSummonMage = !disabled && hasSummonSlot() && gameState.runestone >= 100;
+    summonMageSlotBtn.disabled = !canSummonMage;
+    summonMageSlotBtn.title = canSummonMage
+      ? "마법사를 소환합니다."
+      : "룬스톤, 유닛 제한 또는 전투 상태를 확인하세요.";
   }
 
-  if (summonSaintessBtn) {
-    summonSaintessBtn.textContent = unitLimitReached ? `?깅? ?뚰솚 ?쒗븳 ${slotText}` : `?깅? ?뚰솚 120G 쨌 ${slotText}`;
-    summonSaintessBtn.disabled = disabled || unitLimitReached || gameState.gold < 120;
-    summonSaintessBtn.title = unitLimitReached ? "?꾧뎔 蹂묒궗媛 ?щ쭩?섎㈃ ?ㅼ떆 ?뚰솚?????덉뒿?덈떎." : "二쇰? ?꾧뎔???뚮났?섎뒗 ?깅?瑜??뚰솚?⑸땲??";
+  if (summonSaintessSlotBtn) {
+    const canSummonSaintess = !disabled && hasSummonSlot() && gameState.runestone >= 120;
+    summonSaintessSlotBtn.disabled = !canSummonSaintess;
+    summonSaintessSlotBtn.title = canSummonSaintess
+      ? "성녀를 소환합니다."
+      : "룬스톤, 유닛 제한 또는 전투 상태를 확인하세요.";
   }
 
-  if (summonThiefBtn) {
-    summonThiefBtn.textContent = "?꾩쟻 ?뚰솚";
-    summonThiefBtn.disabled = disabled;
-    summonThiefBtn.title = "?꾩쟻 ?뚰솚 湲곕뒫? 以鍮?以묒엯?덈떎.";
+  if (summonThiefSlotBtn) {
+    const canSummonThief = !disabled && hasSummonSlot() && gameState.runestone >= 90;
+    summonThiefSlotBtn.disabled = !canSummonThief;
+    summonThiefSlotBtn.title = canSummonThief
+      ? "도적을 소환합니다."
+      : "룬스톤, 유닛 제한 또는 전투 상태를 확인하세요.";
   }
 
   if (skillBtn) {
@@ -389,16 +428,42 @@ function updateButtons() {
     if (!skillBtn.classList.contains("zeus-action-btn")) {
       skillBtn.textContent = hero && hero.dead
         ? `영웅 부활 ${Math.ceil(hero.respawnTimer)}초`
-        : "?곸썒 怨듦꺽 Space";
+        : "영웅 공격 Space";
     }
     skillBtn.disabled = disabled || !heroReady;
-    skillBtn.title = "硫붿씤 ?곸썒??媛??媛源뚯슫 ?곸뿉寃??붿궡??諛쒖궗?⑸땲??";
+    skillBtn.title = "메인 영웅이 가장 가까운 적에게 투사체를 발사합니다.";
   }
   if (zeusSkillBtn) {
     const hero = gameState.hero;
     const heroReady = hero && !hero.dead && hero.hp > 0;
-    zeusSkillBtn.disabled = disabled || !heroReady;
-    zeusSkillBtn.title = "?쒖슦???ㅽ궗 湲곕뒫? 以鍮?以묒엯?덈떎.";
+    const zeusEffectActive = Boolean(gameState.zeusSkillEffect && gameState.zeusSkillEffect.active);
+    const zeusMana = Math.floor(gameState.zeusMana || 0);
+    const zeusManaReady = zeusMana >= ZEUS_MANA_COST;
+    zeusSkillBtn.disabled = disabled || !heroReady || zeusEffectActive || !zeusManaReady;
+    zeusSkillBtn.title = zeusEffectActive
+      ? "천벌 발동 중입니다."
+      : zeusManaReady
+        ? "50마나를 소모해 천벌을 사용합니다."
+        : `마나 충전 중 ${zeusMana}/${ZEUS_MANA_COST}`;
+  }
+  if (basicAttackIconBtn) {
+    const hero = gameState.hero;
+    const heroReady = hero && !hero.dead && hero.hp > 0 && hero.cooldown <= 0;
+    basicAttackIconBtn.disabled = disabled || !heroReady;
+    basicAttackIconBtn.title = heroReady ? "Basic attack" : "Basic attack is not ready";
+  }
+  if (zeusSkillIconBtn) {
+    const hero = gameState.hero;
+    const heroReady = hero && !hero.dead && hero.hp > 0;
+    const zeusEffectActive = Boolean(gameState.zeusSkillEffect && gameState.zeusSkillEffect.active);
+    const zeusMana = Math.floor(gameState.zeusMana || 0);
+    const zeusManaReady = zeusMana >= ZEUS_MANA_COST;
+    zeusSkillIconBtn.disabled = disabled || !heroReady || zeusEffectActive || !zeusManaReady;
+    zeusSkillIconBtn.title = zeusEffectActive
+      ? "Zeus skill is casting"
+      : zeusManaReady
+        ? "Cast Zeus skill"
+        : `Mana ${zeusMana}/${ZEUS_MANA_COST}`;
   }
   if (startBtn) {
     startBtn.textContent = gameState.running ? "진행 중" : "게임 시작";
