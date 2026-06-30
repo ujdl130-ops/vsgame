@@ -21,6 +21,7 @@ const movementJoystick = document.getElementById("movementJoystick");
 const startBtn = document.getElementById("startBtn");
 const restartBtn = document.getElementById("restartBtn");
 const summonGuardSlotBtn = document.getElementById("summonGuardSlotBtn");
+const summonArcherSlotBtn = document.getElementById("summonArcherSlotBtn");
 const skillBtn = document.getElementById("skillBtn"); // 전투 개편 후 스킬 버튼은 기본 공격 버튼으로 사용합니다.
 const zeusSkillBtn = document.getElementById("zeusSkillBtn");
 

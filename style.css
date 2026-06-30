@@ -463,6 +463,13 @@ body.game-started:not(.in-lobby):not(.in-stage-select):not(.in-shop):not(.in-rec
   height: 68px;
 }
 
+.battle-unit-slot-archer {
+  left: 162px;
+  top: 34px;
+  width: 102px;
+  height: 68px;
+}
+
 .battle-unit-card-preview {
   position: absolute;
   z-index: 2;
@@ -863,6 +870,13 @@ body.game-started:not(.in-lobby):not(.in-stage-select):not(.in-shop):not(.in-rec
     left: 52px;
     top: 24px;
     width: 108px;
+    height: 48px;
+  }
+
+  .battle-unit-slot-archer {
+    left: 162px;
+    top: 24px;
+    width: 102px;
     height: 48px;
   }
 
