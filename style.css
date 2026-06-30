@@ -462,6 +462,14 @@ body.game-started:not(.in-lobby):not(.in-stage-select):not(.in-shop):not(.in-rec
   object-fit: fill;
 }
 
+.battle-unit-card-thief {
+  left: 474px;
+  top: 38px;
+  width: 102px;
+  height: 60px;
+  object-fit: fill;
+}
+
 .movement-joystick {
   --stick-x: 0px;
   position: absolute;
@@ -835,6 +843,13 @@ body.game-started:not(.in-lobby):not(.in-stage-select):not(.in-shop):not(.in-rec
 
   .battle-unit-card-saint {
     left: 370px;
+    top: 27px;
+    width: 102px;
+    height: 42px;
+  }
+
+  .battle-unit-card-thief {
+    left: 474px;
     top: 27px;
     width: 102px;
     height: 42px;
