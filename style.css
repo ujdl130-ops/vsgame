@@ -447,9 +447,9 @@ body.game-started:not(.in-lobby):not(.in-stage-select):not(.in-shop):not(.in-rec
 }
 
 .battle-unit-card-mage {
-  left: 270px;
+  left: 266px;
   top: 38px;
-  width: 100px;
+  width: 102px;
   height: 60px;
   object-fit: fill;
 }
@@ -819,9 +819,9 @@ body.game-started:not(.in-lobby):not(.in-stage-select):not(.in-shop):not(.in-rec
   }
 
   .battle-unit-card-mage {
-    left: 270px;
+    left: 266px;
     top: 27px;
-    width: 100px;
+    width: 102px;
     height: 42px;
   }
 
