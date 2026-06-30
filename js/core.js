@@ -7,6 +7,7 @@ const waveText = document.getElementById("waveText");
 const unitCountText = document.getElementById("unitCountText");
 const commandUnitText = document.getElementById("commandUnitText");
 const runestoneGaugeFill = document.getElementById("runestoneGaugeFill");
+const runestoneGaugeText = document.getElementById("runestoneGaugeText");
 const zeusManaText = document.getElementById("zeusManaText");
 const zeusManaFill = document.getElementById("zeusManaFill");
 const playerHpText = document.getElementById("playerHpText");

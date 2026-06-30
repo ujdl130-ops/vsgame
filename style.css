@@ -347,6 +347,23 @@ body.game-started:not(.in-lobby):not(.in-stage-select):not(.in-shop):not(.in-rec
     0 0 8px rgba(186, 65, 255, 0.54);
 }
 
+.battle-runestone-gauge strong {
+  position: absolute;
+  z-index: 2;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #f7ecff;
+  font-size: 12px;
+  font-weight: 900;
+  line-height: 1;
+  letter-spacing: 0;
+  text-shadow:
+    2px 2px 0 #000,
+    -1px -1px 0 #000,
+    1px -1px 0 #000;
+}
+
 .battle-command-top {
   display: none;
 }
@@ -892,6 +909,11 @@ body.game-started:not(.in-lobby):not(.in-stage-select):not(.in-shop):not(.in-rec
 
   .battle-runestone-fill {
     inset: 1px auto 1px 2px;
+  }
+
+  .battle-runestone-gauge strong {
+    right: 6px;
+    font-size: 9px;
   }
 
   .battle-command-top {
