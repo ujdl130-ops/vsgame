@@ -25,6 +25,8 @@ const summonArcherSlotBtn = document.getElementById("summonArcherSlotBtn");
 const summonMageSlotBtn = document.getElementById("summonMageSlotBtn");
 const summonSaintessSlotBtn = document.getElementById("summonSaintessSlotBtn");
 const summonThiefSlotBtn = document.getElementById("summonThiefSlotBtn");
+const basicAttackIconBtn = document.getElementById("basicAttackIconBtn");
+const zeusSkillIconBtn = document.getElementById("zeusSkillIconBtn");
 const skillBtn = document.getElementById("skillBtn"); // 전투 개편 후 스킬 버튼은 기본 공격 버튼으로 사용합니다.
 const zeusSkillBtn = document.getElementById("zeusSkillBtn");
 

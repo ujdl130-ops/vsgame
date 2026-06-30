@@ -177,6 +177,32 @@ function bindUnitSlotButton(button, summonFn) {
   });
 }
 
+function bindHeroActionIcon(button, actionFn) {
+  if (!button || typeof actionFn !== "function") return;
+
+  let lastPointerActionAt = 0;
+  const triggerAction = () => {
+    if (button.disabled || isGameOptionsOpen()) return;
+    actionFn();
+    updateButtons();
+  };
+
+  button.addEventListener("pointerdown", (event) => {
+    if (event.button !== undefined && event.button !== 0) return;
+    event.preventDefault();
+    event.stopPropagation();
+    lastPointerActionAt = performance.now();
+    triggerAction();
+  });
+
+  button.addEventListener("click", (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+    if (performance.now() - lastPointerActionAt < 450) return;
+    triggerAction();
+  });
+}
+
 if (startBtn) startBtn.addEventListener("click", () => startGame(selectedStage));
 if (gameOptionsBtn) gameOptionsBtn.addEventListener("click", toggleGameOptionsMenu);
 if (optionStageSelectBtn) optionStageSelectBtn.addEventListener("click", handleOptionStageSelect);
@@ -228,6 +254,8 @@ bindUnitSlotButton(summonArcherSlotBtn, summonArcher);
 bindUnitSlotButton(summonMageSlotBtn, summonMage);
 bindUnitSlotButton(summonSaintessSlotBtn, summonSaintess);
 bindUnitSlotButton(summonThiefSlotBtn, summonThief);
+bindHeroActionIcon(basicAttackIconBtn, castHolySlash);
+bindHeroActionIcon(zeusSkillIconBtn, castZeusThunderstorm);
 if (skillBtn) skillBtn.addEventListener("click", castHolySlash);
 if (zeusSkillBtn) zeusSkillBtn.addEventListener("click", castZeusThunderstorm);
 // 전투 개편: 캔버스 직접 터치 공격은 제거했습니다.

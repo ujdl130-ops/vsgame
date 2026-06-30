@@ -504,7 +504,13 @@ body.game-started:not(.in-lobby):not(.in-stage-select):not(.in-shop):not(.in-rec
   top: 50%;
   width: 68px;
   height: 68px;
+  border: 0;
+  padding: 0;
   border-radius: 50%;
+  background: transparent;
+  cursor: pointer;
+  pointer-events: auto;
+  touch-action: manipulation;
   transform: translateY(-50%);
 }
 
@@ -530,11 +536,31 @@ body.game-started:not(.in-lobby):not(.in-stage-select):not(.in-shop):not(.in-rec
   height: 100%;
   border-radius: 50%;
   object-fit: cover;
+  pointer-events: none;
 }
 
 .battle-action-icon-skill img {
   transform: scale(1.08);
   transform-origin: center;
+}
+
+.battle-command-panel .battle-action-icon-slot:hover:not(:disabled) {
+  filter: brightness(1.08);
+}
+
+.battle-command-panel .battle-action-icon-slot:active:not(:disabled) {
+  transform: translateY(-50%) scale(0.94);
+}
+
+.battle-command-panel .battle-action-icon-slot:disabled,
+.battle-command-panel .battle-action-icon-slot:disabled:hover {
+  cursor: default;
+  filter: grayscale(0.86) brightness(0.58);
+}
+
+.battle-action-icon-slot:focus-visible {
+  outline: 2px solid rgba(122, 247, 255, 0.85);
+  outline-offset: 3px;
 }
 
 .battle-unit-slot-button {

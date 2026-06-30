@@ -374,6 +374,25 @@ function updateButtons() {
         ? "50마나를 소모해 천벌을 사용합니다."
         : `마나 충전 중 ${zeusMana}/${ZEUS_MANA_COST}`;
   }
+  if (basicAttackIconBtn) {
+    const hero = gameState.hero;
+    const heroReady = hero && !hero.dead && hero.hp > 0 && hero.cooldown <= 0;
+    basicAttackIconBtn.disabled = disabled || !heroReady;
+    basicAttackIconBtn.title = heroReady ? "Basic attack" : "Basic attack is not ready";
+  }
+  if (zeusSkillIconBtn) {
+    const hero = gameState.hero;
+    const heroReady = hero && !hero.dead && hero.hp > 0;
+    const zeusEffectActive = Boolean(gameState.zeusSkillEffect && gameState.zeusSkillEffect.active);
+    const zeusMana = Math.floor(gameState.zeusMana || 0);
+    const zeusManaReady = zeusMana >= ZEUS_MANA_COST;
+    zeusSkillIconBtn.disabled = disabled || !heroReady || zeusEffectActive || !zeusManaReady;
+    zeusSkillIconBtn.title = zeusEffectActive
+      ? "Zeus skill is casting"
+      : zeusManaReady
+        ? "Cast Zeus skill"
+        : `Mana ${zeusMana}/${ZEUS_MANA_COST}`;
+  }
   if (startBtn) {
     startBtn.textContent = gameState.running ? "진행 중" : "게임 시작";
     startBtn.disabled = gameState.running && !gameState.gameOver && !gameState.clear;
