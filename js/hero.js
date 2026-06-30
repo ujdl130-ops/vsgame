@@ -1,5 +1,25 @@
 // Main hero data, growth hooks, combat, and rendering.
 
+const GOD_HEROES = [
+  { id: "zeus", name: "제우스", essenceKey: "lightningEssence", essenceName: "번개의 정수", role: "공격", level: 1, star: 1, starProgress: 0 },
+  { id: "poseidon", name: "포세이돈", essenceKey: "seaEssence", essenceName: "바다의 정수", role: "제어", level: 1, star: 1, starProgress: 0 },
+  { id: "hades", name: "하데스", essenceKey: "soulEssence", essenceName: "영혼의 정수", role: "공격", level: 1, star: 1, starProgress: 0 },
+  { id: "athena", name: "아테나", essenceKey: "wisdomEssence", essenceName: "지혜의 정수", role: "지원", level: 1, star: 1, starProgress: 0 },
+  { id: "ares", name: "아레스", essenceKey: "warEssence", essenceName: "전쟁의 정수", role: "전사", level: 1, star: 1, starProgress: 0 },
+  { id: "heracles", name: "헤라클레스", essenceKey: "strengthEssence", essenceName: "힘의 정수", role: "방어", level: 1, star: 1, starProgress: 0 },
+];
+
+function getGodHeroes() {
+  return GOD_HEROES.map((hero) => ({ ...hero }));
+}
+
+function getGodHeroById(heroId) {
+  const hero = GOD_HEROES.find(({ id }) => id === heroId);
+  return hero ? { ...hero } : null;
+}
+
+window.HeroAPI = { heroes: GOD_HEROES, getGodHeroes, getGodHeroById };
+
 const HERO_ZEUS_SPRITE = {
   // 배경을 제거하고 각 프레임의 좌우 간격을 다시 맞춘 제우스 스프라이트입니다.
   // 시트 크기: 1536 x 1024, 6열 x 5행 기준

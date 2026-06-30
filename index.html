@@ -70,63 +70,39 @@
   </section>
 
 
-  <section id="recruitScreen" class="recruit-screen is-hidden" aria-label="픽셀디펜스 모집 화면">
-    <div class="recruit-scanline" aria-hidden="true"></div>
+  <section id="recruitScreen" class="recruit-screen is-hidden" aria-label="신의 강림 화면">
+    <div class="recruit-divine-overlay" aria-hidden="true"></div>
 
     <button id="recruitBackBtn" class="recruit-ui-btn recruit-back-btn" type="button">← 로비</button>
     <button id="recruitCloseBtn" class="recruit-ui-btn recruit-close-btn" type="button">닫기</button>
 
+    <aside class="recruit-wallet" aria-label="보유 재화">
+      <div class="recruit-currency">
+        <img src="assets/icons/gold.png" alt="">
+        <span>골드</span>
+        <strong id="recruitGoldAmount">0</strong>
+      </div>
+      <div class="recruit-currency">
+        <img src="assets/icons/diamonds.png" alt="">
+        <span>다이아</span>
+        <strong id="recruitDiamondAmount">0</strong>
+      </div>
+    </aside>
+
     <div class="recruit-frame">
-      <div class="recruit-title-area">
-        <p class="recruit-kicker">KNIGHT KINGDOM PICK UP</p>
-        <h1 class="recruit-logo">기사단 모집</h1>
-      </div>
-
-      <div class="recruit-banner" aria-label="픽업 캐릭터 일러스트 영역">
-        <div class="recruit-sky-grid" aria-hidden="true"></div>
-        <div class="recruit-sun" aria-hidden="true"></div>
-        <div class="recruit-cloud recruit-cloud-a" aria-hidden="true"></div>
-        <div class="recruit-cloud recruit-cloud-b" aria-hidden="true"></div>
-        <div class="recruit-castle recruit-castle-left" aria-hidden="true"></div>
-        <div class="recruit-castle recruit-castle-right" aria-hidden="true"></div>
-        <div class="recruit-meadow" aria-hidden="true"></div>
-        <div class="recruit-path" aria-hidden="true"></div>
-
-        <div class="pickup-card-title">
-          <span>★ PICK UP HERO ★</span>
-          <strong>푸른 맹세의 기사 · 루미나</strong>
-        </div>
-
-        <div class="pickup-hero-art" aria-hidden="true">
-          <div class="hero-glow"></div>
-          <div class="hero-cape"></div>
-          <div class="hero-hair"></div>
-          <div class="hero-face"></div>
-          <div class="hero-body"></div>
-          <div class="hero-skirt"></div>
-          <div class="hero-leg hero-leg-left"></div>
-          <div class="hero-leg hero-leg-right"></div>
-          <div class="hero-arm hero-arm-left"></div>
-          <div class="hero-arm hero-arm-right"></div>
-          <div class="hero-sword"></div>
-          <div class="hero-crown"></div>
-        </div>
-
-        <div class="recruit-sparkles" aria-hidden="true">
-          <span></span><span></span><span></span><span></span><span></span>
-        </div>
-      </div>
-
       <div class="recruit-command-area">
-        <p id="recruitNotice" class="recruit-notice">왕국 기사단에 합류할 영웅을 모집하세요.</p>
         <div class="recruit-pull-buttons">
-          <button id="recruitPullOneBtn" class="recruit-pull-btn pull-one" type="button">1회 뽑기</button>
-          <button id="recruitPullTenBtn" class="recruit-pull-btn pull-ten" type="button">10회 뽑기</button>
+          <button id="recruitPullOneBtn" class="recruit-pull-btn pull-one" type="button"><span>1회</span> 강림</button>
+          <button id="recruitPullTenBtn" class="recruit-pull-btn pull-ten" type="button"><span>10회</span> 강림</button>
         </div>
+        <p id="recruitNotice" class="recruit-notice">
+          <strong>SSR 확률 3%</strong>
+          <span>중복 신 획득 시 해당 신의 정수로 변환됩니다.</span>
+        </p>
       </div>
     </div>
 
-    <div id="recruitDoorScene" class="recruit-door-scene is-hidden" aria-label="모집 문 개방 연출 화면">
+    <div id="recruitDoorScene" class="recruit-door-scene is-hidden" aria-label="신의 강림 연출 화면">
       <div class="door-pixel-scanline" aria-hidden="true"></div>
       <button id="recruitDoorCloseBtn" class="door-close-btn" type="button">닫기</button>
 
@@ -134,7 +110,7 @@
         <span></span><span></span><span></span><span></span><span></span>
       </div>
 
-      <div id="recruitDoorFrame" class="recruit-door-frame" role="button" tabindex="0" aria-label="문을 터치해서 모집 연출을 진행">
+      <div id="recruitDoorFrame" class="recruit-door-frame" aria-label="올림포스 신전">
         <div class="door-kingdom-bg" aria-hidden="true">
           <div class="door-tower door-tower-left"></div>
           <div class="door-tower door-tower-right"></div>
@@ -154,8 +130,8 @@
           </div>
         </div>
 
-        <div id="doorKnockText" class="door-knock-text" aria-hidden="true">쾅!</div>
-        <p id="doorTapGuide" class="door-tap-guide">문을 터치하세요</p>
+        <div id="doorKnockText" class="door-knock-text" aria-hidden="true"></div>
+        <p id="doorTapGuide" class="door-tap-guide">올림포스에 신성한 빛이 내립니다...</p>
         <p id="doorResultText" class="door-result-text"></p>
       </div>
     </div>
