@@ -51,7 +51,9 @@
       <div class="lobby-castle">
         <span></span>
       </div>
-      <div class="lobby-hero-pixel"></div>
+      <div class="lobby-hero" aria-hidden="true">
+        <canvas id="lobbyHeroCanvas" width="184" height="184" class="lobby-hero-canvas"></canvas>
+      </div>
       <div class="lobby-guard-pixel"></div>
       <div class="lobby-flag"></div>
     </div>
@@ -161,69 +163,38 @@
   </section>
 
 
-  <section id="shopScreen" class="shop-screen is-hidden" aria-label="픽셀디펜스 상점 화면">
+  <section id="shopScreen" class="shop-screen is-hidden" aria-label="상점 화면">
     <div class="shop-scanline" aria-hidden="true"></div>
 
     <button id="shopBackBtn" class="shop-ui-btn shop-back-btn" type="button">← 로비</button>
     <button id="shopCloseBtn" class="shop-ui-btn shop-close-btn" type="button">닫기</button>
 
-    <div class="shop-title-box">
-      <p class="shop-kicker">PIXEL FANTASY WESTERN SHOP</p>
-      <h1 class="shop-logo">황야의 상점</h1>
-      <p>마법 장비와 서부 개척 장비가 함께 놓인 픽셀 상점</p>
+    <div class="shop-layout" aria-label="상점 UI">
+      <aside id="shopCategoryList" class="shop-category-list" aria-label="상점 카테고리"></aside>
+
+      <main class="shop-content-area">
+        <div class="shop-content-header">
+          <p class="shop-kicker">TEMPLE SUPPLY</p>
+          <h1 class="shop-logo">상점</h1>
+        </div>
+
+        <div id="shopItemList" class="shop-item-list" aria-label="상점 상품 목록"></div>
+        <p id="shopNotice" class="shop-notice" aria-live="polite">상점 품목을 선택하세요.</p>
+      </main>
     </div>
 
-    <div class="shop-scene" aria-hidden="true">
-      <div class="shop-moon"></div>
-      <div class="shop-cloud shop-cloud-a"></div>
-      <div class="shop-cloud shop-cloud-b"></div>
-      <div class="shop-saloon">
-        <span class="shop-sign-board">SHOP</span>
-        <span class="shop-door"></span>
-        <span class="shop-window left"></span>
-        <span class="shop-window right"></span>
+    <div id="shopPurchasePopup" class="shop-purchase-popup is-hidden" role="dialog" aria-modal="true" aria-labelledby="shopPurchaseTitle">
+      <div class="shop-purchase-window">
+        <h2 id="shopPurchaseTitle">구매하시겠습니까?</h2>
+        <p id="shopPurchaseText" class="shop-purchase-text">선택한 상품을 구매합니다.</p>
+        <div class="shop-purchase-actions">
+          <button id="shopPurchaseCancelBtn" class="shop-purchase-btn shop-purchase-cancel" type="button">취소</button>
+          <button id="shopPurchaseConfirmBtn" class="shop-purchase-btn shop-purchase-confirm" type="button">구매</button>
+        </div>
       </div>
-      <div class="shop-wagon">
-        <span></span>
-      </div>
-      <div class="shopkeeper"></div>
-      <div class="shop-hero"></div>
-      <div class="shop-ground"></div>
     </div>
 
-    <div class="shop-board">
-      <div class="shop-wallet">
-        <span>보유 코인</span>
-        <strong>준비중</strong>
-      </div>
-
-      <div class="shop-item-grid">
-        <button class="shop-card" type="button" data-item="비트">
-          <span class="shop-item-icon bit-icon" aria-hidden="true"></span>
-          <strong>비트</strong>
-        </button>
-
-        <button class="shop-card" type="button" data-item="픽셀코어">
-          <span class="shop-item-icon pixelcore-icon" aria-hidden="true"></span>
-          <strong>픽셀코어</strong>
-        </button>
-
-        <button class="shop-card" type="button" data-item="픽셀조각">
-          <span class="shop-item-icon pixelshard-icon" aria-hidden="true"></span>
-          <strong>픽셀조각</strong>
-        </button>
-
-        <button class="shop-card" type="button" data-item="픽셀토큰">
-          <span class="shop-item-icon pixeltoken-icon" aria-hidden="true"></span>
-          <strong>픽셀토큰</strong>
-        </button>
-      </div>
-
-      <p id="shopNotice" class="shop-notice">상점 품목을 선택하세요.</p>
-    </div>
   </section>
-
-
 
 
   <section id="formationScreen" class="formation-screen is-hidden" aria-label="픽셀디펜스 편성 화면">

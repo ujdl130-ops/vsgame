@@ -46,6 +46,78 @@ function showLobby() {
     lobbyMenuNotice.textContent = "";
     lobbyMenuNotice.classList.remove("is-show");
   }
+  // Ensure lobby hero canvas is drawn when showing lobby
+  requestAnimationFrame(() => {
+    if (typeof renderLobbyHero === 'function') renderLobbyHero();
+  });
+}
+
+const LOBBY_HERO_HD_BOUNDS = {
+  x: 267,
+  y: 51,
+  width: 845,
+  height: 854,
+};
+
+function getLobbyHeroImageBounds(image) {
+  if (
+    image
+    && image.naturalWidth === 1536
+    && image.naturalHeight === 1024
+    && typeof ASSET_PATHS !== 'undefined'
+    && ASSET_PATHS.lobbyHeroIdle
+    && ASSET_PATHS.lobbyHeroIdle.includes('zeus_lobby_idle_hd.png')
+  ) {
+    return LOBBY_HERO_HD_BOUNDS;
+  }
+
+  return image && image.naturalWidth && image.naturalHeight
+    ? { x: 0, y: 0, width: image.naturalWidth, height: image.naturalHeight }
+    : null;
+}
+
+// Draw the lobby-only transparent idle frame.
+
+function renderLobbyHero() {
+  const canvas = document.getElementById('lobbyHeroCanvas');
+  if (!canvas) return;
+  const c = canvas.getContext('2d');
+  const rect = canvas.getBoundingClientRect();
+  const canvasW = Math.max(1, Math.round(rect.width || canvas.width));
+  const canvasH = Math.max(1, Math.round(rect.height || canvas.height));
+  if (canvas.width !== canvasW || canvas.height !== canvasH) {
+    canvas.width = canvasW;
+    canvas.height = canvasH;
+  }
+  c.clearRect(0, 0, canvas.width, canvas.height);
+
+  if (typeof lobbyHeroImage !== 'undefined' && lobbyHeroImage && lobbyHeroReady) {
+    const bounds = getLobbyHeroImageBounds(lobbyHeroImage);
+    const sW = bounds.width;
+    const sH = bounds.height;
+    c.imageSmoothingEnabled = true;
+    c.imageSmoothingQuality = 'high';
+    const padding = Math.round(canvasW * 0.02);
+    const maxDrawW = canvasW - padding * 2;
+    const maxDrawH = canvasH - padding * 2;
+    let drawW = maxDrawW;
+    let drawH = Math.round(sH * (drawW / sW));
+    if (drawH > maxDrawH) {
+      drawH = maxDrawH;
+      drawW = Math.round(sW * (drawH / sH));
+    }
+    const dx = Math.round((canvasW - drawW) / 2);
+    const dy = Math.round(canvasH - drawH - padding);
+    c.drawImage(lobbyHeroImage, bounds.x, bounds.y, sW, sH, dx, dy, drawW, drawH);
+    return;
+  }
+
+  if (typeof lobbyHeroImage !== 'undefined' && lobbyHeroImage) {
+    lobbyHeroImage.addEventListener('load', function onLoad() {
+      lobbyHeroImage.removeEventListener('load', onLoad);
+      renderLobbyHero();
+    });
+  }
 }
 
 function showTitle() {

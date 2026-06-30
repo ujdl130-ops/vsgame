@@ -163,12 +163,10 @@ function completeStage(message) {
 
 
 function drawBackground() {
-  const isStage1 = gameState && Number(gameState.stage) === 1;
-
-  if (isStage1 && stage1ForestBgReady) {
+  if (gameState && stageBackgroundReady) {
     ctx.save();
     ctx.imageSmoothingEnabled = true;
-    ctx.drawImage(stage1ForestBg, 0, 0, canvas.width, canvas.height);
+    ctx.drawImage(stageBackgroundImage, 0, 0, canvas.width, canvas.height);
 
     // 전투 라인을 살짝 보정해서 캐릭터가 배경에 묻히지 않도록 처리합니다.
     const laneGradient = ctx.createLinearGradient(0, GROUND_Y - 120, 0, canvas.height);

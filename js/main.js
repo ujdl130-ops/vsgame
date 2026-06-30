@@ -21,6 +21,7 @@ function startGame(stageNumber = selectedStage) {
     return;
   }
 
+  loadStageAssets(selectedStage);
   closeGameOptionsMenu(false);
   resetGame();
   if (titleScreen) titleScreen.classList.add("is-hidden");
