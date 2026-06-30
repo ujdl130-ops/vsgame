@@ -329,6 +329,14 @@ function updateButtons() {
       : "골드, 유닛 제한 또는 전투 상태를 확인하세요.";
   }
 
+  if (summonSaintessSlotBtn) {
+    const canSummonSaintess = !disabled && hasSummonSlot() && gameState.gold >= 120;
+    summonSaintessSlotBtn.disabled = !canSummonSaintess;
+    summonSaintessSlotBtn.title = canSummonSaintess
+      ? "성녀를 소환합니다."
+      : "골드, 유닛 제한 또는 전투 상태를 확인하세요.";
+  }
+
   if (skillBtn) {
     const hero = gameState.hero;
     const heroReady = hero && !hero.dead && hero.hp > 0 && hero.cooldown <= 0;
