@@ -3,6 +3,51 @@
 let selectedStage = 1;
 let playerProgress = loadProgress();
 
+const PLAYER_ESSENCE_KEYS = [
+  "lightningEssence", "seaEssence", "soulEssence",
+  "wisdomEssence", "warEssence", "strengthEssence",
+];
+
+function normalizePlayerData(savedData = {}) {
+  const essences = {};
+  PLAYER_ESSENCE_KEYS.forEach((key) => {
+    essences[key] = Math.max(0, Number(savedData.essences?.[key]) || 0);
+  });
+  return {
+    ...savedData,
+    unlockedStage: Math.min(3, Math.max(1, Number(savedData.unlockedStage) || 1)),
+    clearedStages: Array.isArray(savedData.clearedStages) ? savedData.clearedStages : [],
+    gold: Math.max(0, Number(savedData.gold) || 0),
+    diamonds: Math.max(0, Number(savedData.diamonds) || 0),
+    summonTickets: Math.max(0, Number(savedData.summonTickets) || 0),
+    commonEssence: Math.max(0, Number(savedData.commonEssence) || 0),
+    soldierFragments: Math.max(0, Number(savedData.soldierFragments) || 0),
+    essences,
+    ownedGods: savedData.ownedGods && typeof savedData.ownedGods === "object" ? { ...savedData.ownedGods } : {},
+    entitlements: savedData.entitlements && typeof savedData.entitlements === "object" ? { ...savedData.entitlements } : {},
+  };
+}
+
+playerProgress = normalizePlayerData(playerProgress);
+
+function grantPlayerRewards(rewards = {}) {
+  ["gold", "diamonds", "summonTickets", "commonEssence", "soldierFragments"].forEach((key) => {
+    if (rewards[key]) playerProgress[key] = Math.max(0, playerProgress[key] + Number(rewards[key]));
+  });
+  Object.entries(rewards.essences || {}).forEach(([key, amount]) => {
+    if (PLAYER_ESSENCE_KEYS.includes(key)) {
+      playerProgress.essences[key] = Math.max(0, playerProgress.essences[key] + Number(amount));
+    }
+  });
+  saveProgress();
+  return playerProgress;
+}
+
+function getPlayerData() {
+  return playerProgress;
+}
+
+window.PlayerAPI = { getPlayerData, grantPlayerRewards, normalizePlayerData };
 
 let gameState;
 let lastTime = 0;
@@ -43,6 +88,7 @@ function createInitialState() {
     enemiesToSpawn: stageConfig.baseEnemiesToSpawn,
     spawnedInWave: 0,
     waveBreakTimer: 0,
+    growth: playerProgress.growth || {},
     hero: createMainHero(),
     zeusSkillEffect: null,
     particles: [],
