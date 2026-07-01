@@ -232,17 +232,17 @@ function getBaseRenderConfig(isPlayer) {
     return {
       image: playerCastleImage,
       ready: playerCastleReady,
-      drawX: 8,
-      drawY: GROUND_Y - 198,
-      drawW: 188,
-      drawH: 188,
-      shadowX: 92,
+      drawX: -8,
+      drawY: GROUND_Y - 250,
+      drawW: 250,
+      drawH: 250,
+      shadowX: 108,
       shadowY: GROUND_Y + 2,
-      shadowW: 58,
-      shadowH: 14,
-      hpX: 96,
-      hpY: GROUND_Y - 148,
-      hpW: 98,
+      shadowW: 76,
+      shadowH: 17,
+      hpX: 112,
+      hpY: GROUND_Y - 175,
+      hpW: 128,
     };
   }
 
