@@ -136,18 +136,20 @@ const SHOP_CATEGORY_ITEMS = {
       id: "diamond-box",
       name: "다이아 상자",
       image: "assets/icons/package_dia2.png",
-      price: "₩9,500",
+      price: "₩9,900",
       contents: [
         { icon: "assets/icons/diamond.png", label: "다이아", amount: "×1,000" },
+        { icon: "assets/icons/diamond.png", label: "보너스 다이아", amount: "+100", bonus: true },
       ],
     },
     {
       id: "diamond-vault",
       name: "다이아 금고",
       image: "assets/icons/package_dia3.png",
-      price: "₩19,000",
+      price: "₩19,900",
       contents: [
-        { icon: "assets/icons/diamond.png", label: "다이아", amount: "×2,100" },
+        { icon: "assets/icons/diamond.png", label: "다이아", amount: "×2,000" },
+        { icon: "assets/icons/diamond.png", label: "보너스 다이아", amount: "+300", bonus: true },
       ],
     },
     {
@@ -156,7 +158,8 @@ const SHOP_CATEGORY_ITEMS = {
       image: "assets/icons/package_dia4.png",
       price: "₩49,900",
       contents: [
-        { icon: "assets/icons/diamond.png", label: "다이아", amount: "×6,700" },
+        { icon: "assets/icons/diamond.png", label: "다이아", amount: "×5,000" },
+        { icon: "assets/icons/diamond.png", label: "보너스 다이아", amount: "+1,000", bonus: true },
       ],
     },
   ],
@@ -442,7 +445,7 @@ function renderDetailedOfferCardContent(card, item) {
 
   (item.contents || []).forEach((content) => {
     const row = document.createElement("span");
-    row.className = "shop-package-content-row";
+    row.className = `shop-package-content-row${content.bonus ? " is-bonus" : ""}`;
 
     const icon = document.createElement("img");
     icon.className = "shop-package-content-icon";

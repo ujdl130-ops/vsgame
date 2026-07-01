@@ -7127,9 +7127,9 @@ body:not(.game-started) .game-wrap {
 .shop-item-card.is-diamond .shop-package-image {
   --package-scale: 1;
   --package-shift-y: 0px;
-  top: 2%;
+  top: 5%;
   width: 78%;
-  height: 38%;
+  height: 36%;
 }
 
 .shop-item-card.is-diamond .shop-package-title {
@@ -7204,6 +7204,15 @@ body:not(.game-started) .game-wrap {
   font-variant-numeric: tabular-nums;
   text-align: right;
   white-space: nowrap;
+}
+
+.shop-item-card.is-diamond .shop-package-content-row.is-bonus {
+  color: #176b92;
+  background: linear-gradient(90deg, rgba(39, 158, 209, 0.08), rgba(255, 255, 255, 0.28), rgba(39, 158, 209, 0.08));
+}
+
+.shop-item-card.is-diamond .shop-package-content-row.is-bonus .shop-package-content-amount {
+  color: #087cae;
 }
 
 .shop-package-price {
