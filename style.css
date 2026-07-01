@@ -6997,11 +6997,11 @@ body:not(.game-started) .game-wrap {
   background-image: var(--shop-bg-image);
   background-repeat: no-repeat;
   background-position: center center;
-  background-size: 122% 122%;
+  background-size: contain;
 }
 
 .shop-category-btn::before {
-  background-size: 116% 116%;
+  background-size: contain;
 }
 
 .shop-category-btn::after,
@@ -7053,7 +7053,7 @@ body:not(.game-started) .game-wrap {
 }
 
 .shop-item-card::before {
-  transform: scale(1.08);
+  transform: none;
 }
 
 .shop-purchase-popup {
