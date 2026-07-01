@@ -7079,6 +7079,133 @@ body:not(.game-started) .game-wrap {
   pointer-events: none;
 }
 
+.shop-item-card.is-package {
+  cursor: pointer;
+}
+
+.shop-package-image,
+.shop-package-title,
+.shop-package-contents,
+.shop-package-price {
+  position: absolute;
+  z-index: 2;
+  pointer-events: none;
+}
+
+.shop-package-image {
+  --package-scale: 1;
+  --package-shift-y: 0px;
+  top: 5%;
+  left: 50%;
+  width: 68%;
+  height: 31%;
+  object-fit: contain;
+  transform: translateX(-50%) translateY(var(--package-shift-y)) scale(var(--package-scale));
+  filter: drop-shadow(0 8px 7px rgba(71, 43, 18, 0.42));
+}
+
+.shop-item-card.is-package:nth-child(2) .shop-package-image {
+  --package-scale: 0.88;
+}
+
+.shop-item-card.is-package:nth-child(3) .shop-package-image {
+  --package-scale: 0.8;
+  --package-shift-y: 4px;
+}
+
+.shop-item-card.is-package:nth-child(4) .shop-package-image {
+  --package-scale: 0.78;
+  --package-shift-y: 11px;
+}
+
+.shop-item-card.is-package:nth-child(5) .shop-package-image {
+  --package-scale: 0.78;
+  --package-shift-y: 17px;
+}
+
+.shop-package-title {
+  top: 37%;
+  left: 10%;
+  right: 10%;
+  overflow: hidden;
+  color: #5b3518;
+  font-size: clamp(13px, 1.15vw, 20px);
+  font-weight: 1000;
+  line-height: 1.2;
+  text-align: center;
+  text-overflow: ellipsis;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.8);
+  white-space: nowrap;
+}
+
+.shop-package-contents {
+  top: 45.5%;
+  left: 14%;
+  right: 14%;
+  bottom: 17%;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  gap: clamp(2px, 0.45vh, 5px);
+}
+
+.shop-package-content-row {
+  display: grid;
+  grid-template-columns: clamp(19px, 1.45vw, 27px) minmax(0, 1fr) auto;
+  align-items: center;
+  gap: clamp(3px, 0.35vw, 6px);
+  min-height: clamp(21px, 2.5vh, 28px);
+  padding: 2px 4px;
+  color: #4b321f;
+  font-size: clamp(9px, 0.72vw, 12.5px);
+  font-weight: 900;
+  line-height: 1;
+  text-align: left;
+  background: linear-gradient(90deg, rgba(121, 76, 34, 0.08), rgba(255, 255, 255, 0.22), rgba(121, 76, 34, 0.08));
+  border-bottom: 1px solid rgba(113, 73, 35, 0.22);
+}
+
+.shop-package-content-icon {
+  width: 100%;
+  aspect-ratio: 1;
+  object-fit: contain;
+  filter: drop-shadow(0 2px 2px rgba(66, 36, 14, 0.38));
+}
+
+.shop-package-content-label {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.shop-package-content-amount {
+  min-width: 3.7em;
+  color: #382114;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+  white-space: nowrap;
+}
+
+.shop-package-price {
+  left: 13%;
+  right: 13%;
+  bottom: 7%;
+  height: 9%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff5d7;
+  font-size: clamp(14px, 1.25vw, 21px);
+  font-weight: 1000;
+  letter-spacing: 0.02em;
+  text-shadow: 0 2px 2px #25162e, 0 0 7px rgba(255, 222, 142, 0.35);
+}
+
+.shop-item-card.is-package:hover .shop-package-image {
+  filter: drop-shadow(0 10px 9px rgba(71, 43, 18, 0.5)) brightness(1.06);
+}
+
 /* 상점 본문은 좌측 메뉴 폭과 관계없이 화면 정중앙을 기준으로 배치합니다. */
 @media (min-width: 1001px) {
   .shop-layout {

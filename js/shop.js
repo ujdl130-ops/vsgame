@@ -67,11 +67,60 @@ const SHOP_CATEGORY_ITEMS = {
     { id: "recommend-monthly", name: "월정액", sourceCategory: "monthly" },
   ],
   package: [
-    { id: "package-fate", name: "운명의 시작" },
-    { id: "package-calling", name: "신의 부름" },
-    { id: "package-blessing", name: "신들의 가호" },
-    { id: "package-offering", name: "신성한 공물" },
-    { id: "package-legacy", name: "올림포스의 유산" },
+    {
+      id: "package-fate",
+      name: "운명의 시작",
+      image: "assets/icons/package_1.png",
+      price: "₩5,900",
+      contents: [
+        { icon: "assets/icons/diamond.png", label: "다이아", amount: "×500" },
+        { icon: "assets/icons/ticket.png", label: "신 모집권", amount: "×2" },
+        { icon: "assets/icons/essence_all.png", label: "공통 신의 정수", amount: "×3" },
+      ],
+    },
+    {
+      id: "package-calling",
+      name: "신의 부름",
+      image: "assets/icons/package_2.png",
+      price: "₩9,900",
+      contents: [
+        { icon: "assets/icons/ticket.png", label: "신 모집권", amount: "×10" },
+        { icon: "assets/icons/essence_all.png", label: "공통 신의 정수", amount: "×3" },
+      ],
+    },
+    {
+      id: "package-blessing",
+      name: "신들의 가호",
+      image: "assets/icons/package_3.png",
+      price: "₩14,900",
+      contents: [
+        { icon: "assets/icons/essence_all.png", label: "공통 신의 정수", amount: "×10" },
+        { icon: "assets/icons/essence_soldier.png", label: "병사 조각", amount: "×100" },
+      ],
+    },
+    {
+      id: "package-offering",
+      name: "신성한 공물",
+      image: "assets/icons/package_4.png",
+      price: "₩29,900",
+      contents: [
+        { icon: "assets/icons/diamond.png", label: "다이아", amount: "×2,000" },
+        { icon: "assets/icons/ticket.png", label: "신 모집권", amount: "×10" },
+        { icon: "assets/icons/essence_all.png", label: "공통 신의 정수", amount: "×10" },
+      ],
+    },
+    {
+      id: "package-legacy",
+      name: "올림포스의 유산",
+      image: "assets/icons/package_5.png",
+      price: "₩49,900",
+      contents: [
+        { icon: "assets/icons/diamond.png", label: "다이아", amount: "×3,000" },
+        { icon: "assets/icons/ticket.png", label: "신 모집권", amount: "×20" },
+        { icon: "assets/icons/essence_all.png", label: "공통 신의 정수", amount: "×20" },
+        { icon: "assets/icons/essence_soldier.png", label: "병사 조각", amount: "×300" },
+      ],
+    },
   ],
   diamond: Array.from({ length: SHOP_ITEM_COUNT }, (_, index) => ({
     id: `diamond-${index + 1}`,
@@ -312,17 +361,21 @@ function renderShopUI() {
     const itemName = item.name;
 
     card.type = "button";
-    card.className = "shop-item-card";
+    card.className = `shop-item-card${selectedShopCategory === "package" ? " is-package" : ""}`;
     card.dataset.itemId = item.id;
     card.dataset.category = selectedShopCategory;
     card.setAttribute("aria-label", itemName);
 
     setShopBackground(card, SHOP_ASSET_PATHS.itemCard);
 
-    const name = document.createElement("span");
-    name.className = "shop-item-name";
-    name.textContent = itemName;
-    card.appendChild(name);
+    if (selectedShopCategory === "package") {
+      renderPackageCardContent(card, item);
+    } else {
+      const name = document.createElement("span");
+      name.className = "shop-item-name";
+      name.textContent = itemName;
+      card.appendChild(name);
+    }
 
     card.addEventListener("click", () => {
       openShopPurchasePopup(itemName);
@@ -330,6 +383,49 @@ function renderShopUI() {
 
     itemWrap.appendChild(card);
   });
+}
+
+function renderPackageCardContent(card, item) {
+  const image = document.createElement("img");
+  image.className = "shop-package-image";
+  image.src = item.image;
+  image.alt = "";
+  image.draggable = false;
+
+  const title = document.createElement("strong");
+  title.className = "shop-package-title";
+  title.textContent = item.name;
+
+  const contentList = document.createElement("span");
+  contentList.className = "shop-package-contents";
+
+  (item.contents || []).forEach((content) => {
+    const row = document.createElement("span");
+    row.className = "shop-package-content-row";
+
+    const icon = document.createElement("img");
+    icon.className = "shop-package-content-icon";
+    icon.src = content.icon;
+    icon.alt = "";
+    icon.draggable = false;
+
+    const label = document.createElement("span");
+    label.className = "shop-package-content-label";
+    label.textContent = content.label;
+
+    const amount = document.createElement("span");
+    amount.className = "shop-package-content-amount";
+    amount.textContent = content.amount;
+
+    row.append(icon, label, amount);
+    contentList.appendChild(row);
+  });
+
+  const price = document.createElement("span");
+  price.className = "shop-package-price";
+  price.textContent = item.price;
+
+  card.append(image, title, contentList, price);
 }
 
 function getSelectedShopCategoryLabel() {
