@@ -364,6 +364,21 @@ body.game-started:not(.in-lobby):not(.in-stage-select):not(.in-shop):not(.in-rec
     1px -1px 0 #000;
 }
 
+.battle-mana-placeholder {
+  position: absolute;
+  z-index: 5;
+  left: 64.8%;
+  right: 5.2%;
+  top: 15px;
+  height: 16px;
+  border-radius: 999px;
+  background: #060504;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.04),
+    inset 0 -1px 2px rgba(0, 0, 0, 0.62);
+  pointer-events: none;
+}
+
 .battle-command-top {
   display: none;
 }
@@ -963,6 +978,13 @@ body.game-started:not(.in-lobby):not(.in-stage-select):not(.in-shop):not(.in-rec
   .battle-runestone-gauge strong {
     right: 6px;
     font-size: 9px;
+  }
+
+  .battle-mana-placeholder {
+    left: 64.8%;
+    right: 5.2%;
+    top: 11px;
+    height: 11px;
   }
 
   .battle-command-top {
