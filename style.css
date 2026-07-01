@@ -7093,8 +7093,8 @@ body:not(.game-started) .game-wrap {
 }
 
 .shop-package-image {
-  --package-scale: 1;
-  --package-shift-y: 0px;
+  --package-scale: 0.98;
+  --package-shift-y: 12px;
   top: 5%;
   left: 50%;
   width: 68%;
@@ -7105,22 +7105,23 @@ body:not(.game-started) .game-wrap {
 }
 
 .shop-item-card.is-package:nth-child(2) .shop-package-image {
-  --package-scale: 0.88;
+  --package-scale: 0.98;
+  --package-shift-y: 8px;
 }
 
 .shop-item-card.is-package:nth-child(3) .shop-package-image {
-  --package-scale: 0.8;
-  --package-shift-y: 4px;
+  --package-scale: 0.96;
+  --package-shift-y: 8px;
 }
 
 .shop-item-card.is-package:nth-child(4) .shop-package-image {
-  --package-scale: 0.78;
-  --package-shift-y: 11px;
+  --package-scale: 0.93;
+  --package-shift-y: 15px;
 }
 
 .shop-item-card.is-package:nth-child(5) .shop-package-image {
-  --package-scale: 0.78;
-  --package-shift-y: 17px;
+  --package-scale: 0.93;
+  --package-shift-y: 20px;
 }
 
 .shop-package-title {
@@ -7190,7 +7191,7 @@ body:not(.game-started) .game-wrap {
 .shop-package-price {
   left: 13%;
   right: 13%;
-  bottom: 7%;
+  bottom: 8.5%;
   height: 9%;
   display: flex;
   align-items: center;
