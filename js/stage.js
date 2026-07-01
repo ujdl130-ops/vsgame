@@ -146,7 +146,7 @@ function updateWave(dt) {
   const waveFinished = gameState.spawnedInWave >= gameState.enemiesToSpawn && gameState.enemies.length === 0;
   if (waveFinished && gameState.wave < gameState.maxWave) {
     gameState.waveBreakTimer = 3;
-    gameState.runestone += 60;
+    addRunestone(60);
   } else if (waveFinished && gameState.wave >= gameState.maxWave) {
     completeStage(`STAGE ${selectedStage} CLEAR! 모든 웨이브 방어 성공`);
   }
