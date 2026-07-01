@@ -501,7 +501,7 @@ body.game-started:not(.in-lobby):not(.in-stage-select):not(.in-shop):not(.in-rec
 
 .battle-action-icon-slot {
   position: absolute;
-  top: 42%;
+  top: 8px;
   width: 60px;
   height: 60px;
   border: 0;
@@ -511,7 +511,7 @@ body.game-started:not(.in-lobby):not(.in-stage-select):not(.in-shop):not(.in-rec
   cursor: pointer;
   pointer-events: auto;
   touch-action: manipulation;
-  transform: translateY(-50%);
+  transform: none;
 }
 
 .battle-action-icon-basic,
@@ -549,7 +549,7 @@ body.game-started:not(.in-lobby):not(.in-stage-select):not(.in-shop):not(.in-rec
 }
 
 .battle-command-panel .battle-action-icon-slot:active:not(:disabled) {
-  transform: translateY(-50%) scale(0.94);
+  transform: scale(0.94);
 }
 
 .battle-command-panel .battle-action-icon-slot:disabled,
