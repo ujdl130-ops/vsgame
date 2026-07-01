@@ -501,7 +501,7 @@ body.game-started:not(.in-lobby):not(.in-stage-select):not(.in-shop):not(.in-rec
 
 .battle-action-icon-slot {
   position: absolute;
-  top: 48%;
+  top: 42%;
   width: 60px;
   height: 60px;
   border: 0;
