@@ -501,9 +501,9 @@ body.game-started:not(.in-lobby):not(.in-stage-select):not(.in-shop):not(.in-rec
 
 .battle-action-icon-slot {
   position: absolute;
-  top: 47%;
-  width: 48px;
-  height: 48px;
+  top: 48%;
+  width: 60px;
+  height: 60px;
   border: 0;
   padding: 0;
   border-radius: 50%;
@@ -523,11 +523,11 @@ body.game-started:not(.in-lobby):not(.in-stage-select):not(.in-shop):not(.in-rec
 }
 
 .battle-action-icon-basic {
-  right: 98px;
+  right: 92px;
 }
 
 .battle-action-icon-skill {
-  right: 200px;
+  right: 194px;
 }
 
 .battle-action-icon-slot img {
