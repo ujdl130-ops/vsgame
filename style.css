@@ -7126,7 +7126,7 @@ body:not(.game-started) .game-wrap {
 
 .shop-item-card.is-diamond .shop-package-image {
   --package-scale: 1;
-  --package-shift-y: 0px;
+  --package-shift-y: 24px;
   top: 5%;
   width: 78%;
   height: 36%;
@@ -7134,12 +7134,14 @@ body:not(.game-started) .game-wrap {
 
 .shop-item-card.is-diamond .shop-package-title {
   top: 39%;
+  transform: translateY(24px);
 }
 
 .shop-item-card.is-diamond .shop-package-contents {
   top: 48%;
   left: 16%;
   right: 16%;
+  transform: translateY(24px);
 }
 
 .shop-package-title {
