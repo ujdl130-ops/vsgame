@@ -7001,7 +7001,8 @@ body:not(.game-started) .game-wrap {
 }
 
 .shop-category-btn::before {
-  background-size: contain;
+  /* 새 버튼 이미지는 위아래에 투명 여백이 있으므로 가로 폭을 기준으로 표시합니다. */
+  background-size: 100% auto;
 }
 
 .shop-category-btn::after,
@@ -7054,6 +7055,68 @@ body:not(.game-started) .game-wrap {
 
 .shop-item-card::before {
   transform: none;
+}
+
+/* 상점 본문은 좌측 메뉴 폭과 관계없이 화면 정중앙을 기준으로 배치합니다. */
+@media (min-width: 1001px) {
+  .shop-layout {
+    display: block;
+    padding: 0;
+  }
+
+  .shop-category-list {
+    position: absolute;
+    z-index: 2;
+    left: clamp(54px, 5.4vw, 112px);
+    top: 50%;
+    width: clamp(210px, 13vw, 270px);
+    transform: translateY(-50%);
+  }
+
+  .shop-category-btn {
+    height: clamp(64px, 7.8vh, 84px);
+    padding-left: clamp(24px, 2.1vw, 38px) !important;
+    padding-right: clamp(18px, 1.5vw, 28px) !important;
+    gap: clamp(7px, 0.7vw, 12px);
+    font-size: clamp(17px, 1.35vw, 23px);
+  }
+
+  .shop-category-icon {
+    width: clamp(22px, 1.8vw, 34px);
+    height: clamp(22px, 1.8vw, 34px);
+  }
+
+  .shop-category-label {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .shop-content-area {
+    position: absolute;
+    z-index: 1;
+    left: 50%;
+    top: 52%;
+    width: min(78vw, 1600px);
+    transform: translate(-50%, -50%);
+  }
+
+  .shop-content-header,
+  .shop-item-list,
+  .shop-notice {
+    width: 100%;
+  }
+
+  .shop-item-list {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: clamp(12px, 1.4vw, 26px);
+  }
+
+  .shop-item-card {
+    aspect-ratio: 1027 / 1532;
+    min-height: 0;
+    max-height: min(62vh, 650px);
+  }
 }
 
 .shop-purchase-popup {
