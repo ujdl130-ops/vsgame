@@ -704,7 +704,7 @@ body.game-started:not(.in-lobby):not(.in-stage-select):not(.in-shop):not(.in-rec
   --stick-x: 0px;
   position: absolute;
   left: 48px;
-  bottom: 8px;
+  bottom: 28px;
   z-index: 3;
   width: 160px;
   height: 38px;
@@ -1178,7 +1178,7 @@ body.game-started:not(.in-lobby):not(.in-stage-select):not(.in-shop):not(.in-rec
 
   .movement-joystick {
     left: 28px;
-    bottom: 7px;
+    bottom: 22px;
     width: 142px;
     height: 30px;
     border-width: 2px;
