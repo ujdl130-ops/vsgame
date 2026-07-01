@@ -7057,6 +7057,28 @@ body:not(.game-started) .game-wrap {
   transform: none;
 }
 
+.shop-item-name {
+  position: absolute;
+  z-index: 2;
+  left: 13%;
+  right: 13%;
+  bottom: 5.5%;
+  height: 10%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  color: #fff4d8;
+  font-size: clamp(11px, 1vw, 17px);
+  font-weight: 900;
+  line-height: 1.15;
+  text-align: center;
+  text-overflow: ellipsis;
+  text-shadow: 0 2px 2px rgba(24, 13, 30, 0.9);
+  white-space: nowrap;
+  pointer-events: none;
+}
+
 /* 상점 본문은 좌측 메뉴 폭과 관계없이 화면 정중앙을 기준으로 배치합니다. */
 @media (min-width: 1001px) {
   .shop-layout {

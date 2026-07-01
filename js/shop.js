@@ -1,5 +1,5 @@
 // Shop screen interactions.
-// 프로토타입용 상점 UI: 좌측 카테고리 6개 + 빈 상품 카드 5개 + 구매 확인 팝업을 자동 생성합니다.
+// 상점 UI 뼈대: 카테고리별 상품 카드 5개와 구매 확인 팝업을 생성합니다.
 
 const SHOP_CATEGORY_LIST = [
   {
@@ -14,8 +14,17 @@ const SHOP_CATEGORY_LIST = [
     ],
   },
   {
-    id: "currency",
-    label: "재화",
+    id: "package",
+    label: "패키지",
+    fallbackIcon: "▣",
+    iconPaths: [
+      "assets/maps/store/category/icon_recommend.png",
+      "assets/maps/shop/category/icon_recommend.png",
+    ],
+  },
+  {
+    id: "diamond",
+    label: "다이아",
     fallbackIcon: "◆",
     iconPaths: [
       "assets/maps/store/category/icon_money.png",
@@ -25,60 +34,61 @@ const SHOP_CATEGORY_LIST = [
     ],
   },
   {
-    id: "gacha",
-    label: "가챠",
+    id: "growth",
+    label: "성장",
     fallbackIcon: "✦",
-    iconPaths: [
-      "assets/maps/store/category/icon_gacha.png",
-      "assets/maps/shop/category/icon_gacha.png",
-      "assets/maps/store/icon_gacha.png",
-      "assets/maps/shop/icon_gacha.png",
-      "assets/maps/store/category/icon_recommend.png",
-      "assets/maps/shop/category/icon_recommend.png",
-    ],
-  },
-  {
-    id: "fragment",
-    label: "영웅조각",
-    fallbackIcon: "◈",
     iconPaths: [
       "assets/maps/store/category/icon_fragment.png",
       "assets/maps/shop/category/icon_fragment.png",
-      "assets/maps/store/icon_fragment.png",
-      "assets/maps/shop/icon_fragment.png",
       "assets/maps/store/category/icon_money.png",
       "assets/maps/shop/category/icon_money.png",
     ],
   },
   {
-    id: "item",
-    label: "아이템",
-    fallbackIcon: "▣",
+    id: "monthly",
+    label: "월정액",
+    fallbackIcon: "◈",
     iconPaths: [
       "assets/maps/store/category/icon_item.png",
       "assets/maps/shop/category/icon_item.png",
-      "assets/maps/store/icon_item.png",
-      "assets/maps/shop/icon_item.png",
-      "assets/maps/store/category/icon_money.png",
-      "assets/maps/shop/category/icon_money.png",
-    ],
-  },
-  {
-    id: "normal",
-    label: "일반",
-    fallbackIcon: "✤",
-    iconPaths: [
-      "assets/maps/store/category/icon_normal.png",
-      "assets/maps/shop/category/icon_normal.png",
       "assets/maps/store/icon_normal.png",
       "assets/maps/shop/icon_normal.png",
-      "assets/maps/store/category/icon_recommend.png",
-      "assets/maps/shop/category/icon_recommend.png",
     ],
   },
 ];
 
 const SHOP_ITEM_COUNT = 5;
+const SHOP_CATEGORY_ITEMS = {
+  recommend: [
+    { id: "recommend-free", name: "무료 상품", sourceCategory: "event" },
+    { id: "recommend-package", name: "인기 패키지", sourceCategory: "package" },
+    { id: "recommend-diamond", name: "추천 다이아", sourceCategory: "diamond" },
+    { id: "recommend-growth", name: "성장 지원 상품", sourceCategory: "growth" },
+    { id: "recommend-monthly", name: "월정액", sourceCategory: "monthly" },
+  ],
+  package: [
+    { id: "package-fate", name: "운명의 시작" },
+    { id: "package-calling", name: "신의 부름" },
+    { id: "package-blessing", name: "신들의 가호" },
+    { id: "package-offering", name: "신성한 공물" },
+    { id: "package-legacy", name: "올림포스의 유산" },
+  ],
+  diamond: Array.from({ length: SHOP_ITEM_COUNT }, (_, index) => ({
+    id: `diamond-${index + 1}`,
+    name: `다이아 충전 상품 ${index + 1}`,
+  })),
+  growth: [
+    { id: "growth-common-essence", name: "공통 신의 정수" },
+    { id: "growth-soldier-piece", name: "병사 조각" },
+    { id: "growth-box", name: "성장 재화 상자" },
+    { id: "growth-exp", name: "경험의 서" },
+    { id: "growth-gold", name: "성장 골드" },
+  ],
+  monthly: Array.from({ length: SHOP_ITEM_COUNT }, (_, index) => ({
+    id: `monthly-${index + 1}`,
+    name: `월정액 상품 ${index + 1}`,
+  })),
+};
 let selectedShopCategory = "recommend";
 let selectedShopItemName = "";
 
@@ -295,22 +305,31 @@ function renderShopUI() {
     categoryWrap.appendChild(button);
   });
 
-  for (let i = 0; i < SHOP_ITEM_COUNT; i += 1) {
+  const categoryItems = SHOP_CATEGORY_ITEMS[selectedShopCategory] || [];
+
+  categoryItems.slice(0, SHOP_ITEM_COUNT).forEach((item) => {
     const card = document.createElement("button");
-    const itemName = `${getSelectedShopCategoryLabel()} 상품 ${i + 1}`;
+    const itemName = item.name;
 
     card.type = "button";
     card.className = "shop-item-card";
+    card.dataset.itemId = item.id;
+    card.dataset.category = selectedShopCategory;
     card.setAttribute("aria-label", itemName);
 
     setShopBackground(card, SHOP_ASSET_PATHS.itemCard);
+
+    const name = document.createElement("span");
+    name.className = "shop-item-name";
+    name.textContent = itemName;
+    card.appendChild(name);
 
     card.addEventListener("click", () => {
       openShopPurchasePopup(itemName);
     });
 
     itemWrap.appendChild(card);
-  }
+  });
 }
 
 function getSelectedShopCategoryLabel() {
@@ -384,6 +403,8 @@ function showShopNotice() {
 
 window.ShopAPI = {
   items: SHOP_ITEMS,
+  categories: SHOP_CATEGORY_LIST,
+  categoryItems: SHOP_CATEGORY_ITEMS,
   getShopItems,
   purchaseShopItem,
   renderShopItems,
