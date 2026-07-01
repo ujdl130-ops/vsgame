@@ -7079,7 +7079,7 @@ body:not(.game-started) .game-wrap {
   pointer-events: none;
 }
 
-.shop-item-card.is-package {
+.shop-item-card.is-detailed-offer {
   cursor: pointer;
 }
 
@@ -7122,6 +7122,24 @@ body:not(.game-started) .game-wrap {
 .shop-item-card.is-package:nth-child(5) .shop-package-image {
   --package-scale: 0.93;
   --package-shift-y: 20px;
+}
+
+.shop-item-card.is-diamond .shop-package-image {
+  --package-scale: 1;
+  --package-shift-y: 0px;
+  top: 2%;
+  width: 78%;
+  height: 38%;
+}
+
+.shop-item-card.is-diamond .shop-package-title {
+  top: 39%;
+}
+
+.shop-item-card.is-diamond .shop-package-contents {
+  top: 48%;
+  left: 16%;
+  right: 16%;
 }
 
 .shop-package-title {
@@ -7203,7 +7221,7 @@ body:not(.game-started) .game-wrap {
   text-shadow: 0 2px 2px #25162e, 0 0 7px rgba(255, 222, 142, 0.35);
 }
 
-.shop-item-card.is-package:hover .shop-package-image {
+.shop-item-card.is-detailed-offer:hover .shop-package-image {
   filter: drop-shadow(0 10px 9px rgba(71, 43, 18, 0.5)) brightness(1.06);
 }
 
@@ -7260,6 +7278,12 @@ body:not(.game-started) .game-wrap {
   .shop-item-list {
     grid-template-columns: repeat(5, minmax(0, 1fr));
     gap: clamp(12px, 1.4vw, 26px);
+  }
+
+  .shop-item-list[data-category="diamond"] {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    width: min(66vw, 1280px);
+    margin-inline: auto;
   }
 
   .shop-item-card {

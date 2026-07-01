@@ -122,10 +122,44 @@ const SHOP_CATEGORY_ITEMS = {
       ],
     },
   ],
-  diamond: Array.from({ length: SHOP_ITEM_COUNT }, (_, index) => ({
-    id: `diamond-${index + 1}`,
-    name: `다이아 충전 상품 ${index + 1}`,
-  })),
+  diamond: [
+    {
+      id: "diamond-pouch",
+      name: "다이아 꾸러미",
+      image: "assets/icons/package_dia1.png",
+      price: "₩4,900",
+      contents: [
+        { icon: "assets/icons/diamond.png", label: "다이아", amount: "×500" },
+      ],
+    },
+    {
+      id: "diamond-box",
+      name: "다이아 상자",
+      image: "assets/icons/package_dia2.png",
+      price: "₩9,500",
+      contents: [
+        { icon: "assets/icons/diamond.png", label: "다이아", amount: "×1,000" },
+      ],
+    },
+    {
+      id: "diamond-vault",
+      name: "다이아 금고",
+      image: "assets/icons/package_dia3.png",
+      price: "₩19,000",
+      contents: [
+        { icon: "assets/icons/diamond.png", label: "다이아", amount: "×2,100" },
+      ],
+    },
+    {
+      id: "diamond-sacred-vault",
+      name: "신성한 다이아 금고",
+      image: "assets/icons/package_dia4.png",
+      price: "₩49,900",
+      contents: [
+        { icon: "assets/icons/diamond.png", label: "다이아", amount: "×6,700" },
+      ],
+    },
+  ],
   growth: [
     { id: "growth-common-essence", name: "공통 신의 정수" },
     { id: "growth-soldier-piece", name: "병사 조각" },
@@ -316,6 +350,7 @@ function renderShopUI() {
 
   categoryWrap.innerHTML = "";
   itemWrap.innerHTML = "";
+  itemWrap.dataset.category = selectedShopCategory;
 
   SHOP_CATEGORY_LIST.forEach((category) => {
     const button = document.createElement("button");
@@ -361,15 +396,21 @@ function renderShopUI() {
     const itemName = item.name;
 
     card.type = "button";
-    card.className = `shop-item-card${selectedShopCategory === "package" ? " is-package" : ""}`;
+    const isDetailedOffer = selectedShopCategory === "package" || selectedShopCategory === "diamond";
+    card.className = [
+      "shop-item-card",
+      isDetailedOffer ? "is-detailed-offer" : "",
+      selectedShopCategory === "package" ? "is-package" : "",
+      selectedShopCategory === "diamond" ? "is-diamond" : "",
+    ].filter(Boolean).join(" ");
     card.dataset.itemId = item.id;
     card.dataset.category = selectedShopCategory;
     card.setAttribute("aria-label", itemName);
 
     setShopBackground(card, SHOP_ASSET_PATHS.itemCard);
 
-    if (selectedShopCategory === "package") {
-      renderPackageCardContent(card, item);
+    if (isDetailedOffer) {
+      renderDetailedOfferCardContent(card, item);
     } else {
       const name = document.createElement("span");
       name.className = "shop-item-name";
@@ -385,7 +426,7 @@ function renderShopUI() {
   });
 }
 
-function renderPackageCardContent(card, item) {
+function renderDetailedOfferCardContent(card, item) {
   const image = document.createElement("img");
   image.className = "shop-package-image";
   image.src = item.image;
