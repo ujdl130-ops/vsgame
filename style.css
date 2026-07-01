@@ -688,11 +688,11 @@ body.game-started:not(.in-lobby):not(.in-stage-select):not(.in-shop):not(.in-rec
 .movement-joystick {
   --stick-x: 0px;
   position: absolute;
-  left: 62px;
+  left: 48px;
   bottom: 8px;
   z-index: 3;
-  width: 330px;
-  height: 40px;
+  width: 160px;
+  height: 38px;
   border: 2px solid #1b120b;
   background:
     linear-gradient(90deg, rgba(13, 8, 5, 0.5), transparent 13%, transparent 87%, rgba(13, 8, 5, 0.5)),
@@ -718,8 +718,8 @@ body.game-started:not(.in-lobby):not(.in-stage-select):not(.in-shop):not(.in-rec
 
 .movement-joystick-track {
   position: absolute;
-  left: 28px;
-  right: 28px;
+  left: 24px;
+  right: 24px;
   top: 50%;
   height: 9px;
   border: 2px solid #1a1009;
@@ -742,25 +742,25 @@ body.game-started:not(.in-lobby):not(.in-stage-select):not(.in-shop):not(.in-rec
 }
 
 .movement-joystick-arrow-left {
-  left: 14px;
-  border-top: 8px solid transparent;
-  border-bottom: 8px solid transparent;
-  border-right: 13px solid #d69536;
+  left: 12px;
+  border-top: 7px solid transparent;
+  border-bottom: 7px solid transparent;
+  border-right: 11px solid #d69536;
 }
 
 .movement-joystick-arrow-right {
-  right: 14px;
-  border-top: 8px solid transparent;
-  border-bottom: 8px solid transparent;
-  border-left: 13px solid #d69536;
+  right: 12px;
+  border-top: 7px solid transparent;
+  border-bottom: 7px solid transparent;
+  border-left: 11px solid #d69536;
 }
 
 .movement-joystick-knob {
   position: absolute;
   left: 50%;
   top: 50%;
-  width: 34px;
-  height: 34px;
+  width: 31px;
+  height: 31px;
   border: 3px solid #1a110b;
   border-radius: 50%;
   background:
@@ -1159,29 +1159,29 @@ body.game-started:not(.in-lobby):not(.in-stage-select):not(.in-shop):not(.in-rec
   }
 
   .movement-joystick {
-    left: 38px;
+    left: 28px;
     bottom: 7px;
-    width: 232px;
+    width: 142px;
     height: 30px;
     border-width: 2px;
   }
 
   .movement-joystick-track {
-    left: 20px;
-    right: 20px;
+    left: 18px;
+    right: 18px;
     height: 7px;
     border-width: 1px;
   }
 
   .movement-joystick-arrow-left {
-    left: 10px;
+    left: 9px;
     border-top-width: 6px;
     border-bottom-width: 6px;
     border-right-width: 9px;
   }
 
   .movement-joystick-arrow-right {
-    right: 10px;
+    right: 9px;
     border-top-width: 6px;
     border-bottom-width: 6px;
     border-left-width: 9px;
