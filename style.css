@@ -368,7 +368,7 @@ body.game-started:not(.in-lobby):not(.in-stage-select):not(.in-shop):not(.in-rec
   position: absolute;
   z-index: 5;
   left: 64.8%;
-  right: 5.2%;
+  right: 3.8%;
   top: 15px;
   height: 16px;
   border-radius: 999px;
@@ -982,7 +982,7 @@ body.game-started:not(.in-lobby):not(.in-stage-select):not(.in-shop):not(.in-rec
 
   .battle-mana-placeholder {
     left: 64.8%;
-    right: 5.2%;
+    right: 3.8%;
     top: 11px;
     height: 11px;
   }
