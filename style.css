@@ -501,9 +501,9 @@ body.game-started:not(.in-lobby):not(.in-stage-select):not(.in-shop):not(.in-rec
 
 .battle-action-icon-slot {
   position: absolute;
-  top: 50%;
-  width: 56px;
-  height: 56px;
+  top: 47%;
+  width: 48px;
+  height: 48px;
   border: 0;
   padding: 0;
   border-radius: 50%;
@@ -519,15 +519,15 @@ body.game-started:not(.in-lobby):not(.in-stage-select):not(.in-shop):not(.in-rec
   overflow: hidden;
   box-shadow:
     0 0 0 2px rgba(13, 7, 3, 0.78),
-    0 4px 8px rgba(0, 0, 0, 0.45);
+    0 2px 4px rgba(0, 0, 0, 0.45);
 }
 
 .battle-action-icon-basic {
-  right: 94px;
+  right: 98px;
 }
 
 .battle-action-icon-skill {
-  right: 196px;
+  right: 200px;
 }
 
 .battle-action-icon-slot img {
