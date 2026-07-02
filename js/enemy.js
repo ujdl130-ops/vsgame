@@ -49,6 +49,19 @@ const EVILEYE_SPRITE = {
   healthBarOffsetY: 186,
 };
 
+const KARON_SPRITE = {
+  columns: 6,
+  rowCount: 5,
+  rows: { idle: 0, walk: 1, attack: 2, death: 4 },
+  frames: { idle: 6, walk: 6, attack: 6, death: 6 },
+  fps: { idle: 6, walk: 8, attack: 10, death: 8 },
+  attackFrameMap: [0, 1, 1, 4, 4, 0],
+  drawW: 172,
+  drawH: 172,
+  healthBarOffsetY: 144,
+  swordWaveReleaseProgress: 0.58,
+};
+
 
 function createGoblinEnemy(wave, isStageOne) {
   return {
@@ -113,12 +126,61 @@ function shouldSpawnEvileye(wave) {
   return spawnIndex % 4 === 2 || (wave >= 2 && Math.random() < 0.34);
 }
 
+function createKaronBoss(wave) {
+  const hp = 520 + wave * 90;
+  return {
+    type: "karon",
+    name: "karon",
+    isBoss: true,
+    x: ENEMY_BASE_X - 58,
+    y: COMBAT_LINE_Y,
+    w: 60,
+    h: 92,
+    hp,
+    maxHp: hp,
+    speed: 24,
+    damage: 28 + wave * 4,
+    range: 275,
+    cooldown: 0.45,
+    attackSpeed: 1.55,
+    animTime: 0,
+    moving: false,
+    attackAnimTimer: 0,
+    attackAnimDuration: 0.82,
+    swordWaveTarget: null,
+    swordWavePending: false,
+    paralyzeTimer: 0,
+    dead: false,
+    deathAnimTimer: 0,
+    deathAnimDuration: 0.95,
+    deathRewarded: false,
+  };
+}
+
+function shouldSpawnKaronBoss(wave) {
+  if (gameState.karonBossSpawned) return false;
+  return Number(gameState.stage) === 3
+    && wave >= gameState.maxWave
+    && gameState.spawnedInWave >= gameState.enemiesToSpawn - 1;
+}
+
 function spawnEnemy() {
   const wave = gameState.wave;
   const stage = Number(gameState.stage);
   const isStageOne = stage === 1;
 
   if (stage === 2) {
+    gameState.enemies.push(shouldSpawnEvileye(wave) ? createEvileyeEnemy(wave) : createGoblinEnemy(wave, false));
+    return;
+  }
+
+  if (stage === 3) {
+    if (shouldSpawnKaronBoss(wave)) {
+      gameState.karonBossSpawned = true;
+      gameState.enemies.push(createKaronBoss(wave));
+      return;
+    }
+
     gameState.enemies.push(shouldSpawnEvileye(wave) ? createEvileyeEnemy(wave) : createGoblinEnemy(wave, false));
     return;
   }
@@ -204,6 +266,41 @@ function updateEnemies(dt) {
       continue;
     }
 
+    if (enemy.type === "karon") {
+      const attackDuration = enemy.attackAnimDuration || 0.82;
+      const attackProgress = enemy.attackAnimTimer > 0
+        ? 1 - enemy.attackAnimTimer / attackDuration
+        : 1;
+
+      if (enemy.swordWavePending && (attackProgress >= KARON_SPRITE.swordWaveReleaseProgress || enemy.attackAnimTimer <= 0)) {
+        spawnKaronSwordWave(enemy);
+        enemy.swordWavePending = false;
+        enemy.swordWaveTarget = null;
+      }
+
+      const target = findNearestAlly(enemy.x, enemy.range);
+
+      if (target) {
+        if (enemy.cooldown <= 0 && enemy.attackAnimTimer <= 0) {
+          enemy.cooldown = enemy.attackSpeed;
+          enemy.attackAnimTimer = attackDuration;
+          enemy.swordWaveTarget = target;
+          enemy.swordWavePending = true;
+        }
+      } else {
+        enemy.x -= enemy.speed * dt;
+        enemy.moving = true;
+      }
+
+      if (enemy.x < PLAYER_BASE_X + 42) {
+        gameState.playerBaseHp -= enemy.damage * dt * 0.55;
+        enemy.x = PLAYER_BASE_X + 42;
+        enemy.moving = false;
+      }
+
+      continue;
+    }
+
     if (enemy.type === "evileye") {
       const attackDuration = enemy.attackAnimDuration || 0.78;
       const attackProgress = enemy.attackAnimTimer > 0
@@ -276,12 +373,79 @@ function updateEnemies(dt) {
 
 function canDrawStage1EnemySprite(enemy) {
   return stage1EnemySpriteReady
-    && (Number(gameState.stage) === 1 || Number(gameState.stage) === 2)
     && enemy.type === "normal";
 }
 
 function canDrawEvileyeSprite(enemy) {
   return stage2EvileyeSpriteReady && enemy.type === "evileye";
+}
+
+function canDrawKaronSprite(enemy) {
+  return karonPhase1SpriteReady && enemy.type === "karon";
+}
+
+function drawKaronSprite(enemy) {
+  if (!canDrawKaronSprite(enemy)) return false;
+
+  let anim = "idle";
+  if (enemy.dead || enemy.hp <= 0) anim = "death";
+  else if (enemy.attackAnimTimer > 0) anim = "attack";
+  else if (enemy.moving) anim = "walk";
+
+  const frameCount = KARON_SPRITE.frames[anim] || 1;
+  const fps = KARON_SPRITE.fps[anim] || 8;
+  let frame = Math.floor((enemy.animTime || 0) * fps) % frameCount;
+
+  if (anim === "attack") {
+    const duration = enemy.attackAnimDuration || 0.82;
+    const progress = 1 - Math.max(0, enemy.attackAnimTimer || 0) / duration;
+    const mappedFrame = Math.min(frameCount - 1, Math.max(0, Math.floor(progress * frameCount)));
+    frame = KARON_SPRITE.attackFrameMap[mappedFrame] ?? mappedFrame;
+  } else if (anim === "death") {
+    const duration = enemy.deathAnimDuration || 0.95;
+    const progress = 1 - Math.max(0, enemy.deathAnimTimer || 0) / duration;
+    frame = Math.min(frameCount - 1, Math.max(0, Math.floor(progress * frameCount)));
+  }
+
+  const frameW = karonPhase1Sprite.naturalWidth / KARON_SPRITE.columns;
+  const frameH = karonPhase1Sprite.naturalHeight / KARON_SPRITE.rowCount;
+  const sx = frame * frameW;
+  const sy = KARON_SPRITE.rows[anim] * frameH;
+  const dw = KARON_SPRITE.drawW;
+  const dh = KARON_SPRITE.drawH;
+  const bob = anim === "death" || enemy.paralyzeTimer > 0
+    ? 0
+    : Math.sin((enemy.animTime || 0) * 7) * 1.2;
+
+  ctx.save();
+  ctx.translate(enemy.x, enemy.y + bob);
+
+  ctx.fillStyle = "rgba(0,0,0,0.26)";
+  ctx.beginPath();
+  ctx.ellipse(0, 6, 42, 11, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  if (anim === "death") {
+    const duration = enemy.deathAnimDuration || 0.95;
+    const progress = 1 - Math.max(0, enemy.deathAnimTimer || 0) / duration;
+    ctx.globalAlpha = Math.max(0.18, 1 - progress * 0.55);
+  }
+
+  ctx.imageSmoothingEnabled = true;
+  ctx.drawImage(
+    karonPhase1Sprite,
+    sx,
+    sy,
+    frameW,
+    frameH,
+    -dw / 2,
+    -dh + 22,
+    dw,
+    dh
+  );
+
+  ctx.restore();
+  return true;
 }
 
 function drawEvileyeSprite(enemy) {
@@ -411,6 +575,22 @@ function drawStage1EnemySprite(enemy) {
 }
 
 function drawEnemy(enemy) {
+  const usedKaronSprite = drawKaronSprite(enemy);
+  if (usedKaronSprite) {
+    const isDying = enemy.dead || enemy.hp <= 0;
+    if (!isDying) {
+      drawHealthBar(
+        enemy.x,
+        enemy.y - KARON_SPRITE.healthBarOffsetY,
+        88,
+        enemy.hp,
+        enemy.maxHp,
+        "#ff4f78"
+      );
+    }
+    return;
+  }
+
   const usedEvileyeSprite = drawEvileyeSprite(enemy);
   if (usedEvileyeSprite) {
     const isDying = enemy.dead || enemy.hp <= 0;

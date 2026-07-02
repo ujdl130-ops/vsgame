@@ -32,6 +32,8 @@ function startEnemyDeath(enemy) {
   enemy.paralyzeTimer = 0;
   enemy.laserTarget = null;
   enemy.laserHitPending = false;
+  enemy.swordWaveTarget = null;
+  enemy.swordWavePending = false;
   enemy.deathAnimDuration = enemy.deathAnimDuration || 0.55;
   enemy.deathAnimTimer = enemy.deathAnimDuration;
 
