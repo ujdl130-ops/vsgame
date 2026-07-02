@@ -431,6 +431,7 @@ function drawKaronSprite(enemy) {
     ctx.globalAlpha = Math.max(0.18, 1 - progress * 0.55);
   }
 
+  ctx.scale(-1, 1);
   ctx.imageSmoothingEnabled = true;
   ctx.drawImage(
     karonPhase1Sprite,
