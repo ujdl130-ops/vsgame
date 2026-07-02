@@ -60,6 +60,12 @@ const KARON_SPRITE = {
   drawH: 172,
   healthBarOffsetY: 144,
   swordWaveReleaseProgress: 0.58,
+  drawOffsets: {
+    idle: { x: 0, y: 0 },
+    walk: { x: 0, y: 0 },
+    attack: { x: 0, y: 32 },
+    death: { x: 0, y: 0 },
+  },
 };
 
 
@@ -408,7 +414,8 @@ function drawKaronSprite(enemy) {
   const sy = KARON_SPRITE.rows[anim] * frameH;
   const dw = KARON_SPRITE.drawW;
   const dh = KARON_SPRITE.drawH;
-  const bob = anim === "death" || enemy.paralyzeTimer > 0
+  const drawOffset = KARON_SPRITE.drawOffsets[anim] || { x: 0, y: 0 };
+  const bob = anim === "death" || anim === "attack" || enemy.paralyzeTimer > 0
     ? 0
     : Math.sin((enemy.animTime || 0) * 7) * 1.2;
 
@@ -434,8 +441,8 @@ function drawKaronSprite(enemy) {
     sy,
     frameW,
     frameH,
-    -dw / 2,
-    -dh + 22,
+    -dw / 2 + drawOffset.x,
+    -dh + 22 + drawOffset.y,
     dw,
     dh
   );
