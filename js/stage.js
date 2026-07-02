@@ -249,17 +249,17 @@ function getBaseRenderConfig(isPlayer) {
   return {
     image: enemyCastleImage,
     ready: enemyCastleReady,
-    drawX: canvas.width - 208,
-    drawY: GROUND_Y - 208,
-    drawW: 198,
-    drawH: 198,
-    shadowX: canvas.width - 110,
+    drawX: canvas.width - 290,
+    drawY: GROUND_Y - 285,
+    drawW: 285,
+    drawH: 285,
+    shadowX: canvas.width - 140,
     shadowY: GROUND_Y + 2,
-    shadowW: 64,
-    shadowH: 15,
-    hpX: canvas.width - 109,
-    hpY: GROUND_Y - 148,
-    hpW: 104,
+    shadowW: 88,
+    shadowH: 18,
+    hpX: canvas.width - 141,
+    hpY: GROUND_Y - 197,
+    hpW: 148,
   };
 }
 
