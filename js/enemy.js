@@ -43,8 +43,8 @@ const EVILEYE_SPRITE = {
   rows: { fly: 1, attack: 2, death: 4 },
   frames: { fly: 6, attack: 6, death: 6 },
   fps: { fly: 8, attack: 11, death: 8 },
-  drawW: 136,
-  drawH: 102,
+  drawW: 168,
+  drawH: 112,
   flightOffsetY: 92,
   healthBarOffsetY: 186,
 };
