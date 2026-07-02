@@ -266,8 +266,8 @@ body.game-started:not(.in-lobby):not(.in-stage-select):not(.in-shop):not(.in-rec
 
 .game-options-menu {
   position: absolute;
-  top: 58px;
-  right: 16px;
+  top: 104px;
+  left: 50%;
   z-index: 8;
   display: flex;
   flex-direction: column;
@@ -281,6 +281,7 @@ body.game-started:not(.in-lobby):not(.in-stage-select):not(.in-shop):not(.in-rec
     inset 0 0 0 2px rgba(255, 248, 197, 0.12),
     0 0 0 2px rgba(5, 7, 12, 0.9),
     0 10px 20px rgba(0, 0, 0, 0.46);
+  transform: translateX(-50%);
 }
 
 .game-options-menu.is-hidden {
@@ -1040,8 +1041,8 @@ body.game-started:not(.in-lobby):not(.in-stage-select):not(.in-shop):not(.in-rec
   }
 
   .game-options-menu {
-    top: 45px;
-    right: 9px;
+    top: 74px;
+    left: 50%;
     width: 128px;
     padding: 8px;
     gap: 6px;
