@@ -30,6 +30,8 @@ function startEnemyDeath(enemy) {
   enemy.cooldown = 0;
   enemy.attackAnimTimer = 0;
   enemy.paralyzeTimer = 0;
+  enemy.laserTarget = null;
+  enemy.laserHitPending = false;
   enemy.deathAnimDuration = enemy.deathAnimDuration || 0.55;
   enemy.deathAnimTimer = enemy.deathAnimDuration;
 
@@ -39,11 +41,13 @@ function startEnemyDeath(enemy) {
   }
 }
 
-function findNearestEnemy(fromX, range) {
+function findNearestEnemy(fromX, range, options = {}) {
   let target = null;
   let bestDistance = Infinity;
+  const includeAirborne = options.includeAirborne !== false;
   for (const enemy of gameState.enemies) {
     if (!isCombatAlive(enemy)) continue;
+    if (!includeAirborne && enemy.airborne) continue;
     const distance = enemy.x - fromX;
     if (distance >= -20 && distance <= range && distance < bestDistance) {
       target = enemy;

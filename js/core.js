@@ -100,6 +100,7 @@ const ASSET_PATHS = {
   zeusStormCloudSprite: "assets/effects/zeus_storm_cloud_spritesheet.png",
   zeusStormLightningSprite: "assets/effects/zeus_storm_lightning_spritesheet.png",
   stage1EnemySprite: "assets/animations/enemy/stage1_goblin_spritesheet.png",
+  stage2EvileyeSprite: "assets/animations/enemy/stage2_flying_eye_spritesheet.png",
   stage1Background: "assets/maps/stage1/stage1_forest_bg_v2.png",
   stageBackgroundTemplate: "assets/maps/stage{stage}/stage{stage}_background.png",
   playerCastleTemplate: "assets/maps/stage{stage}/player_castle_stage1.png",
@@ -220,6 +221,15 @@ loadGameImage(
   [ASSET_PATHS.stage1EnemySprite],
   (ready) => { stage1EnemySpriteReady = ready; },
   "Stage 1 enemy sprite"
+);
+
+const stage2EvileyeSprite = new Image();
+let stage2EvileyeSpriteReady = false;
+loadGameImage(
+  stage2EvileyeSprite,
+  [ASSET_PATHS.stage2EvileyeSprite],
+  (ready) => { stage2EvileyeSpriteReady = ready; },
+  "Stage 2 evileye sprite"
 );
 
 function resolveStageAssetPath(stageNumber, templateKey) {

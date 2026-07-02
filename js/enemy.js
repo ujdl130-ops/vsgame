@@ -37,12 +37,94 @@ const STAGE1_ENEMY_SPRITE = {
   },
 };
 
+const EVILEYE_SPRITE = {
+  columns: 6,
+  rowCount: 5,
+  rows: { fly: 1, attack: 2, death: 4 },
+  frames: { fly: 6, attack: 6, death: 6 },
+  fps: { fly: 8, attack: 11, death: 8 },
+  drawW: 136,
+  drawH: 102,
+  flightOffsetY: 48,
+  healthBarOffsetY: 142,
+};
+
+
+function createGoblinEnemy(wave, isStageOne) {
+  return {
+    type: "normal",
+    name: "goblin",
+    x: ENEMY_BASE_X - 45,
+    y: COMBAT_LINE_Y,
+    w: 34,
+    h: 54,
+    hp: 55 + wave * 8,
+    maxHp: 55 + wave * 8,
+    speed: 43 + wave * 3,
+    damage: 10 + wave * 2,
+    range: 38,
+    cooldown: 0,
+    attackSpeed: 0.78,
+    animTime: 0,
+    moving: false,
+    attackAnimTimer: 0,
+    attackAnimDuration: isStageOne ? 0.48 : 0.48,
+    paralyzeTimer: 0,
+    dead: false,
+    deathAnimTimer: 0,
+    deathAnimDuration: isStageOne ? 0.8 : 0.8,
+    deathRewarded: false,
+  };
+}
+
+function createEvileyeEnemy(wave) {
+  const hp = 48 + wave * 7;
+  return {
+    type: "evileye",
+    name: "evileye",
+    airborne: true,
+    x: ENEMY_BASE_X - 45,
+    y: COMBAT_LINE_Y,
+    w: 42,
+    h: 84,
+    hp,
+    maxHp: hp,
+    speed: 34 + wave * 2,
+    damage: 8 + wave * 2,
+    range: 190,
+    cooldown: 0,
+    attackSpeed: 1.45,
+    animTime: 0,
+    moving: false,
+    attackAnimTimer: 0,
+    attackAnimDuration: 0.78,
+    laserTarget: null,
+    laserHitPending: false,
+    paralyzeTimer: 0,
+    dead: false,
+    deathAnimTimer: 0,
+    deathAnimDuration: 0.8,
+    deathRewarded: false,
+  };
+}
+
+function shouldSpawnEvileye(wave) {
+  const spawnIndex = gameState.spawnedInWave || 0;
+  return spawnIndex % 4 === 2 || (wave >= 2 && Math.random() < 0.34);
+}
 
 function spawnEnemy() {
   const wave = gameState.wave;
-  const isStageOne = Number(gameState.stage) === 1;
-  const isBrute = !isStageOne && wave >= 2 && Math.random() < 0.32;
-  const isFast = !isStageOne && wave >= 3 && Math.random() < 0.25;
+  const stage = Number(gameState.stage);
+  const isStageOne = stage === 1;
+
+  if (stage === 2) {
+    gameState.enemies.push(shouldSpawnEvileye(wave) ? createEvileyeEnemy(wave) : createGoblinEnemy(wave, false));
+    return;
+  }
+
+  const isBrute = stage >= 3 && wave >= 2 && Math.random() < 0.32;
+  const isFast = stage >= 3 && wave >= 3 && Math.random() < 0.25;
 
   if (isBrute) {
     gameState.enemies.push({
@@ -71,27 +153,32 @@ function spawnEnemy() {
     return;
   }
 
+  if (!isFast) {
+    gameState.enemies.push(createGoblinEnemy(wave, isStageOne));
+    return;
+  }
+
   gameState.enemies.push({
-    type: isFast ? "fast" : "normal",
+    type: "fast",
     x: ENEMY_BASE_X - 45,
     y: COMBAT_LINE_Y,
-    w: isFast ? 30 : 34,
-    h: isFast ? 46 : 54,
-    hp: isFast ? 36 + wave * 6 : 55 + wave * 8,
-    maxHp: isFast ? 36 + wave * 6 : 55 + wave * 8,
-    speed: isFast ? 74 + wave * 3 : 43 + wave * 3,
-    damage: isFast ? 7 + wave : 10 + wave * 2,
+    w: 30,
+    h: 46,
+    hp: 36 + wave * 6,
+    maxHp: 36 + wave * 6,
+    speed: 74 + wave * 3,
+    damage: 7 + wave,
     range: 38,
     cooldown: 0,
-    attackSpeed: isFast ? 0.52 : 0.78,
+    attackSpeed: 0.52,
     animTime: 0,
     moving: false,
     attackAnimTimer: 0,
-    attackAnimDuration: isStageOne ? 0.48 : 0.34,
+    attackAnimDuration: 0.34,
     paralyzeTimer: 0,
     dead: false,
     deathAnimTimer: 0,
-    deathAnimDuration: isStageOne ? 0.8 : 0.55,
+    deathAnimDuration: 0.55,
     deathRewarded: false,
   });
 }
@@ -114,6 +201,49 @@ function updateEnemies(dt) {
     if (enemy.paralyzeTimer > 0) {
       enemy.animTime = Math.max(0, (enemy.animTime || 0) - dt);
       enemy.attackAnimTimer = 0;
+      continue;
+    }
+
+    if (enemy.type === "evileye") {
+      const attackDuration = enemy.attackAnimDuration || 0.78;
+      const attackProgress = enemy.attackAnimTimer > 0
+        ? 1 - enemy.attackAnimTimer / attackDuration
+        : 1;
+
+      if (enemy.laserHitPending && (attackProgress >= 0.58 || enemy.attackAnimTimer <= 0)) {
+        const laserTarget = isCombatAlive(enemy.laserTarget)
+          ? enemy.laserTarget
+          : findNearestAlly(enemy.x, enemy.range + 20);
+
+        if (laserTarget) {
+          laserTarget.hp -= enemy.damage;
+          spawnHit(laserTarget.x, laserTarget.y - 44, "#c56dff");
+        }
+
+        enemy.laserHitPending = false;
+        enemy.laserTarget = null;
+      }
+
+      const target = findNearestAlly(enemy.x, enemy.range);
+
+      if (target) {
+        if (enemy.cooldown <= 0 && enemy.attackAnimTimer <= 0) {
+          enemy.cooldown = enemy.attackSpeed;
+          enemy.attackAnimTimer = attackDuration;
+          enemy.laserTarget = target;
+          enemy.laserHitPending = true;
+        }
+      } else {
+        enemy.x -= enemy.speed * dt;
+        enemy.moving = true;
+      }
+
+      if (enemy.x < PLAYER_BASE_X + 28) {
+        gameState.playerBaseHp -= enemy.damage * dt * 0.65;
+        enemy.x = PLAYER_BASE_X + 28;
+        enemy.moving = false;
+      }
+
       continue;
     }
 
@@ -146,8 +276,77 @@ function updateEnemies(dt) {
 
 function canDrawStage1EnemySprite(enemy) {
   return stage1EnemySpriteReady
-    && Number(gameState.stage) === 1
+    && (Number(gameState.stage) === 1 || Number(gameState.stage) === 2)
     && enemy.type === "normal";
+}
+
+function canDrawEvileyeSprite(enemy) {
+  return stage2EvileyeSpriteReady && enemy.type === "evileye";
+}
+
+function drawEvileyeSprite(enemy) {
+  if (!canDrawEvileyeSprite(enemy)) return false;
+
+  let anim = "fly";
+  if (enemy.dead || enemy.hp <= 0) anim = "death";
+  else if (enemy.attackAnimTimer > 0) anim = "attack";
+
+  const frameCount = EVILEYE_SPRITE.frames[anim] || 1;
+  const fps = EVILEYE_SPRITE.fps[anim] || 8;
+  let frame = Math.floor((enemy.animTime || 0) * fps) % frameCount;
+
+  if (anim === "attack") {
+    const duration = enemy.attackAnimDuration || 0.78;
+    const progress = 1 - Math.max(0, enemy.attackAnimTimer || 0) / duration;
+    frame = Math.min(frameCount - 1, Math.max(0, Math.floor(progress * frameCount)));
+  } else if (anim === "death") {
+    const duration = enemy.deathAnimDuration || 0.8;
+    const progress = 1 - Math.max(0, enemy.deathAnimTimer || 0) / duration;
+    frame = Math.min(frameCount - 1, Math.max(0, Math.floor(progress * frameCount)));
+  }
+
+  const frameW = stage2EvileyeSprite.naturalWidth / EVILEYE_SPRITE.columns;
+  const frameH = stage2EvileyeSprite.naturalHeight / EVILEYE_SPRITE.rowCount;
+  const sx = frame * frameW;
+  const sy = EVILEYE_SPRITE.rows[anim] * frameH;
+  const dw = EVILEYE_SPRITE.drawW;
+  const dh = EVILEYE_SPRITE.drawH;
+  const hover = anim === "death" || enemy.paralyzeTimer > 0
+    ? 0
+    : Math.sin((enemy.animTime || 0) * 9) * 4;
+
+  ctx.save();
+  ctx.translate(enemy.x, enemy.y);
+
+  ctx.fillStyle = "rgba(0,0,0,0.18)";
+  ctx.beginPath();
+  ctx.ellipse(0, 4, 30, 8, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.translate(0, -EVILEYE_SPRITE.flightOffsetY + hover);
+
+  if (anim === "death") {
+    const duration = enemy.deathAnimDuration || 0.8;
+    const progress = 1 - Math.max(0, enemy.deathAnimTimer || 0) / duration;
+    ctx.globalAlpha = Math.max(0.2, 1 - progress * 0.45);
+  }
+
+  ctx.scale(-1, 1);
+  ctx.imageSmoothingEnabled = false;
+  ctx.drawImage(
+    stage2EvileyeSprite,
+    sx,
+    sy,
+    frameW,
+    frameH,
+    -dw / 2,
+    -dh + 8,
+    dw,
+    dh
+  );
+
+  ctx.restore();
+  return true;
 }
 
 function drawStage1EnemySprite(enemy) {
@@ -212,6 +411,22 @@ function drawStage1EnemySprite(enemy) {
 }
 
 function drawEnemy(enemy) {
+  const usedEvileyeSprite = drawEvileyeSprite(enemy);
+  if (usedEvileyeSprite) {
+    const isDying = enemy.dead || enemy.hp <= 0;
+    if (!isDying) {
+      drawHealthBar(
+        enemy.x,
+        enemy.y - EVILEYE_SPRITE.healthBarOffsetY,
+        48,
+        enemy.hp,
+        enemy.maxHp,
+        "#ff6868"
+      );
+    }
+    return;
+  }
+
   const usedStage1Sprite = drawStage1EnemySprite(enemy);
   if (usedStage1Sprite) {
     const isDying = enemy.dead || enemy.hp <= 0;

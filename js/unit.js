@@ -308,7 +308,7 @@ function updateUnits(dt) {
     if ((unit.type === "guard" || unit.type === "thief") && unit.attackImpactPending && (attackProgress >= 0.48 || unit.attackAnimTimer <= 0)) {
       const attackTarget = isCombatAlive(unit.attackTarget)
         ? unit.attackTarget
-        : findNearestEnemy(unit.x, unit.range + 12);
+        : findNearestEnemy(unit.x, unit.range + 12, { includeAirborne: false });
 
       if (attackTarget) {
         attackTarget.hp -= unit.damage;
@@ -326,7 +326,9 @@ function updateUnits(dt) {
       }
     }
 
-    const target = findNearestEnemy(unit.x, unit.range);
+    const target = findNearestEnemy(unit.x, unit.range, {
+      includeAirborne: !(unit.type === "guard" || unit.type === "thief"),
+    });
 
     if (target) {
       if (unit.cooldown <= 0) {
