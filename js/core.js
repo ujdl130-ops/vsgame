@@ -101,7 +101,7 @@ const ASSET_PATHS = {
   zeusStormLightningSprite: "assets/effects/zeus_storm_lightning_spritesheet.png",
   stage1EnemySprite: "assets/animations/enemy/stage1_goblin_spritesheet.png",
   stage2EvileyeSprite: "assets/animations/enemy/stage2_flying_eye_spritesheet.png",
-  karonPhase1Sprite: "assets/animations/Boss_Karon/karon_phase1_spritesheet.png",
+  karonPhase1Sprite: "assets/animations/Boss_Karon/karon_phase1_spritesheet_zeus_style.png",
   stage1Background: "assets/maps/stage1/stage1_forest_bg_v2.png",
   stageBackgroundTemplate: "assets/maps/stage{stage}/stage{stage}_background.png",
   playerCastleTemplate: "assets/maps/stage{stage}/player_castle_stage1.png",
