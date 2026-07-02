@@ -17,10 +17,10 @@ const STAGE_CONFIGS = {
   },
   3: {
     title: "마왕군 전초기지",
-    maxWave: 3,
+    maxWave: 1,
     startRunestone: 0,
     enemyBaseHp: 150,
-    baseEnemiesToSpawn: 8,
+    baseEnemiesToSpawn: 1,
   },
 };
 

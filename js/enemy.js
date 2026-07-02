@@ -159,9 +159,7 @@ function createKaronBoss(wave) {
 
 function shouldSpawnKaronBoss(wave) {
   if (gameState.karonBossSpawned) return false;
-  return Number(gameState.stage) === 3
-    && wave >= gameState.maxWave
-    && gameState.spawnedInWave >= gameState.enemiesToSpawn - 1;
+  return Number(gameState.stage) === 3 && wave === 1 && gameState.spawnedInWave === 0;
 }
 
 function spawnEnemy() {
@@ -178,10 +176,7 @@ function spawnEnemy() {
     if (shouldSpawnKaronBoss(wave)) {
       gameState.karonBossSpawned = true;
       gameState.enemies.push(createKaronBoss(wave));
-      return;
     }
-
-    gameState.enemies.push(shouldSpawnEvileye(wave) ? createEvileyeEnemy(wave) : createGoblinEnemy(wave, false));
     return;
   }
 
