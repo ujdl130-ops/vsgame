@@ -6964,6 +6964,36 @@ body:not(.game-started) .game-wrap {
   transform: translateY(-3px) scale(0.98);
 }
 
+.shop-item-card.is-purchased {
+  cursor: default;
+  filter: grayscale(0.72) brightness(0.66);
+}
+
+.shop-item-card.is-purchased:hover,
+.shop-item-card.is-purchased:active {
+  transform: none;
+  filter: grayscale(0.72) brightness(0.66);
+}
+
+.shop-item-card.is-purchased::after {
+  content: "오늘 구매 완료";
+  position: absolute;
+  left: 14%;
+  right: 14%;
+  top: 43%;
+  z-index: 4;
+  display: block !important;
+  padding: 7px 5px;
+  color: #fff4d6;
+  font-size: clamp(10px, 0.86vw, 15px);
+  font-weight: 1000;
+  text-align: center;
+  text-shadow: 0 2px 2px #25162e;
+  background: rgba(44, 29, 24, 0.88);
+  border: 2px solid rgba(255, 225, 163, 0.72);
+  pointer-events: none;
+}
+
 .shop-notice {
   width: min(66vw, 900px);
   margin: 0 auto;

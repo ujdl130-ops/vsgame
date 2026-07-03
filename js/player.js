@@ -22,9 +22,6 @@ function normalizePlayerData(savedData = {}) {
     summonTickets: Math.max(0, Number(savedData.summonTickets) || 0),
     commonEssence: Math.max(0, Number(savedData.commonEssence) || 0),
     soldierFragments: Math.max(0, Number(savedData.soldierFragments) || 0),
-    shopDailyPurchases: savedData.shopDailyPurchases && typeof savedData.shopDailyPurchases === "object"
-      ? { ...savedData.shopDailyPurchases }
-      : {},
     essences,
     ownedGods: savedData.ownedGods && typeof savedData.ownedGods === "object" ? { ...savedData.ownedGods } : {},
     entitlements: savedData.entitlements && typeof savedData.entitlements === "object" ? { ...savedData.entitlements } : {},

@@ -265,6 +265,8 @@ const SHOP_PURCHASE_RULES = {
 let selectedShopCategory = "recommend";
 let selectedShopItemName = "";
 let selectedShopItem = null;
+let shopSessionBalances = null;
+const shopSessionDailyPurchases = {};
 
 const SHOP_ASSET_PATHS = {
   categoryNormal: [
@@ -442,11 +444,21 @@ function updateShopWallet() {
   const progress = typeof playerProgress !== "undefined"
     ? playerProgress
     : window.PlayerAPI?.getPlayerData?.() || {};
+  if (!shopSessionBalances) {
+    shopSessionBalances = {
+      gold: Math.max(0, Number(progress.gold) || 0),
+      diamonds: Math.max(0, Number(progress.diamonds) || 0),
+      summonTickets: Math.max(0, Number(progress.summonTickets) || 0),
+      commonEssence: Math.max(0, Number(progress.commonEssence) || 0),
+      soldierFragments: Math.max(0, Number(progress.soldierFragments) || 0),
+    };
+  }
   const walletValues = {
-    shopGoldAmount: progress.gold,
-    shopDiamondAmount: progress.diamonds,
-    shopEssenceAmount: progress.commonEssence,
-    shopSoldierEssenceAmount: progress.soldierFragments,
+    shopGoldAmount: shopSessionBalances.gold,
+    shopDiamondAmount: shopSessionBalances.diamonds,
+    shopTicketAmount: shopSessionBalances.summonTickets,
+    shopEssenceAmount: shopSessionBalances.commonEssence,
+    shopSoldierEssenceAmount: shopSessionBalances.soldierFragments,
   };
 
   Object.entries(walletValues).forEach(([elementId, amount]) => {
@@ -515,16 +527,19 @@ function renderShopUI() {
 
     card.type = "button";
     const isDetailedOffer = selectedShopCategory === "package" || selectedShopCategory === "diamond";
+    const isPurchased = isShopItemPurchased(item);
     card.className = [
       "shop-item-card",
       isDetailedOffer ? "is-detailed-offer" : "",
       selectedShopCategory === "package" ? "is-package" : "",
       selectedShopCategory === "diamond" ? "is-diamond" : "",
       selectedShopCategory === "growth" ? "is-growth" : "",
+      isPurchased ? "is-purchased" : "",
     ].filter(Boolean).join(" ");
     card.dataset.itemId = item.id;
     card.dataset.category = selectedShopCategory;
-    card.setAttribute("aria-label", itemName);
+    card.disabled = isPurchased;
+    card.setAttribute("aria-label", isPurchased ? `${itemName}, 오늘 구매 완료` : itemName);
 
     setShopBackground(
       card,
@@ -548,6 +563,14 @@ function renderShopUI() {
 
     itemWrap.appendChild(card);
   });
+}
+
+function isShopItemPurchased(item) {
+  const rule = item ? SHOP_PURCHASE_RULES[item.id] : null;
+  return Boolean(
+    rule?.daily
+    && shopSessionDailyPurchases[item.id] === getLocalDateKey()
+  );
 }
 
 function renderGrowthCardContent(card, item) {
@@ -695,6 +718,7 @@ function confirmShopPurchase() {
   }
 
   updateShopWallet();
+  renderShopUI();
 
   if (shopNotice) {
     shopNotice.textContent = `${selectedShopItemName || "상품"} 구매 완료!`;
@@ -713,32 +737,36 @@ function executeCurrentShopPurchase() {
   }
 
   const today = getLocalDateKey();
-  const dailyPurchases = playerProgress.shopDailyPurchases || {};
-  if (rule.daily && dailyPurchases[selectedShopItem.id] === today) {
+  if (rule.daily && shopSessionDailyPurchases[selectedShopItem.id] === today) {
     return { success: false, message: "이 상품은 오늘 이미 구매했습니다." };
   }
 
   const cost = rule.cost || {};
-  if ((cost.gold || 0) > playerProgress.gold) {
+  if ((cost.gold || 0) > shopSessionBalances.gold) {
     return { success: false, message: "골드가 부족합니다." };
   }
-  if ((cost.diamonds || 0) > playerProgress.diamonds) {
+  if ((cost.diamonds || 0) > shopSessionBalances.diamonds) {
     return { success: false, message: "다이아가 부족합니다." };
   }
 
-  playerProgress.gold -= Number(cost.gold) || 0;
-  playerProgress.diamonds -= Number(cost.diamonds) || 0;
-  grantPlayerRewards(rule.rewards || {});
+  shopSessionBalances.gold -= Number(cost.gold) || 0;
+  shopSessionBalances.diamonds -= Number(cost.diamonds) || 0;
+  applyShopSessionRewards(rule.rewards || {});
 
   if (rule.daily) {
-    playerProgress.shopDailyPurchases = {
-      ...dailyPurchases,
-      [selectedShopItem.id]: today,
-    };
-    saveProgress();
+    shopSessionDailyPurchases[selectedShopItem.id] = today;
   }
 
   return { success: true };
+}
+
+function applyShopSessionRewards(rewards) {
+  ["gold", "diamonds", "summonTickets", "commonEssence", "soldierFragments"].forEach((key) => {
+    shopSessionBalances[key] = Math.max(
+      0,
+      Number(shopSessionBalances[key] || 0) + Number(rewards[key] || 0)
+    );
+  });
 }
 
 function getLocalDateKey() {
