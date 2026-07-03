@@ -241,8 +241,30 @@ const SHOP_CATEGORY_ITEMS = {
     name: `월정액 상품 ${index + 1}`,
   })),
 };
+
+const SHOP_PURCHASE_RULES = {
+  "package-fate": { rewards: { diamonds: 500, summonTickets: 2, commonEssence: 3 } },
+  "package-calling": { rewards: { summonTickets: 10, commonEssence: 3 } },
+  "package-blessing": { rewards: { commonEssence: 10, soldierFragments: 100 } },
+  "package-offering": { rewards: { diamonds: 2000, summonTickets: 10, commonEssence: 10 } },
+  "package-legacy": { rewards: { diamonds: 3000, summonTickets: 20, commonEssence: 20, soldierFragments: 300 } },
+  "diamond-pouch": { rewards: { diamonds: 500 } },
+  "diamond-box": { rewards: { diamonds: 1100 } },
+  "diamond-vault": { rewards: { diamonds: 2300 } },
+  "diamond-sacred-vault": { rewards: { diamonds: 6000 } },
+  "growth-essence-free": { rewards: { commonEssence: 1 }, daily: true },
+  "growth-essence-3": { cost: { diamonds: 200 }, rewards: { commonEssence: 3 }, daily: true },
+  "growth-essence-5": { cost: { diamonds: 300 }, rewards: { commonEssence: 5 }, daily: true },
+  "growth-essence-10": { cost: { diamonds: 500 }, rewards: { commonEssence: 10 }, daily: true },
+  "growth-soldier-20": { cost: { gold: 20000 }, rewards: { soldierFragments: 20 }, daily: true },
+  "growth-soldier-50": { cost: { gold: 50000 }, rewards: { soldierFragments: 50 }, daily: true },
+  "growth-soldier-100": { cost: { gold: 100000 }, rewards: { soldierFragments: 100 }, daily: true },
+  "growth-soldier-200": { cost: { gold: 200000 }, rewards: { soldierFragments: 200 }, daily: true },
+};
+
 let selectedShopCategory = "recommend";
 let selectedShopItemName = "";
+let selectedShopItem = null;
 
 const SHOP_ASSET_PATHS = {
   categoryNormal: [
@@ -521,7 +543,7 @@ function renderShopUI() {
     }
 
     card.addEventListener("click", () => {
-      openShopPurchasePopup(itemName);
+      openShopPurchasePopup(itemName, item);
     });
 
     itemWrap.appendChild(card);
@@ -638,11 +660,12 @@ function bindShopPurchasePopup() {
   }
 }
 
-function openShopPurchasePopup(itemName) {
+function openShopPurchasePopup(itemName, item = null) {
   const popup = document.getElementById("shopPurchasePopup");
   const text = document.getElementById("shopPurchaseText");
 
   selectedShopItemName = itemName || "선택한 상품";
+  selectedShopItem = item;
 
   if (text) {
     text.textContent = `${selectedShopItemName}을(를) 구매하시겠습니까?`;
@@ -663,10 +686,67 @@ function closeShopPurchasePopup() {
 }
 
 function confirmShopPurchase() {
+  const result = executeCurrentShopPurchase();
+
+  if (!result.success) {
+    if (shopNotice) shopNotice.textContent = result.message;
+    closeShopPurchasePopup();
+    return;
+  }
+
+  updateShopWallet();
+
   if (shopNotice) {
     shopNotice.textContent = `${selectedShopItemName || "상품"} 구매 완료!`;
   }
   closeShopPurchasePopup();
+}
+
+function executeCurrentShopPurchase() {
+  if (!selectedShopItem) {
+    return { success: false, message: "상품 정보를 찾을 수 없습니다." };
+  }
+
+  const rule = SHOP_PURCHASE_RULES[selectedShopItem.id];
+  if (!rule) {
+    return { success: false, message: "상품 보상은 준비 중입니다." };
+  }
+
+  const today = getLocalDateKey();
+  const dailyPurchases = playerProgress.shopDailyPurchases || {};
+  if (rule.daily && dailyPurchases[selectedShopItem.id] === today) {
+    return { success: false, message: "이 상품은 오늘 이미 구매했습니다." };
+  }
+
+  const cost = rule.cost || {};
+  if ((cost.gold || 0) > playerProgress.gold) {
+    return { success: false, message: "골드가 부족합니다." };
+  }
+  if ((cost.diamonds || 0) > playerProgress.diamonds) {
+    return { success: false, message: "다이아가 부족합니다." };
+  }
+
+  playerProgress.gold -= Number(cost.gold) || 0;
+  playerProgress.diamonds -= Number(cost.diamonds) || 0;
+  grantPlayerRewards(rule.rewards || {});
+
+  if (rule.daily) {
+    playerProgress.shopDailyPurchases = {
+      ...dailyPurchases,
+      [selectedShopItem.id]: today,
+    };
+    saveProgress();
+  }
+
+  return { success: true };
+}
+
+function getLocalDateKey() {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, "0");
+  const day = String(now.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
 }
 
 function showShopItemNotice(itemName) {
