@@ -7317,7 +7317,7 @@ body:not(.game-started) .game-wrap {
 .shop-growth-price {
   left: 16%;
   right: 16%;
-  bottom: 8.5%;
+  bottom: 11%;
   height: 13%;
   display: flex;
   align-items: center;
