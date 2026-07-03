@@ -65,9 +65,6 @@ const KARON_HUMAN_SPRITE = {
   swordWaveReleaseProgress: 0.58,
   shadowW: 46,
   shadowH: 11,
-  sourceCrops: {
-    walk: { right: 32 },
-  },
   drawOffsets: {
     idle: { x: 0, y: 0 },
     walk: { x: 0, y: 0 },
