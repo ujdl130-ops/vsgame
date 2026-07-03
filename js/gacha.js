@@ -58,7 +58,7 @@ function showRecruit() {
     updateButtons();
   }
 
-  updateRecruitTicketWallet();
+  updateRecruitWallet();
   bindRecruitTicketPopup();
 
   if (recruitNotice) {
@@ -66,13 +66,42 @@ function showRecruit() {
   }
 }
 
-function getRecruitTicketBalance() {
-  return Math.max(0, Number(window.ShopAPI?.getSessionBalance?.("summonTickets")) || 0);
+function getRecruitBalance(key) {
+  return Math.max(0, Number(window.ShopAPI?.getSessionBalance?.(key)) || 0);
 }
 
-function updateRecruitTicketWallet() {
-  const amount = document.getElementById("recruitTicketAmount");
-  if (amount) amount.textContent = getRecruitTicketBalance().toLocaleString("ko-KR");
+function updateRecruitWallet() {
+  const walletValues = {
+    recruitGoldAmount: getRecruitBalance("gold"),
+    recruitDiamondAmount: getRecruitBalance("diamonds"),
+    recruitTicketAmount: getRecruitBalance("summonTickets"),
+    recruitEssenceAmount: getRecruitBalance("commonEssence"),
+    recruitSoldierEssenceAmount: getRecruitBalance("soldierFragments"),
+  };
+
+  Object.entries(walletValues).forEach(([elementId, value]) => {
+    const amount = document.getElementById(elementId);
+    if (amount) amount.textContent = value.toLocaleString("ko-KR");
+  });
+
+  updateRecruitPullCosts();
+}
+
+function updateRecruitPullCosts() {
+  [
+    { button: document.getElementById("recruitPullOneBtn"), count: 1, diamonds: 100 },
+    { button: document.getElementById("recruitPullTenBtn"), count: 10, diamonds: 1000 },
+  ].forEach(({ button, count, diamonds }) => {
+    const cost = button?.querySelector(".recruit-pull-cost");
+    if (!cost) return;
+    const useTicket = getRecruitBalance("summonTickets") >= count;
+    cost.innerHTML = `
+      <img src="assets/icons/${useTicket ? "ticket" : "diamond"}.png" alt="">
+      <strong>${(useTicket ? count : diamonds).toLocaleString("ko-KR")}</strong>
+    `;
+    cost.classList.toggle("uses-ticket", useTicket);
+    cost.classList.toggle("uses-diamond", !useTicket);
+  });
 }
 
 function openRecruitTicketPopup() {
@@ -104,18 +133,23 @@ function bindRecruitTicketPopup() {
 
 function requestRecruitPull(count) {
   const pullCount = count === 10 ? 10 : 1;
-  if (getRecruitTicketBalance() < pullCount) {
+  const diamondCost = pullCount === 10 ? 1000 : 100;
+  const useTicket = getRecruitBalance("summonTickets") >= pullCount;
+  const currencyKey = useTicket ? "summonTickets" : "diamonds";
+  const cost = useTicket ? pullCount : diamondCost;
+
+  if (getRecruitBalance(currencyKey) < cost) {
     openRecruitTicketPopup();
     return false;
   }
 
-  const spent = window.ShopAPI?.spendSessionCurrency?.("summonTickets", pullCount);
+  const spent = window.ShopAPI?.spendSessionCurrency?.(currencyKey, cost);
   if (!spent) {
     openRecruitTicketPopup();
     return false;
   }
 
-  updateRecruitTicketWallet();
+  updateRecruitWallet();
   const results = pullCount === 10 ? summonGodDescentTen() : summonGodDescentOnce();
   renderGachaResult(results);
   startRecruitDoorAnimation(pullCount, results);
@@ -341,5 +375,5 @@ window.GachaAPI = {
   renderGachaResult,
   openGachaScreen,
   requestRecruitPull,
-  updateRecruitTicketWallet,
+  updateRecruitWallet,
 };

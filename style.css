@@ -4309,6 +4309,33 @@ body:not(.game-started) .game-wrap {
   font-weight: 900;
 }
 
+.recruit-pull-cost {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin-left: 12px;
+  color: #fff4cf;
+  font-size: 0.72em;
+  font-weight: 900;
+  letter-spacing: 0;
+  vertical-align: middle;
+}
+
+.recruit-pull-cost img {
+  width: 22px;
+  height: 22px;
+  object-fit: contain;
+  filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.55));
+}
+
+.recruit-pull-cost strong {
+  font-variant-numeric: tabular-nums;
+}
+
+.recruit-pull-cost.uses-diamond strong {
+  color: #8bdcff;
+}
+
 .recruit-pull-btn:hover {
   filter: brightness(1.14);
   transform: translateY(-1px);
@@ -6866,6 +6893,50 @@ body:not(.game-started) .game-wrap {
   .recruit-top-actions .recruit-wallet,
   .recruit-top-actions .recruit-close-btn {
     position: static;
+  }
+
+  .recruit-top-actions .recruit-wallet {
+    display: flex;
+    gap: clamp(6px, 0.55vw, 10px);
+    width: auto;
+  }
+
+  .recruit-top-actions .recruit-currency {
+    min-width: clamp(105px, 7vw, 140px);
+    min-height: clamp(42px, 4.8vh, 54px);
+    border-radius: 5px;
+  }
+}
+
+@media (max-width: 820px) {
+  .recruit-wallet {
+    left: 18px;
+    right: 18px;
+    display: flex;
+    width: auto;
+    gap: 4px;
+  }
+
+  .recruit-currency {
+    flex: 1;
+    min-width: 0;
+    grid-template-columns: 25px minmax(0, 1fr);
+    padding: 4px 6px;
+    border-radius: 5px;
+  }
+
+  .recruit-currency img {
+    width: 25px;
+    height: 25px;
+  }
+
+  .recruit-currency span {
+    display: none;
+  }
+
+  .recruit-currency strong {
+    font-size: 11px;
+    text-align: right;
   }
 }
 
