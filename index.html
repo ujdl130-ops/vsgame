@@ -143,35 +143,37 @@
     <div class="shop-scanline" aria-hidden="true"></div>
 
     <button id="shopBackBtn" class="shop-ui-btn shop-back-btn" type="button">← 로비</button>
-    <button id="shopCloseBtn" class="shop-ui-btn shop-close-btn" type="button">닫기</button>
+    <div class="shop-top-actions">
+      <aside class="shop-wallet" aria-label="보유 재화">
+        <div class="shop-wallet-currency">
+          <img src="assets/icons/gold.png" alt="">
+          <span>골드</span>
+          <strong id="shopGoldAmount">0</strong>
+        </div>
+        <div class="shop-wallet-currency">
+          <img src="assets/icons/diamond.png" alt="">
+          <span>다이아</span>
+          <strong id="shopDiamondAmount">0</strong>
+        </div>
+        <div class="shop-wallet-currency">
+          <img src="assets/icons/ticket.png" alt="">
+          <span>신 모집권</span>
+          <strong id="shopTicketAmount">0</strong>
+        </div>
+        <div class="shop-wallet-currency">
+          <img src="assets/icons/essence_all.png" alt="">
+          <span>신의 정수</span>
+          <strong id="shopEssenceAmount">0</strong>
+        </div>
+        <div class="shop-wallet-currency">
+          <img src="assets/icons/essence_soldier.png" alt="">
+          <span>병사 정수</span>
+          <strong id="shopSoldierEssenceAmount">0</strong>
+        </div>
+      </aside>
 
-    <aside class="shop-wallet" aria-label="보유 재화">
-      <div class="shop-wallet-currency">
-        <img src="assets/icons/gold.png" alt="">
-        <span>골드</span>
-        <strong id="shopGoldAmount">0</strong>
-      </div>
-      <div class="shop-wallet-currency">
-        <img src="assets/icons/diamond.png" alt="">
-        <span>다이아</span>
-        <strong id="shopDiamondAmount">0</strong>
-      </div>
-      <div class="shop-wallet-currency">
-        <img src="assets/icons/ticket.png" alt="">
-        <span>신 모집권</span>
-        <strong id="shopTicketAmount">0</strong>
-      </div>
-      <div class="shop-wallet-currency">
-        <img src="assets/icons/essence_all.png" alt="">
-        <span>신의 정수</span>
-        <strong id="shopEssenceAmount">0</strong>
-      </div>
-      <div class="shop-wallet-currency">
-        <img src="assets/icons/essence_soldier.png" alt="">
-        <span>병사 정수</span>
-        <strong id="shopSoldierEssenceAmount">0</strong>
-      </div>
-    </aside>
+      <button id="shopCloseBtn" class="shop-ui-btn shop-close-btn" type="button">닫기</button>
+    </div>
 
     <div class="shop-layout" aria-label="상점 UI">
       <aside id="shopCategoryList" class="shop-category-list" aria-label="상점 카테고리"></aside>

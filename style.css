@@ -6778,6 +6778,10 @@ body:not(.game-started) .game-wrap {
   top: clamp(16px, 2.4vh, 34px);
 }
 
+.shop-top-actions {
+  display: contents;
+}
+
 .shop-wallet {
   position: absolute;
   z-index: 8;
@@ -6787,6 +6791,23 @@ body:not(.game-started) .game-wrap {
   align-items: center;
   gap: clamp(6px, 0.55vw, 10px);
   pointer-events: none;
+}
+
+@media (min-width: 1001px) {
+  .shop-top-actions {
+    position: absolute;
+    z-index: 8;
+    top: clamp(16px, 2.4vh, 34px);
+    right: clamp(16px, 2.4vw, 42px);
+    display: flex;
+    align-items: center;
+    gap: clamp(12px, 1vw, 18px);
+  }
+
+  .shop-top-actions .shop-close-btn,
+  .shop-top-actions .shop-wallet {
+    position: static;
+  }
 }
 
 .shop-wallet-currency {
