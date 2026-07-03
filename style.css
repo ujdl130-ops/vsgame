@@ -7254,6 +7254,97 @@ body:not(.game-started) .game-wrap {
   font-size: clamp(10px, 0.86vw, 15px);
 }
 
+.shop-growth-image,
+.shop-growth-title,
+.shop-growth-amount,
+.shop-growth-limit,
+.shop-growth-price {
+  position: absolute;
+  z-index: 2;
+  pointer-events: none;
+}
+
+.shop-growth-image {
+  top: 7%;
+  left: 50%;
+  width: 42%;
+  height: 38%;
+  object-fit: contain;
+  transform: translateX(-50%);
+  filter: drop-shadow(0 5px 5px rgba(79, 47, 20, 0.38));
+}
+
+.shop-growth-title {
+  top: 45%;
+  left: 12%;
+  right: 12%;
+  overflow: hidden;
+  color: #54331c;
+  font-size: clamp(11px, 0.92vw, 16px);
+  font-weight: 1000;
+  line-height: 1.2;
+  text-align: center;
+  text-overflow: ellipsis;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.75);
+  white-space: nowrap;
+}
+
+.shop-growth-amount {
+  top: 56%;
+  left: 15%;
+  right: 15%;
+  color: #3f2718;
+  font-size: clamp(13px, 1.08vw, 19px);
+  font-weight: 1000;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+.shop-growth-limit {
+  top: 67%;
+  left: 18%;
+  right: 18%;
+  padding: 3px 5px;
+  color: #795735;
+  font-size: clamp(9px, 0.7vw, 12px);
+  font-weight: 900;
+  text-align: center;
+  background: rgba(122, 77, 33, 0.08);
+  border-top: 1px solid rgba(117, 74, 33, 0.17);
+  border-bottom: 1px solid rgba(117, 74, 33, 0.17);
+}
+
+.shop-growth-price {
+  left: 16%;
+  right: 16%;
+  bottom: 8.5%;
+  height: 13%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(4px, 0.4vw, 7px);
+  color: #fff4d6;
+  font-size: clamp(12px, 1vw, 18px);
+  font-weight: 1000;
+  font-variant-numeric: tabular-nums;
+  text-shadow: 0 2px 2px #25162e;
+}
+
+.shop-growth-price img {
+  width: clamp(17px, 1.4vw, 25px);
+  aspect-ratio: 1;
+  object-fit: contain;
+}
+
+.shop-growth-price.is-free {
+  color: #fff1a9;
+}
+
+.shop-item-card.is-growth:hover .shop-growth-image {
+  transform: translateX(-50%) scale(1.05);
+  filter: drop-shadow(0 7px 6px rgba(79, 47, 20, 0.48)) brightness(1.06);
+}
+
 /* 상점 본문은 좌측 메뉴 폭과 관계없이 화면 정중앙을 기준으로 배치합니다. */
 @media (min-width: 1001px) {
   .shop-layout {

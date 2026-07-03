@@ -164,14 +164,77 @@ const SHOP_CATEGORY_ITEMS = {
     },
   ],
   growth: [
-    { id: "growth-common-essence", name: "공통 신의 정수" },
-    { id: "growth-soldier-piece", name: "병사 조각" },
-    { id: "growth-box", name: "성장 재화 상자" },
-    { id: "growth-exp", name: "경험의 서" },
-    { id: "growth-gold", name: "성장 골드" },
-    { id: "growth-ascension", name: "승급 재료" },
-    { id: "growth-stone", name: "강화석" },
-    { id: "growth-soldier-box", name: "병사 성장 상자" },
+    {
+      id: "growth-essence-free",
+      name: "공통 신의 정수",
+      amount: "×1",
+      image: "assets/icons/essence_all.png",
+      price: "무료",
+      dailyLimit: "1일 1회",
+    },
+    {
+      id: "growth-essence-3",
+      name: "공통 신의 정수",
+      amount: "×3",
+      image: "assets/icons/essence_all.png",
+      price: "200",
+      priceIcon: "assets/icons/diamond.png",
+      dailyLimit: "1일 1회",
+    },
+    {
+      id: "growth-essence-5",
+      name: "공통 신의 정수",
+      amount: "×5",
+      image: "assets/icons/essence_all.png",
+      price: "300",
+      priceIcon: "assets/icons/diamond.png",
+      dailyLimit: "1일 1회",
+    },
+    {
+      id: "growth-essence-10",
+      name: "공통 신의 정수",
+      amount: "×10",
+      image: "assets/icons/essence_all.png",
+      price: "500",
+      priceIcon: "assets/icons/diamond.png",
+      dailyLimit: "1일 1회",
+    },
+    {
+      id: "growth-soldier-20",
+      name: "병사 조각",
+      amount: "×20",
+      image: "assets/icons/essence_soldier.png",
+      price: "20,000",
+      priceIcon: "assets/icons/gold.png",
+      dailyLimit: "1일 1회",
+    },
+    {
+      id: "growth-soldier-50",
+      name: "병사 조각",
+      amount: "×50",
+      image: "assets/icons/essence_soldier.png",
+      price: "50,000",
+      priceIcon: "assets/icons/gold.png",
+      dailyLimit: "1일 1회",
+    },
+    {
+      id: "growth-soldier-100",
+      name: "병사 조각",
+      amount: "×100",
+      image: "assets/icons/essence_soldier.png",
+      price: "100,000",
+      priceIcon: "assets/icons/gold.png",
+      dailyLimit: "1일 1회",
+    },
+    {
+      id: "growth-soldier-200",
+      name: "병사 조각",
+      amount: "×200",
+      image: "assets/icons/essence_soldier.png",
+      price: "200,000",
+      priceIcon: "assets/icons/gold.png",
+      dailyLimit: "1일 1회",
+    },
   ],
   monthly: Array.from({ length: SHOP_ITEM_COUNT }, (_, index) => ({
     id: `monthly-${index + 1}`,
@@ -404,7 +467,9 @@ function renderShopUI() {
 
   categoryItems.slice(0, visibleItemCount).forEach((item) => {
     const card = document.createElement("button");
-    const itemName = item.name;
+    const itemName = selectedShopCategory === "growth"
+      ? `${item.name} ${item.amount}`
+      : item.name;
 
     card.type = "button";
     const isDetailedOffer = selectedShopCategory === "package" || selectedShopCategory === "diamond";
@@ -424,7 +489,9 @@ function renderShopUI() {
       selectedShopCategory === "growth" ? SHOP_ASSET_PATHS.growthCard : SHOP_ASSET_PATHS.itemCard
     );
 
-    if (isDetailedOffer) {
+    if (selectedShopCategory === "growth") {
+      renderGrowthCardContent(card, item);
+    } else if (isDetailedOffer) {
       renderDetailedOfferCardContent(card, item);
     } else {
       const name = document.createElement("span");
@@ -439,6 +506,43 @@ function renderShopUI() {
 
     itemWrap.appendChild(card);
   });
+}
+
+function renderGrowthCardContent(card, item) {
+  const image = document.createElement("img");
+  image.className = "shop-growth-image";
+  image.src = item.image;
+  image.alt = "";
+  image.draggable = false;
+
+  const title = document.createElement("strong");
+  title.className = "shop-growth-title";
+  title.textContent = item.name;
+
+  const amount = document.createElement("span");
+  amount.className = "shop-growth-amount";
+  amount.textContent = item.amount;
+
+  const limit = document.createElement("span");
+  limit.className = "shop-growth-limit";
+  limit.textContent = item.dailyLimit;
+
+  const price = document.createElement("span");
+  price.className = `shop-growth-price${item.priceIcon ? "" : " is-free"}`;
+
+  if (item.priceIcon) {
+    const priceIcon = document.createElement("img");
+    priceIcon.src = item.priceIcon;
+    priceIcon.alt = "";
+    priceIcon.draggable = false;
+    price.appendChild(priceIcon);
+  }
+
+  const priceText = document.createElement("span");
+  priceText.textContent = item.price;
+  price.appendChild(priceText);
+
+  card.append(image, title, amount, limit, price);
 }
 
 function renderDetailedOfferCardContent(card, item) {
