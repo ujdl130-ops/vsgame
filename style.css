@@ -7356,7 +7356,7 @@ body:not(.game-started) .game-wrap {
 .shop-package-price {
   left: 13%;
   right: 13%;
-  bottom: 8.5%;
+  bottom: calc(8.5% + 2px);
   height: 9%;
   display: flex;
   align-items: center;
@@ -7392,28 +7392,82 @@ body:not(.game-started) .game-wrap {
   pointer-events: none;
 }
 
-.shop-monthly-image {
+.shop-recommend-badge {
   position: absolute;
-  z-index: 2;
+  z-index: 5;
   top: 5%;
-  left: 50%;
-  width: 42%;
-  height: 24%;
-  object-fit: contain;
-  filter: drop-shadow(0 6px 6px rgba(71, 43, 18, 0.42));
-  transform: translateX(-50%);
+  left: 7%;
+  min-width: 3.7em;
+  padding: 5px 8px;
+  color: #fff7d2;
+  font-size: clamp(9px, 0.72vw, 12px);
+  font-weight: 1000;
+  line-height: 1;
+  text-align: center;
+  background: linear-gradient(180deg, #d95736, #8f2119);
+  border: 2px solid #ffe09a;
+  border-radius: 4px;
+  box-shadow: 0 3px 0 rgba(66, 20, 15, 0.82);
+  text-shadow: 0 1px 1px rgba(58, 17, 10, 0.9);
   pointer-events: none;
 }
 
+.shop-recommend-badge.is-hot {
+  background: linear-gradient(180deg, #ef7835, #b43816);
+}
+
+.shop-recommend-badge.is-new {
+  background: linear-gradient(180deg, #4a9f75, #216044);
+}
+
+.shop-recommend-limit {
+  position: absolute;
+  z-index: 3;
+  left: 18%;
+  right: 18%;
+  bottom: 18.5%;
+  padding: 3px 5px;
+  color: #6b4425;
+  font-size: clamp(9px, 0.72vw, 12px);
+  font-weight: 1000;
+  text-align: center;
+  background: rgba(126, 78, 34, 0.12);
+  border-top: 1px solid rgba(113, 73, 35, 0.26);
+  border-bottom: 1px solid rgba(113, 73, 35, 0.26);
+  pointer-events: none;
+}
+
+.shop-item-card.is-recommend .shop-package-contents {
+  bottom: 25%;
+}
+
+.shop-monthly-image {
+  position: absolute;
+  z-index: 2;
+  top: 4%;
+  left: 50%;
+  width: 39.9%;
+  height: 21.85%;
+  object-fit: contain;
+  filter: drop-shadow(0 6px 6px rgba(71, 43, 18, 0.42));
+  transform: translate(-50%, 16px);
+  pointer-events: none;
+}
+
+.shop-item-card.is-monthly:first-child .shop-monthly-image {
+  width: 40.7%;
+  height: 22.29%;
+}
+
 .shop-monthly-title {
-  top: 29%;
+  top: calc(27% + 8px);
   font-size: clamp(15px, 1.3vw, 22px);
 }
 
 .shop-monthly-duration {
   position: absolute;
   z-index: 3;
-  top: 36%;
+  top: 0;
   left: 50%;
   padding: 4px 14px;
   color: #fff4cf;
@@ -7426,27 +7480,30 @@ body:not(.game-started) .game-wrap {
   border-radius: 999px;
   box-shadow: 0 2px 0 rgba(47, 25, 15, 0.75);
   text-shadow: 0 1px 1px #2b170d;
-  transform: translateX(-50%);
+  transform: translate(-50%, -72%);
   pointer-events: none;
 }
 
 .shop-monthly-sections {
   position: absolute;
   z-index: 2;
-  top: 44%;
+  top: calc(36% + 6px);
   left: 13%;
   right: 13%;
-  bottom: 18%;
+  bottom: 20%;
   display: flex;
   flex-direction: column;
-  gap: clamp(7px, 0.8vh, 11px);
+  gap: clamp(4px, 0.5vh, 7px);
   pointer-events: none;
 }
 
 .shop-monthly-section {
   display: flex;
   flex-direction: column;
-  gap: clamp(2px, 0.35vh, 4px);
+  gap: clamp(1px, 0.2vh, 3px);
+  padding: clamp(3px, 0.35vh, 5px);
+  background: rgba(255, 246, 215, 0.24);
+  border: 1px solid rgba(113, 73, 35, 0.24);
 }
 
 .shop-monthly-section-title {
@@ -7459,6 +7516,20 @@ body:not(.game-started) .game-wrap {
   text-align: center;
   background: linear-gradient(90deg, transparent, rgba(173, 111, 48, 0.2), transparent);
   border-bottom: 1px solid rgba(113, 73, 35, 0.3);
+}
+
+.shop-item-card.is-monthly {
+  overflow: visible;
+}
+
+.shop-item-card.is-monthly .shop-package-content-row {
+  min-height: clamp(18px, 2vh, 23px);
+  padding-top: 1px;
+  padding-bottom: 1px;
+}
+
+.shop-item-card.is-monthly .shop-package-content-icon {
+  width: clamp(17px, 1.2vw, 23px);
 }
 
 .shop-item-card.has-first-purchase-bonus {
@@ -7644,6 +7715,12 @@ body:not(.game-started) .game-wrap {
   }
 
   .shop-item-list[data-category="diamond"] {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    width: min(66vw, 1280px);
+    margin-inline: auto;
+  }
+
+  .shop-item-list[data-category="recommend"] {
     grid-template-columns: repeat(4, minmax(0, 1fr));
     width: min(66vw, 1280px);
     margin-inline: auto;

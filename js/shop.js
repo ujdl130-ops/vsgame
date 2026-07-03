@@ -60,11 +60,66 @@ const SHOP_CATEGORY_LIST = [
 const SHOP_ITEM_COUNT = 5;
 const SHOP_CATEGORY_ITEMS = {
   recommend: [
-    { id: "recommend-free", name: "무료 상품", sourceCategory: "event" },
-    { id: "recommend-package", name: "인기 패키지", sourceCategory: "package" },
-    { id: "recommend-diamond", name: "추천 다이아", sourceCategory: "diamond" },
-    { id: "recommend-growth", name: "성장 지원 상품", sourceCategory: "growth" },
-    { id: "recommend-monthly", name: "월정액", sourceCategory: "monthly" },
+    {
+      id: "recommend-free",
+      name: "오늘의 무료 보상",
+      image: "assets/icons/free.png",
+      price: "무료",
+      dailyLimit: "1일 1회",
+      contents: [
+        { icon: "assets/icons/diamond.png", label: "다이아", amount: "×50" },
+        { icon: "assets/icons/gold.png", label: "골드", amount: "×10,000" },
+      ],
+    },
+    {
+      id: "recommend-fate",
+      purchaseRuleId: "package-fate",
+      name: "운명의 시작",
+      image: "assets/icons/package_1.png",
+      price: "₩5,900",
+      badge: "BEST",
+      contents: [
+        { icon: "assets/icons/diamond.png", label: "다이아", amount: "×500" },
+        { icon: "assets/icons/ticket.png", label: "모집권", amount: "×3" },
+        { icon: "assets/icons/essence_all.png", label: "공통 신의 정수", amount: "×3" },
+        { icon: "assets/icons/gold.png", label: "골드", amount: "×30,000" },
+      ],
+    },
+    {
+      id: "recommend-gods-contract",
+      purchaseRuleId: "monthly-gods-contract",
+      name: "신들의 계약",
+      image: "assets/icons/monthly_1.png",
+      price: "₩9,900",
+      badge: "HOT",
+      duration: "30일",
+      immediateContents: [
+        { icon: "assets/icons/diamond.png", label: "다이아", amount: "×500" },
+      ],
+      dailyContents: [
+        { icon: "assets/icons/diamond.png", label: "다이아", amount: "×50" },
+        { icon: "assets/icons/essence_all.png", label: "공통 신의 정수", amount: "×1" },
+      ],
+    },
+    {
+      id: "recommend-legacy",
+      purchaseRuleId: "package-legacy",
+      name: "올림포스의 유산",
+      image: "assets/icons/package_5.png",
+      price: "₩49,900",
+      badge: "NEW",
+      contents: [
+        { icon: "assets/icons/diamond.png", label: "다이아", amount: "×5,000" },
+        { icon: "assets/icons/ticket.png", label: "모집권", amount: "×50" },
+        { icon: "assets/icons/essence_all.png", label: "공통 신의 정수", amount: "×50" },
+        { icon: "assets/icons/gold.png", label: "골드", amount: "×1,000,000" },
+      ],
+      firstPurchaseBonus: {
+        icon: "assets/icons/diamond.png",
+        label: "첫 구매 보너스",
+        amount: "+500💎",
+      },
+    },
   ],
   package: [
     {
@@ -281,6 +336,7 @@ const SHOP_CATEGORY_ITEMS = {
 };
 
 const SHOP_PURCHASE_RULES = {
+  "recommend-free": { rewards: { gold: 10000, diamonds: 50 }, daily: true },
   "package-fate": { rewards: { gold: 30000, diamonds: 500, summonTickets: 3, commonEssence: 3 } },
   "package-calling": { rewards: { gold: 80000, diamonds: 1000, summonTickets: 5, commonEssence: 5 } },
   "package-blessing": { rewards: { gold: 200000, diamonds: 1500, summonTickets: 10, commonEssence: 10 } },
@@ -586,21 +642,24 @@ function renderShopUI() {
 
     card.type = "button";
     const isDetailedOffer = (
-      selectedShopCategory === "package"
+      selectedShopCategory === "recommend"
+      || selectedShopCategory === "package"
       || selectedShopCategory === "diamond"
       || selectedShopCategory === "monthly"
     );
     const isPurchased = isShopItemPurchased(item);
+    const itemRuleId = item.purchaseRuleId || item.id;
     const hasFirstPurchaseBonus = Boolean(
-      item.firstPurchaseBonus && !hasClaimedFirstPurchaseBonus(item.id)
+      item.firstPurchaseBonus && !hasClaimedFirstPurchaseBonus(itemRuleId)
     );
     card.className = [
       "shop-item-card",
       isDetailedOffer ? "is-detailed-offer" : "",
+      selectedShopCategory === "recommend" ? "is-recommend" : "",
       selectedShopCategory === "package" ? "is-package" : "",
       selectedShopCategory === "diamond" ? "is-diamond" : "",
       selectedShopCategory === "growth" ? "is-growth" : "",
-      selectedShopCategory === "monthly" ? "is-monthly" : "",
+      (selectedShopCategory === "monthly" || item.immediateContents) ? "is-monthly" : "",
       isPurchased ? "is-purchased" : "",
       hasFirstPurchaseBonus ? "has-first-purchase-bonus" : "",
     ].filter(Boolean).join(" ");
@@ -634,7 +693,7 @@ function renderShopUI() {
 }
 
 function isShopItemPurchased(item) {
-  const rule = item ? SHOP_PURCHASE_RULES[item.id] : null;
+  const rule = item ? SHOP_PURCHASE_RULES[item.purchaseRuleId || item.id] : null;
   return Boolean(
     rule?.daily
     && shopSessionDailyPurchases[item.id] === getLocalDateKey()
@@ -698,7 +757,8 @@ function renderDetailedOfferCardContent(card, item) {
   contentList.className = "shop-package-contents";
 
   let firstPurchaseBadge = null;
-  if (item.firstPurchaseBonus && !hasClaimedFirstPurchaseBonus(item.id)) {
+  const itemRuleId = item.purchaseRuleId || item.id;
+  if (item.firstPurchaseBonus && !hasClaimedFirstPurchaseBonus(itemRuleId)) {
     firstPurchaseBadge = document.createElement("span");
     firstPurchaseBadge.className = "shop-first-purchase-badge";
     firstPurchaseBadge.textContent = "첫 구매 보너스 +500💎";
@@ -731,6 +791,18 @@ function renderDetailedOfferCardContent(card, item) {
   price.textContent = item.price;
 
   card.append(image, title, contentList, price);
+  if (item.dailyLimit) {
+    const limit = document.createElement("span");
+    limit.className = "shop-recommend-limit";
+    limit.textContent = item.dailyLimit;
+    card.appendChild(limit);
+  }
+  if (item.badge) {
+    const badge = document.createElement("span");
+    badge.className = `shop-recommend-badge is-${item.badge.toLowerCase()}`;
+    badge.textContent = item.badge;
+    card.appendChild(badge);
+  }
   if (firstPurchaseBadge) card.appendChild(firstPurchaseBadge);
 }
 
@@ -794,6 +866,12 @@ function renderMonthlyContractCardContent(card, item) {
   price.textContent = item.price;
 
   card.append(image, title, duration, sections, price);
+  if (item.badge) {
+    const badge = document.createElement("span");
+    badge.className = `shop-recommend-badge is-${item.badge.toLowerCase()}`;
+    badge.textContent = item.badge;
+    card.appendChild(badge);
+  }
 }
 
 function hasClaimedFirstPurchaseBonus(itemId) {
@@ -882,7 +960,8 @@ function executeCurrentShopPurchase() {
     return { success: false, message: "상품 정보를 찾을 수 없습니다." };
   }
 
-  const rule = SHOP_PURCHASE_RULES[selectedShopItem.id];
+  const ruleId = selectedShopItem.purchaseRuleId || selectedShopItem.id;
+  const rule = SHOP_PURCHASE_RULES[ruleId];
   if (!rule) {
     return { success: false, message: "상품 보상은 준비 중입니다." };
   }
@@ -906,7 +985,7 @@ function executeCurrentShopPurchase() {
   const rewards = { ...(rule.rewards || {}) };
   const shouldGrantFirstPurchaseBonus = Boolean(
     rule.firstPurchaseBonus
-    && !hasClaimedFirstPurchaseBonus(selectedShopItem.id)
+    && !hasClaimedFirstPurchaseBonus(ruleId)
   );
   if (shouldGrantFirstPurchaseBonus) {
     Object.entries(rule.firstPurchaseBonus).forEach(([key, amount]) => {
