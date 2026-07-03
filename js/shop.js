@@ -169,6 +169,9 @@ const SHOP_CATEGORY_ITEMS = {
     { id: "growth-box", name: "성장 재화 상자" },
     { id: "growth-exp", name: "경험의 서" },
     { id: "growth-gold", name: "성장 골드" },
+    { id: "growth-ascension", name: "승급 재료" },
+    { id: "growth-stone", name: "강화석" },
+    { id: "growth-soldier-box", name: "병사 성장 상자" },
   ],
   monthly: Array.from({ length: SHOP_ITEM_COUNT }, (_, index) => ({
     id: `monthly-${index + 1}`,
@@ -202,6 +205,10 @@ const SHOP_ASSET_PATHS = {
     "assets/maps/shop/category/item_card.png",
     "assets/maps/store/item_card.png",
     "assets/maps/shop/item_card.png",
+  ],
+  growthCard: [
+    "assets/maps/shop/category/growshop_card.png",
+    "assets/maps/shop/growshop_card.png",
   ],
 };
 
@@ -393,8 +400,9 @@ function renderShopUI() {
   });
 
   const categoryItems = SHOP_CATEGORY_ITEMS[selectedShopCategory] || [];
+  const visibleItemCount = selectedShopCategory === "growth" ? 8 : SHOP_ITEM_COUNT;
 
-  categoryItems.slice(0, SHOP_ITEM_COUNT).forEach((item) => {
+  categoryItems.slice(0, visibleItemCount).forEach((item) => {
     const card = document.createElement("button");
     const itemName = item.name;
 
@@ -405,12 +413,16 @@ function renderShopUI() {
       isDetailedOffer ? "is-detailed-offer" : "",
       selectedShopCategory === "package" ? "is-package" : "",
       selectedShopCategory === "diamond" ? "is-diamond" : "",
+      selectedShopCategory === "growth" ? "is-growth" : "",
     ].filter(Boolean).join(" ");
     card.dataset.itemId = item.id;
     card.dataset.category = selectedShopCategory;
     card.setAttribute("aria-label", itemName);
 
-    setShopBackground(card, SHOP_ASSET_PATHS.itemCard);
+    setShopBackground(
+      card,
+      selectedShopCategory === "growth" ? SHOP_ASSET_PATHS.growthCard : SHOP_ASSET_PATHS.itemCard
+    );
 
     if (isDetailedOffer) {
       renderDetailedOfferCardContent(card, item);

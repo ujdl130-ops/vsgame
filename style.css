@@ -7236,6 +7236,24 @@ body:not(.game-started) .game-wrap {
   filter: drop-shadow(0 10px 9px rgba(71, 43, 18, 0.5)) brightness(1.06);
 }
 
+.shop-item-card.is-growth {
+  aspect-ratio: 833 / 964;
+  min-height: 0;
+  max-height: none;
+}
+
+.shop-item-card.is-growth::before {
+  background-size: 123% auto;
+}
+
+.shop-item-card.is-growth .shop-item-name {
+  left: 15%;
+  right: 15%;
+  bottom: 8%;
+  height: 13%;
+  font-size: clamp(10px, 0.86vw, 15px);
+}
+
 /* 상점 본문은 좌측 메뉴 폭과 관계없이 화면 정중앙을 기준으로 배치합니다. */
 @media (min-width: 1001px) {
   .shop-layout {
@@ -7294,6 +7312,13 @@ body:not(.game-started) .game-wrap {
   .shop-item-list[data-category="diamond"] {
     grid-template-columns: repeat(4, minmax(0, 1fr));
     width: min(66vw, 1280px);
+    margin-inline: auto;
+  }
+
+  .shop-item-list[data-category="growth"] {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    width: min(54vw, 1050px);
+    gap: clamp(8px, 1vh, 13px) clamp(10px, 1vw, 18px);
     margin-inline: auto;
   }
 
