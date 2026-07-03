@@ -73,6 +73,25 @@ const KARON_HUMAN_SPRITE = {
   },
   frameOverrides: {
     attack: {
+      2: {
+        sourceX: 1536,
+        sourceY: 408,
+        sourceW: 512,
+        sourceH: 204,
+        drawW: 408,
+      },
+      3: {
+        sourceX: 2048,
+        sourceY: 408,
+        sourceW: 512,
+        sourceH: 204,
+        drawW: 408,
+      },
+      4: {
+        sourceFrame: 4,
+        sourceFrameSpan: 2,
+        drawW: 408,
+      },
       5: {
         sourceFrame: 4,
         sourceFrameSpan: 2,
@@ -618,10 +637,10 @@ function drawKaronSprite(enemy) {
   const sourceFrameSpan = frameOverride.sourceFrameSpan || 1;
   const sourceW = frameOverride.sourceW || frameW * sourceFrameSpan;
   const sourceH = frameOverride.sourceH || frameH;
-  const sx = (sourceFrame % spec.columns) * frameW;
-  const sy = anim === "transform"
+  const sx = frameOverride.sourceX ?? (sourceFrame % spec.columns) * frameW;
+  const sy = frameOverride.sourceY ?? (anim === "transform"
     ? Math.floor(sourceFrame / spec.columns) * frameH
-    : (spec.rows[anim] || 0) * frameH;
+    : (spec.rows[anim] || 0) * frameH);
   const dw = frameOverride.drawW || spec.drawW;
   const dh = frameOverride.drawH || spec.drawH;
   const baseDrawOffset = (spec.drawOffsets && spec.drawOffsets[anim]) || { x: 0, y: 0 };
