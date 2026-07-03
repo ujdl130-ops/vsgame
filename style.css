@@ -7187,6 +7187,16 @@ body:not(.game-started) .game-wrap {
 
 .shop-category-label {
   white-space: nowrap;
+  transform: translateY(-2px);
+}
+
+.shop-category-btn.is-selected .shop-category-label {
+  transform: translateY(3px);
+}
+
+.shop-category-icon.is-emoji {
+  font-family: "Segoe UI Emoji", "Apple Color Emoji", sans-serif;
+  text-shadow: 0 2px 2px rgba(0, 0, 0, 0.72);
 }
 
 .shop-item-card::before {

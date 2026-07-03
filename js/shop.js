@@ -5,7 +5,8 @@ const SHOP_CATEGORY_LIST = [
   {
     id: "recommend",
     label: "추천",
-    fallbackIcon: "★",
+    fallbackIcon: "👍",
+    useEmoji: true,
     iconPaths: [
       "assets/maps/store/category/icon_recommend.png",
       "assets/maps/shop/category/icon_recommend.png",
@@ -16,7 +17,8 @@ const SHOP_CATEGORY_LIST = [
   {
     id: "package",
     label: "패키지",
-    fallbackIcon: "▣",
+    fallbackIcon: "🎒",
+    useEmoji: true,
     iconPaths: [
       "assets/maps/store/category/icon_recommend.png",
       "assets/maps/shop/category/icon_recommend.png",
@@ -25,7 +27,8 @@ const SHOP_CATEGORY_LIST = [
   {
     id: "diamond",
     label: "다이아",
-    fallbackIcon: "◆",
+    fallbackIcon: "💎",
+    useEmoji: true,
     iconPaths: [
       "assets/maps/store/category/icon_money.png",
       "assets/maps/shop/category/icon_money.png",
@@ -36,7 +39,8 @@ const SHOP_CATEGORY_LIST = [
   {
     id: "growth",
     label: "성장",
-    fallbackIcon: "✦",
+    fallbackIcon: "💪",
+    useEmoji: true,
     iconPaths: [
       "assets/maps/store/category/icon_fragment.png",
       "assets/maps/shop/category/icon_fragment.png",
@@ -47,7 +51,8 @@ const SHOP_CATEGORY_LIST = [
   {
     id: "monthly",
     label: "월정액",
-    fallbackIcon: "◈",
+    fallbackIcon: "📅",
+    useEmoji: true,
     iconPaths: [
       "assets/maps/store/category/icon_item.png",
       "assets/maps/shop/category/icon_item.png",
@@ -451,6 +456,10 @@ function setShopIcon(iconElement, category) {
   if (!iconElement || !category) return;
 
   iconElement.textContent = category.fallbackIcon || "";
+  if (category.useEmoji) {
+    iconElement.classList.add("is-emoji");
+    return;
+  }
 
   resolveShopAsset(category.iconPaths || [], (src) => {
     if (!src) return;
