@@ -101,7 +101,7 @@ const KARON_TRANSFORM_SPRITE = {
   rowCount: 5,
   frameW: 256,
   frameH: 204,
-  totalFrames: 24,
+  totalFrames: 12,
   fps: { transform: 15 },
   drawW: 236,
   drawH: 188,
