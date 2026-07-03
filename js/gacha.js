@@ -58,14 +58,68 @@ function showRecruit() {
     updateButtons();
   }
 
-  const goldAmount = document.getElementById("recruitGoldAmount");
-  const diamondAmount = document.getElementById("recruitDiamondAmount");
-  if (goldAmount) goldAmount.textContent = Number(playerProgress.gold || 0).toLocaleString("ko-KR");
-  if (diamondAmount) diamondAmount.textContent = Number(playerProgress.diamonds || 0).toLocaleString("ko-KR");
+  updateRecruitTicketWallet();
+  bindRecruitTicketPopup();
 
   if (recruitNotice) {
     recruitNotice.innerHTML = "<strong>SSR 확률 3%</strong><span>중복 신 획득 시 해당 신의 정수로 변환됩니다.</span>";
   }
+}
+
+function getRecruitTicketBalance() {
+  return Math.max(0, Number(window.ShopAPI?.getSessionBalance?.("summonTickets")) || 0);
+}
+
+function updateRecruitTicketWallet() {
+  const amount = document.getElementById("recruitTicketAmount");
+  if (amount) amount.textContent = getRecruitTicketBalance().toLocaleString("ko-KR");
+}
+
+function openRecruitTicketPopup() {
+  const popup = document.getElementById("recruitTicketPopup");
+  if (popup) popup.classList.remove("is-hidden");
+}
+
+function closeRecruitTicketPopup() {
+  const popup = document.getElementById("recruitTicketPopup");
+  if (popup) popup.classList.add("is-hidden");
+}
+
+function bindRecruitTicketPopup() {
+  const popup = document.getElementById("recruitTicketPopup");
+  const closeBtn = document.getElementById("recruitTicketPopupCloseBtn");
+  const shopBtn = document.getElementById("recruitTicketPopupShopBtn");
+  if (!popup || popup.dataset.bound === "true") return;
+
+  popup.dataset.bound = "true";
+  closeBtn?.addEventListener("click", closeRecruitTicketPopup);
+  shopBtn?.addEventListener("click", () => {
+    closeRecruitTicketPopup();
+    showShop();
+  });
+  popup.addEventListener("click", (event) => {
+    if (event.target === popup) closeRecruitTicketPopup();
+  });
+}
+
+function requestRecruitPull(count) {
+  const pullCount = count === 10 ? 10 : 1;
+  if (getRecruitTicketBalance() < pullCount) {
+    openRecruitTicketPopup();
+    return false;
+  }
+
+  const spent = window.ShopAPI?.spendSessionCurrency?.("summonTickets", pullCount);
+  if (!spent) {
+    openRecruitTicketPopup();
+    return false;
+  }
+
+  updateRecruitTicketWallet();
+  const results = pullCount === 10 ? summonGodDescentTen() : summonGodDescentOnce();
+  renderGachaResult(results);
+  startRecruitDoorAnimation(pullCount, results);
+  return true;
 }
 
 function getRecruitThreeStarResult(count) {
@@ -286,4 +340,6 @@ window.GachaAPI = {
   summonGodDescentTen,
   renderGachaResult,
   openGachaScreen,
+  requestRecruitPull,
+  updateRecruitTicketWallet,
 };

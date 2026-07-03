@@ -74,20 +74,16 @@
     <div class="recruit-divine-overlay" aria-hidden="true"></div>
 
     <button id="recruitBackBtn" class="recruit-ui-btn recruit-back-btn" type="button">← 로비</button>
-    <button id="recruitCloseBtn" class="recruit-ui-btn recruit-close-btn" type="button">닫기</button>
-
-    <aside class="recruit-wallet" aria-label="보유 재화">
-      <div class="recruit-currency">
-        <img src="assets/icons/gold.png" alt="">
-        <span>골드</span>
-        <strong id="recruitGoldAmount">0</strong>
-      </div>
-      <div class="recruit-currency">
-        <img src="assets/icons/diamonds.png" alt="">
-        <span>다이아</span>
-        <strong id="recruitDiamondAmount">0</strong>
-      </div>
-    </aside>
+    <div class="recruit-top-actions">
+      <aside class="recruit-wallet" aria-label="보유 재화">
+        <div class="recruit-currency">
+          <img src="assets/icons/ticket.png" alt="">
+          <span>신 모집권</span>
+          <strong id="recruitTicketAmount">0</strong>
+        </div>
+      </aside>
+      <button id="recruitCloseBtn" class="recruit-ui-btn recruit-close-btn" type="button">닫기</button>
+    </div>
 
     <div class="recruit-frame">
       <div class="recruit-command-area">
@@ -99,6 +95,17 @@
           <strong>SSR 확률 3%</strong>
           <span>중복 신 획득 시 해당 신의 정수로 변환됩니다.</span>
         </p>
+      </div>
+    </div>
+
+    <div id="recruitTicketPopup" class="recruit-ticket-popup is-hidden" role="dialog" aria-modal="true" aria-labelledby="recruitTicketPopupTitle">
+      <div class="recruit-ticket-popup-window">
+        <h2 id="recruitTicketPopupTitle">모집권이 부족합니다</h2>
+        <p>신 모집권을 상점에서 확인하시겠습니까?</p>
+        <div class="recruit-ticket-popup-actions">
+          <button id="recruitTicketPopupCloseBtn" class="recruit-ticket-popup-btn is-close" type="button">닫기</button>
+          <button id="recruitTicketPopupShopBtn" class="recruit-ticket-popup-btn is-shop" type="button">상점으로 이동</button>
+        </div>
       </div>
     </div>
 

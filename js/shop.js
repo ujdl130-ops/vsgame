@@ -1022,6 +1022,18 @@ function applyShopSessionRewards(rewards) {
   });
 }
 
+function getShopSessionBalance(key) {
+  return Math.max(0, Number(shopSessionBalances?.[key]) || 0);
+}
+
+function spendShopSessionCurrency(key, amount) {
+  const cost = Math.max(0, Number(amount) || 0);
+  if (!shopSessionBalances || getShopSessionBalance(key) < cost) return false;
+  shopSessionBalances[key] -= cost;
+  updateShopWallet();
+  return true;
+}
+
 function getLocalDateKey() {
   const now = new Date();
   const year = now.getFullYear();
@@ -1047,4 +1059,6 @@ window.ShopAPI = {
   renderShopItems,
   openShopScreen,
   updateShopWallet,
+  getSessionBalance: getShopSessionBalance,
+  spendSessionCurrency: spendShopSessionCurrency,
 };
