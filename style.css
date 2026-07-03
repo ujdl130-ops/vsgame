@@ -7368,6 +7368,34 @@ body:not(.game-started) .game-wrap {
   text-shadow: 0 2px 2px #25162e, 0 0 7px rgba(255, 222, 142, 0.35);
 }
 
+.shop-first-purchase-badge {
+  position: absolute;
+  z-index: 5;
+  top: 1.5%;
+  left: 50%;
+  width: 88%;
+  padding: clamp(5px, 0.55vh, 8px) 5px;
+  color: #fff8c9;
+  font-size: clamp(10px, 0.82vw, 14px);
+  font-weight: 1000;
+  line-height: 1.1;
+  text-align: center;
+  white-space: nowrap;
+  background: linear-gradient(180deg, #ef5c35, #a92316);
+  border: 2px solid #ffe49a;
+  border-radius: 999px;
+  box-shadow:
+    0 3px 0 rgba(78, 20, 13, 0.9),
+    0 0 12px rgba(255, 198, 62, 0.8);
+  text-shadow: 0 2px 1px rgba(73, 18, 8, 0.9);
+  transform: translate(-50%, -45%);
+  pointer-events: none;
+}
+
+.shop-item-card.has-first-purchase-bonus {
+  overflow: visible;
+}
+
 .shop-item-card.is-detailed-offer:hover .shop-package-image {
   filter: drop-shadow(0 10px 9px rgba(71, 43, 18, 0.5)) brightness(1.06);
 }

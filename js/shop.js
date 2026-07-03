@@ -74,8 +74,9 @@ const SHOP_CATEGORY_ITEMS = {
       price: "₩5,900",
       contents: [
         { icon: "assets/icons/diamond.png", label: "다이아", amount: "×500" },
-        { icon: "assets/icons/ticket.png", label: "신 모집권", amount: "×2" },
+        { icon: "assets/icons/ticket.png", label: "모집권", amount: "×3" },
         { icon: "assets/icons/essence_all.png", label: "공통 신의 정수", amount: "×3" },
+        { icon: "assets/icons/essence_soldier.png", label: "병사 조각", amount: "×20" },
       ],
     },
     {
@@ -84,8 +85,10 @@ const SHOP_CATEGORY_ITEMS = {
       image: "assets/icons/package_2.png",
       price: "₩9,900",
       contents: [
-        { icon: "assets/icons/ticket.png", label: "신 모집권", amount: "×10" },
-        { icon: "assets/icons/essence_all.png", label: "공통 신의 정수", amount: "×3" },
+        { icon: "assets/icons/diamond.png", label: "다이아", amount: "×1,000" },
+        { icon: "assets/icons/ticket.png", label: "모집권", amount: "×5" },
+        { icon: "assets/icons/essence_all.png", label: "공통 신의 정수", amount: "×5" },
+        { icon: "assets/icons/essence_soldier.png", label: "병사 조각", amount: "×50" },
       ],
     },
     {
@@ -94,8 +97,10 @@ const SHOP_CATEGORY_ITEMS = {
       image: "assets/icons/package_3.png",
       price: "₩14,900",
       contents: [
+        { icon: "assets/icons/diamond.png", label: "다이아", amount: "×1,500" },
+        { icon: "assets/icons/ticket.png", label: "모집권", amount: "×10" },
         { icon: "assets/icons/essence_all.png", label: "공통 신의 정수", amount: "×10" },
-        { icon: "assets/icons/essence_soldier.png", label: "병사 정수", amount: "×100" },
+        { icon: "assets/icons/essence_soldier.png", label: "병사 조각", amount: "×100" },
       ],
     },
     {
@@ -104,9 +109,10 @@ const SHOP_CATEGORY_ITEMS = {
       image: "assets/icons/package_4.png",
       price: "₩29,900",
       contents: [
-        { icon: "assets/icons/diamond.png", label: "다이아", amount: "×2,000" },
-        { icon: "assets/icons/ticket.png", label: "신 모집권", amount: "×10" },
-        { icon: "assets/icons/essence_all.png", label: "공통 신의 정수", amount: "×10" },
+        { icon: "assets/icons/diamond.png", label: "다이아", amount: "×3,000" },
+        { icon: "assets/icons/ticket.png", label: "모집권", amount: "×30" },
+        { icon: "assets/icons/essence_all.png", label: "공통 신의 정수", amount: "×30" },
+        { icon: "assets/icons/essence_soldier.png", label: "병사 조각", amount: "×300" },
       ],
     },
     {
@@ -115,11 +121,16 @@ const SHOP_CATEGORY_ITEMS = {
       image: "assets/icons/package_5.png",
       price: "₩49,900",
       contents: [
-        { icon: "assets/icons/diamond.png", label: "다이아", amount: "×3,000" },
-        { icon: "assets/icons/ticket.png", label: "신 모집권", amount: "×20" },
-        { icon: "assets/icons/essence_all.png", label: "공통 신의 정수", amount: "×20" },
-        { icon: "assets/icons/essence_soldier.png", label: "병사 정수", amount: "×300" },
+        { icon: "assets/icons/diamond.png", label: "다이아", amount: "×5,000" },
+        { icon: "assets/icons/ticket.png", label: "모집권", amount: "×50" },
+        { icon: "assets/icons/essence_all.png", label: "공통 신의 정수", amount: "×50" },
+        { icon: "assets/icons/essence_soldier.png", label: "병사 조각", amount: "×500" },
       ],
+      firstPurchaseBonus: {
+        icon: "assets/icons/diamond.png",
+        label: "첫 구매 보너스",
+        amount: "+500💎",
+      },
     },
   ],
   diamond: [
@@ -243,11 +254,15 @@ const SHOP_CATEGORY_ITEMS = {
 };
 
 const SHOP_PURCHASE_RULES = {
-  "package-fate": { rewards: { diamonds: 500, summonTickets: 2, commonEssence: 3 } },
-  "package-calling": { rewards: { summonTickets: 10, commonEssence: 3 } },
-  "package-blessing": { rewards: { commonEssence: 10, soldierFragments: 100 } },
-  "package-offering": { rewards: { diamonds: 2000, summonTickets: 10, commonEssence: 10 } },
-  "package-legacy": { rewards: { diamonds: 3000, summonTickets: 20, commonEssence: 20, soldierFragments: 300 } },
+  "package-fate": { rewards: { diamonds: 500, summonTickets: 3, commonEssence: 3, soldierFragments: 20 } },
+  "package-calling": { rewards: { diamonds: 1000, summonTickets: 5, commonEssence: 5, soldierFragments: 50 } },
+  "package-blessing": { rewards: { diamonds: 1500, summonTickets: 10, commonEssence: 10, soldierFragments: 100 } },
+  "package-offering": { rewards: { diamonds: 3000, summonTickets: 30, commonEssence: 30, soldierFragments: 300 } },
+  "package-legacy": {
+    rewards: { diamonds: 5000, summonTickets: 50, commonEssence: 50, soldierFragments: 500 },
+    firstPurchaseBonus: { diamonds: 500 },
+    firstPurchaseEntitlement: "packageLegacyFirstPurchaseBonus",
+  },
   "diamond-pouch": { rewards: { diamonds: 500 } },
   "diamond-box": { rewards: { diamonds: 1100 } },
   "diamond-vault": { rewards: { diamonds: 2300 } },
@@ -528,6 +543,9 @@ function renderShopUI() {
     card.type = "button";
     const isDetailedOffer = selectedShopCategory === "package" || selectedShopCategory === "diamond";
     const isPurchased = isShopItemPurchased(item);
+    const hasFirstPurchaseBonus = Boolean(
+      item.firstPurchaseBonus && !hasClaimedFirstPurchaseBonus(item.id)
+    );
     card.className = [
       "shop-item-card",
       isDetailedOffer ? "is-detailed-offer" : "",
@@ -535,6 +553,7 @@ function renderShopUI() {
       selectedShopCategory === "diamond" ? "is-diamond" : "",
       selectedShopCategory === "growth" ? "is-growth" : "",
       isPurchased ? "is-purchased" : "",
+      hasFirstPurchaseBonus ? "has-first-purchase-bonus" : "",
     ].filter(Boolean).join(" ");
     card.dataset.itemId = item.id;
     card.dataset.category = selectedShopCategory;
@@ -624,6 +643,13 @@ function renderDetailedOfferCardContent(card, item) {
   const contentList = document.createElement("span");
   contentList.className = "shop-package-contents";
 
+  let firstPurchaseBadge = null;
+  if (item.firstPurchaseBonus && !hasClaimedFirstPurchaseBonus(item.id)) {
+    firstPurchaseBadge = document.createElement("span");
+    firstPurchaseBadge.className = "shop-first-purchase-badge";
+    firstPurchaseBadge.textContent = "첫 구매 보너스 +500💎";
+  }
+
   (item.contents || []).forEach((content) => {
     const row = document.createElement("span");
     row.className = `shop-package-content-row${content.bonus ? " is-bonus" : ""}`;
@@ -651,6 +677,15 @@ function renderDetailedOfferCardContent(card, item) {
   price.textContent = item.price;
 
   card.append(image, title, contentList, price);
+  if (firstPurchaseBadge) card.appendChild(firstPurchaseBadge);
+}
+
+function hasClaimedFirstPurchaseBonus(itemId) {
+  const rule = SHOP_PURCHASE_RULES[itemId];
+  return Boolean(
+    rule?.firstPurchaseEntitlement
+    && playerProgress?.entitlements?.[rule.firstPurchaseEntitlement]
+  );
 }
 
 function getSelectedShopCategoryLabel() {
@@ -751,10 +786,25 @@ function executeCurrentShopPurchase() {
 
   shopSessionBalances.gold -= Number(cost.gold) || 0;
   shopSessionBalances.diamonds -= Number(cost.diamonds) || 0;
-  applyShopSessionRewards(rule.rewards || {});
+
+  const rewards = { ...(rule.rewards || {}) };
+  const shouldGrantFirstPurchaseBonus = Boolean(
+    rule.firstPurchaseBonus
+    && !hasClaimedFirstPurchaseBonus(selectedShopItem.id)
+  );
+  if (shouldGrantFirstPurchaseBonus) {
+    Object.entries(rule.firstPurchaseBonus).forEach(([key, amount]) => {
+      rewards[key] = Number(rewards[key] || 0) + Number(amount || 0);
+    });
+  }
+  applyShopSessionRewards(rewards);
 
   if (rule.daily) {
     shopSessionDailyPurchases[selectedShopItem.id] = today;
+  }
+  if (shouldGrantFirstPurchaseBonus && rule.firstPurchaseEntitlement) {
+    playerProgress.entitlements[rule.firstPurchaseEntitlement] = true;
+    saveProgress();
   }
 
   return { success: true };
