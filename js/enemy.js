@@ -87,11 +87,6 @@ const KARON_HUMAN_SPRITE = {
         sourceH: 204,
         drawW: 408,
       },
-      4: {
-        sourceFrame: 4,
-        sourceFrameSpan: 2,
-        drawW: 408,
-      },
       5: {
         sourceFrame: 4,
         sourceFrameSpan: 2,
