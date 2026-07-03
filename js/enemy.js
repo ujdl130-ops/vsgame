@@ -49,21 +49,65 @@ const EVILEYE_SPRITE = {
   healthBarOffsetY: 186,
 };
 
-const KARON_SPRITE = {
+const KARON_HUMAN_SPRITE = {
   columns: 6,
   rowCount: 5,
+  frameW: 256,
+  frameH: 204,
   rows: { idle: 0, walk: 1, attack: 2, death: 4 },
   frames: { idle: 6, walk: 6, attack: 6, death: 6 },
-  fps: { idle: 6, walk: 8, attack: 10, death: 8 },
-  attackFrameMap: [0, 1, 1, 4, 4, 0],
-  drawW: 172,
-  drawH: 172,
-  healthBarOffsetY: 144,
+  fps: { idle: 6, walk: 8, attack: 10, death: 7 },
+  drawW: 204,
+  drawH: 164,
+  baseOffsetY: 10,
+  healthBarOffsetY: 150,
+  healthBarWidth: 92,
   swordWaveReleaseProgress: 0.58,
+  shadowW: 46,
+  shadowH: 11,
   drawOffsets: {
     idle: { x: 0, y: 0 },
     walk: { x: 0, y: 0 },
-    attack: { x: 0, y: 32 },
+    attack: { x: 0, y: 0 },
+    death: { x: 0, y: 0 },
+  },
+};
+
+const KARON_TRANSFORM_SPRITE = {
+  columns: 6,
+  rowCount: 5,
+  frameW: 256,
+  frameH: 204,
+  totalFrames: 30,
+  fps: { transform: 15 },
+  drawW: 236,
+  drawH: 188,
+  baseOffsetY: 10,
+  shadowW: 60,
+  shadowH: 13,
+  transformDuration: 2.0,
+};
+
+const KARON_WEREWOLF_SPRITE = {
+  columns: 6,
+  rowCount: 3,
+  frameW: 256,
+  frameH: 1024 / 3,
+  rows: { idle: 0, walk: 0, attack: 1, death: 2 },
+  frames: { idle: 6, walk: 6, attack: 6, death: 6 },
+  fps: { idle: 6, walk: 8, attack: 10, death: 7 },
+  drawW: 280,
+  drawH: 374,
+  baseOffsetY: 90,
+  healthBarOffsetY: 226,
+  healthBarWidth: 112,
+  clawHitReleaseProgress: 0.55,
+  shadowW: 74,
+  shadowH: 15,
+  drawOffsets: {
+    idle: { x: 0, y: 0 },
+    walk: { x: 0, y: 0 },
+    attack: { x: 0, y: 0 },
     death: { x: 0, y: 0 },
   },
 };
@@ -133,17 +177,23 @@ function shouldSpawnEvileye(wave) {
 }
 
 function createKaronBoss(wave) {
-  const hp = 520 + wave * 90;
+  const phaseOneHp = 520 + wave * 90;
+  const phaseTwoHp = 760 + wave * 120;
   return {
     type: "karon",
     name: "karon",
     isBoss: true,
+    bossPhase: "human",
+    hasTransformed: false,
+    transforming: false,
     x: ENEMY_BASE_X - 58,
     y: COMBAT_LINE_Y,
     w: 60,
     h: 92,
-    hp,
-    maxHp: hp,
+    phaseOneHp,
+    phaseTwoHp,
+    hp: phaseOneHp,
+    maxHp: phaseOneHp,
     speed: 24,
     damage: 28 + wave * 4,
     range: 275,
@@ -155,6 +205,10 @@ function createKaronBoss(wave) {
     attackAnimDuration: 0.82,
     swordWaveTarget: null,
     swordWavePending: false,
+    clawTarget: null,
+    clawHitPending: false,
+    transformAnimTimer: 0,
+    transformAnimDuration: KARON_TRANSFORM_SPRITE.transformDuration,
     paralyzeTimer: 0,
     dead: false,
     deathAnimTimer: 0,
@@ -166,6 +220,163 @@ function createKaronBoss(wave) {
 function shouldSpawnKaronBoss(wave) {
   if (gameState.karonBossSpawned) return false;
   return Number(gameState.stage) === 3 && wave === 1 && gameState.spawnedInWave === 0;
+}
+
+function isKaronWerewolf(enemy) {
+  return enemy && enemy.type === "karon" && enemy.bossPhase === "werewolf";
+}
+
+function getKaronSpriteSpec(enemy) {
+  if (!enemy || enemy.type !== "karon") return KARON_HUMAN_SPRITE;
+  if (enemy.transforming || enemy.bossPhase === "transform") return KARON_TRANSFORM_SPRITE;
+  if (isKaronWerewolf(enemy)) return KARON_WEREWOLF_SPRITE;
+  return KARON_HUMAN_SPRITE;
+}
+
+function getKaronSpriteSource(enemy) {
+  if (!enemy || enemy.type !== "karon") return { image: null, ready: false };
+  if (enemy.transforming || enemy.bossPhase === "transform") {
+    return { image: karonTransformSprite, ready: karonTransformSpriteReady };
+  }
+  if (isKaronWerewolf(enemy)) {
+    return { image: karonWerewolfSprite, ready: karonWerewolfSpriteReady };
+  }
+  return { image: karonHumanSprite, ready: karonHumanSpriteReady };
+}
+
+function startKaronTransformation(enemy) {
+  if (!enemy || enemy.type !== "karon" || enemy.dead || enemy.hasTransformed) return false;
+
+  enemy.bossPhase = "transform";
+  enemy.hasTransformed = true;
+  enemy.transforming = true;
+  enemy.hp = 1;
+  enemy.maxHp = enemy.phaseTwoHp || enemy.maxHp;
+  enemy.moving = false;
+  enemy.cooldown = 0;
+  enemy.attackAnimTimer = 0;
+  enemy.swordWaveTarget = null;
+  enemy.swordWavePending = false;
+  enemy.clawTarget = null;
+  enemy.clawHitPending = false;
+  enemy.paralyzeTimer = 0;
+  enemy.transformAnimDuration = KARON_TRANSFORM_SPRITE.transformDuration;
+  enemy.transformAnimTimer = 0;
+  enemy.animTime = 0;
+  enemy.deathAnimTimer = 0;
+
+  gameState.message = "카론 변신!";
+  gameState.messageTimer = 1.2;
+  return true;
+}
+
+function finishKaronTransformation(enemy) {
+  if (!enemy || enemy.type !== "karon") return;
+
+  const wave = gameState.wave || 1;
+  enemy.bossPhase = "werewolf";
+  enemy.transforming = false;
+  enemy.animTime = 0;
+  enemy.hp = enemy.phaseTwoHp || 880;
+  enemy.maxHp = enemy.hp;
+  enemy.w = 88;
+  enemy.h = 120;
+  enemy.speed = 36;
+  enemy.damage = 38 + wave * 5;
+  enemy.range = 86;
+  enemy.cooldown = 0.35;
+  enemy.attackSpeed = 1.05;
+  enemy.attackAnimTimer = 0;
+  enemy.attackAnimDuration = 0.82;
+  enemy.deathAnimDuration = 1.05;
+  enemy.swordWaveTarget = null;
+  enemy.swordWavePending = false;
+  enemy.clawTarget = null;
+  enemy.clawHitPending = false;
+}
+
+function updateKaronTransformation(enemy, dt) {
+  enemy.moving = false;
+  enemy.cooldown = 0;
+  enemy.attackAnimTimer = 0;
+  enemy.transformAnimTimer = (enemy.transformAnimTimer || 0) + dt;
+
+  if (enemy.transformAnimTimer >= (enemy.transformAnimDuration || KARON_TRANSFORM_SPRITE.transformDuration)) {
+    finishKaronTransformation(enemy);
+  }
+}
+
+function damageKaronClawTarget(enemy) {
+  const target = isCombatAlive(enemy.clawTarget)
+    ? enemy.clawTarget
+    : findNearestAlly(enemy.x, enemy.range + 18);
+
+  if (target) {
+    target.hp -= enemy.damage;
+    spawnHit(target.x, target.y - Math.max(38, target.h * 0.65), "#ff3b79");
+  }
+
+  enemy.clawHitPending = false;
+  enemy.clawTarget = null;
+}
+
+function updateKaronEnemy(enemy, dt) {
+  if (enemy.transforming || enemy.bossPhase === "transform") {
+    updateKaronTransformation(enemy, dt);
+    return;
+  }
+
+  if (enemy.paralyzeTimer > 0) {
+    enemy.animTime = Math.max(0, (enemy.animTime || 0) - dt);
+    enemy.attackAnimTimer = 0;
+    enemy.swordWavePending = false;
+    enemy.clawHitPending = false;
+    return;
+  }
+
+  const werewolf = isKaronWerewolf(enemy);
+  const spriteSpec = werewolf ? KARON_WEREWOLF_SPRITE : KARON_HUMAN_SPRITE;
+  const attackDuration = enemy.attackAnimDuration || 0.82;
+  const attackProgress = enemy.attackAnimTimer > 0
+    ? 1 - enemy.attackAnimTimer / attackDuration
+    : 1;
+
+  if (!werewolf && enemy.swordWavePending && (attackProgress >= spriteSpec.swordWaveReleaseProgress || enemy.attackAnimTimer <= 0)) {
+    spawnKaronSwordWave(enemy);
+    enemy.swordWavePending = false;
+    enemy.swordWaveTarget = null;
+  }
+
+  if (werewolf && enemy.clawHitPending && (attackProgress >= spriteSpec.clawHitReleaseProgress || enemy.attackAnimTimer <= 0)) {
+    damageKaronClawTarget(enemy);
+  }
+
+  const target = findNearestAlly(enemy.x, enemy.range);
+
+  if (target) {
+    if (enemy.cooldown <= 0 && enemy.attackAnimTimer <= 0) {
+      enemy.cooldown = enemy.attackSpeed;
+      enemy.attackAnimTimer = attackDuration;
+      if (werewolf) {
+        enemy.clawTarget = target;
+        enemy.clawHitPending = true;
+      } else {
+        enemy.swordWaveTarget = target;
+        enemy.swordWavePending = true;
+      }
+    }
+  } else {
+    enemy.x -= enemy.speed * dt;
+    enemy.moving = true;
+  }
+
+  const baseStopX = werewolf ? PLAYER_BASE_X + 62 : PLAYER_BASE_X + 42;
+  const baseDamageScale = werewolf ? 0.75 : 0.55;
+  if (enemy.x < baseStopX) {
+    gameState.playerBaseHp -= enemy.damage * dt * baseDamageScale;
+    enemy.x = baseStopX;
+    enemy.moving = false;
+  }
 }
 
 function spawnEnemy() {
@@ -250,6 +461,10 @@ function updateEnemies(dt) {
   for (const enemy of gameState.enemies) {
     enemy.animTime = (enemy.animTime || 0) + dt;
 
+    if (enemy.type === "karon" && enemy.hp <= 0 && !enemy.dead && startKaronTransformation(enemy)) {
+      continue;
+    }
+
     if (enemy.hp <= 0 || enemy.dead) {
       startEnemyDeath(enemy);
       enemy.deathAnimTimer = Math.max(0, (enemy.deathAnimTimer || 0) - dt);
@@ -261,44 +476,14 @@ function updateEnemies(dt) {
     enemy.paralyzeTimer = Math.max(0, (enemy.paralyzeTimer || 0) - dt);
     enemy.moving = false;
 
-    if (enemy.paralyzeTimer > 0) {
-      enemy.animTime = Math.max(0, (enemy.animTime || 0) - dt);
-      enemy.attackAnimTimer = 0;
+    if (enemy.type === "karon") {
+      updateKaronEnemy(enemy, dt);
       continue;
     }
 
-    if (enemy.type === "karon") {
-      const attackDuration = enemy.attackAnimDuration || 0.82;
-      const attackProgress = enemy.attackAnimTimer > 0
-        ? 1 - enemy.attackAnimTimer / attackDuration
-        : 1;
-
-      if (enemy.swordWavePending && (attackProgress >= KARON_SPRITE.swordWaveReleaseProgress || enemy.attackAnimTimer <= 0)) {
-        spawnKaronSwordWave(enemy);
-        enemy.swordWavePending = false;
-        enemy.swordWaveTarget = null;
-      }
-
-      const target = findNearestAlly(enemy.x, enemy.range);
-
-      if (target) {
-        if (enemy.cooldown <= 0 && enemy.attackAnimTimer <= 0) {
-          enemy.cooldown = enemy.attackSpeed;
-          enemy.attackAnimTimer = attackDuration;
-          enemy.swordWaveTarget = target;
-          enemy.swordWavePending = true;
-        }
-      } else {
-        enemy.x -= enemy.speed * dt;
-        enemy.moving = true;
-      }
-
-      if (enemy.x < PLAYER_BASE_X + 42) {
-        gameState.playerBaseHp -= enemy.damage * dt * 0.55;
-        enemy.x = PLAYER_BASE_X + 42;
-        enemy.moving = false;
-      }
-
+    if (enemy.paralyzeTimer > 0) {
+      enemy.animTime = Math.max(0, (enemy.animTime || 0) - dt);
+      enemy.attackAnimTimer = 0;
       continue;
     }
 
@@ -382,40 +567,51 @@ function canDrawEvileyeSprite(enemy) {
 }
 
 function canDrawKaronSprite(enemy) {
-  return karonPhase1SpriteReady && enemy.type === "karon";
+  const source = getKaronSpriteSource(enemy);
+  return Boolean(enemy && enemy.type === "karon" && source.ready && source.image);
 }
 
 function drawKaronSprite(enemy) {
   if (!canDrawKaronSprite(enemy)) return false;
 
+  const source = getKaronSpriteSource(enemy);
+  const sprite = source.image;
+  const spec = getKaronSpriteSpec(enemy);
   let anim = "idle";
-  if (enemy.dead || enemy.hp <= 0) anim = "death";
+  if (enemy.transforming || enemy.bossPhase === "transform") anim = "transform";
+  else if (enemy.dead || enemy.hp <= 0) anim = "death";
   else if (enemy.attackAnimTimer > 0) anim = "attack";
   else if (enemy.moving) anim = "walk";
 
-  const frameCount = KARON_SPRITE.frames[anim] || 1;
-  const fps = KARON_SPRITE.fps[anim] || 8;
+  const frameCount = spec.frames ? spec.frames[anim] || 1 : spec.totalFrames || 1;
+  const fps = spec.fps ? spec.fps[anim] || 8 : 8;
   let frame = Math.floor((enemy.animTime || 0) * fps) % frameCount;
 
-  if (anim === "attack") {
+  if (anim === "transform") {
+    const totalFrames = spec.totalFrames || 1;
+    const duration = enemy.transformAnimDuration || spec.transformDuration || 1;
+    const progress = Math.min(1, Math.max(0, (enemy.transformAnimTimer || 0) / duration));
+    frame = Math.min(totalFrames - 1, Math.max(0, Math.floor(progress * totalFrames)));
+  } else if (anim === "attack") {
     const duration = enemy.attackAnimDuration || 0.82;
     const progress = 1 - Math.max(0, enemy.attackAnimTimer || 0) / duration;
-    const mappedFrame = Math.min(frameCount - 1, Math.max(0, Math.floor(progress * frameCount)));
-    frame = KARON_SPRITE.attackFrameMap[mappedFrame] ?? mappedFrame;
+    frame = Math.min(frameCount - 1, Math.max(0, Math.floor(progress * frameCount)));
   } else if (anim === "death") {
     const duration = enemy.deathAnimDuration || 0.95;
     const progress = 1 - Math.max(0, enemy.deathAnimTimer || 0) / duration;
     frame = Math.min(frameCount - 1, Math.max(0, Math.floor(progress * frameCount)));
   }
 
-  const frameW = karonPhase1Sprite.naturalWidth / KARON_SPRITE.columns;
-  const frameH = karonPhase1Sprite.naturalHeight / KARON_SPRITE.rowCount;
-  const sx = frame * frameW;
-  const sy = KARON_SPRITE.rows[anim] * frameH;
-  const dw = KARON_SPRITE.drawW;
-  const dh = KARON_SPRITE.drawH;
-  const drawOffset = KARON_SPRITE.drawOffsets[anim] || { x: 0, y: 0 };
-  const bob = anim === "death" || anim === "attack" || enemy.paralyzeTimer > 0
+  const frameW = spec.frameW || sprite.naturalWidth / spec.columns;
+  const frameH = spec.frameH || sprite.naturalHeight / spec.rowCount;
+  const sx = (frame % spec.columns) * frameW;
+  const sy = anim === "transform"
+    ? Math.floor(frame / spec.columns) * frameH
+    : (spec.rows[anim] || 0) * frameH;
+  const dw = spec.drawW;
+  const dh = spec.drawH;
+  const drawOffset = (spec.drawOffsets && spec.drawOffsets[anim]) || { x: 0, y: 0 };
+  const bob = anim === "death" || anim === "attack" || anim === "transform" || enemy.paralyzeTimer > 0
     ? 0
     : Math.sin((enemy.animTime || 0) * 7) * 1.2;
 
@@ -424,7 +620,7 @@ function drawKaronSprite(enemy) {
 
   ctx.fillStyle = "rgba(0,0,0,0.26)";
   ctx.beginPath();
-  ctx.ellipse(0, 6, 42, 11, 0, 0, Math.PI * 2);
+  ctx.ellipse(0, 6, spec.shadowW || 42, spec.shadowH || 11, 0, 0, Math.PI * 2);
   ctx.fill();
 
   if (anim === "death") {
@@ -436,13 +632,13 @@ function drawKaronSprite(enemy) {
   ctx.scale(-1, 1);
   ctx.imageSmoothingEnabled = true;
   ctx.drawImage(
-    karonPhase1Sprite,
+    sprite,
     sx,
     sy,
     frameW,
     frameH,
     -dw / 2 + drawOffset.x,
-    -dh + 22 + drawOffset.y,
+    -dh + (spec.baseOffsetY || 0) + drawOffset.y,
     dw,
     dh
   );
@@ -580,15 +776,17 @@ function drawStage1EnemySprite(enemy) {
 function drawEnemy(enemy) {
   const usedKaronSprite = drawKaronSprite(enemy);
   if (usedKaronSprite) {
-    const isDying = enemy.dead || enemy.hp <= 0;
-    if (!isDying) {
+    const isDying = enemy.dead || (enemy.hp <= 0 && enemy.bossPhase === "werewolf");
+    const isTransforming = enemy.transforming || enemy.bossPhase === "transform";
+    const spec = getKaronSpriteSpec(enemy);
+    if (!isDying && !isTransforming) {
       drawHealthBar(
         enemy.x,
-        enemy.y - KARON_SPRITE.healthBarOffsetY,
-        88,
+        enemy.y - spec.healthBarOffsetY,
+        spec.healthBarWidth || 88,
         enemy.hp,
         enemy.maxHp,
-        "#ff4f78"
+        isKaronWerewolf(enemy) ? "#ff375c" : "#ff4f78"
       );
     }
     return;

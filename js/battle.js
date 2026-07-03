@@ -4,6 +4,10 @@ function isCombatAlive(entity) {
   return Boolean(entity && !entity.dead && entity.hp > 0);
 }
 
+function canDamageCombatant(entity) {
+  return Boolean(isCombatAlive(entity) && !entity.transforming);
+}
+
 function startUnitDeath(unit) {
   if (!unit || unit.dead) return;
   unit.dead = true;
@@ -24,6 +28,8 @@ function startUnitDeath(unit) {
 
 function startEnemyDeath(enemy) {
   if (!enemy || enemy.dead) return;
+  if (enemy.type === "karon" && typeof startKaronTransformation === "function" && startKaronTransformation(enemy)) return;
+
   enemy.dead = true;
   enemy.hp = 0;
   enemy.moving = false;
@@ -34,6 +40,8 @@ function startEnemyDeath(enemy) {
   enemy.laserHitPending = false;
   enemy.swordWaveTarget = null;
   enemy.swordWavePending = false;
+  enemy.clawTarget = null;
+  enemy.clawHitPending = false;
   enemy.deathAnimDuration = enemy.deathAnimDuration || 0.55;
   enemy.deathAnimTimer = enemy.deathAnimDuration;
 
@@ -249,7 +257,7 @@ function applyZeusThunderstormDamage() {
   if (!effect.hitEnemies) effect.hitEnemies = new Set();
 
   for (const enemy of gameState.enemies) {
-    if (!isCombatAlive(enemy) || effect.hitEnemies.has(enemy)) continue;
+    if (!canDamageCombatant(enemy) || effect.hitEnemies.has(enemy)) continue;
     if (!isEnemyTouchedByZeusLightning(enemy, effect)) continue;
 
     enemy.hp -= ZEUS_THUNDERSTORM_SKILL.damage;

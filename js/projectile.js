@@ -181,7 +181,7 @@ function explodeMageFireball(projectile, impactX, impactY) {
   let hitCount = 0;
 
   for (const enemy of gameState.enemies) {
-    if (!isCombatAlive(enemy)) continue;
+    if (!canDamageCombatant(enemy)) continue;
     if (!isEnemyInsideMageFireball(enemy, impactX, impactY, radius)) continue;
 
     enemy.hp -= projectile.damage;
@@ -224,7 +224,9 @@ function updateProjectiles(dt) {
     }
 
     if (isCombatAlive(projectile.target) && Math.abs(projectile.x - projectile.target.x) < 18) {
-      projectile.target.hp -= projectile.damage;
+      if (canDamageCombatant(projectile.target)) {
+        projectile.target.hp -= projectile.damage;
+      }
       projectile.dead = true;
     }
     if (projectile.x > canvas.width + 50) projectile.dead = true;

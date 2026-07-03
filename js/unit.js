@@ -310,7 +310,7 @@ function updateUnits(dt) {
         ? unit.attackTarget
         : findNearestEnemy(unit.x, unit.range + 12, { includeAirborne: false });
 
-      if (attackTarget) {
+      if (canDamageCombatant(attackTarget)) {
         attackTarget.hp -= unit.damage;
         if (unit.type === "thief") {
           spawnThiefStrike(attackTarget.x, attackTarget.y - Math.max(34, attackTarget.h * 0.65));
@@ -348,7 +348,7 @@ function updateUnits(dt) {
           unit.attackAnimTimer = unit.attackAnimDuration;
           unit.attackImpactPending = true;
           unit.attackTarget = target;
-        } else {
+        } else if (canDamageCombatant(target)) {
           target.hp -= unit.damage;
         }
       }
