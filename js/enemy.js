@@ -105,7 +105,8 @@ const KARON_TRANSFORM_SPRITE = {
   fps: { transform: 15 },
   drawW: 236,
   drawH: 188,
-  baseOffsetY: 10,
+  baseOffsetY: 0,
+  visualBottoms: [182, 203, 203, 203, 203, 203, 167, 169, 171, 171, 167, 171],
   shadowW: 60,
   shadowH: 13,
   transformDuration: 2.0,
@@ -653,8 +654,12 @@ function drawKaronSprite(enemy) {
   const croppedFrameH = Math.max(1, sourceH - cropTop - cropBottom);
   const scaleX = dw / sourceW;
   const scaleY = dh / sourceH;
+  const visualBottom = frameOverride.visualBottom ?? (spec.visualBottoms && spec.visualBottoms[frame]);
+  const visualBottomOffset = typeof visualBottom === "number"
+    ? Math.max(0, sourceH - 1 - visualBottom) * scaleY
+    : 0;
   const destX = -dw / 2 + drawOffset.x + cropLeft * scaleX;
-  const destY = -dh + (spec.baseOffsetY || 0) + drawOffset.y + cropTop * scaleY;
+  const destY = -dh + (spec.baseOffsetY || 0) + drawOffset.y + cropTop * scaleY + visualBottomOffset;
   const destW = croppedFrameW * scaleX;
   const destH = croppedFrameH * scaleY;
   const bob = anim === "death" || anim === "attack" || anim === "transform" || enemy.paralyzeTimer > 0
