@@ -55,7 +55,7 @@ const KARON_HUMAN_SPRITE = {
   frameW: 256,
   frameH: 204,
   rows: { idle: 0, walk: 1, attack: 2, death: 4 },
-  frames: { idle: 6, walk: 6, attack: 6, death: 6 },
+  frames: { idle: 6, walk: 6, attack: 5, death: 6 },
   fps: { idle: 6, walk: 8, attack: 10, death: 7 },
   drawW: 204,
   drawH: 164,
@@ -68,7 +68,7 @@ const KARON_HUMAN_SPRITE = {
   drawOffsets: {
     idle: { x: 0, y: 0 },
     walk: { x: 0, y: 0 },
-    attack: { x: 0, y: 0 },
+    attack: { x: 13, y: 24 },
     death: { x: 0, y: 0 },
   },
 };
