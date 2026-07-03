@@ -105,7 +105,7 @@ const KARON_TRANSFORM_SPRITE = {
   fps: { transform: 15 },
   drawW: 236,
   drawH: 188,
-  baseOffsetY: 0,
+  baseOffsetY: 24,
   visualBottoms: [182, 203, 203, 203, 203, 203, 167, 169, 171, 171, 167, 171],
   shadowW: 60,
   shadowH: 13,
