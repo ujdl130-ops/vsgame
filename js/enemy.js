@@ -65,6 +65,9 @@ const KARON_HUMAN_SPRITE = {
   swordWaveReleaseProgress: 0.58,
   shadowW: 46,
   shadowH: 11,
+  sourceCrops: {
+    walk: { right: 32 },
+  },
   drawOffsets: {
     idle: { x: 0, y: 0 },
     walk: { x: 0, y: 0 },
@@ -611,6 +614,19 @@ function drawKaronSprite(enemy) {
   const dw = spec.drawW;
   const dh = spec.drawH;
   const drawOffset = (spec.drawOffsets && spec.drawOffsets[anim]) || { x: 0, y: 0 };
+  const sourceCrop = (spec.sourceCrops && spec.sourceCrops[anim]) || {};
+  const cropLeft = sourceCrop.left || 0;
+  const cropRight = sourceCrop.right || 0;
+  const cropTop = sourceCrop.top || 0;
+  const cropBottom = sourceCrop.bottom || 0;
+  const croppedFrameW = Math.max(1, frameW - cropLeft - cropRight);
+  const croppedFrameH = Math.max(1, frameH - cropTop - cropBottom);
+  const scaleX = dw / frameW;
+  const scaleY = dh / frameH;
+  const destX = -dw / 2 + drawOffset.x + cropLeft * scaleX;
+  const destY = -dh + (spec.baseOffsetY || 0) + drawOffset.y + cropTop * scaleY;
+  const destW = croppedFrameW * scaleX;
+  const destH = croppedFrameH * scaleY;
   const bob = anim === "death" || anim === "attack" || anim === "transform" || enemy.paralyzeTimer > 0
     ? 0
     : Math.sin((enemy.animTime || 0) * 7) * 1.2;
@@ -633,14 +649,14 @@ function drawKaronSprite(enemy) {
   ctx.imageSmoothingEnabled = true;
   ctx.drawImage(
     sprite,
-    sx,
-    sy,
-    frameW,
-    frameH,
-    -dw / 2 + drawOffset.x,
-    -dh + (spec.baseOffsetY || 0) + drawOffset.y,
-    dw,
-    dh
+    sx + cropLeft,
+    sy + cropTop,
+    croppedFrameW,
+    croppedFrameH,
+    destX,
+    destY,
+    destW,
+    destH
   );
 
   ctx.restore();
