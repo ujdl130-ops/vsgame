@@ -71,6 +71,15 @@ const KARON_HUMAN_SPRITE = {
     attack: { x: 13, y: 24 },
     death: { x: 0, y: 0 },
   },
+  frameOverrides: {
+    attack: {
+      5: {
+        sourceFrame: 4,
+        sourceFrameSpan: 2,
+        drawW: 408,
+      },
+    },
+  },
 };
 
 const KARON_TRANSFORM_SPRITE = {
@@ -602,24 +611,34 @@ function drawKaronSprite(enemy) {
     frame = Math.min(frameCount - 1, Math.max(0, Math.floor(progress * frameCount)));
   }
 
+  const frameOverride = ((spec.frameOverrides && spec.frameOverrides[anim]) || {})[frame] || {};
   const frameW = spec.frameW || sprite.naturalWidth / spec.columns;
   const frameH = spec.frameH || sprite.naturalHeight / spec.rowCount;
-  const sx = (frame % spec.columns) * frameW;
+  const sourceFrame = frameOverride.sourceFrame ?? frame;
+  const sourceFrameSpan = frameOverride.sourceFrameSpan || 1;
+  const sourceW = frameOverride.sourceW || frameW * sourceFrameSpan;
+  const sourceH = frameOverride.sourceH || frameH;
+  const sx = (sourceFrame % spec.columns) * frameW;
   const sy = anim === "transform"
-    ? Math.floor(frame / spec.columns) * frameH
+    ? Math.floor(sourceFrame / spec.columns) * frameH
     : (spec.rows[anim] || 0) * frameH;
-  const dw = spec.drawW;
-  const dh = spec.drawH;
-  const drawOffset = (spec.drawOffsets && spec.drawOffsets[anim]) || { x: 0, y: 0 };
+  const dw = frameOverride.drawW || spec.drawW;
+  const dh = frameOverride.drawH || spec.drawH;
+  const baseDrawOffset = (spec.drawOffsets && spec.drawOffsets[anim]) || { x: 0, y: 0 };
+  const extraDrawOffset = frameOverride.drawOffset || { x: 0, y: 0 };
+  const drawOffset = {
+    x: baseDrawOffset.x + (extraDrawOffset.x || 0),
+    y: baseDrawOffset.y + (extraDrawOffset.y || 0),
+  };
   const sourceCrop = (spec.sourceCrops && spec.sourceCrops[anim]) || {};
   const cropLeft = sourceCrop.left || 0;
   const cropRight = sourceCrop.right || 0;
   const cropTop = sourceCrop.top || 0;
   const cropBottom = sourceCrop.bottom || 0;
-  const croppedFrameW = Math.max(1, frameW - cropLeft - cropRight);
-  const croppedFrameH = Math.max(1, frameH - cropTop - cropBottom);
-  const scaleX = dw / frameW;
-  const scaleY = dh / frameH;
+  const croppedFrameW = Math.max(1, sourceW - cropLeft - cropRight);
+  const croppedFrameH = Math.max(1, sourceH - cropTop - cropBottom);
+  const scaleX = dw / sourceW;
+  const scaleY = dh / sourceH;
   const destX = -dw / 2 + drawOffset.x + cropLeft * scaleX;
   const destY = -dh + (spec.baseOffsetY || 0) + drawOffset.y + cropTop * scaleY;
   const destW = croppedFrameW * scaleX;
