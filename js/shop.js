@@ -95,7 +95,7 @@ const SHOP_CATEGORY_ITEMS = {
       price: "₩14,900",
       contents: [
         { icon: "assets/icons/essence_all.png", label: "공통 신의 정수", amount: "×10" },
-        { icon: "assets/icons/essence_soldier.png", label: "병사 조각", amount: "×100" },
+        { icon: "assets/icons/essence_soldier.png", label: "병사 정수", amount: "×100" },
       ],
     },
     {
@@ -118,7 +118,7 @@ const SHOP_CATEGORY_ITEMS = {
         { icon: "assets/icons/diamond.png", label: "다이아", amount: "×3,000" },
         { icon: "assets/icons/ticket.png", label: "신 모집권", amount: "×20" },
         { icon: "assets/icons/essence_all.png", label: "공통 신의 정수", amount: "×20" },
-        { icon: "assets/icons/essence_soldier.png", label: "병사 조각", amount: "×300" },
+        { icon: "assets/icons/essence_soldier.png", label: "병사 정수", amount: "×300" },
       ],
     },
   ],
@@ -201,7 +201,7 @@ const SHOP_CATEGORY_ITEMS = {
     },
     {
       id: "growth-soldier-20",
-      name: "병사 조각",
+      name: "병사 정수",
       amount: "×20",
       image: "assets/icons/essence_soldier.png",
       price: "20,000",
@@ -210,7 +210,7 @@ const SHOP_CATEGORY_ITEMS = {
     },
     {
       id: "growth-soldier-50",
-      name: "병사 조각",
+      name: "병사 정수",
       amount: "×50",
       image: "assets/icons/essence_soldier.png",
       price: "50,000",
@@ -219,7 +219,7 @@ const SHOP_CATEGORY_ITEMS = {
     },
     {
       id: "growth-soldier-100",
-      name: "병사 조각",
+      name: "병사 정수",
       amount: "×100",
       image: "assets/icons/essence_soldier.png",
       price: "100,000",
@@ -228,7 +228,7 @@ const SHOP_CATEGORY_ITEMS = {
     },
     {
       id: "growth-soldier-200",
-      name: "병사 조각",
+      name: "병사 정수",
       amount: "×200",
       image: "assets/icons/essence_soldier.png",
       price: "200,000",
@@ -407,12 +407,32 @@ function showShop() {
     updateButtons();
   }
 
+  updateShopWallet();
   renderShopUI();
   bindShopPurchasePopup();
 
   if (shopNotice) {
     shopNotice.textContent = "상점 품목을 선택하세요.";
   }
+}
+
+function updateShopWallet() {
+  const progress = typeof playerProgress !== "undefined"
+    ? playerProgress
+    : window.PlayerAPI?.getPlayerData?.() || {};
+  const walletValues = {
+    shopGoldAmount: progress.gold,
+    shopDiamondAmount: progress.diamonds,
+    shopEssenceAmount: progress.commonEssence,
+    shopSoldierEssenceAmount: progress.soldierFragments,
+  };
+
+  Object.entries(walletValues).forEach(([elementId, amount]) => {
+    const element = document.getElementById(elementId);
+    if (element) {
+      element.textContent = Math.max(0, Number(amount) || 0).toLocaleString("ko-KR");
+    }
+  });
 }
 
 function renderShopUI() {
@@ -665,4 +685,5 @@ window.ShopAPI = {
   purchaseShopItem,
   renderShopItems,
   openShopScreen,
+  updateShopWallet,
 };
