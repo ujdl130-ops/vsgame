@@ -251,6 +251,7 @@ const SHOP_CATEGORY_ITEMS = {
     {
       id: "monthly-gods-contract",
       name: "신들의 계약",
+      image: "assets/icons/monthly_1.png",
       price: "₩9,900",
       duration: "30일",
       immediateContents: [
@@ -264,6 +265,7 @@ const SHOP_CATEGORY_ITEMS = {
     {
       id: "monthly-olympus-contract",
       name: "올림포스의 계약",
+      image: "assets/icons/monthly_2.png",
       price: "₩29,900",
       duration: "30일",
       immediateContents: [
@@ -733,6 +735,12 @@ function renderDetailedOfferCardContent(card, item) {
 }
 
 function renderMonthlyContractCardContent(card, item) {
+  const image = document.createElement("img");
+  image.className = "shop-monthly-image";
+  image.src = item.image;
+  image.alt = "";
+  image.draggable = false;
+
   const title = document.createElement("strong");
   title.className = "shop-package-title shop-monthly-title";
   title.textContent = item.name;
@@ -785,7 +793,7 @@ function renderMonthlyContractCardContent(card, item) {
   price.className = "shop-package-price";
   price.textContent = item.price;
 
-  card.append(title, duration, sections, price);
+  card.append(image, title, duration, sections, price);
 }
 
 function hasClaimedFirstPurchaseBonus(itemId) {

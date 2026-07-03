@@ -7392,15 +7392,28 @@ body:not(.game-started) .game-wrap {
   pointer-events: none;
 }
 
+.shop-monthly-image {
+  position: absolute;
+  z-index: 2;
+  top: 5%;
+  left: 50%;
+  width: 42%;
+  height: 24%;
+  object-fit: contain;
+  filter: drop-shadow(0 6px 6px rgba(71, 43, 18, 0.42));
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+
 .shop-monthly-title {
-  top: 12%;
+  top: 29%;
   font-size: clamp(15px, 1.3vw, 22px);
 }
 
 .shop-monthly-duration {
   position: absolute;
   z-index: 3;
-  top: 21%;
+  top: 36%;
   left: 50%;
   padding: 4px 14px;
   color: #fff4cf;
@@ -7420,7 +7433,7 @@ body:not(.game-started) .game-wrap {
 .shop-monthly-sections {
   position: absolute;
   z-index: 2;
-  top: 30%;
+  top: 44%;
   left: 13%;
   right: 13%;
   bottom: 18%;
@@ -7450,6 +7463,10 @@ body:not(.game-started) .game-wrap {
 
 .shop-item-card.has-first-purchase-bonus {
   overflow: visible;
+}
+
+.shop-item-card.is-monthly:hover .shop-monthly-image {
+  filter: drop-shadow(0 8px 7px rgba(71, 43, 18, 0.5)) brightness(1.06);
 }
 
 .shop-item-card.is-detailed-offer:hover .shop-package-image {
@@ -7641,7 +7658,7 @@ body:not(.game-started) .game-wrap {
 
   .shop-item-list[data-category="monthly"] {
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    width: min(38vw, 720px);
+    width: min(34vw, 680px);
     margin-inline: auto;
   }
 
