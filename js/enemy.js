@@ -122,7 +122,7 @@ const KARON_WEREWOLF_SPRITE = {
   fps: { idle: 6, walk: 8, attack: 10, death: 7 },
   drawW: 280,
   drawH: 374,
-  baseOffsetY: 10,
+  baseOffsetY: 18,
   healthBarOffsetY: 226,
   healthBarWidth: 112,
   clawHitReleaseProgress: 0.55,
@@ -137,7 +137,14 @@ const KARON_WEREWOLF_SPRITE = {
   visualBottomsByAnim: {
     idle: [268, 268, 267, 268, 267, 268],
     walk: [268, 268, 267, 268, 267, 268],
-    attack: [246, 246, 268, 268, 268, 268],
+    attack: [246, 246, 253, 255, 254, 255],
+  },
+  frameOverrides: {
+    attack: {
+      5: {
+        sourceCrop: { left: 36 },
+      },
+    },
   },
 };
 
@@ -666,11 +673,12 @@ function drawKaronSprite(enemy) {
     x: baseDrawOffset.x + (extraDrawOffset.x || 0),
     y: baseDrawOffset.y + (extraDrawOffset.y || 0),
   };
-  const sourceCrop = (spec.sourceCrops && spec.sourceCrops[anim]) || {};
-  const cropLeft = sourceCrop.left || 0;
-  const cropRight = sourceCrop.right || 0;
-  const cropTop = sourceCrop.top || 0;
-  const cropBottom = sourceCrop.bottom || 0;
+  const baseSourceCrop = (spec.sourceCrops && spec.sourceCrops[anim]) || {};
+  const frameSourceCrop = frameOverride.sourceCrop || {};
+  const cropLeft = frameSourceCrop.left ?? baseSourceCrop.left ?? 0;
+  const cropRight = frameSourceCrop.right ?? baseSourceCrop.right ?? 0;
+  const cropTop = frameSourceCrop.top ?? baseSourceCrop.top ?? 0;
+  const cropBottom = frameSourceCrop.bottom ?? baseSourceCrop.bottom ?? 0;
   const croppedFrameW = Math.max(1, sourceW - cropLeft - cropRight);
   const croppedFrameH = Math.max(1, sourceH - cropTop - cropBottom);
   const scaleX = dw / sourceW;
