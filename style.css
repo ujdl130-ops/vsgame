@@ -580,12 +580,12 @@ body.game-started:not(.in-lobby):not(.in-stage-select):not(.in-shop):not(.in-rec
 
 .battle-action-icon-basic img {
   position: absolute;
-  left: 10px;
-  top: -3px;
-  width: 74px;
-  height: 74px;
+  left: 0;
+  top: -12px;
+  width: 92px;
+  height: 92px;
   opacity: 1;
-  object-fit: cover;
+  object-fit: contain;
   filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.55));
 }
 
