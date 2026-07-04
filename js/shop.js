@@ -223,6 +223,8 @@ function showShop() {
   if (shopScreen) shopScreen.classList.remove("is-hidden");
   if (recruitScreen) recruitScreen.classList.add("is-hidden");
   if (formationScreen) formationScreen.classList.add("is-hidden");
+  if (missionScreen) missionScreen.classList.add("is-hidden");
+  if (inventoryScreen) inventoryScreen.classList.add("is-hidden");
 
   hideRecruitDoorScene(true);
 
@@ -231,7 +233,9 @@ function showShop() {
     "in-lobby",
     "in-stage-select",
     "in-recruit",
-    "in-formation"
+    "in-formation",
+    "in-mission",
+    "in-inventory"
   );
   document.body.classList.add("in-shop");
 
