@@ -134,6 +134,9 @@ const KARON_WEREWOLF_SPRITE = {
     attack: { x: 0, y: 0 },
     death: { x: 0, y: 0 },
   },
+  visualBottomsByAnim: {
+    attack: [340, 340, 253, 255, 254, 255],
+  },
 };
 
 
@@ -654,7 +657,10 @@ function drawKaronSprite(enemy) {
   const croppedFrameH = Math.max(1, sourceH - cropTop - cropBottom);
   const scaleX = dw / sourceW;
   const scaleY = dh / sourceH;
-  const visualBottom = frameOverride.visualBottom ?? (spec.visualBottoms && spec.visualBottoms[frame]);
+  const animVisualBottoms = spec.visualBottomsByAnim && spec.visualBottomsByAnim[anim];
+  const visualBottom = frameOverride.visualBottom
+    ?? (animVisualBottoms && animVisualBottoms[frame])
+    ?? (spec.visualBottoms && spec.visualBottoms[frame]);
   const visualBottomOffset = typeof visualBottom === "number"
     ? Math.max(0, sourceH - 1 - visualBottom) * scaleY
     : 0;

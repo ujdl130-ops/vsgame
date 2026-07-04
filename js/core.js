@@ -80,7 +80,7 @@ const COMBAT_LINE_Y = GROUND_Y - 42;
 const PLAYER_BASE_X = 40;
 const ENEMY_BASE_X = 900;
 const MAX_WAVE = 3;
-const MAX_SUMMONED_UNITS = 5;
+const MAX_SUMMONED_UNITS = 8;
 const HERO_MIN_X = PLAYER_BASE_X + 72;
 const HERO_MAX_X = ENEMY_BASE_X - 74;
 const HERO_RESPAWN_SECONDS = 4;
@@ -106,8 +106,8 @@ const ASSET_PATHS = {
   karonWerewolfSprite: "assets/animations/Boss_Karon/karon_werewolf_phase2_transparent.png",
   stage1Background: "assets/maps/stage1/stage1_forest_bg_v2.png",
   stageBackgroundTemplate: "assets/maps/stage{stage}/stage{stage}_background.png",
-  playerCastleTemplate: "assets/maps/stage{stage}/player_castle_stage1.png",
-  enemyCastleTemplate: "assets/maps/stage{stage}/enemy_castle_stage1.png",
+  playerCastleTemplate: "assets/maps/rune_gate_transparent.png",
+  enemyCastleTemplate: "assets/maps/demon_gate_transparent.png",
 };
 
 function loadGameImage(image, sourceList, setReady, label) {
