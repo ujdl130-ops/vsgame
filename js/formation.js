@@ -43,6 +43,14 @@ const FORMATION_UNITS = [
   },
 ];
 
+const FORMATION_ROSTER_UNITS = Array.from({ length: 12 }, (_, index) => {
+  const source = FORMATION_UNITS[index % FORMATION_UNITS.length];
+  return {
+    ...source,
+    rosterId: `${source.id}-${index + 1}`,
+  };
+});
+
 const formationState = {
   activePage: 1,
   selectedUnitId: "saintess",
@@ -109,9 +117,9 @@ function createFormationShellMarkup() {
         </div>
         <div id="formationRosterGrid" class="formation-roster-grid" aria-label="보유 유닛 카드"></div>
         <div class="formation-roster-pager" aria-label="보유 유닛 페이지">
-          <button id="formationRosterPrev" class="formation-arrow-btn" type="button" aria-label="이전 보유 유닛">‹</button>
-          <span id="formationRosterPageDots" class="formation-roster-dots"></span>
-          <button id="formationRosterNext" class="formation-arrow-btn" type="button" aria-label="다음 보유 유닛">›</button>
+          <button class="formation-roster-page-btn is-active" type="button" data-roster-page="1">1</button>
+          <button class="formation-roster-page-btn" type="button" data-roster-page="2">2</button>
+          <button class="formation-roster-page-btn" type="button" data-roster-page="3">3</button>
         </div>
 
         <div class="formation-selected-info" aria-label="선택한 유닛 정보">
@@ -140,7 +148,7 @@ function createFormationShellMarkup() {
 function renderFormationUnitCard(unit, options = {}) {
   const selectedClass = options.selected ? " is-selected" : "";
   return `
-    <button class="formation-unit-card${selectedClass}" type="button" data-unit-id="${unit.id}" aria-label="${unit.name}">
+    <button class="formation-unit-card${selectedClass}" type="button" data-unit-id="${unit.id}" data-roster-id="${unit.rosterId || unit.id}" aria-label="${unit.name}">
       <img src="${unit.image}" alt="${unit.name}">
       <span class="formation-unit-name">${unit.name}</span>
       <span class="formation-unit-level">Lv.${unit.level}</span>
@@ -152,7 +160,7 @@ function renderFormationSlotCard(unitId, index) {
   const unit = unitId ? getFormationUnit(unitId) : null;
   if (!unit) {
     return `
-      <button class="formation-slot" type="button" data-slot-index="${index}" aria-label="빈 슬롯 ${index + 1}">
+      <button class="formation-slot formation-slot-add" type="button" data-slot-index="${index}" aria-label="빈 슬롯 ${index + 1}">
         <span>${index + 1}</span>
         <i>+</i>
       </button>
@@ -160,12 +168,13 @@ function renderFormationSlotCard(unitId, index) {
   }
 
   return `
-    <button class="formation-slot is-filled" type="button" data-slot-index="${index}" aria-label="${index + 1}번 슬롯 ${unit.name}">
+    <div class="formation-slot is-filled" data-slot-index="${index}" aria-label="${index + 1}번 슬롯 ${unit.name}">
       <em>${index + 1}</em>
       <img src="${unit.image}" alt="${unit.name}">
+      <button class="formation-slot-remove" type="button" data-slot-index="${index}" aria-label="${unit.name} 배치 해제">×</button>
       <strong>${unit.name}</strong>
       <small>Lv.${unit.level}</small>
-    </button>
+    </div>
   `;
 }
 
@@ -175,8 +184,14 @@ function renderFormationSlots() {
 
   const slots = getFormationSlotsForCurrentPage();
   slotGrid.innerHTML = slots.map((unitId, index) => renderFormationSlotCard(unitId, index)).join("");
-  slotGrid.querySelectorAll(".formation-slot").forEach((slot) => {
+  slotGrid.querySelectorAll(".formation-slot-add").forEach((slot) => {
     slot.addEventListener("click", () => handleFormationSlotClick(Number(slot.dataset.slotIndex)));
+  });
+  slotGrid.querySelectorAll(".formation-slot-remove").forEach((button) => {
+    button.addEventListener("click", (event) => {
+      event.stopPropagation();
+      removeFormationSlot(Number(button.dataset.slotIndex));
+    });
   });
 
   const placedCount = slots.filter(Boolean).length;
@@ -186,15 +201,14 @@ function renderFormationSlots() {
 
 function renderFormationRoster() {
   const rosterGrid = document.getElementById("formationRosterGrid");
-  const dots = document.getElementById("formationRosterPageDots");
   const rosterCount = document.getElementById("formationRosterCount");
   if (!rosterGrid) return;
 
   const pageSize = 4;
-  const pageCount = Math.max(1, Math.ceil(FORMATION_UNITS.length / pageSize));
+  const pageCount = 3;
   formationState.rosterPage = Math.min(Math.max(1, formationState.rosterPage), pageCount);
   const start = (formationState.rosterPage - 1) * pageSize;
-  const visibleUnits = FORMATION_UNITS.slice(start, start + pageSize);
+  const visibleUnits = FORMATION_ROSTER_UNITS.slice(start, start + pageSize);
 
   rosterGrid.innerHTML = visibleUnits
     .map((unit) => renderFormationUnitCard(unit, { selected: unit.id === formationState.selectedUnitId }))
@@ -204,17 +218,10 @@ function renderFormationRoster() {
     card.addEventListener("click", () => selectFormationUnit(card.dataset.unitId));
   });
 
-  if (rosterCount) rosterCount.textContent = `${FORMATION_UNITS.length} / ${FORMATION_UNITS.length}`;
-  if (dots) {
-    dots.innerHTML = Array.from({ length: pageCount }, (_, index) => (
-      `<span class="${index + 1 === formationState.rosterPage ? "is-active" : ""}"></span>`
-    )).join("");
-  }
-
-  const prev = document.getElementById("formationRosterPrev");
-  const next = document.getElementById("formationRosterNext");
-  if (prev) prev.disabled = formationState.rosterPage <= 1;
-  if (next) next.disabled = formationState.rosterPage >= pageCount;
+  if (rosterCount) rosterCount.textContent = `${FORMATION_ROSTER_UNITS.length} / ${FORMATION_ROSTER_UNITS.length}`;
+  document.querySelectorAll(".formation-roster-page-btn").forEach((button) => {
+    button.classList.toggle("is-active", button.dataset.rosterPage === String(formationState.rosterPage));
+  });
 }
 
 function renderFormationSelectedInfo() {
@@ -263,8 +270,6 @@ function renderFormationScreen() {
 function bindFormationScreenEvents() {
   const backBtn = document.getElementById("formationBackBtn");
   const closeBtn = document.getElementById("formationCloseBtn");
-  const rosterPrev = document.getElementById("formationRosterPrev");
-  const rosterNext = document.getElementById("formationRosterNext");
   const levelUpBtn = document.getElementById("formationLevelUpBtn");
 
   if (backBtn) backBtn.addEventListener("click", showLobby);
@@ -274,18 +279,12 @@ function bindFormationScreenEvents() {
     tab.addEventListener("click", () => setFormationDeckPage(tab.dataset.deckPage || "1"));
   });
 
-  if (rosterPrev) {
-    rosterPrev.addEventListener("click", () => {
-      formationState.rosterPage -= 1;
+  document.querySelectorAll(".formation-roster-page-btn").forEach((button) => {
+    button.addEventListener("click", () => {
+      formationState.rosterPage = Number(button.dataset.rosterPage) || 1;
       renderFormationRoster();
     });
-  }
-  if (rosterNext) {
-    rosterNext.addEventListener("click", () => {
-      formationState.rosterPage += 1;
-      renderFormationRoster();
-    });
-  }
+  });
   if (levelUpBtn) levelUpBtn.addEventListener("click", levelUpFormationUnit);
 }
 
@@ -343,6 +342,16 @@ function handleFormationSlotClick(index) {
   if (notice) {
     notice.textContent = `${formationState.activePage}페이지 ${index + 1}번 슬롯에 ${unit.name}을 배치했습니다.`;
   }
+  renderFormationSlots();
+}
+
+function removeFormationSlot(index) {
+  const slots = getFormationSlotsForCurrentPage();
+  if (!slots[index]) return;
+
+  slots[index] = null;
+  const notice = document.getElementById("formationNotice");
+  if (notice) notice.textContent = `${formationState.activePage}페이지 ${index + 1}번 슬롯 배치를 해제했습니다.`;
   renderFormationSlots();
 }
 
