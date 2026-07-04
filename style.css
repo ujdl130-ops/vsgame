@@ -564,6 +564,19 @@ body.game-started:not(.in-lobby):not(.in-stage-select):not(.in-shop):not(.in-rec
   right: 30px;
 }
 
+.battle-action-icon-basic::before {
+  content: "";
+  position: absolute;
+  left: 3px;
+  top: 4px;
+  width: 86px;
+  height: 60px;
+  border-radius: 50%;
+  background: url("assets/AttackIcon.png") center center / 96px 96px no-repeat;
+  clip-path: ellipse(50% 50% at 50% 50%);
+  pointer-events: none;
+}
+
 .battle-action-icon-skill {
   right: 110px;
 }
@@ -581,10 +594,10 @@ body.game-started:not(.in-lobby):not(.in-stage-select):not(.in-shop):not(.in-rec
 .battle-action-icon-basic img {
   position: absolute;
   left: 0;
-  top: 5px;
-  width: 84px;
-  height: 62px;
-  opacity: 1;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
   object-fit: fill;
   filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.55));
 }
