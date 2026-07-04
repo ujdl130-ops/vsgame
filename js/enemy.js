@@ -134,6 +134,10 @@ const KARON_WEREWOLF_SPRITE = {
     attack: { x: 0, y: 0 },
     death: { x: 0, y: 0 },
   },
+  visualBottomsByAnim: {
+    idle: [268, 340, 267, 268, 267, 268],
+    walk: [268, 340, 267, 268, 267, 268],
+  },
   frameOverrides: {
     attack: {
       0: { drawOffset: { y: -80 } },
