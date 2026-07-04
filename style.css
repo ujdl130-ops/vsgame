@@ -534,9 +534,9 @@ body.game-started:not(.in-lobby):not(.in-stage-select):not(.in-shop):not(.in-rec
   content: "";
   position: absolute;
   z-index: 4;
-  left: 172px;
+  left: 190px;
   top: 34px;
-  width: 410px;
+  width: 426px;
   height: 62px;
   border-radius: 5px;
   background:
@@ -556,7 +556,7 @@ body.game-started:not(.in-lobby):not(.in-stage-select):not(.in-shop):not(.in-rec
   z-index: 4;
   right: 30px;
   top: 34px;
-  width: 354px;
+  width: 318px;
   height: 62px;
   border-radius: 5px;
   background:
@@ -574,7 +574,7 @@ body.game-started:not(.in-lobby):not(.in-stage-select):not(.in-shop):not(.in-rec
   z-index: 6;
   right: 30px;
   top: 34px;
-  width: 354px;
+  width: 318px;
   height: 62px;
   pointer-events: none;
 }
@@ -603,11 +603,11 @@ body.game-started:not(.in-lobby):not(.in-stage-select):not(.in-shop):not(.in-rec
 }
 
 .battle-action-icon-basic {
-  right: 92px;
+  right: 76px;
 }
 
 .battle-action-icon-skill {
-  right: 194px;
+  right: 168px;
 }
 
 .battle-action-icon-slot img {
@@ -720,7 +720,7 @@ body.game-started:not(.in-lobby):not(.in-stage-select):not(.in-shop):not(.in-rec
 }
 
 .battle-unit-slot-guard {
-  left: 180px;
+  left: 198px;
   top: 40px;
   width: 74px;
   height: 50px;
@@ -735,7 +735,7 @@ body.game-started:not(.in-lobby):not(.in-stage-select):not(.in-shop):not(.in-rec
 }
 
 .battle-unit-slot-archer {
-  left: 260px;
+  left: 282px;
   top: 40px;
   width: 74px;
   height: 50px;
@@ -748,7 +748,7 @@ body.game-started:not(.in-lobby):not(.in-stage-select):not(.in-shop):not(.in-rec
 }
 
 .battle-unit-slot-mage {
-  left: 340px;
+  left: 366px;
   top: 40px;
   width: 74px;
   height: 50px;
@@ -761,7 +761,7 @@ body.game-started:not(.in-lobby):not(.in-stage-select):not(.in-shop):not(.in-rec
 }
 
 .battle-unit-slot-saintess {
-  left: 420px;
+  left: 450px;
   top: 40px;
   width: 74px;
   height: 50px;
@@ -774,7 +774,7 @@ body.game-started:not(.in-lobby):not(.in-stage-select):not(.in-shop):not(.in-rec
 }
 
 .battle-unit-slot-thief {
-  left: 500px;
+  left: 534px;
   top: 40px;
   width: 74px;
   height: 50px;
