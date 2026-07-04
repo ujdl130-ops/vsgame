@@ -342,7 +342,7 @@ body.game-started:not(.in-lobby):not(.in-stage-select):not(.in-shop):not(.in-rec
   z-index: 2;
   left: 99px;
   top: 13px;
-  width: 174px;
+  width: 292px;
   height: 13px;
   border-radius: 999px;
   overflow: hidden;
@@ -994,7 +994,7 @@ body.game-started:not(.in-lobby):not(.in-stage-select):not(.in-shop):not(.in-rec
   .battle-runestone-gauge {
     left: 99px;
     top: 13px;
-    width: 174px;
+    width: 292px;
     height: 13px;
   }
 
