@@ -322,7 +322,7 @@ body.game-started:not(.in-lobby):not(.in-stage-select):not(.in-shop):not(.in-rec
   right: 0;
   bottom: 0;
   z-index: 3;
-  height: 96px;
+  height: 112px;
   border: 0;
   background-image: url("assets/ChatGPT Image 2026년 6월 29일 오후 09_17_46.png");
   background-size: 100% 100%;
@@ -337,9 +337,9 @@ body.game-started:not(.in-lobby):not(.in-stage-select):not(.in-shop):not(.in-rec
   position: absolute;
   z-index: 1;
   left: 108px;
-  top: 8px;
+  top: 10px;
   width: 278px;
-  height: 12px;
+  height: 14px;
   border-radius: 999px;
   background: #060504;
   box-shadow:
@@ -353,12 +353,12 @@ body.game-started:not(.in-lobby):not(.in-stage-select):not(.in-shop):not(.in-rec
   position: absolute;
   z-index: 4;
   left: 70px;
-  top: 1px;
-  width: 44px;
-  height: 26px;
+  top: 2px;
+  width: 48px;
+  height: 30px;
   border-radius: 999px;
   background:
-    url("assets/runestone_icon.png") center / 31px 25px no-repeat,
+    url("assets/runestone_icon.png") center / 35px 28px no-repeat,
     #060504;
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.04),
@@ -370,9 +370,9 @@ body.game-started:not(.in-lobby):not(.in-stage-select):not(.in-shop):not(.in-rec
   position: absolute;
   z-index: 2;
   left: 108px;
-  top: 8px;
+  top: 10px;
   width: 278px;
-  height: 12px;
+  height: 14px;
   border-radius: 999px;
   overflow: hidden;
   pointer-events: none;
@@ -399,7 +399,7 @@ body.game-started:not(.in-lobby):not(.in-stage-select):not(.in-shop):not(.in-rec
   top: 50%;
   transform: translateY(-50%);
   color: #f7ecff;
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 900;
   line-height: 1;
   letter-spacing: 0;
@@ -414,8 +414,8 @@ body.game-started:not(.in-lobby):not(.in-stage-select):not(.in-shop):not(.in-rec
   z-index: 5;
   left: 65.5%;
   right: 4.6%;
-  top: 8px;
-  height: 12px;
+  top: 10px;
+  height: 14px;
   border-radius: 999px;
   overflow: hidden;
   background: #060504;
@@ -446,7 +446,7 @@ body.game-started:not(.in-lobby):not(.in-stage-select):not(.in-shop):not(.in-rec
   top: 50%;
   transform: translateY(-50%);
   color: #eaf8ff;
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 900;
   line-height: 1;
   letter-spacing: 0;
@@ -460,9 +460,9 @@ body.game-started:not(.in-lobby):not(.in-stage-select):not(.in-shop):not(.in-rec
   position: absolute;
   z-index: 6;
   left: 62.2%;
-  top: 2px;
-  width: 24px;
-  height: 24px;
+  top: 3px;
+  width: 27px;
+  height: 27px;
   object-fit: contain;
   pointer-events: none;
   filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.62));
@@ -526,7 +526,7 @@ body.game-started:not(.in-lobby):not(.in-stage-select):not(.in-shop):not(.in-rec
   left: 0;
   right: 0;
   bottom: 0;
-  height: 96px;
+  height: 112px;
   pointer-events: none;
 }
 
@@ -534,10 +534,10 @@ body.game-started:not(.in-lobby):not(.in-stage-select):not(.in-shop):not(.in-rec
   content: "";
   position: absolute;
   z-index: 4;
-  left: 174px;
-  top: 25px;
-  width: 390px;
-  height: 54px;
+  left: 172px;
+  top: 34px;
+  width: 410px;
+  height: 62px;
   border-radius: 5px;
   background:
     linear-gradient(180deg, rgba(27, 43, 66, 0.94), rgba(6, 16, 30, 0.98)),
@@ -555,9 +555,9 @@ body.game-started:not(.in-lobby):not(.in-stage-select):not(.in-shop):not(.in-rec
   position: absolute;
   z-index: 4;
   right: 30px;
-  top: 25px;
+  top: 34px;
   width: 354px;
-  height: 54px;
+  height: 62px;
   border-radius: 5px;
   background:
     linear-gradient(180deg, rgba(48, 48, 48, 0.95), rgba(27, 27, 28, 0.98) 46%, rgba(13, 13, 14, 0.98)),
@@ -573,17 +573,17 @@ body.game-started:not(.in-lobby):not(.in-stage-select):not(.in-shop):not(.in-rec
   position: absolute;
   z-index: 6;
   right: 30px;
-  top: 25px;
+  top: 34px;
   width: 354px;
-  height: 54px;
+  height: 62px;
   pointer-events: none;
 }
 
 .battle-action-icon-slot {
   position: absolute;
-  top: 5px;
-  width: 44px;
-  height: 44px;
+  top: 7px;
+  width: 48px;
+  height: 48px;
   border: 0;
   padding: 0;
   border-radius: 50%;
@@ -703,10 +703,10 @@ body.game-started:not(.in-lobby):not(.in-stage-select):not(.in-shop):not(.in-rec
 .battle-unit-slot-button[data-cost]::after {
   content: attr(data-cost);
   position: absolute;
-  right: 7px;
-  bottom: 4px;
+  right: 8px;
+  bottom: 5px;
   color: #f8fbff;
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 900;
   line-height: 1;
   letter-spacing: 0;
@@ -721,9 +721,9 @@ body.game-started:not(.in-lobby):not(.in-stage-select):not(.in-shop):not(.in-rec
 
 .battle-unit-slot-guard {
   left: 180px;
-  top: 29px;
-  width: 70px;
-  height: 46px;
+  top: 40px;
+  width: 74px;
+  height: 50px;
 }
 
 .battle-unit-slot-guard::before {
@@ -735,10 +735,10 @@ body.game-started:not(.in-lobby):not(.in-stage-select):not(.in-shop):not(.in-rec
 }
 
 .battle-unit-slot-archer {
-  left: 256px;
-  top: 29px;
-  width: 70px;
-  height: 46px;
+  left: 260px;
+  top: 40px;
+  width: 74px;
+  height: 50px;
 }
 
 .battle-unit-slot-archer::before {
@@ -748,10 +748,10 @@ body.game-started:not(.in-lobby):not(.in-stage-select):not(.in-shop):not(.in-rec
 }
 
 .battle-unit-slot-mage {
-  left: 332px;
-  top: 29px;
-  width: 70px;
-  height: 46px;
+  left: 340px;
+  top: 40px;
+  width: 74px;
+  height: 50px;
 }
 
 .battle-unit-slot-mage::before {
@@ -761,10 +761,10 @@ body.game-started:not(.in-lobby):not(.in-stage-select):not(.in-shop):not(.in-rec
 }
 
 .battle-unit-slot-saintess {
-  left: 408px;
-  top: 29px;
-  width: 70px;
-  height: 46px;
+  left: 420px;
+  top: 40px;
+  width: 74px;
+  height: 50px;
 }
 
 .battle-unit-slot-saintess::before {
@@ -774,10 +774,10 @@ body.game-started:not(.in-lobby):not(.in-stage-select):not(.in-shop):not(.in-rec
 }
 
 .battle-unit-slot-thief {
-  left: 484px;
-  top: 29px;
-  width: 70px;
-  height: 46px;
+  left: 500px;
+  top: 40px;
+  width: 74px;
+  height: 50px;
 }
 
 .battle-unit-slot-thief::before {
@@ -830,10 +830,10 @@ body.game-started:not(.in-lobby):not(.in-stage-select):not(.in-shop):not(.in-rec
   --stick-x: 0px;
   position: absolute;
   left: 30px;
-  bottom: 15px;
+  bottom: 16px;
   z-index: 3;
-  width: 136px;
-  height: 58px;
+  width: 146px;
+  height: 66px;
   border: 2px solid #1b120b;
   background:
     linear-gradient(90deg, rgba(13, 8, 5, 0.5), transparent 13%, transparent 87%, rgba(13, 8, 5, 0.5)),
@@ -900,8 +900,8 @@ body.game-started:not(.in-lobby):not(.in-stage-select):not(.in-shop):not(.in-rec
   position: absolute;
   left: 50%;
   top: 70%;
-  width: 25px;
-  height: 25px;
+  width: 28px;
+  height: 28px;
   border: 2px solid #1a110b;
   border-radius: 50%;
   background:
@@ -1137,29 +1137,29 @@ body.game-started:not(.in-lobby):not(.in-stage-select):not(.in-shop):not(.in-rec
 
   .battle-command-panel {
     --battle-unit-zone: 58%;
-    height: 90px;
+    height: 104px;
   }
 
   .battle-command-panel::before {
     left: 94px;
-    top: 7px;
+    top: 9px;
     width: 246px;
-    height: 10px;
+    height: 12px;
   }
 
   .battle-command-panel::after {
     left: 58px;
-    top: 1px;
-    width: 38px;
-    height: 22px;
-    background-size: 27px 21px, auto;
+    top: 2px;
+    width: 42px;
+    height: 26px;
+    background-size: 30px 24px, auto;
   }
 
   .battle-runestone-gauge {
     left: 94px;
-    top: 7px;
+    top: 9px;
     width: 246px;
-    height: 10px;
+    height: 12px;
   }
 
   .battle-runestone-fill {
@@ -1174,8 +1174,8 @@ body.game-started:not(.in-lobby):not(.in-stage-select):not(.in-shop):not(.in-rec
   .battle-mana-placeholder {
     left: 65.2%;
     right: 4.4%;
-    top: 7px;
-    height: 10px;
+    top: 9px;
+    height: 12px;
   }
 
   .battle-mana-fill {
@@ -1189,9 +1189,9 @@ body.game-started:not(.in-lobby):not(.in-stage-select):not(.in-shop):not(.in-rec
 
   .battle-mana-icon {
     left: 61.8%;
-    top: 1px;
-    width: 22px;
-    height: 22px;
+    top: 2px;
+    width: 25px;
+    height: 25px;
   }
 
   .battle-command-top {
@@ -1220,34 +1220,34 @@ body.game-started:not(.in-lobby):not(.in-stage-select):not(.in-shop):not(.in-rec
     left: 0;
     right: 0;
     bottom: 0;
-    height: 90px;
+    height: 104px;
   }
 
   .battle-command-bottom::before {
-    left: 160px;
-    top: 24px;
-    width: 358px;
-    height: 50px;
+    left: 154px;
+    top: 32px;
+    width: 380px;
+    height: 58px;
   }
 
   .battle-command-bottom::after {
     right: 24px;
-    top: 24px;
+    top: 32px;
     width: 320px;
-    height: 50px;
+    height: 58px;
   }
 
   .battle-action-icon-layer {
     right: 24px;
-    top: 24px;
+    top: 32px;
     width: 320px;
-    height: 50px;
+    height: 58px;
   }
 
   .battle-action-icon-slot {
-    top: 5px;
-    width: 40px;
-    height: 40px;
+    top: 7px;
+    width: 44px;
+    height: 44px;
   }
 
   .battle-action-icon-skill {
@@ -1259,10 +1259,10 @@ body.game-started:not(.in-lobby):not(.in-stage-select):not(.in-shop):not(.in-rec
   }
 
   .battle-unit-slot-guard {
-    left: 166px;
-    top: 28px;
-    width: 64px;
-    height: 42px;
+    left: 162px;
+    top: 38px;
+    width: 68px;
+    height: 46px;
   }
 
   .battle-unit-slot-button[data-cost]::before {
@@ -1270,37 +1270,37 @@ body.game-started:not(.in-lobby):not(.in-stage-select):not(.in-shop):not(.in-rec
   }
 
   .battle-unit-slot-button[data-cost]::after {
-    right: 6px;
+    right: 7px;
     bottom: 4px;
-    font-size: 12px;
+    font-size: 13px;
   }
 
   .battle-unit-slot-archer {
     left: 236px;
-    top: 28px;
-    width: 64px;
-    height: 42px;
+    top: 38px;
+    width: 68px;
+    height: 46px;
   }
 
   .battle-unit-slot-mage {
-    left: 306px;
-    top: 28px;
-    width: 64px;
-    height: 42px;
+    left: 310px;
+    top: 38px;
+    width: 68px;
+    height: 46px;
   }
 
   .battle-unit-slot-saintess {
-    left: 376px;
-    top: 28px;
-    width: 64px;
-    height: 42px;
+    left: 384px;
+    top: 38px;
+    width: 68px;
+    height: 46px;
   }
 
   .battle-unit-slot-thief {
-    left: 446px;
-    top: 28px;
-    width: 64px;
-    height: 42px;
+    left: 458px;
+    top: 38px;
+    width: 68px;
+    height: 46px;
   }
 
   .battle-unit-card-archer {
@@ -1333,9 +1333,9 @@ body.game-started:not(.in-lobby):not(.in-stage-select):not(.in-shop):not(.in-rec
 
   .movement-joystick {
     left: 22px;
-    bottom: 14px;
-    width: 132px;
-    height: 54px;
+    bottom: 15px;
+    width: 140px;
+    height: 62px;
     border-width: 2px;
   }
 
@@ -1365,8 +1365,8 @@ body.game-started:not(.in-lobby):not(.in-stage-select):not(.in-shop):not(.in-rec
 
   .movement-joystick-knob {
     top: 70%;
-    width: 23px;
-    height: 23px;
+    width: 26px;
+    height: 26px;
     border-width: 2px;
   }
 
