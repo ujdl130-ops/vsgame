@@ -139,8 +139,24 @@ const KARON_WEREWOLF_SPRITE = {
   },
 };
 
+const GOBLIN_STAGE_STATS = {
+  1: { hp: 70, damage: 13 },
+  2: { hp: 71, damage: 13 },
+  3: { hp: 73, damage: 13 },
+};
+
+const EVILEYE_STAGE_STATS = {
+  2: { hp: 66, damage: 12 },
+  3: { hp: 69, damage: 12 },
+};
+
+function getStageMonsterStats(table, fallbackStage) {
+  const stage = Number(gameState && gameState.stage) || fallbackStage;
+  return table[stage] || table[fallbackStage];
+}
 
 function createGoblinEnemy(wave, isStageOne) {
+  const stats = getStageMonsterStats(GOBLIN_STAGE_STATS, isStageOne ? 1 : 2);
   return {
     type: "normal",
     name: "goblin",
@@ -148,10 +164,10 @@ function createGoblinEnemy(wave, isStageOne) {
     y: COMBAT_LINE_Y,
     w: 34,
     h: 54,
-    hp: 55 + wave * 8,
-    maxHp: 55 + wave * 8,
+    hp: stats.hp,
+    maxHp: stats.hp,
     speed: 43 + wave * 3,
-    damage: 10 + wave * 2,
+    damage: stats.damage,
     range: 38,
     cooldown: 0,
     attackSpeed: 0.78,
@@ -168,7 +184,7 @@ function createGoblinEnemy(wave, isStageOne) {
 }
 
 function createEvileyeEnemy(wave) {
-  const hp = 48 + wave * 7;
+  const stats = getStageMonsterStats(EVILEYE_STAGE_STATS, 2);
   return {
     type: "evileye",
     name: "evileye",
@@ -177,10 +193,10 @@ function createEvileyeEnemy(wave) {
     y: COMBAT_LINE_Y,
     w: 42,
     h: 84,
-    hp,
-    maxHp: hp,
+    hp: stats.hp,
+    maxHp: stats.hp,
     speed: 34 + wave * 2,
-    damage: 8 + wave * 2,
+    damage: stats.damage,
     range: 190,
     cooldown: 0,
     attackSpeed: 1.45,
