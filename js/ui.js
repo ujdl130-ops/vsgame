@@ -242,10 +242,10 @@ function bindMovementJoystick(joystick) {
 
   let activePointerId = null;
 
-  const setJoystickInput = (direction) => {
-    heroMoveInput = direction;
-    joystick.classList.toggle("is-left", direction < 0);
-    joystick.classList.toggle("is-right", direction > 0);
+  const setJoystickInput = (amount) => {
+    heroMoveInput = Math.max(-1, Math.min(1, Number(amount) || 0));
+    joystick.classList.toggle("is-left", heroMoveInput < 0);
+    joystick.classList.toggle("is-right", heroMoveInput > 0);
   };
 
   const resetJoystick = () => {
@@ -270,7 +270,7 @@ function bindMovementJoystick(joystick) {
       setJoystickInput(0);
       return;
     }
-    setJoystickInput(offset < 0 ? -1 : 1);
+    setJoystickInput(offset / maxOffset);
   };
 
   joystick.addEventListener("pointerdown", (event) => {
