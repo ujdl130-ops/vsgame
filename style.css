@@ -6789,3 +6789,210 @@ body:not(.game-started) .game-wrap {
   }
 }
 
+/* Formation 100% browser zoom fit */
+.formation-screen {
+  overflow: hidden;
+}
+
+.formation-brand-panel {
+  left: 24px;
+  top: 18px;
+  width: 210px;
+}
+
+.formation-brand-emblem {
+  width: 58px;
+  height: 58px;
+  margin-bottom: 8px;
+  font-size: 28px;
+}
+
+.formation-brand-panel strong {
+  font-size: 34px;
+}
+
+.formation-brand-panel span {
+  margin-top: 6px;
+  font-size: 14px;
+}
+
+.formation-brand-panel::after {
+  top: 110px;
+}
+
+.formation-shell {
+  left: 285px;
+  top: 126px;
+  transform: none;
+  width: calc(100vw - 305px);
+  max-width: 1570px;
+  height: calc(100vh - 142px);
+  max-height: none;
+  grid-template-columns: minmax(0, 1fr) minmax(460px, 520px);
+  gap: 24px;
+}
+
+.formation-topbar {
+  top: 30px;
+  right: 430px;
+  transform: scale(0.9);
+  transform-origin: top right;
+}
+
+.formation-close-btn,
+.formation-back-btn {
+  top: 30px;
+  transform: scale(0.9);
+  transform-origin: top right;
+}
+
+.formation-main-panel,
+.formation-roster-panel {
+  overflow: hidden;
+}
+
+.formation-main-panel {
+  padding: 26px 32px 18px;
+}
+
+.formation-roster-panel {
+  padding: 26px 30px 18px;
+}
+
+.formation-logo {
+  font-size: 34px;
+}
+
+.formation-placement-head {
+  min-height: 34px;
+  margin-bottom: 12px;
+}
+
+.formation-slots-panel {
+  height: calc(100% - 118px);
+}
+
+.formation-slot-grid {
+  gap: 14px 18px;
+  padding-top: 16px;
+}
+
+.formation-slot {
+  aspect-ratio: auto;
+  width: 100%;
+  min-width: 0;
+  height: clamp(132px, 17vh, 164px);
+  min-height: 0;
+}
+
+.formation-slot i {
+  width: 54px;
+  height: 54px;
+  font-size: 34px;
+}
+
+.formation-deck-tabs {
+  margin-top: 12px;
+}
+
+.formation-notice {
+  padding-top: 8px;
+  font-size: 15px;
+}
+
+.formation-roster-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px 20px;
+  min-height: 0;
+  height: clamp(300px, 48vh, 390px);
+  padding: 14px 0 0;
+}
+
+.formation-unit-card {
+  width: 100%;
+  min-width: 0;
+  height: 100%;
+  min-height: 0;
+}
+
+.formation-unit-card img,
+.formation-selected-card img,
+.formation-slot.is-filled img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.formation-selected-info {
+  margin-top: 10px;
+  padding-top: 10px;
+}
+
+.formation-selected-info h2 {
+  margin-bottom: 8px;
+  font-size: 18px;
+}
+
+.formation-selected-body {
+  grid-template-columns: 124px minmax(0, 1fr);
+  gap: 14px;
+}
+
+.formation-selected-card {
+  height: 138px;
+  min-height: 0;
+}
+
+.formation-selected-name-row {
+  font-size: 18px;
+}
+
+.formation-selected-name-row span {
+  font-size: 15px;
+}
+
+.formation-selected-stats dl {
+  margin: 8px 0 10px;
+}
+
+.formation-selected-stats dl div {
+  padding: 2px 0;
+  font-size: 15px;
+}
+
+.formation-level-btn {
+  padding: 8px 12px;
+  font-size: 16px;
+}
+
+@media (max-height: 900px) {
+  .formation-shell {
+    top: 118px;
+    height: calc(100vh - 128px);
+  }
+
+  .formation-main-panel,
+  .formation-roster-panel {
+    padding-top: 22px;
+    padding-bottom: 14px;
+  }
+
+  .formation-slot {
+    height: clamp(112px, 15.5vh, 138px);
+  }
+
+  .formation-roster-grid {
+    height: clamp(250px, 44vh, 330px);
+    gap: 10px 18px;
+  }
+
+  .formation-selected-card {
+    height: 112px;
+  }
+
+  .formation-selected-stats dl div {
+    font-size: 14px;
+  }
+}
+
