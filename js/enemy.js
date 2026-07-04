@@ -138,6 +138,7 @@ const KARON_WEREWOLF_SPRITE = {
     idle: [268, 268, 267, 268, 267, 268],
     walk: [268, 268, 267, 268, 267, 268],
     attack: [246, 246, 253, 255, 254, 255],
+    death: [245, 241, 247, 250, 252, 253],
   },
   frameOverrides: {
     attack: {
