@@ -340,7 +340,7 @@ body.game-started:not(.in-lobby):not(.in-stage-select):not(.in-shop):not(.in-rec
 .battle-runestone-gauge {
   position: absolute;
   z-index: 2;
-  left: 118px;
+  left: 99px;
   top: 13px;
   width: 174px;
   height: 13px;
@@ -992,7 +992,7 @@ body.game-started:not(.in-lobby):not(.in-stage-select):not(.in-shop):not(.in-rec
   }
 
   .battle-runestone-gauge {
-    left: 118px;
+    left: 99px;
     top: 13px;
     width: 174px;
     height: 13px;
