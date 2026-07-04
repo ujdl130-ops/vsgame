@@ -77,7 +77,7 @@ function createInitialState() {
     message: `Stage ${selectedStage} 준비 완료`,
     messageTimer: 0,
     wave: 1,
-    runestone: stageConfig.startRunestone,
+    runestone: clampRunestone(stageConfig.startRunestone),
     runestoneTimer: 0,
     zeusMana: 0,
     zeusManaMax: ZEUS_MANA_MAX,

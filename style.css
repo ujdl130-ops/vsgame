@@ -223,41 +223,65 @@ body.game-started:not(.in-lobby):not(.in-stage-select):not(.in-shop):not(.in-rec
   text-shadow: 2px 2px 0 #000;
 }
 
-.game-options-btn {
+.game-options-icon-btn {
   position: absolute;
-  top: 12px;
-  right: 12px;
+  top: 18px;
+  right: 14px;
   z-index: 4;
-  min-width: 112px;
-  padding: 10px 14px;
-  border: 3px solid rgba(255, 255, 255, 0.9);
-  font-size: 14px;
-  background: linear-gradient(180deg, #d8f4ff, #70f7ff);
-  box-shadow:
-    0 5px 0 #1e7492,
-    0 0 0 3px rgba(16, 21, 46, 0.9),
-    0 10px 20px rgba(0, 0, 0, 0.28);
+  width: 38px;
+  height: 40px;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: filter 0.12s ease, transform 0.12s ease;
 }
 
-.game-options-btn.is-active {
-  filter: brightness(1.12);
+.game-options-icon-btn img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  pointer-events: none;
+  filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.55));
+}
+
+.game-options-icon-btn:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.08);
+}
+
+.game-options-icon-btn:active {
+  transform: translateY(1px);
+}
+
+.game-options-icon-btn.is-active {
+  filter: brightness(1.14) drop-shadow(0 0 8px rgba(83, 206, 255, 0.7));
 }
 
 .game-options-menu {
   position: absolute;
-  top: 62px;
-  right: 12px;
-  z-index: 5;
+  top: 104px;
+  left: 50%;
+  z-index: 8;
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  min-width: 176px;
-  padding: 12px;
-  border: 3px solid rgba(255, 255, 255, 0.86);
-  background: rgba(5, 8, 20, 0.9);
+  gap: 7px;
+  width: 150px;
+  padding: 10px;
+  border: 2px solid rgba(230, 199, 105, 0.86);
+  background:
+    linear-gradient(180deg, rgba(25, 28, 34, 0.96), rgba(8, 9, 12, 0.96));
   box-shadow:
-    0 0 0 3px rgba(16, 21, 46, 0.95),
-    0 14px 30px rgba(0, 0, 0, 0.38);
+    inset 0 0 0 2px rgba(255, 248, 197, 0.12),
+    0 0 0 2px rgba(5, 7, 12, 0.9),
+    0 10px 20px rgba(0, 0, 0, 0.46);
+  transform: translateX(-50%);
 }
 
 .game-options-menu.is-hidden {
@@ -266,8 +290,29 @@ body.game-started:not(.in-lobby):not(.in-stage-select):not(.in-shop):not(.in-rec
 
 .game-options-menu button {
   width: 100%;
-  padding: 12px 14px;
+  min-height: 34px;
+  padding: 7px 8px;
+  border: 2px solid rgba(108, 70, 24, 0.88);
+  color: #1c1609;
+  font-size: 12px;
+  font-weight: 900;
+  line-height: 1;
   white-space: nowrap;
+  background: linear-gradient(180deg, #fff0a8, #e69a27);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.48),
+    0 3px 0 #6a3c0e;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.35);
+}
+
+.game-options-menu button:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.08);
+}
+
+.game-options-menu button:active {
+  transform: translateY(1px);
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.34);
 }
 
 .battle-command-panel {
@@ -364,56 +409,71 @@ body.game-started:not(.in-lobby):not(.in-stage-select):not(.in-shop):not(.in-rec
     1px -1px 0 #000;
 }
 
+.battle-mana-placeholder {
+  position: absolute;
+  z-index: 5;
+  left: 66%;
+  right: 3.8%;
+  top: 15px;
+  height: 16px;
+  border-radius: 999px;
+  overflow: hidden;
+  background: #060504;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.04),
+    inset 0 -1px 2px rgba(0, 0, 0, 0.62);
+  pointer-events: none;
+}
+
+.battle-mana-fill {
+  position: absolute;
+  inset: 1px auto 2px 2px;
+  width: 0%;
+  max-width: calc(100% - 4px);
+  border-radius: 999px;
+  background:
+    linear-gradient(90deg, rgba(20, 107, 220, 0.78), rgba(45, 196, 255, 0.94) 58%, rgba(162, 242, 255, 0.98)),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.28), rgba(0, 0, 0, 0.1));
+  box-shadow:
+    inset 0 1px 0 rgba(215, 251, 255, 0.48),
+    0 0 8px rgba(45, 183, 255, 0.48);
+}
+
+.battle-mana-placeholder strong {
+  position: absolute;
+  z-index: 2;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #eaf8ff;
+  font-size: 12px;
+  font-weight: 900;
+  line-height: 1;
+  letter-spacing: 0;
+  text-shadow:
+    2px 2px 0 #000,
+    -1px -1px 0 #000,
+    1px -1px 0 #000;
+}
+
+.battle-mana-icon {
+  position: absolute;
+  z-index: 6;
+  left: 62.8%;
+  top: 5px;
+  width: 34px;
+  height: 34px;
+  object-fit: contain;
+  pointer-events: none;
+  filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.62));
+}
+
 .battle-command-top {
   display: none;
 }
 
 .battle-command-top::before {
   display: none;
-}
-
-.battle-mana-gauge {
-  position: absolute;
-  z-index: 6;
-  top: 16px;
-  left: 63.5%;
-  right: 6%;
-  height: 14px;
-  display: grid;
-  grid-template-columns: auto 1fr auto;
-  align-items: center;
-  gap: 6px;
-  padding: 2px 10px;
-  border: 0;
-  background: rgba(4, 12, 24, 0.35);
-  box-shadow: none;
-  pointer-events: none;
-}
-
-.battle-mana-label,
-.battle-mana-gauge strong {
-  color: #ecfbff;
-  font-size: 10px;
-  font-weight: 900;
-  line-height: 1;
-  text-shadow: 2px 2px 0 #000;
-}
-
-.battle-mana-track {
-  position: relative;
-  height: 7px;
-  border: 1px solid #07101b;
-  background: rgba(6, 12, 20, 0.75);
-  overflow: hidden;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.18);
-}
-
-.battle-mana-fill {
-  position: absolute;
-  inset: 0 auto 0 0;
-  width: 0%;
-  background: linear-gradient(90deg, #2a9dff, #7af7ff);
-  box-shadow: 0 0 8px rgba(122, 247, 255, 0.8);
 }
 
 .battle-meter {
@@ -501,9 +561,9 @@ body.game-started:not(.in-lobby):not(.in-stage-select):not(.in-shop):not(.in-rec
 
 .battle-action-icon-slot {
   position: absolute;
-  top: 50%;
-  width: 68px;
-  height: 68px;
+  top: 8px;
+  width: 60px;
+  height: 60px;
   border: 0;
   padding: 0;
   border-radius: 50%;
@@ -511,7 +571,7 @@ body.game-started:not(.in-lobby):not(.in-stage-select):not(.in-shop):not(.in-rec
   cursor: pointer;
   pointer-events: auto;
   touch-action: manipulation;
-  transform: translateY(-50%);
+  transform: none;
 }
 
 .battle-action-icon-basic,
@@ -519,15 +579,15 @@ body.game-started:not(.in-lobby):not(.in-stage-select):not(.in-shop):not(.in-rec
   overflow: hidden;
   box-shadow:
     0 0 0 2px rgba(13, 7, 3, 0.78),
-    0 4px 8px rgba(0, 0, 0, 0.45);
+    0 2px 4px rgba(0, 0, 0, 0.45);
 }
 
 .battle-action-icon-basic {
-  right: 88px;
+  right: 92px;
 }
 
 .battle-action-icon-skill {
-  right: 190px;
+  right: 194px;
 }
 
 .battle-action-icon-slot img {
@@ -540,7 +600,7 @@ body.game-started:not(.in-lobby):not(.in-stage-select):not(.in-shop):not(.in-rec
 }
 
 .battle-action-icon-skill img {
-  transform: scale(1.08);
+  transform: scale(1.02);
   transform-origin: center;
 }
 
@@ -549,7 +609,7 @@ body.game-started:not(.in-lobby):not(.in-stage-select):not(.in-shop):not(.in-rec
 }
 
 .battle-command-panel .battle-action-icon-slot:active:not(:disabled) {
-  transform: translateY(-50%) scale(0.94);
+  transform: scale(0.94);
 }
 
 .battle-command-panel .battle-action-icon-slot:disabled,
@@ -688,11 +748,11 @@ body.game-started:not(.in-lobby):not(.in-stage-select):not(.in-shop):not(.in-rec
 .movement-joystick {
   --stick-x: 0px;
   position: absolute;
-  left: 62px;
-  bottom: 8px;
+  left: 48px;
+  bottom: 16px;
   z-index: 3;
-  width: 330px;
-  height: 40px;
+  width: 160px;
+  height: 38px;
   border: 2px solid #1b120b;
   background:
     linear-gradient(90deg, rgba(13, 8, 5, 0.5), transparent 13%, transparent 87%, rgba(13, 8, 5, 0.5)),
@@ -718,8 +778,8 @@ body.game-started:not(.in-lobby):not(.in-stage-select):not(.in-shop):not(.in-rec
 
 .movement-joystick-track {
   position: absolute;
-  left: 28px;
-  right: 28px;
+  left: 24px;
+  right: 24px;
   top: 50%;
   height: 9px;
   border: 2px solid #1a1009;
@@ -742,25 +802,25 @@ body.game-started:not(.in-lobby):not(.in-stage-select):not(.in-shop):not(.in-rec
 }
 
 .movement-joystick-arrow-left {
-  left: 14px;
-  border-top: 8px solid transparent;
-  border-bottom: 8px solid transparent;
-  border-right: 13px solid #d69536;
+  left: 12px;
+  border-top: 7px solid transparent;
+  border-bottom: 7px solid transparent;
+  border-right: 11px solid #d69536;
 }
 
 .movement-joystick-arrow-right {
-  right: 14px;
-  border-top: 8px solid transparent;
-  border-bottom: 8px solid transparent;
-  border-left: 13px solid #d69536;
+  right: 12px;
+  border-top: 7px solid transparent;
+  border-bottom: 7px solid transparent;
+  border-left: 11px solid #d69536;
 }
 
 .movement-joystick-knob {
   position: absolute;
   left: 50%;
   top: 50%;
-  width: 34px;
-  height: 34px;
+  width: 31px;
+  height: 31px;
   border: 3px solid #1a110b;
   border-radius: 50%;
   background:
@@ -973,6 +1033,27 @@ body.game-started:not(.in-lobby):not(.in-stage-select):not(.in-shop):not(.in-rec
     font-size: 11px;
   }
 
+  .game-options-icon-btn {
+    top: 11px;
+    right: 9px;
+    width: 30px;
+    height: 32px;
+  }
+
+  .game-options-menu {
+    top: 74px;
+    left: 50%;
+    width: 128px;
+    padding: 8px;
+    gap: 6px;
+  }
+
+  .game-options-menu button {
+    min-height: 30px;
+    padding: 6px 7px;
+    font-size: 11px;
+  }
+
   .battle-command-panel {
     --battle-unit-zone: 64%;
     height: 112px;
@@ -1009,30 +1090,33 @@ body.game-started:not(.in-lobby):not(.in-stage-select):not(.in-shop):not(.in-rec
     font-size: 9px;
   }
 
+  .battle-mana-placeholder {
+    left: 66%;
+    right: 3.8%;
+    top: 11px;
+    height: 11px;
+  }
+
+  .battle-mana-fill {
+    inset: 1px auto 1px 2px;
+  }
+
+  .battle-mana-placeholder strong {
+    right: 6px;
+    font-size: 9px;
+  }
+
+  .battle-mana-icon {
+    left: 62.9%;
+    top: 3px;
+    width: 25px;
+    height: 25px;
+  }
+
   .battle-command-top {
     left: 8px;
     right: 8px;
     height: 14px;
-  }
-
-  .battle-mana-gauge {
-    top: 11px;
-    left: 63.5%;
-    right: 6%;
-    height: 12px;
-    gap: 4px;
-    padding: 2px 5px;
-    border-width: 2px;
-  }
-
-  .battle-mana-label,
-  .battle-mana-gauge strong {
-    font-size: 8px;
-  }
-
-  .battle-mana-track {
-    height: 6px;
-    border-width: 1px;
   }
 
   .battle-meter {
@@ -1073,16 +1157,16 @@ body.game-started:not(.in-lobby):not(.in-stage-select):not(.in-shop):not(.in-rec
   }
 
   .battle-action-icon-slot {
-    width: 48px;
-    height: 48px;
+    width: 42px;
+    height: 42px;
   }
 
   .battle-action-icon-skill {
-    right: 174px;
+    right: 177px;
   }
 
   .battle-action-icon-basic {
-    right: 92px;
+    right: 95px;
   }
 
   .battle-unit-slot-guard {
@@ -1159,29 +1243,29 @@ body.game-started:not(.in-lobby):not(.in-stage-select):not(.in-shop):not(.in-rec
   }
 
   .movement-joystick {
-    left: 38px;
-    bottom: 7px;
-    width: 232px;
+    left: 28px;
+    bottom: 13px;
+    width: 142px;
     height: 30px;
     border-width: 2px;
   }
 
   .movement-joystick-track {
-    left: 20px;
-    right: 20px;
+    left: 18px;
+    right: 18px;
     height: 7px;
     border-width: 1px;
   }
 
   .movement-joystick-arrow-left {
-    left: 10px;
+    left: 9px;
     border-top-width: 6px;
     border-bottom-width: 6px;
     border-right-width: 9px;
   }
 
   .movement-joystick-arrow-right {
-    right: 10px;
+    right: 9px;
     border-top-width: 6px;
     border-bottom-width: 6px;
     border-left-width: 9px;

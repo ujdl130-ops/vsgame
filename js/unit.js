@@ -1,6 +1,9 @@
 // Friendly unit summoning, behavior, and rendering.
 
 const THIEF_ATTACK_DURATION = 0.42;
+const THIEF_RETREAT_DURATION = 0.45;
+const THIEF_RETREAT_SPEED = 190;
+const THIEF_RETREAT_MIN_X = PLAYER_BASE_X + 58;
 
 function summonGuard() {
   if (!hasSummonSlot()) {
@@ -188,11 +191,20 @@ function summonThief() {
     attackAnimDuration: THIEF_ATTACK_DURATION,
     attackImpactPending: false,
     attackTarget: null,
+    retreatTimer: 0,
+    retreatDuration: THIEF_RETREAT_DURATION,
+    retreatSpeed: THIEF_RETREAT_SPEED,
     dead: false,
     deathAnimTimer: 0,
     deathAnimDuration: 0.78,
     deathRewarded: false,
   });
+}
+
+function startThiefRetreat(unit) {
+  unit.retreatDuration = unit.retreatDuration || THIEF_RETREAT_DURATION;
+  unit.retreatTimer = unit.retreatDuration;
+  unit.moving = true;
 }
 
 function findSaintessHealTargets(unit) {
@@ -244,6 +256,13 @@ function updateUnits(dt) {
       ? 1 - unit.attackAnimTimer / unit.attackAnimDuration
       : 1;
 
+    if (unit.type === "thief" && (unit.retreatTimer || 0) > 0) {
+      unit.retreatTimer = Math.max(0, unit.retreatTimer - dt);
+      unit.x = Math.max(THIEF_RETREAT_MIN_X, unit.x - (unit.retreatSpeed || THIEF_RETREAT_SPEED) * dt);
+      unit.moving = true;
+      continue;
+    }
+
     // 궁수는 별도의 공격 모션이 없습니다. 공격 / 걷기 / 사망 모션만 사용합니다.
     // 궁수는 지정한 타이밍에 투사체를 발사합니다.
     if (unit.type === "archer" && unit.pendingArrowShot && (attackProgress >= 0.62 || unit.attackAnimTimer <= 0)) {
@@ -289,20 +308,27 @@ function updateUnits(dt) {
     if ((unit.type === "guard" || unit.type === "thief") && unit.attackImpactPending && (attackProgress >= 0.48 || unit.attackAnimTimer <= 0)) {
       const attackTarget = isCombatAlive(unit.attackTarget)
         ? unit.attackTarget
-        : findNearestEnemy(unit.x, unit.range + 12);
+        : findNearestEnemy(unit.x, unit.range + 12, { includeAirborne: false });
 
-      if (attackTarget) {
+      if (canDamageCombatant(attackTarget)) {
         attackTarget.hp -= unit.damage;
         if (unit.type === "thief") {
           spawnThiefStrike(attackTarget.x, attackTarget.y - Math.max(34, attackTarget.h * 0.65));
+          startThiefRetreat(unit);
         }
       }
 
       unit.attackImpactPending = false;
       unit.attackTarget = null;
+
+      if (unit.type === "thief" && (unit.retreatTimer || 0) > 0) {
+        continue;
+      }
     }
 
-    const target = findNearestEnemy(unit.x, unit.range);
+    const target = findNearestEnemy(unit.x, unit.range, {
+      includeAirborne: !(unit.type === "guard" || unit.type === "thief"),
+    });
 
     if (target) {
       if (unit.cooldown <= 0) {
@@ -322,7 +348,7 @@ function updateUnits(dt) {
           unit.attackAnimTimer = unit.attackAnimDuration;
           unit.attackImpactPending = true;
           unit.attackTarget = target;
-        } else {
+        } else if (canDamageCombatant(target)) {
           target.hp -= unit.damage;
         }
       }
@@ -665,10 +691,38 @@ function drawUnit(unit) {
       ctx.fill();
     }
   } else if (unit.type === "thief") {
+    const retreatRatio = unit.retreatDuration
+      ? Math.max(0, Math.min(1, (unit.retreatTimer || 0) / unit.retreatDuration))
+      : 0;
+
+    if (retreatRatio > 0 && thiefSpriteReady) {
+      for (let i = 3; i >= 1; i--) {
+        ctx.save();
+        ctx.globalAlpha = retreatRatio * (0.06 + i * 0.05);
+        ctx.translate(i * 13, 0);
+        drawThiefSprite(unit);
+        ctx.restore();
+      }
+    }
+
     const drewSprite = drawThiefSprite(unit);
 
     if (!drewSprite) {
       ctx.translate(0, bob);
+
+      if (retreatRatio > 0) {
+        ctx.save();
+        ctx.globalAlpha = 0.45 * retreatRatio;
+        ctx.strokeStyle = "#cfffff";
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.moveTo(18, -44);
+        ctx.lineTo(44, -52);
+        ctx.moveTo(14, -28);
+        ctx.lineTo(38, -34);
+        ctx.stroke();
+        ctx.restore();
+      }
 
       ctx.fillStyle = "#2f2a42";
       ctx.fillRect(-12, -38, 24, 30);
