@@ -60,14 +60,102 @@ function showRecruit() {
     updateButtons();
   }
 
-  const goldAmount = document.getElementById("recruitGoldAmount");
-  const diamondAmount = document.getElementById("recruitDiamondAmount");
-  if (goldAmount) goldAmount.textContent = Number(playerProgress.gold || 0).toLocaleString("ko-KR");
-  if (diamondAmount) diamondAmount.textContent = Number(playerProgress.diamonds || 0).toLocaleString("ko-KR");
+  updateRecruitWallet();
+  bindRecruitTicketPopup();
 
   if (recruitNotice) {
     recruitNotice.innerHTML = "<strong>SSR 확률 3%</strong><span>중복 신 획득 시 해당 신의 정수로 변환됩니다.</span>";
   }
+}
+
+function getRecruitBalance(key) {
+  return Math.max(0, Number(window.ShopAPI?.getSessionBalance?.(key)) || 0);
+}
+
+function updateRecruitWallet() {
+  const walletValues = {
+    recruitGoldAmount: getRecruitBalance("gold"),
+    recruitDiamondAmount: getRecruitBalance("diamonds"),
+    recruitTicketAmount: getRecruitBalance("summonTickets"),
+    recruitEssenceAmount: getRecruitBalance("commonEssence"),
+    recruitSoldierEssenceAmount: getRecruitBalance("soldierFragments"),
+  };
+
+  Object.entries(walletValues).forEach(([elementId, value]) => {
+    const amount = document.getElementById(elementId);
+    if (amount) amount.textContent = value.toLocaleString("ko-KR");
+  });
+
+  updateRecruitPullCosts();
+}
+
+function updateRecruitPullCosts() {
+  [
+    { button: document.getElementById("recruitPullOneBtn"), count: 1, diamonds: 100 },
+    { button: document.getElementById("recruitPullTenBtn"), count: 10, diamonds: 1000 },
+  ].forEach(({ button, count, diamonds }) => {
+    const cost = button?.querySelector(".recruit-pull-cost");
+    if (!cost) return;
+    const useTicket = getRecruitBalance("summonTickets") >= count;
+    cost.innerHTML = `
+      <img src="assets/icons/${useTicket ? "ticket" : "diamond"}.png" alt="">
+      <strong>${(useTicket ? count : diamonds).toLocaleString("ko-KR")}</strong>
+    `;
+    cost.classList.toggle("uses-ticket", useTicket);
+    cost.classList.toggle("uses-diamond", !useTicket);
+  });
+}
+
+function openRecruitTicketPopup() {
+  const popup = document.getElementById("recruitTicketPopup");
+  if (popup) popup.classList.remove("is-hidden");
+}
+
+function closeRecruitTicketPopup() {
+  const popup = document.getElementById("recruitTicketPopup");
+  if (popup) popup.classList.add("is-hidden");
+}
+
+function bindRecruitTicketPopup() {
+  const popup = document.getElementById("recruitTicketPopup");
+  const closeBtn = document.getElementById("recruitTicketPopupCloseBtn");
+  const shopBtn = document.getElementById("recruitTicketPopupShopBtn");
+  if (!popup || popup.dataset.bound === "true") return;
+
+  popup.dataset.bound = "true";
+  closeBtn?.addEventListener("click", closeRecruitTicketPopup);
+  shopBtn?.addEventListener("click", () => {
+    closeRecruitTicketPopup();
+    showShop();
+  });
+  popup.addEventListener("click", (event) => {
+    if (event.target === popup) closeRecruitTicketPopup();
+  });
+}
+
+function requestRecruitPull(count) {
+  const pullCount = count === 10 ? 10 : 1;
+  const diamondCost = pullCount === 10 ? 1000 : 100;
+  const useTicket = getRecruitBalance("summonTickets") >= pullCount;
+  const currencyKey = useTicket ? "summonTickets" : "diamonds";
+  const cost = useTicket ? pullCount : diamondCost;
+
+  if (getRecruitBalance(currencyKey) < cost) {
+    openRecruitTicketPopup();
+    return false;
+  }
+
+  const spent = window.ShopAPI?.spendSessionCurrency?.(currencyKey, cost);
+  if (!spent) {
+    openRecruitTicketPopup();
+    return false;
+  }
+
+  updateRecruitWallet();
+  const results = pullCount === 10 ? summonGodDescentTen() : summonGodDescentOnce();
+  renderGachaResult(results);
+  startRecruitDoorAnimation(pullCount, results);
+  return true;
 }
 
 function getRecruitThreeStarResult(count) {
@@ -288,4 +376,6 @@ window.GachaAPI = {
   summonGodDescentTen,
   renderGachaResult,
   openGachaScreen,
+  requestRecruitPull,
+  updateRecruitWallet,
 };

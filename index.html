@@ -74,31 +74,64 @@
     <div class="recruit-divine-overlay" aria-hidden="true"></div>
 
     <button id="recruitBackBtn" class="recruit-ui-btn recruit-back-btn" type="button">← 로비</button>
-    <button id="recruitCloseBtn" class="recruit-ui-btn recruit-close-btn" type="button">닫기</button>
-
-    <aside class="recruit-wallet" aria-label="보유 재화">
-      <div class="recruit-currency">
-        <img src="assets/icons/gold.png" alt="">
-        <span>골드</span>
-        <strong id="recruitGoldAmount">0</strong>
-      </div>
-      <div class="recruit-currency">
-        <img src="assets/icons/diamonds.png" alt="">
-        <span>다이아</span>
-        <strong id="recruitDiamondAmount">0</strong>
-      </div>
-    </aside>
+    <div class="recruit-top-actions">
+      <aside class="recruit-wallet" aria-label="보유 재화">
+        <div class="recruit-currency">
+          <img src="assets/icons/gold.png" alt="">
+          <span>골드</span>
+          <strong id="recruitGoldAmount">0</strong>
+        </div>
+        <div class="recruit-currency">
+          <img src="assets/icons/diamond.png" alt="">
+          <span>다이아</span>
+          <strong id="recruitDiamondAmount">0</strong>
+        </div>
+        <div class="recruit-currency">
+          <img src="assets/icons/ticket.png" alt="">
+          <span>신 모집권</span>
+          <strong id="recruitTicketAmount">0</strong>
+        </div>
+        <div class="recruit-currency">
+          <img src="assets/icons/essence_all.png" alt="">
+          <span>신의 정수</span>
+          <strong id="recruitEssenceAmount">0</strong>
+        </div>
+        <div class="recruit-currency">
+          <img src="assets/icons/essence_soldier.png" alt="">
+          <span>병사 정수</span>
+          <strong id="recruitSoldierEssenceAmount">0</strong>
+        </div>
+      </aside>
+      <button id="recruitCloseBtn" class="recruit-ui-btn recruit-close-btn" type="button">닫기</button>
+    </div>
 
     <div class="recruit-frame">
       <div class="recruit-command-area">
         <div class="recruit-pull-buttons">
-          <button id="recruitPullOneBtn" class="recruit-pull-btn pull-one" type="button"><span>1회</span> 강림</button>
-          <button id="recruitPullTenBtn" class="recruit-pull-btn pull-ten" type="button"><span>10회</span> 강림</button>
+          <button id="recruitPullOneBtn" class="recruit-pull-btn pull-one" type="button">
+            <span>1회</span> 강림
+            <small class="recruit-pull-cost"></small>
+          </button>
+          <button id="recruitPullTenBtn" class="recruit-pull-btn pull-ten" type="button">
+            <span>10회</span> 강림
+            <small class="recruit-pull-cost"></small>
+          </button>
         </div>
         <p id="recruitNotice" class="recruit-notice">
           <strong>SSR 확률 3%</strong>
           <span>중복 신 획득 시 해당 신의 정수로 변환됩니다.</span>
         </p>
+      </div>
+    </div>
+
+    <div id="recruitTicketPopup" class="recruit-ticket-popup is-hidden" role="dialog" aria-modal="true" aria-labelledby="recruitTicketPopupTitle">
+      <div class="recruit-ticket-popup-window">
+        <h2 id="recruitTicketPopupTitle">재화가 부족합니다</h2>
+        <p>신 모집권 또는 다이아를 상점에서 확인하시겠습니까?</p>
+        <div class="recruit-ticket-popup-actions">
+          <button id="recruitTicketPopupCloseBtn" class="recruit-ticket-popup-btn is-close" type="button">닫기</button>
+          <button id="recruitTicketPopupShopBtn" class="recruit-ticket-popup-btn is-shop" type="button">상점으로 이동</button>
+        </div>
       </div>
     </div>
 
@@ -143,7 +176,37 @@
     <div class="shop-scanline" aria-hidden="true"></div>
 
     <button id="shopBackBtn" class="shop-ui-btn shop-back-btn" type="button">← 로비</button>
-    <button id="shopCloseBtn" class="shop-ui-btn shop-close-btn" type="button">닫기</button>
+    <div class="shop-top-actions">
+      <aside class="shop-wallet" aria-label="보유 재화">
+        <div class="shop-wallet-currency">
+          <img src="assets/icons/gold.png" alt="">
+          <span>골드</span>
+          <strong id="shopGoldAmount">0</strong>
+        </div>
+        <div class="shop-wallet-currency">
+          <img src="assets/icons/diamond.png" alt="">
+          <span>다이아</span>
+          <strong id="shopDiamondAmount">0</strong>
+        </div>
+        <div class="shop-wallet-currency">
+          <img src="assets/icons/ticket.png" alt="">
+          <span>신 모집권</span>
+          <strong id="shopTicketAmount">0</strong>
+        </div>
+        <div class="shop-wallet-currency">
+          <img src="assets/icons/essence_all.png" alt="">
+          <span>신의 정수</span>
+          <strong id="shopEssenceAmount">0</strong>
+        </div>
+        <div class="shop-wallet-currency">
+          <img src="assets/icons/essence_soldier.png" alt="">
+          <span>병사 정수</span>
+          <strong id="shopSoldierEssenceAmount">0</strong>
+        </div>
+      </aside>
+
+      <button id="shopCloseBtn" class="shop-ui-btn shop-close-btn" type="button">닫기</button>
+    </div>
 
     <div class="shop-layout" aria-label="상점 UI">
       <aside id="shopCategoryList" class="shop-category-list" aria-label="상점 카테고리"></aside>

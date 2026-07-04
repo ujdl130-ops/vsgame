@@ -249,14 +249,10 @@ formationSlots.forEach((slot, index) => {
 if (recruitBackBtn) recruitBackBtn.addEventListener("click", showLobby);
 if (recruitCloseBtn) recruitCloseBtn.addEventListener("click", showLobby);
 if (recruitPullOneBtn) recruitPullOneBtn.addEventListener("click", () => {
-  const results = summonGodDescentOnce();
-  renderGachaResult(results);
-  startRecruitDoorAnimation(1, results);
+  requestRecruitPull(1);
 });
 if (recruitPullTenBtn) recruitPullTenBtn.addEventListener("click", () => {
-  const results = summonGodDescentTen();
-  renderGachaResult(results);
-  startRecruitDoorAnimation(10, results);
+  requestRecruitPull(10);
 });
 if (recruitDoorFrame) recruitDoorFrame.addEventListener("pointerdown", handleRecruitDoorTap);
 if (recruitDoorCloseBtn) recruitDoorCloseBtn.addEventListener("pointerdown", (event) => {
