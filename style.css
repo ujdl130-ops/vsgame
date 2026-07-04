@@ -398,6 +398,7 @@ body.game-started:not(.in-lobby):not(.in-stage-select):not(.in-shop):not(.in-rec
 }
 
 .battle-mana-placeholder {
+  display: none;
   position: absolute;
   z-index: 5;
   left: 632px;
