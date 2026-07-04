@@ -1,5 +1,133 @@
-// Mission entry points.
+// Mission screen.
+
+const MISSION_GROUPS = [
+  {
+    id: "daily",
+    title: "일일 미션",
+    subtitle: "매일 초기화",
+    missions: [
+      { title: "몬스터 처치", detail: "전투에서 몬스터를 처치하세요.", current: 10, target: 100, reward: "골드 500" },
+      { title: "스킬 사용", detail: "영웅 스킬을 사용하세요.", current: 3, target: 10, reward: "젬 20" },
+      { title: "유닛 소환", detail: "전투 중 유닛을 소환하세요.", current: 8, target: 20, reward: "토큰 15" },
+      { title: "스테이지 도전", detail: "스테이지에 입장하세요.", current: 1, target: 3, reward: "티켓 1" },
+      { title: "골드 획득", detail: "전투 보상으로 골드를 모으세요.", current: 1200, target: 3000, reward: "골드 800" },
+    ],
+  },
+  {
+    id: "weekly",
+    title: "주간 미션",
+    subtitle: "매주 초기화",
+    missions: [
+      { title: "몬스터 대량 처치", detail: "한 주 동안 몬스터를 처치하세요.", current: 145, target: 500, reward: "젬 120" },
+      { title: "보스전 승리", detail: "보스가 등장하는 전투에서 승리하세요.", current: 1, target: 5, reward: "토큰 80" },
+      { title: "스킬 연계 훈련", detail: "스킬을 여러 번 사용하세요.", current: 22, target: 80, reward: "골드 4000" },
+      { title: "스테이지 클리어", detail: "스테이지를 클리어하세요.", current: 4, target: 15, reward: "소환 티켓 3" },
+    ],
+  },
+  {
+    id: "achievement",
+    title: "업적",
+    subtitle: "누적 달성",
+    missions: [
+      { title: "몬스터 처치 1단계", detail: "누적 몬스터 처치 수를 달성하세요.", current: 320, target: 1000, reward: "칭호: 수호자" },
+      { title: "스킬 마스터", detail: "누적 스킬 사용 횟수를 달성하세요.", current: 58, target: 300, reward: "젬 300" },
+      { title: "소환 지휘관", detail: "누적 유닛 소환 횟수를 달성하세요.", current: 210, target: 700, reward: "토큰 250" },
+      { title: "전장의 개척자", detail: "누적 스테이지 클리어 횟수를 달성하세요.", current: 18, target: 100, reward: "골드 20000" },
+      { title: "불굴의 도전자", detail: "누적 전투 도전 횟수를 달성하세요.", current: 42, target: 200, reward: "소환 티켓 10" },
+    ],
+  },
+];
+
+function getMissionProgressPercent(mission) {
+  if (!mission || !mission.target) return 0;
+  return Math.max(0, Math.min(100, Math.round((mission.current / mission.target) * 100)));
+}
+
+function renderMissionCard(mission) {
+  const percent = getMissionProgressPercent(mission);
+  const complete = mission.current >= mission.target;
+  return `
+    <article class="mission-card ${complete ? "is-complete" : ""}">
+      <div class="mission-card-main">
+        <span class="mission-card-mark" aria-hidden="true">✦</span>
+        <div>
+          <h3>${mission.title}</h3>
+          <p>${mission.detail}</p>
+        </div>
+      </div>
+      <div class="mission-progress-row">
+        <div class="mission-progress-track" aria-hidden="true">
+          <span style="width: ${percent}%"></span>
+        </div>
+        <strong>${mission.current} / ${mission.target}</strong>
+      </div>
+      <div class="mission-card-foot">
+        <span>${mission.reward}</span>
+        <button type="button" ${complete ? "" : "disabled"}>${complete ? "받기" : "진행중"}</button>
+      </div>
+    </article>
+  `;
+}
+
+function renderMissionGroup(group) {
+  return `
+    <section class="mission-section mission-section-${group.id}">
+      <header class="mission-section-head">
+        <div>
+          <p>${group.subtitle}</p>
+          <h2>${group.title}</h2>
+        </div>
+        <span>${group.missions.length}</span>
+      </header>
+      <div class="mission-list">
+        ${group.missions.map(renderMissionCard).join("")}
+      </div>
+    </section>
+  `;
+}
+
+function renderMissionScreen() {
+  if (!missionRoot) return;
+  missionRoot.innerHTML = `
+    <aside class="mission-brand-panel" aria-label="미션 로고">
+      <div class="mission-brand-emblem" aria-hidden="true">✦</div>
+      <strong>미션</strong>
+      <span>MISSION</span>
+    </aside>
+    <main class="mission-board">
+      <header class="mission-board-head">
+        <p>TEMPLE QUEST</p>
+        <h1>미션</h1>
+      </header>
+      <div class="mission-columns">
+        ${MISSION_GROUPS.map(renderMissionGroup).join("")}
+      </div>
+    </main>
+  `;
+}
+
+function showMission() {
+  if (titleScreen) titleScreen.classList.add("is-hidden");
+  if (lobbyScreen) lobbyScreen.classList.add("is-hidden");
+  if (stageScreen) stageScreen.classList.add("is-hidden");
+  if (shopScreen) shopScreen.classList.add("is-hidden");
+  if (recruitScreen) recruitScreen.classList.add("is-hidden");
+  if (formationScreen) formationScreen.classList.add("is-hidden");
+  if (missionScreen) missionScreen.classList.remove("is-hidden");
+  hideRecruitDoorScene(true);
+
+  document.body.classList.remove("game-started", "in-lobby", "in-stage-select", "in-shop", "in-recruit", "in-formation");
+  document.body.classList.add("in-mission");
+
+  if (gameState) {
+    gameState.running = false;
+    gameState.message = "미션 화면에서 진행도를 확인하세요";
+    updateButtons();
+  }
+
+  renderMissionScreen();
+}
 
 function showMissionNotice() {
-  showLobbyMenuNotice("미션");
+  showMission();
 }

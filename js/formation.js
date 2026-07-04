@@ -295,8 +295,9 @@ function showFormation() {
   if (shopScreen) shopScreen.classList.add("is-hidden");
   if (recruitScreen) recruitScreen.classList.add("is-hidden");
   if (formationScreen) formationScreen.classList.remove("is-hidden");
+  if (missionScreen) missionScreen.classList.add("is-hidden");
   hideRecruitDoorScene(true);
-  document.body.classList.remove("game-started", "in-lobby", "in-stage-select", "in-shop", "in-recruit", "in-formation");
+  document.body.classList.remove("game-started", "in-lobby", "in-stage-select", "in-shop", "in-recruit", "in-formation", "in-mission");
   document.body.classList.add("in-formation");
 
   if (gameState) {

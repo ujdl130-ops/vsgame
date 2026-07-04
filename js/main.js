@@ -30,9 +30,10 @@ function startGame(stageNumber = selectedStage) {
   if (shopScreen) shopScreen.classList.add("is-hidden");
   if (recruitScreen) recruitScreen.classList.add("is-hidden");
   if (formationScreen) formationScreen.classList.add("is-hidden");
+  if (missionScreen) missionScreen.classList.add("is-hidden");
   hideRecruitDoorScene(true);
   document.body.classList.add("game-started");
-  document.body.classList.remove("in-lobby", "in-stage-select", "in-shop", "in-recruit", "in-formation");
+  document.body.classList.remove("in-lobby", "in-stage-select", "in-shop", "in-recruit", "in-formation", "in-mission");
   updateBattleViewportScale();
   gameState.running = true;
   gameState.message = `Stage ${selectedStage} - Wave ${gameState.wave} 시작! 영웅을 보조하며 병사를 소환하세요.`;
@@ -72,7 +73,7 @@ window.addEventListener("keydown", (event) => {
     }
     if (event.code === "KeyS") showShopNotice();
     if (event.code === "KeyF") showFormationNotice();
-    if (event.code === "KeyM") showMissionNotice();
+    if (event.code === "KeyM") showMission();
     if (event.code === "Escape") showTitle();
     return;
   }
@@ -99,6 +100,11 @@ window.addEventListener("keydown", (event) => {
     if (event.code === "Escape") showLobby();
     if (event.code === "Digit1") setFormationDeckPage(1);
     if (event.code === "Digit2") setFormationDeckPage(2);
+    return;
+  }
+
+  if (isMissionVisible()) {
+    if (event.code === "Escape") showLobby();
     return;
   }
 
@@ -214,7 +220,9 @@ if (lobbyBattleBtn) lobbyBattleBtn.addEventListener("click", showStageSelect);
 if (lobbyShopBtn) lobbyShopBtn.addEventListener("click", showShop);
 if (lobbyFormationBtn) lobbyFormationBtn.addEventListener("click", showFormation);
 if (lobbyRecruitBtn) lobbyRecruitBtn.addEventListener("click", showRecruit);
-if (lobbyMissionBtn) lobbyMissionBtn.addEventListener("click", showMissionNotice);
+if (lobbyMissionBtn) lobbyMissionBtn.addEventListener("click", showMission);
+if (missionBackBtn) missionBackBtn.addEventListener("click", showLobby);
+if (missionCloseBtn) missionCloseBtn.addEventListener("click", showLobby);
 if (formationBackBtn) formationBackBtn.addEventListener("click", showLobby);
 if (formationCloseBtn) formationCloseBtn.addEventListener("click", showLobby);
 formationCategoryTabs.forEach((tab) => {
