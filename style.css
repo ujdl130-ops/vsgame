@@ -561,20 +561,7 @@ body.game-started:not(.in-lobby):not(.in-stage-select):not(.in-shop):not(.in-rec
 }
 
 .battle-action-icon-basic {
-  right: 30px;
-}
-
-.battle-action-icon-basic::before {
-  content: "";
-  position: absolute;
-  left: 3px;
-  top: 4px;
-  width: 86px;
-  height: 60px;
-  border-radius: 50%;
-  background: url("assets/AttackIcon.png") center center / 96px 96px no-repeat;
-  clip-path: ellipse(50% 50% at 50% 50%);
-  pointer-events: none;
+  right: 0;
 }
 
 .battle-action-icon-skill {
@@ -589,17 +576,6 @@ body.game-started:not(.in-lobby):not(.in-stage-select):not(.in-shop):not(.in-rec
   object-fit: cover;
   opacity: 0;
   pointer-events: none;
-}
-
-.battle-action-icon-basic img {
-  position: absolute;
-  left: 0;
-  top: 0;
-  width: 100%;
-  height: 100%;
-  opacity: 0;
-  object-fit: fill;
-  filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.55));
 }
 
 .battle-action-icon-skill img {
@@ -1245,7 +1221,7 @@ body.game-started:not(.in-lobby):not(.in-stage-select):not(.in-shop):not(.in-rec
   }
 
   .battle-action-icon-basic {
-    right: 30px;
+    right: 0;
   }
 
   .battle-unit-slot-guard {
