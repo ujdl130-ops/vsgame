@@ -1263,23 +1263,23 @@ body.game-started:not(.in-lobby):not(.in-stage-select):not(.in-shop):not(.in-rec
   }
 
   .battle-command-bottom::before {
-    left: 154px;
+    left: 172px;
     top: 32px;
-    width: 380px;
+    width: 392px;
     height: 58px;
   }
 
   .battle-command-bottom::after {
     right: 24px;
     top: 32px;
-    width: 320px;
+    width: 292px;
     height: 58px;
   }
 
   .battle-action-icon-layer {
     right: 24px;
     top: 32px;
-    width: 320px;
+    width: 292px;
     height: 58px;
   }
 
@@ -1290,15 +1290,15 @@ body.game-started:not(.in-lobby):not(.in-stage-select):not(.in-shop):not(.in-rec
   }
 
   .battle-action-icon-skill {
-    right: 174px;
+    right: 152px;
   }
 
   .battle-action-icon-basic {
-    right: 86px;
+    right: 68px;
   }
 
   .battle-unit-slot-guard {
-    left: 162px;
+    left: 180px;
     top: 38px;
     width: 68px;
     height: 46px;
@@ -1315,28 +1315,28 @@ body.game-started:not(.in-lobby):not(.in-stage-select):not(.in-shop):not(.in-rec
   }
 
   .battle-unit-slot-archer {
-    left: 236px;
+    left: 258px;
     top: 38px;
     width: 68px;
     height: 46px;
   }
 
   .battle-unit-slot-mage {
-    left: 310px;
+    left: 336px;
     top: 38px;
     width: 68px;
     height: 46px;
   }
 
   .battle-unit-slot-saintess {
-    left: 384px;
+    left: 414px;
     top: 38px;
     width: 68px;
     height: 46px;
   }
 
   .battle-unit-slot-thief {
-    left: 458px;
+    left: 492px;
     top: 38px;
     width: 68px;
     height: 46px;
