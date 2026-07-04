@@ -201,13 +201,11 @@
     <div class="formation-scanline" aria-hidden="true"></div>
 
     <button id="formationBackBtn" class="formation-ui-btn formation-back-btn" type="button">← 로비</button>
-    <button id="formationCloseBtn" class="formation-ui-btn formation-close-btn" type="button">닫기</button>
+    <button id="formationCloseBtn" class="formation-ui-btn formation-close-btn" type="button">인벤토리</button>
 
     <div class="formation-topbar" aria-label="재화 정보">
-      <div class="formation-currency orange"><span>티켓</span><strong>0</strong></div>
-      <div class="formation-currency purple"><span>토큰</span><strong>0</strong></div>
-      <div class="formation-currency blue"><span>젬</span><strong>0</strong></div>
-      <div class="formation-currency gold"><span>골드</span><strong>0</strong></div>
+      <div class="formation-currency blue"><span>다이아</span><strong data-wallet-value="diamond">0</strong></div>
+      <div class="formation-currency gold"><span>골드</span><strong data-wallet-value="gold">8,520</strong></div>
       <button class="formation-gear" type="button" aria-label="설정">⚙</button>
     </div>
 
@@ -291,6 +289,13 @@
     <button id="missionBackBtn" class="mission-ui-btn mission-back-btn" type="button">로비</button>
     <button id="missionCloseBtn" class="mission-ui-btn mission-close-btn" type="button">닫기</button>
     <div id="missionRoot" class="mission-root" aria-label="미션 목록"></div>
+  </section>
+
+  <section id="inventoryScreen" class="inventory-screen is-hidden" aria-label="픽셀디펜스 인벤토리 화면">
+    <div class="inventory-scanline" aria-hidden="true"></div>
+    <button id="inventoryBackBtn" class="inventory-ui-btn inventory-back-btn" type="button">로비</button>
+    <button id="inventoryCloseBtn" class="inventory-ui-btn inventory-close-btn" type="button">편성</button>
+    <div id="inventoryRoot" class="inventory-root" aria-label="인벤토리 슬롯"></div>
   </section>
 
   <section id="stageScreen" class="stage-screen is-hidden" aria-label="픽셀디펜스 스테이지 선택 화면">
@@ -418,6 +423,7 @@
   <script src="js/gacha.js"></script>
   <script src="js/shop.js"></script>
   <script src="js/mission.js"></script>
+  <script src="js/inventory.js"></script>
   <script src="js/audio.js"></script>
   <script src="js/ui.js"></script>
   <script src="js/battle.js"></script>

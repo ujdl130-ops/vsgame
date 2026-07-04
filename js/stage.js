@@ -84,10 +84,11 @@ function showStageSelect() {
   if (recruitScreen) recruitScreen.classList.add("is-hidden");
   if (formationScreen) formationScreen.classList.add("is-hidden");
   if (missionScreen) missionScreen.classList.add("is-hidden");
+  if (inventoryScreen) inventoryScreen.classList.add("is-hidden");
   hideRecruitDoorScene(true);
   if (chapterPanel) chapterPanel.classList.add("is-hidden");
   if (stagePanel) stagePanel.classList.remove("is-hidden");
-  document.body.classList.remove("game-started", "in-lobby", "in-shop", "in-recruit", "in-formation", "in-mission");
+  document.body.classList.remove("game-started", "in-lobby", "in-shop", "in-recruit", "in-formation", "in-mission", "in-inventory");
   document.body.classList.add("in-stage-select");
 
   if (gameState) {

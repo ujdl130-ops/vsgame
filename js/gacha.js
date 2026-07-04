@@ -8,7 +8,8 @@ function showRecruit() {
   if (recruitScreen) recruitScreen.classList.remove("is-hidden");
   if (formationScreen) formationScreen.classList.add("is-hidden");
   if (missionScreen) missionScreen.classList.add("is-hidden");
-  document.body.classList.remove("game-started", "in-lobby", "in-stage-select", "in-shop", "in-formation", "in-mission");
+  if (inventoryScreen) inventoryScreen.classList.add("is-hidden");
+  document.body.classList.remove("game-started", "in-lobby", "in-stage-select", "in-shop", "in-formation", "in-mission", "in-inventory");
   document.body.classList.add("in-recruit");
 
   if (gameState) {

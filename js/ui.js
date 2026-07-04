@@ -28,6 +28,10 @@ function isMissionVisible() {
   return missionScreen && !missionScreen.classList.contains("is-hidden");
 }
 
+function isInventoryVisible() {
+  return inventoryScreen && !inventoryScreen.classList.contains("is-hidden");
+}
+
 function showLobby() {
   if (titleScreen) titleScreen.classList.add("is-hidden");
   if (lobbyScreen) lobbyScreen.classList.remove("is-hidden");
@@ -36,8 +40,9 @@ function showLobby() {
   if (recruitScreen) recruitScreen.classList.add("is-hidden");
   if (formationScreen) formationScreen.classList.add("is-hidden");
   if (missionScreen) missionScreen.classList.add("is-hidden");
+  if (inventoryScreen) inventoryScreen.classList.add("is-hidden");
   hideRecruitDoorScene(true);
-  document.body.classList.remove("game-started", "in-stage-select", "in-shop", "in-recruit", "in-formation", "in-mission");
+  document.body.classList.remove("game-started", "in-stage-select", "in-shop", "in-recruit", "in-formation", "in-mission", "in-inventory");
   document.body.classList.add("in-lobby");
   if (gameState) {
     gameState.running = false;
@@ -134,8 +139,9 @@ function showTitle() {
   if (recruitScreen) recruitScreen.classList.add("is-hidden");
   if (formationScreen) formationScreen.classList.add("is-hidden");
   if (missionScreen) missionScreen.classList.add("is-hidden");
+  if (inventoryScreen) inventoryScreen.classList.add("is-hidden");
   hideRecruitDoorScene(true);
-  document.body.classList.remove("game-started", "in-lobby", "in-stage-select", "in-shop", "in-recruit", "in-formation", "in-mission");
+  document.body.classList.remove("game-started", "in-lobby", "in-stage-select", "in-shop", "in-recruit", "in-formation", "in-mission", "in-inventory");
   if (lobbyNotice) {
     lobbyNotice.textContent = "상점에서 장비를 확인하거나 전투 버튼으로 Chapter 1을 선택할 수 있습니다.";
   }

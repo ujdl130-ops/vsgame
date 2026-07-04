@@ -71,13 +71,11 @@ function createFormationShellMarkup() {
     <div class="formation-scanline" aria-hidden="true"></div>
 
     <button id="formationBackBtn" class="formation-ui-btn formation-back-btn" type="button">로비</button>
-    <button id="formationCloseBtn" class="formation-ui-btn formation-close-btn" type="button">닫기</button>
+    <button id="formationCloseBtn" class="formation-ui-btn formation-close-btn" type="button">인벤토리</button>
 
     <div class="formation-topbar" aria-label="재화 정보">
-      <div class="formation-currency orange"><span>티켓</span><strong>0</strong></div>
-      <div class="formation-currency purple"><span>토큰</span><strong>0</strong></div>
-      <div class="formation-currency blue"><span>젬</span><strong>0</strong></div>
-      <div class="formation-currency gold"><span>골드</span><strong>8,520</strong></div>
+      <div class="formation-currency blue"><span>다이아</span><strong data-wallet-value="diamond">0</strong></div>
+      <div class="formation-currency gold"><span>골드</span><strong data-wallet-value="gold">8,520</strong></div>
       <button class="formation-gear" type="button" aria-label="설정">⚙</button>
     </div>
 
@@ -265,6 +263,7 @@ function renderFormationScreen() {
   renderFormationSlots();
   renderFormationRoster();
   renderFormationSelectedInfo();
+  updateWalletDisplays();
 }
 
 function bindFormationScreenEvents() {
@@ -273,7 +272,7 @@ function bindFormationScreenEvents() {
   const levelUpBtn = document.getElementById("formationLevelUpBtn");
 
   if (backBtn) backBtn.addEventListener("click", showLobby);
-  if (closeBtn) closeBtn.addEventListener("click", showLobby);
+  if (closeBtn) closeBtn.addEventListener("click", showInventory);
 
   document.querySelectorAll(".formation-deck-tab").forEach((tab) => {
     tab.addEventListener("click", () => setFormationDeckPage(tab.dataset.deckPage || "1"));
@@ -296,8 +295,9 @@ function showFormation() {
   if (recruitScreen) recruitScreen.classList.add("is-hidden");
   if (formationScreen) formationScreen.classList.remove("is-hidden");
   if (missionScreen) missionScreen.classList.add("is-hidden");
+  if (inventoryScreen) inventoryScreen.classList.add("is-hidden");
   hideRecruitDoorScene(true);
-  document.body.classList.remove("game-started", "in-lobby", "in-stage-select", "in-shop", "in-recruit", "in-formation", "in-mission");
+  document.body.classList.remove("game-started", "in-lobby", "in-stage-select", "in-shop", "in-recruit", "in-formation", "in-mission", "in-inventory");
   document.body.classList.add("in-formation");
 
   if (gameState) {

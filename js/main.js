@@ -31,9 +31,10 @@ function startGame(stageNumber = selectedStage) {
   if (recruitScreen) recruitScreen.classList.add("is-hidden");
   if (formationScreen) formationScreen.classList.add("is-hidden");
   if (missionScreen) missionScreen.classList.add("is-hidden");
+  if (inventoryScreen) inventoryScreen.classList.add("is-hidden");
   hideRecruitDoorScene(true);
   document.body.classList.add("game-started");
-  document.body.classList.remove("in-lobby", "in-stage-select", "in-shop", "in-recruit", "in-formation", "in-mission");
+  document.body.classList.remove("in-lobby", "in-stage-select", "in-shop", "in-recruit", "in-formation", "in-mission", "in-inventory");
   updateBattleViewportScale();
   gameState.running = true;
   gameState.message = `Stage ${selectedStage} - Wave ${gameState.wave} 시작! 영웅을 보조하며 병사를 소환하세요.`;
@@ -105,6 +106,11 @@ window.addEventListener("keydown", (event) => {
 
   if (isMissionVisible()) {
     if (event.code === "Escape") showLobby();
+    return;
+  }
+
+  if (isInventoryVisible()) {
+    if (event.code === "Escape") showFormation();
     return;
   }
 
@@ -223,8 +229,10 @@ if (lobbyRecruitBtn) lobbyRecruitBtn.addEventListener("click", showRecruit);
 if (lobbyMissionBtn) lobbyMissionBtn.addEventListener("click", showMission);
 if (missionBackBtn) missionBackBtn.addEventListener("click", showLobby);
 if (missionCloseBtn) missionCloseBtn.addEventListener("click", showLobby);
+if (inventoryBackBtn) inventoryBackBtn.addEventListener("click", showLobby);
+if (inventoryCloseBtn) inventoryCloseBtn.addEventListener("click", showFormation);
 if (formationBackBtn) formationBackBtn.addEventListener("click", showLobby);
-if (formationCloseBtn) formationCloseBtn.addEventListener("click", showLobby);
+if (formationCloseBtn) formationCloseBtn.addEventListener("click", showInventory);
 formationCategoryTabs.forEach((tab) => {
   tab.addEventListener("click", () => setFormationCategoryTab(tab.dataset.formationTab || "deck"));
 });

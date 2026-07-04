@@ -43,6 +43,10 @@ const missionScreen = document.getElementById("missionScreen");
 const missionBackBtn = document.getElementById("missionBackBtn");
 const missionCloseBtn = document.getElementById("missionCloseBtn");
 const missionRoot = document.getElementById("missionRoot");
+const inventoryScreen = document.getElementById("inventoryScreen");
+const inventoryBackBtn = document.getElementById("inventoryBackBtn");
+const inventoryCloseBtn = document.getElementById("inventoryCloseBtn");
+const inventoryRoot = document.getElementById("inventoryRoot");
 const recruitScreen = document.getElementById("recruitScreen");
 const recruitBackBtn = document.getElementById("recruitBackBtn");
 const recruitCloseBtn = document.getElementById("recruitCloseBtn");
@@ -92,6 +96,25 @@ const RUNESTONE_GAUGE_MAX = 150;
 const ZEUS_MANA_MAX = 50;
 const ZEUS_MANA_COST = 50;
 const ZEUS_MANA_REGEN_PER_SECOND = 10;
+
+const gameWallet = {
+  diamond: 0,
+  gold: 8520,
+};
+
+function addWalletCurrency(type, amount) {
+  if (!Object.prototype.hasOwnProperty.call(gameWallet, type)) return;
+  gameWallet[type] += Math.max(0, Number(amount) || 0);
+  updateWalletDisplays();
+}
+
+function updateWalletDisplays() {
+  document.querySelectorAll("[data-wallet-value]").forEach((element) => {
+    const type = element.dataset.walletValue;
+    if (!Object.prototype.hasOwnProperty.call(gameWallet, type)) return;
+    element.textContent = gameWallet[type].toLocaleString("ko-KR");
+  });
+}
 
 const ASSET_PATHS = {
   archerSprite: "assets/animations/archer/elf_archer_guard_size_spritesheet.png",
