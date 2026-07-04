@@ -9853,18 +9853,81 @@ body:not(.game-started) .game-wrap {
 }
 
 .formation-hero-detail-card {
+  border: 0;
+  padding: 0;
+  background: transparent;
+  box-shadow: none;
+  cursor: pointer;
+  perspective: 1200px;
   align-self: stretch;
   min-height: 0;
-  display: grid;
-  place-items: center;
+  display: block;
 }
 
-.formation-hero-detail-card img {
+.formation-hero-flip-inner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: block;
+  transform-style: preserve-3d;
+  transition: transform 0.46s ease;
+}
+
+.formation-hero-detail-card.is-flipped .formation-hero-flip-inner {
+  transform: rotateY(180deg);
+}
+
+.formation-hero-flip-face {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  backface-visibility: hidden;
+}
+
+.formation-hero-flip-front img {
   width: 100%;
   height: 100%;
   max-height: 560px;
   object-fit: contain;
   filter: drop-shadow(0 12px 20px rgba(68, 43, 20, 0.2));
+}
+
+.formation-hero-flip-back {
+  padding: clamp(24px, 3vw, 46px);
+  border: 1px solid rgba(177, 135, 68, 0.64);
+  color: #3b2819;
+  text-align: left;
+  background:
+    linear-gradient(135deg, rgba(255, 251, 240, 0.94), rgba(237, 220, 178, 0.86));
+  box-shadow:
+    inset 0 0 0 2px rgba(255,255,255,0.48),
+    0 12px 24px rgba(85, 58, 25, 0.12);
+  transform: rotateY(180deg);
+}
+
+.formation-hero-flip-back strong {
+  display: block;
+  width: 100%;
+  margin-bottom: 18px;
+  color: #2d2118;
+  font-size: clamp(24px, 2.4vw, 38px);
+  line-height: 1;
+}
+
+.formation-hero-flip-back span {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 11px 0;
+  border-bottom: 1px solid rgba(145, 105, 61, 0.24);
+  font-size: clamp(15px, 1.2vw, 20px);
+  font-weight: 900;
+}
+
+.formation-hero-flip-back b {
+  color: #7b5427;
 }
 
 .formation-hero-detail-info {
@@ -9925,14 +9988,69 @@ body:not(.game-started) .game-wrap {
   margin-top: 8px;
 }
 
+.formation-growth-confirm {
+  justify-self: center;
+  width: min(430px, 100%);
+  padding: 14px 16px;
+  border: 1px solid rgba(183, 148, 92, 0.64);
+  color: #3b2819;
+  background: rgba(255, 248, 232, 0.88);
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,0.62);
+}
+
+.formation-growth-confirm p {
+  margin: 0 0 12px;
+  font-size: 15px;
+  font-weight: 900;
+  line-height: 1.4;
+  text-align: center;
+}
+
+.formation-growth-confirm div {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+}
+
+.formation-growth-confirm button {
+  min-width: 92px;
+  min-height: 36px;
+  padding: 0 16px;
+  border: 1px solid rgba(151, 105, 45, 0.72);
+  color: #4a3219;
+  background: linear-gradient(180deg, rgba(255,245,213,0.98), rgba(224,185,105,0.86));
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,0.66);
+  font-weight: 900;
+}
+
 .formation-roster-grid.is-hero-roster {
-  height: calc(100% - 62px);
+  height: calc(100% - 48px);
   min-height: 0;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   grid-template-rows: repeat(3, minmax(0, 1fr));
-  gap: clamp(12px, 1.5vh, 18px) clamp(18px, 1.5vw, 26px);
-  padding: clamp(16px, 2vh, 24px) 4px 6px;
+  gap: clamp(8px, 1.1vh, 13px) clamp(12px, 1vw, 18px);
+  padding: 8px 0 0;
   overflow: visible;
+}
+
+.formation-roster-grid.is-hero-roster .formation-unit-card {
+  border: 0;
+  padding: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.formation-roster-grid.is-hero-roster .formation-unit-card.is-selected {
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.formation-roster-grid.is-hero-roster .formation-unit-card.is-selected img {
+  filter:
+    drop-shadow(0 0 0 rgba(0, 0, 0, 0))
+    drop-shadow(0 0 12px rgba(216, 166, 67, 0.54))
+    drop-shadow(0 10px 12px rgba(74, 45, 18, 0.18));
 }
 
 .formation-hero-card {
@@ -9940,35 +10058,47 @@ body:not(.game-started) .game-wrap {
   height: 100%;
   min-height: 0;
   aspect-ratio: auto;
+  overflow: visible;
 }
 
 .formation-hero-card img {
   width: 100%;
-  height: calc(100% - 30px);
+  height: 100%;
   object-fit: contain;
+  filter: drop-shadow(0 8px 10px rgba(74, 45, 18, 0.18));
 }
 
 .formation-hero-card .formation-unit-level {
+  position: absolute;
+  left: 50%;
+  bottom: 2px;
+  z-index: 2;
+  width: max-content;
+  max-width: 94%;
+  padding: 3px 7px;
   color: #c08a28;
+  background: rgba(255, 248, 232, 0.82);
+  border: 1px solid rgba(183, 148, 92, 0.4);
   letter-spacing: 0.02em;
+  transform: translateX(-50%);
+}
+
+.formation-hero-card .formation-unit-name {
+  display: none;
 }
 
 .formation-hero-card.is-locked {
   cursor: default;
-  filter: grayscale(0.95) brightness(0.48);
+  filter: none;
+}
+
+.formation-hero-card.is-locked:disabled {
+  filter: none;
 }
 
 .formation-hero-card.is-locked img {
-  opacity: 0.58;
-}
-
-.formation-hero-card.is-locked::after {
-  content: "";
-  position: absolute;
-  inset: 8px;
-  z-index: 3;
-  background: rgba(24, 21, 18, 0.32);
-  pointer-events: none;
+  opacity: 0.86;
+  filter: grayscale(1) brightness(0.44) drop-shadow(0 8px 10px rgba(40, 34, 28, 0.12));
 }
 
 .formation-hero-lock {
