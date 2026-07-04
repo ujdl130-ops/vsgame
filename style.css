@@ -663,28 +663,6 @@ body.game-started:not(.in-lobby):not(.in-stage-select):not(.in-shop):not(.in-rec
   display: none;
 }
 
-.battle-unit-slot-thief:not(:disabled)::after {
-  content: "";
-  position: absolute;
-  left: -4px;
-  top: 2px;
-  bottom: 4px;
-  width: 7px;
-  z-index: 2;
-  display: block;
-  background: linear-gradient(
-    180deg,
-    transparent 0%,
-    rgba(52, 202, 255, 0.62) 12%,
-    rgba(52, 202, 255, 0.56) 86%,
-    transparent 100%
-  );
-  box-shadow:
-    2px 0 4px rgba(36, 174, 255, 0.32),
-    inset 2px 0 0 rgba(123, 232, 255, 0.5);
-  pointer-events: none;
-}
-
 .battle-unit-slot-guard {
   left: 270px;
   top: 41px;
