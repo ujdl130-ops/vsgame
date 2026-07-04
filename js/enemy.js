@@ -141,6 +141,9 @@ const KARON_WEREWOLF_SPRITE = {
   },
   frameOverrides: {
     attack: {
+      4: {
+        sourceCrop: { left: 52 },
+      },
       5: {
         sourceCrop: { left: 36 },
       },
