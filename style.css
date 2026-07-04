@@ -616,6 +616,7 @@ body.game-started:not(.in-lobby):not(.in-stage-select):not(.in-shop):not(.in-rec
   cursor: pointer;
   pointer-events: auto;
   touch-action: manipulation;
+  overflow: hidden;
 }
 
 .battle-unit-slot-button::before {
@@ -623,8 +624,9 @@ body.game-started:not(.in-lobby):not(.in-stage-select):not(.in-shop):not(.in-rec
   position: absolute;
   inset: 0;
   display: none;
-  background-repeat: no-repeat;
-  transition: filter 0.18s ease, opacity 0.18s ease;
+  background: rgba(10, 12, 15, 0.54);
+  pointer-events: none;
+  transition: opacity 0.18s ease;
 }
 
 .battle-unit-slot-button:disabled {
@@ -633,8 +635,10 @@ body.game-started:not(.in-lobby):not(.in-stage-select):not(.in-shop):not(.in-rec
 }
 
 .battle-unit-slot-button:disabled::before {
-  filter: grayscale(1) saturate(0) brightness(0.46) contrast(0.95);
-  opacity: 0.86;
+  background: rgba(10, 12, 15, 0.58);
+  -webkit-backdrop-filter: grayscale(1) brightness(0.5) contrast(0.95);
+  backdrop-filter: grayscale(1) brightness(0.5) contrast(0.95);
+  opacity: 1;
 }
 
 .battle-unit-slot-button:disabled::after {
@@ -647,6 +651,10 @@ body.game-started:not(.in-lobby):not(.in-stage-select):not(.in-shop):not(.in-rec
 }
 
 .battle-unit-slot-button[data-cost]::before {
+  display: none;
+}
+
+.battle-unit-slot-button[data-cost]:disabled::before {
   display: block;
 }
 
@@ -1223,6 +1231,10 @@ body.game-started:not(.in-lobby):not(.in-stage-select):not(.in-shop):not(.in-rec
   }
 
   .battle-unit-slot-button[data-cost]::before {
+    display: none;
+  }
+
+  .battle-unit-slot-button[data-cost]:disabled::before {
     display: block;
   }
 
