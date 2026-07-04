@@ -437,12 +437,14 @@ function updateButtons() {
   if (skillBtn) {
     const hero = gameState.hero;
     const heroReady = hero && !hero.dead && hero.hp > 0 && hero.cooldown <= 0;
+    const zeusMana = Math.floor(gameState.zeusMana || 0);
+    const basicAttackManaReady = zeusMana >= BASIC_ATTACK_MANA_COST;
     if (!skillBtn.classList.contains("zeus-action-btn")) {
       skillBtn.textContent = hero && hero.dead
         ? `영웅 부활 ${Math.ceil(hero.respawnTimer)}초`
         : "영웅 공격 Space";
     }
-    skillBtn.disabled = disabled || !heroReady;
+    skillBtn.disabled = disabled || !heroReady || !basicAttackManaReady;
     skillBtn.title = "메인 영웅이 가장 가까운 적에게 투사체를 발사합니다.";
   }
   if (zeusSkillBtn) {
@@ -461,8 +463,14 @@ function updateButtons() {
   if (basicAttackIconBtn) {
     const hero = gameState.hero;
     const heroReady = hero && !hero.dead && hero.hp > 0 && hero.cooldown <= 0;
-    basicAttackIconBtn.disabled = disabled || !heroReady;
-    basicAttackIconBtn.title = heroReady ? "Basic attack" : "Basic attack is not ready";
+    const zeusMana = Math.floor(gameState.zeusMana || 0);
+    const basicAttackManaReady = zeusMana >= BASIC_ATTACK_MANA_COST;
+    basicAttackIconBtn.disabled = disabled || !heroReady || !basicAttackManaReady;
+    basicAttackIconBtn.title = heroReady
+      ? basicAttackManaReady
+        ? `Basic attack · Mana ${BASIC_ATTACK_MANA_COST}`
+        : `Mana ${zeusMana}/${BASIC_ATTACK_MANA_COST}`
+      : "Basic attack is not ready";
   }
   if (zeusSkillIconBtn) {
     const hero = gameState.hero;

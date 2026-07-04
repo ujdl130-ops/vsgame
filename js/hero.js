@@ -196,6 +196,15 @@ function heroAttack() {
   if (!gameState || !gameState.running || gameState.gameOver || gameState.clear) return;
   const hero = gameState.hero;
   if (!hero || hero.dead || hero.hp <= 0 || hero.cooldown > 0) return;
+  if ((gameState.zeusMana || 0) < BASIC_ATTACK_MANA_COST) {
+    gameState.message = `마나 부족! 기본공격은 ${BASIC_ATTACK_MANA_COST}마나가 필요합니다.`;
+    gameState.messageTimer = 0.75;
+    updateButtons();
+    return;
+  }
+
+  gameState.zeusMana = Math.max(0, (gameState.zeusMana || 0) - BASIC_ATTACK_MANA_COST);
+  updateHud();
 
   hero.face = 1;
   hero.cooldown = hero.attackSpeed;
@@ -203,6 +212,7 @@ function heroAttack() {
   hero.attackAnimTimer = hero.attackAnimDuration;
   hero.pendingHeroShot = true;
   hero.shotTarget = findNearestEnemy(hero.x, hero.range);
+  updateButtons();
 }
 
 function getHeroVisualAnim(hero) {
