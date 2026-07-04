@@ -9783,6 +9783,199 @@ body:not(.game-started) .game-wrap {
   z-index: 1;
 }
 
+/* Formation hero/unit category page */
+.formation-category-nav {
+  position: relative;
+  z-index: 2;
+  width: 150px;
+  margin-top: 34px;
+  display: grid;
+  gap: 12px;
+}
+
+.formation-category-btn {
+  width: 100%;
+  min-height: 48px;
+  border: 1px solid rgba(183, 148, 92, 0.64);
+  color: #7d603a;
+  background: rgba(255,255,255,0.48);
+  box-shadow:
+    inset 0 0 0 1px rgba(255,255,255,0.72),
+    0 4px 12px rgba(104, 78, 45, 0.1);
+  font-size: 18px;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.formation-category-btn.is-active {
+  color: #4a3219;
+  border-color: #e0b65f;
+  background: linear-gradient(180deg, rgba(255,245,213,0.98), rgba(224,185,105,0.86));
+  box-shadow:
+    inset 0 0 0 1px rgba(255,255,255,0.82),
+    0 5px 14px rgba(190, 137, 48, 0.18);
+}
+
+.formation-type-tabs.is-hidden,
+.formation-deck-tabs.is-hidden {
+  display: none;
+}
+
+.formation-slots-panel.is-hero-detail {
+  height: calc(100% - 96px);
+}
+
+.formation-slot-grid.is-hero-detail-grid {
+  display: block;
+  height: 100%;
+  padding-top: 16px;
+}
+
+.formation-hero-detail {
+  height: 100%;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: minmax(250px, 38%) minmax(0, 1fr);
+  gap: clamp(22px, 2.4vw, 42px);
+  align-items: center;
+  padding: clamp(16px, 2vh, 28px) clamp(8px, 1vw, 18px) clamp(22px, 2.4vh, 34px);
+}
+
+.formation-hero-detail-card {
+  align-self: stretch;
+  min-height: 0;
+  display: grid;
+  place-items: center;
+}
+
+.formation-hero-detail-card img {
+  width: 100%;
+  height: 100%;
+  max-height: 560px;
+  object-fit: contain;
+  filter: drop-shadow(0 12px 20px rgba(68, 43, 20, 0.2));
+}
+
+.formation-hero-detail-info {
+  min-width: 0;
+  display: grid;
+  gap: 18px;
+  color: #46301f;
+}
+
+.formation-hero-detail-top h2 {
+  margin: 2px 0 10px;
+  color: #2e2118;
+  font-size: clamp(34px, 3.5vw, 54px);
+  line-height: 1;
+  text-shadow: none;
+}
+
+.formation-hero-stars {
+  color: #c08a28;
+  font-size: clamp(22px, 2.1vw, 34px);
+  font-weight: 900;
+  line-height: 1;
+  letter-spacing: 0.08em;
+  text-shadow: 0 1px 0 rgba(255,255,255,0.75);
+}
+
+.formation-hero-detail-list {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+}
+
+.formation-hero-detail-list div {
+  display: grid;
+  grid-template-columns: 110px minmax(0, 1fr);
+  gap: 18px;
+  padding: 12px 0;
+  border-bottom: 1px solid rgba(145, 105, 61, 0.24);
+}
+
+.formation-hero-detail-list dt {
+  color: #8b6532;
+  font-weight: 900;
+}
+
+.formation-hero-detail-list dd {
+  min-width: 0;
+  margin: 0;
+  color: #3b2819;
+  font-weight: 900;
+  line-height: 1.45;
+}
+
+.formation-hero-level-btn {
+  justify-self: center;
+  width: min(360px, 100%);
+  margin-top: 8px;
+}
+
+.formation-roster-grid.is-hero-roster {
+  height: calc(100% - 62px);
+  min-height: 0;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-rows: repeat(3, minmax(0, 1fr));
+  gap: clamp(12px, 1.5vh, 18px) clamp(18px, 1.5vw, 26px);
+  padding: clamp(16px, 2vh, 24px) 4px 6px;
+  overflow: visible;
+}
+
+.formation-hero-card {
+  position: relative;
+  height: 100%;
+  min-height: 0;
+  aspect-ratio: auto;
+}
+
+.formation-hero-card img {
+  width: 100%;
+  height: calc(100% - 30px);
+  object-fit: contain;
+}
+
+.formation-hero-card .formation-unit-level {
+  color: #c08a28;
+  letter-spacing: 0.02em;
+}
+
+.formation-hero-card.is-locked {
+  cursor: default;
+  filter: grayscale(0.95) brightness(0.48);
+}
+
+.formation-hero-card.is-locked img {
+  opacity: 0.58;
+}
+
+.formation-hero-card.is-locked::after {
+  content: "";
+  position: absolute;
+  inset: 8px;
+  z-index: 3;
+  background: rgba(24, 21, 18, 0.32);
+  pointer-events: none;
+}
+
+.formation-hero-lock {
+  position: absolute;
+  left: 50%;
+  top: 42%;
+  z-index: 4;
+  width: 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+  color: #fff4ce;
+  font-size: 28px;
+  transform: translate(-50%, -50%);
+  filter: drop-shadow(0 3px 4px rgba(0, 0, 0, 0.72));
+  pointer-events: none;
+}
+
 .formation-notice.is-warning {
   color: #8f351e;
   text-shadow: 0 1px 0 rgba(255, 255, 255, 0.72);

@@ -73,10 +73,66 @@ const FORMATION_ROSTER_UNITS = Array.from({ length: 12 }, (_, index) => {
   };
 });
 
+const FORMATION_HERO_FRAGMENT_COST = 50;
+const FORMATION_HERO_MAX_STAR = 5;
+
+const FORMATION_HEROES = [
+  {
+    id: "zeus",
+    name: "제우스",
+    image: "assets/maps/formation/zeus.png",
+    unlocked: true,
+    passive: "번개의 권능: 기본 공격 피해가 증가합니다.",
+    skillType: "광역 번개 폭풍",
+  },
+  {
+    id: "poseidon",
+    name: "포세이돈",
+    image: "assets/maps/formation/poseidon.png",
+    unlocked: true,
+    passive: "해류의 가호: 적의 진격 속도를 늦춥니다.",
+    skillType: "파도 제어",
+  },
+  {
+    id: "athena",
+    name: "아테나",
+    image: "assets/maps/formation/atena.png",
+    unlocked: false,
+    passive: "전술 지휘: 아군의 방어 능력을 강화합니다.",
+    skillType: "수호 방패",
+  },
+  {
+    id: "hades",
+    name: "하데스",
+    image: "assets/maps/formation/hades.png",
+    unlocked: false,
+    passive: "명계의 계약: 처치한 적의 힘을 흡수합니다.",
+    skillType: "영혼 폭발",
+  },
+  {
+    id: "ares",
+    name: "아레스",
+    image: "assets/maps/formation/ares.png",
+    unlocked: false,
+    passive: "전쟁의 함성: 아군 공격 속도를 끌어올립니다.",
+    skillType: "전장 돌파",
+  },
+  {
+    id: "heracles",
+    name: "헤라클레스",
+    image: "assets/maps/formation/hercules.png",
+    unlocked: false,
+    passive: "불굴의 힘: 영웅의 체력이 크게 증가합니다.",
+    skillType: "괴력 강타",
+  },
+];
+
 const formationState = {
+  activeCategory: "hero",
   activeType: "deck",
   activePage: 1,
   selectedUnitId: FORMATION_ROSTER_UNITS[0].instanceId,
+  selectedHeroId: "zeus",
   rosterPage: 1,
   pages: {
     deck: { 1: Array(10).fill(null), 2: Array(10).fill(null) },
@@ -91,6 +147,11 @@ const FORMATION_TYPE_LABELS = {
   unit: "유닛",
 };
 
+const FORMATION_CATEGORY_LABELS = {
+  hero: "영웅",
+  unit: "유닛",
+};
+
 function getFormationUnit(unitId) {
   return (
     FORMATION_ROSTER_UNITS.find((unit) => unit.instanceId === unitId || unit.rosterId === unitId) ||
@@ -101,6 +162,39 @@ function getFormationUnit(unitId) {
 
 function getFormationSlotsForCurrentPage() {
   return formationState.pages[formationState.activeType][formationState.activePage];
+}
+
+function getFormationHero(heroId = formationState.selectedHeroId) {
+  return FORMATION_HEROES.find((hero) => hero.id === heroId) || FORMATION_HEROES[0];
+}
+
+function getHeroGrowthMap() {
+  if (!playerProgress.heroGrowth || typeof playerProgress.heroGrowth !== "object") {
+    playerProgress.heroGrowth = {};
+  }
+  return playerProgress.heroGrowth;
+}
+
+function getFormationHeroStar(heroId) {
+  const growth = getHeroGrowthMap()[heroId] || {};
+  return Math.min(FORMATION_HERO_MAX_STAR, Math.max(1, Number(growth.star) || 1));
+}
+
+function setFormationHeroStar(heroId, star) {
+  const nextStar = Math.min(FORMATION_HERO_MAX_STAR, Math.max(1, Number(star) || 1));
+  getHeroGrowthMap()[heroId] = { star: nextStar };
+
+  if (heroId === "zeus") {
+    playerProgress.growth = playerProgress.growth || {};
+    playerProgress.growth.hero = { level: nextStar, star: nextStar };
+    if (gameState) gameState.growth = playerProgress.growth;
+  }
+
+  saveProgress();
+}
+
+function getFormationHeroFragmentAmount() {
+  return Math.max(0, Number(playerProgress.commonEssence) || 0);
 }
 
 function getNormalCumulativeLevelCost(level) {
@@ -159,6 +253,10 @@ function createFormationShellMarkup() {
         <div class="formation-brand-emblem" aria-hidden="true">✦</div>
         <strong>편성</strong>
         <span>FORMATION</span>
+        <nav class="formation-category-nav" aria-label="편성 카테고리">
+          <button class="formation-category-btn is-active" type="button" data-formation-category="hero">영웅</button>
+          <button class="formation-category-btn" type="button" data-formation-category="unit">유닛</button>
+        </nav>
       </aside>
 
       <section class="formation-main-panel">
@@ -234,6 +332,54 @@ function renderFormationUnitCard(unit, options = {}) {
   `;
 }
 
+function renderFormationHeroCard(hero, options = {}) {
+  const selectedClass = options.selected ? " is-selected" : "";
+  const lockedClass = hero.unlocked ? "" : " is-locked";
+  const star = getFormationHeroStar(hero.id);
+  const lockMarkup = hero.unlocked ? "" : `<span class="formation-hero-lock" aria-hidden="true">🔒</span>`;
+
+  return `
+    <button class="formation-unit-card formation-hero-card${selectedClass}${lockedClass}" type="button" data-hero-id="${hero.id}" ${hero.unlocked ? "" : "disabled"} aria-label="${hero.name}">
+      <img src="${hero.image}" alt="${hero.name}">
+      ${lockMarkup}
+      <span class="formation-unit-name">${hero.name}</span>
+      <span class="formation-unit-level">${"★".repeat(star)}${"☆".repeat(FORMATION_HERO_MAX_STAR - star)}</span>
+    </button>
+  `;
+}
+
+function renderFormationHeroDetail() {
+  const hero = getFormationHero();
+  const star = getFormationHeroStar(hero.id);
+  const fragmentAmount = getFormationHeroFragmentAmount();
+  const canLevelUpHero = hero.unlocked && star < FORMATION_HERO_MAX_STAR && fragmentAmount >= FORMATION_HERO_FRAGMENT_COST;
+  const levelLabel = star >= FORMATION_HERO_MAX_STAR ? "MAX" : `${FORMATION_HERO_FRAGMENT_COST}`;
+
+  return `
+    <div class="formation-hero-detail">
+      <div class="formation-hero-detail-card">
+        <img src="${hero.image}" alt="${hero.name}">
+      </div>
+      <div class="formation-hero-detail-info">
+        <div class="formation-hero-detail-top">
+          <p class="formation-kicker">HERO</p>
+          <h2>${hero.name}</h2>
+          <div class="formation-hero-stars" aria-label="현재 성급">${"★".repeat(star)}${"☆".repeat(FORMATION_HERO_MAX_STAR - star)}</div>
+        </div>
+        <dl class="formation-hero-detail-list">
+          <div><dt>패시브 능력</dt><dd>${hero.passive}</dd></div>
+          <div><dt>스킬 종류</dt><dd>${hero.skillType}</dd></div>
+          <div><dt>현재 레벨</dt><dd>${star}성 / ${FORMATION_HERO_MAX_STAR}성</dd></div>
+          <div><dt>영웅 조각</dt><dd>${fragmentAmount.toLocaleString("ko-KR")} / ${FORMATION_HERO_FRAGMENT_COST}</dd></div>
+        </dl>
+        <button id="formationHeroLevelUpBtn" class="formation-level-btn formation-hero-level-btn" type="button" ${canLevelUpHero ? "" : "disabled"}>
+          레벨업 하기 <span>${levelLabel}</span>
+        </button>
+      </div>
+    </div>
+  `;
+}
+
 function renderFormationSlotCard(unitId, index) {
   const unit = unitId ? getFormationUnit(unitId) : null;
   if (!unit) {
@@ -259,6 +405,25 @@ function renderFormationSlotCard(unitId, index) {
 function renderFormationSlots() {
   const slotGrid = document.getElementById("formationSlotGrid");
   if (!slotGrid) return;
+
+  const slotsPanel = document.querySelector(".formation-slots-panel");
+  const deckTabs = document.querySelector(".formation-deck-tabs");
+  if (formationState.activeCategory === "hero") {
+    if (slotsPanel) slotsPanel.classList.add("is-hero-detail");
+    if (deckTabs) deckTabs.classList.add("is-hidden");
+    slotGrid.classList.add("is-hero-detail-grid");
+    slotGrid.innerHTML = renderFormationHeroDetail();
+    const levelUpBtn = document.getElementById("formationHeroLevelUpBtn");
+    if (levelUpBtn) levelUpBtn.addEventListener("click", levelUpFormationHero);
+
+    const slotTitle = document.getElementById("formationSlotTitle");
+    if (slotTitle) slotTitle.textContent = "영웅";
+    return;
+  }
+
+  if (slotsPanel) slotsPanel.classList.remove("is-hero-detail");
+  if (deckTabs) deckTabs.classList.remove("is-hidden");
+  slotGrid.classList.remove("is-hero-detail-grid");
 
   const slots = getFormationSlotsForCurrentPage();
   slotGrid.innerHTML = slots.map((unitId, index) => renderFormationSlotCard(unitId, index)).join("");
@@ -286,6 +451,24 @@ function renderFormationRoster() {
   const selectedInfo = document.querySelector(".formation-selected-info");
   const rosterPager = document.querySelector(".formation-roster-pager");
   const isDeck = formationState.activeType === "deck";
+
+  if (formationState.activeCategory === "hero") {
+    if (rosterTitle) rosterTitle.textContent = "보유 영웅";
+    if (rosterCount) rosterCount.textContent = "2 / 6";
+    if (selectedInfo) selectedInfo.classList.add("is-hidden");
+    if (rosterPager) rosterPager.classList.add("is-hidden");
+    rosterGrid.classList.add("is-hero-roster");
+    rosterGrid.innerHTML = FORMATION_HEROES
+      .map((hero) => renderFormationHeroCard(hero, { selected: hero.id === formationState.selectedHeroId }))
+      .join("");
+
+    rosterGrid.querySelectorAll(".formation-hero-card:not(.is-locked)").forEach((card) => {
+      card.addEventListener("click", () => selectFormationHero(card.dataset.heroId));
+    });
+    return;
+  }
+
+  rosterGrid.classList.remove("is-hero-roster");
 
   if (!isDeck) {
     if (rosterTitle) rosterTitle.textContent = `보유 ${FORMATION_TYPE_LABELS[formationState.activeType]}`;
@@ -357,11 +540,22 @@ function renderFormationSelectedInfo() {
 
 function renderFormationTabs() {
   const title = document.getElementById("formationTitle");
-  if (title) title.textContent = `${FORMATION_TYPE_LABELS[formationState.activeType]} 편성`;
+  if (title) {
+    title.textContent = formationState.activeCategory === "hero"
+      ? "영웅"
+      : `${FORMATION_TYPE_LABELS[formationState.activeType]} 편성`;
+  }
+
+  document.querySelectorAll(".formation-category-btn").forEach((button) => {
+    button.classList.toggle("is-active", button.dataset.formationCategory === formationState.activeCategory);
+  });
 
   document.querySelectorAll(".formation-type-tab").forEach((tab) => {
     tab.classList.toggle("is-active", tab.dataset.formationType === formationState.activeType);
   });
+
+  const typeTabs = document.querySelector(".formation-type-tabs");
+  if (typeTabs) typeTabs.classList.toggle("is-hidden", formationState.activeCategory === "hero");
 
   document.querySelectorAll(".formation-deck-tab").forEach((tab) => {
     tab.classList.toggle("is-active", tab.dataset.deckPage === String(formationState.activePage));
@@ -396,6 +590,10 @@ function bindFormationScreenEvents() {
 
   document.querySelectorAll(".formation-type-tab").forEach((tab) => {
     tab.addEventListener("click", () => setFormationType(tab.dataset.formationType || "deck"));
+  });
+
+  document.querySelectorAll(".formation-category-btn").forEach((button) => {
+    button.addEventListener("click", () => setFormationCategory(button.dataset.formationCategory || "hero"));
   });
 
   document.querySelectorAll(".formation-roster-page-btn").forEach((button) => {
@@ -439,8 +637,28 @@ function setFormationCategoryTab() {
   renderFormationSlots();
 }
 
+function setFormationCategory(category) {
+  if (!FORMATION_CATEGORY_LABELS[category]) return;
+  formationState.activeCategory = category;
+  formationState.rosterPage = 1;
+  if (category === "unit") {
+    formationState.activeType = "deck";
+  }
+
+  showFormationMessage(
+    category === "hero"
+      ? "보유 영웅을 선택하면 상세 정보와 성급을 확인할 수 있습니다."
+      : "보유 유닛을 선택한 뒤 빈 슬롯을 누르면 배치됩니다."
+  );
+  renderFormationTabs();
+  renderFormationSlots();
+  renderFormationRoster();
+  renderFormationSelectedInfo();
+}
+
 function setFormationType(type) {
   if (!FORMATION_TYPE_LABELS[type]) return;
+  formationState.activeCategory = "unit";
   formationState.activeType = type;
   formationState.activePage = 1;
   formationState.rosterPage = 1;
@@ -466,6 +684,19 @@ function selectFormationUnit(unitId) {
   formationState.selectedUnitId = unitId;
   renderFormationRoster();
   renderFormationSelectedInfo();
+}
+
+function selectFormationHero(heroId) {
+  const hero = getFormationHero(heroId);
+  if (!hero.unlocked) {
+    showFormationMessage(`${hero.name}은 아직 잠겨 있습니다.`, "warning");
+    return;
+  }
+
+  formationState.selectedHeroId = hero.id;
+  showFormationMessage(`${hero.name} 정보를 확인합니다.`);
+  renderFormationSlots();
+  renderFormationRoster();
 }
 
 function handleFormationSlotClick(index) {
@@ -514,6 +745,31 @@ function levelUpFormationUnit() {
   renderFormationRoster();
   renderFormationSelectedInfo();
   renderFormationSlots();
+}
+
+function levelUpFormationHero() {
+  const hero = getFormationHero();
+  const currentStar = getFormationHeroStar(hero.id);
+
+  if (!hero.unlocked) {
+    showFormationMessage(`${hero.name}은 아직 잠겨 있습니다.`, "warning");
+    return;
+  }
+  if (currentStar >= FORMATION_HERO_MAX_STAR) {
+    showFormationMessage(`${hero.name}은 이미 5성입니다.`, "warning");
+    return;
+  }
+  if (getFormationHeroFragmentAmount() < FORMATION_HERO_FRAGMENT_COST) {
+    showFormationMessage(`영웅 조각이 부족합니다. 성급업에는 ${FORMATION_HERO_FRAGMENT_COST}개가 필요합니다.`, "warning");
+    return;
+  }
+
+  playerProgress.commonEssence = Math.max(0, getFormationHeroFragmentAmount() - FORMATION_HERO_FRAGMENT_COST);
+  setFormationHeroStar(hero.id, currentStar + 1);
+  updateWalletDisplays();
+  showFormationMessage(`${hero.name}이(가) ${currentStar + 1}성이 되었습니다.`);
+  renderFormationSlots();
+  renderFormationRoster();
 }
 
 function getBestFormationBattleUnit(baseId) {
