@@ -848,42 +848,6 @@ body.game-started:not(.in-lobby):not(.in-stage-select):not(.in-shop):not(.in-rec
   user-select: none;
 }
 
-.movement-joystick::before {
-  content: "";
-  position: absolute;
-  z-index: 2;
-  right: -12px;
-  top: -8px;
-  width: 17px;
-  height: calc(100% + 16px);
-  border-radius: 2px;
-  background:
-    linear-gradient(90deg, rgba(7, 5, 4, 0.84), rgba(7, 5, 4, 0) 22%, rgba(7, 5, 4, 0) 78%, rgba(7, 5, 4, 0.84)),
-    linear-gradient(180deg, #b2762d 0%, #3a2414 18%, #120c08 48%, #6a3c1a 74%, #d0933a 100%);
-  box-shadow:
-    inset 2px 0 0 rgba(255, 200, 96, 0.34),
-    inset -2px 0 0 rgba(0, 0, 0, 0.58),
-    2px 0 0 rgba(0, 0, 0, 0.5),
-    -2px 0 0 rgba(0, 0, 0, 0.38);
-  pointer-events: none;
-}
-
-.movement-joystick::after {
-  content: "";
-  position: absolute;
-  z-index: 3;
-  right: -9px;
-  top: 6px;
-  width: 10px;
-  height: calc(100% - 12px);
-  background:
-    linear-gradient(180deg, rgba(255, 217, 119, 0.9), rgba(77, 45, 18, 0.32) 20%, rgba(5, 4, 4, 0.18) 50%, rgba(77, 45, 18, 0.34) 80%, rgba(255, 217, 119, 0.86)),
-    linear-gradient(90deg, rgba(0, 0, 0, 0.48), transparent 36%, rgba(255, 185, 72, 0.34) 62%, rgba(0, 0, 0, 0.48));
-  clip-path: polygon(24% 0, 100% 8%, 78% 50%, 100% 92%, 24% 100%, 0 50%);
-  filter: drop-shadow(2px 0 0 rgba(0, 0, 0, 0.42));
-  pointer-events: none;
-}
-
 .movement-joystick:focus-visible {
   outline: 2px solid #70f7ff;
   outline-offset: 3px;
