@@ -17,7 +17,7 @@ function normalizePlayerData(savedData = {}) {
   const heroGrowth = growth.hero && typeof growth.hero === "object" ? { ...growth.hero } : {};
   growth.hero = {
     level: Math.max(1, Number(heroGrowth.level) || 1),
-    star: Math.max(3, Number(heroGrowth.star) || 3),
+    star: Math.max(1, Number(heroGrowth.star) || 1),
   };
 
   return {
@@ -32,6 +32,7 @@ function normalizePlayerData(savedData = {}) {
     soldierFragments: Math.max(0, Number(savedData.soldierFragments) || 0),
     essences,
     heroGrowth: savedData.heroGrowth && typeof savedData.heroGrowth === "object" ? { ...savedData.heroGrowth } : {},
+    heroGrowthVersion: Number(savedData.heroGrowthVersion) || 0,
     ownedGods: savedData.ownedGods && typeof savedData.ownedGods === "object" ? { ...savedData.ownedGods } : {},
     entitlements: savedData.entitlements && typeof savedData.entitlements === "object" ? { ...savedData.entitlements } : {},
   };

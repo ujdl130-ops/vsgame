@@ -9858,7 +9858,7 @@ body:not(.game-started) .game-wrap {
   background: transparent;
   box-shadow: none;
   cursor: pointer;
-  perspective: 1200px;
+  perspective: 1400px;
   align-self: stretch;
   min-height: 0;
   display: block;
@@ -9870,11 +9870,12 @@ body:not(.game-started) .game-wrap {
   height: 100%;
   display: block;
   transform-style: preserve-3d;
-  transition: transform 0.46s ease;
+  transform-origin: right center;
+  transition: transform 0.68s cubic-bezier(.16,.72,.18,1);
 }
 
 .formation-hero-detail-card.is-flipped .formation-hero-flip-inner {
-  transform: rotateY(180deg);
+  transform: translateX(-7%) rotateY(-180deg);
 }
 
 .formation-hero-flip-face {
@@ -9904,6 +9905,17 @@ body:not(.game-started) .game-wrap {
     inset 0 0 0 2px rgba(255,255,255,0.48),
     0 12px 24px rgba(85, 58, 25, 0.12);
   transform: rotateY(180deg);
+}
+
+.formation-growth-lock {
+  justify-self: center;
+  width: min(430px, 100%);
+  margin: 0;
+  color: #8f351e;
+  font-size: 14px;
+  font-weight: 900;
+  line-height: 1.35;
+  text-align: center;
 }
 
 .formation-hero-flip-back strong {
