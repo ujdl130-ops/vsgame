@@ -561,7 +561,7 @@ body.game-started:not(.in-lobby):not(.in-stage-select):not(.in-shop):not(.in-rec
 }
 
 .battle-action-icon-basic {
-  right: 0;
+  right: 30px;
 }
 
 .battle-action-icon-skill {
@@ -1232,7 +1232,7 @@ body.game-started:not(.in-lobby):not(.in-stage-select):not(.in-shop):not(.in-rec
   }
 
   .battle-action-icon-basic {
-    right: 0;
+    right: 30px;
   }
 
   .battle-unit-slot-guard {
