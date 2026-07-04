@@ -407,7 +407,15 @@ body.game-started:not(.in-lobby):not(.in-stage-select):not(.in-shop):not(.in-rec
 }
 
 .battle-mana-icon {
-  display: none;
+  position: absolute;
+  z-index: 8;
+  left: 581px;
+  top: -2px;
+  display: block;
+  width: 42px;
+  height: 39px;
+  object-fit: fill;
+  pointer-events: none;
 }
 
 .battle-command-top {
@@ -1025,7 +1033,11 @@ body.game-started:not(.in-lobby):not(.in-stage-select):not(.in-shop):not(.in-rec
   }
 
   .battle-mana-icon {
-    display: none;
+    left: 581px;
+    top: -2px;
+    display: block;
+    width: 42px;
+    height: 39px;
   }
 
   .battle-command-top {
