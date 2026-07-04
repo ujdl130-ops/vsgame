@@ -78,7 +78,6 @@ function createInitialState() {
     messageTimer: 0,
     wave: 1,
     runestone: clampRunestone(stageConfig.startRunestone),
-    runestoneTimer: 0,
     zeusMana: 0,
     zeusManaMax: ZEUS_MANA_MAX,
     playerBaseHp: 100,

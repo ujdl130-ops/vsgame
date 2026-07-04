@@ -301,11 +301,7 @@ function update(dt) {
   }
 
   gameState.messageTimer = Math.max(0, gameState.messageTimer - dt);
-  gameState.runestoneTimer += dt;
-  if (gameState.runestoneTimer >= 1) {
-    addRunestone(12);
-    gameState.runestoneTimer = 0;
-  }
+  addRunestone(RUNESTONE_REGEN_PER_SECOND * dt);
   updateZeusMana(dt);
 
   updateWave(dt);
