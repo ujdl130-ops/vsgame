@@ -619,7 +619,12 @@ body.game-started:not(.in-lobby):not(.in-stage-select):not(.in-shop):not(.in-rec
 }
 
 .battle-unit-slot-button::before {
+  content: "";
+  position: absolute;
+  inset: 0;
   display: none;
+  background-repeat: no-repeat;
+  transition: filter 0.18s ease, opacity 0.18s ease;
 }
 
 .battle-unit-slot-button:disabled {
@@ -628,7 +633,8 @@ body.game-started:not(.in-lobby):not(.in-stage-select):not(.in-shop):not(.in-rec
 }
 
 .battle-unit-slot-button:disabled::before {
-  filter: saturate(0.82) brightness(0.78);
+  filter: grayscale(1) saturate(0) brightness(0.46) contrast(0.95);
+  opacity: 0.86;
 }
 
 .battle-unit-slot-button:disabled::after {
