@@ -322,9 +322,9 @@ body.game-started:not(.in-lobby):not(.in-stage-select):not(.in-shop):not(.in-rec
   right: 0;
   bottom: 0;
   z-index: 3;
-  height: 171px;
+  height: 126px;
   border: 0;
-  background: url("assets/ui/battle_command_bar_generated.png") center bottom / 100% auto no-repeat;
+  background: url("assets/ui/battle_command_bar_generated.png") center bottom / 100% 100% no-repeat;
   box-shadow: 0 -4px 0 rgba(0, 0, 0, 0.58);
   overflow: hidden;
 }
@@ -341,9 +341,9 @@ body.game-started:not(.in-lobby):not(.in-stage-select):not(.in-shop):not(.in-rec
   position: absolute;
   z-index: 2;
   left: 218px;
-  top: 17px;
+  top: 13px;
   width: 174px;
-  height: 17px;
+  height: 13px;
   border-radius: 999px;
   overflow: hidden;
   pointer-events: none;
@@ -360,7 +360,7 @@ body.game-started:not(.in-lobby):not(.in-stage-select):not(.in-shop):not(.in-rec
   top: 50%;
   transform: translateY(-50%);
   color: #f7ecff;
-  font-size: 13px;
+  font-size: 10px;
   font-weight: 900;
   line-height: 1;
   letter-spacing: 0;
@@ -375,9 +375,9 @@ body.game-started:not(.in-lobby):not(.in-stage-select):not(.in-shop):not(.in-rec
   z-index: 5;
   left: 632px;
   right: 56px;
-  top: 17px;
+  top: 13px;
   width: auto;
-  height: 17px;
+  height: 13px;
   border-radius: 999px;
   overflow: hidden;
   background: transparent;
@@ -396,7 +396,7 @@ body.game-started:not(.in-lobby):not(.in-stage-select):not(.in-shop):not(.in-rec
   top: 50%;
   transform: translateY(-50%);
   color: #eaf8ff;
-  font-size: 13px;
+  font-size: 10px;
   font-weight: 900;
   line-height: 1;
   letter-spacing: 0;
@@ -468,7 +468,7 @@ body.game-started:not(.in-lobby):not(.in-stage-select):not(.in-shop):not(.in-rec
   left: 0;
   right: 0;
   bottom: 0;
-  height: 171px;
+  height: 126px;
   pointer-events: none;
 }
 
@@ -485,9 +485,9 @@ body.game-started:not(.in-lobby):not(.in-stage-select):not(.in-shop):not(.in-rec
   z-index: 6;
   left: auto;
   right: 30px;
-  top: 50px;
+  top: 37px;
   width: 236px;
-  height: 100px;
+  height: 74px;
   pointer-events: none;
 }
 
@@ -495,7 +495,7 @@ body.game-started:not(.in-lobby):not(.in-stage-select):not(.in-shop):not(.in-rec
   position: absolute;
   top: 0;
   width: 92px;
-  height: 92px;
+  height: 68px;
   border: 0;
   padding: 0;
   border-radius: 50%;
@@ -602,9 +602,9 @@ body.game-started:not(.in-lobby):not(.in-stage-select):not(.in-shop):not(.in-rec
 
 .battle-unit-slot-guard {
   left: 270px;
-  top: 56px;
+  top: 41px;
   width: 74px;
-  height: 92px;
+  height: 68px;
 }
 
 .battle-unit-slot-guard::before {
@@ -617,9 +617,9 @@ body.game-started:not(.in-lobby):not(.in-stage-select):not(.in-shop):not(.in-rec
 
 .battle-unit-slot-archer {
   left: 354px;
-  top: 56px;
+  top: 41px;
   width: 74px;
-  height: 92px;
+  height: 68px;
 }
 
 .battle-unit-slot-archer::before {
@@ -630,9 +630,9 @@ body.game-started:not(.in-lobby):not(.in-stage-select):not(.in-shop):not(.in-rec
 
 .battle-unit-slot-mage {
   left: 438px;
-  top: 56px;
+  top: 41px;
   width: 74px;
-  height: 92px;
+  height: 68px;
 }
 
 .battle-unit-slot-mage::before {
@@ -643,9 +643,9 @@ body.game-started:not(.in-lobby):not(.in-stage-select):not(.in-shop):not(.in-rec
 
 .battle-unit-slot-saintess {
   left: 522px;
-  top: 56px;
+  top: 41px;
   width: 74px;
-  height: 92px;
+  height: 68px;
 }
 
 .battle-unit-slot-saintess::before {
@@ -656,9 +656,9 @@ body.game-started:not(.in-lobby):not(.in-stage-select):not(.in-shop):not(.in-rec
 
 .battle-unit-slot-thief {
   left: 606px;
-  top: 56px;
+  top: 41px;
   width: 74px;
-  height: 92px;
+  height: 68px;
 }
 
 .battle-unit-slot-thief::before {
@@ -711,10 +711,10 @@ body.game-started:not(.in-lobby):not(.in-stage-select):not(.in-shop):not(.in-rec
   --stick-x: 0px;
   position: absolute;
   left: 45px;
-  bottom: 18px;
+  bottom: 13px;
   z-index: 3;
   width: 210px;
-  height: 112px;
+  height: 83px;
   border: 0;
   background: transparent;
   box-shadow: none;
@@ -980,7 +980,7 @@ body.game-started:not(.in-lobby):not(.in-stage-select):not(.in-shop):not(.in-rec
 
   .battle-command-panel {
     --battle-unit-zone: 58%;
-    height: 171px;
+    height: 126px;
   }
 
   .battle-command-panel::before {
@@ -993,9 +993,9 @@ body.game-started:not(.in-lobby):not(.in-stage-select):not(.in-shop):not(.in-rec
 
   .battle-runestone-gauge {
     left: 218px;
-    top: 17px;
+    top: 13px;
     width: 174px;
-    height: 17px;
+    height: 13px;
   }
 
   .battle-runestone-fill {
@@ -1004,15 +1004,15 @@ body.game-started:not(.in-lobby):not(.in-stage-select):not(.in-shop):not(.in-rec
 
   .battle-runestone-gauge strong {
     right: 0;
-    font-size: 13px;
+    font-size: 10px;
   }
 
   .battle-mana-placeholder {
     left: 632px;
     right: 56px;
-    top: 17px;
+    top: 13px;
     width: auto;
-    height: 17px;
+    height: 13px;
   }
 
   .battle-mana-fill {
@@ -1021,7 +1021,7 @@ body.game-started:not(.in-lobby):not(.in-stage-select):not(.in-shop):not(.in-rec
 
   .battle-mana-placeholder strong {
     right: 16px;
-    font-size: 13px;
+    font-size: 10px;
   }
 
   .battle-mana-icon {
@@ -1054,7 +1054,7 @@ body.game-started:not(.in-lobby):not(.in-stage-select):not(.in-shop):not(.in-rec
     left: 0;
     right: 0;
     bottom: 0;
-    height: 171px;
+    height: 126px;
   }
 
   .battle-command-bottom::before {
@@ -1074,15 +1074,15 @@ body.game-started:not(.in-lobby):not(.in-stage-select):not(.in-shop):not(.in-rec
   .battle-action-icon-layer {
     left: auto;
     right: 30px;
-    top: 50px;
+    top: 37px;
     width: 236px;
-    height: 100px;
+    height: 74px;
   }
 
   .battle-action-icon-slot {
     top: 0;
     width: 92px;
-    height: 92px;
+    height: 68px;
   }
 
   .battle-action-icon-skill {
@@ -1095,9 +1095,9 @@ body.game-started:not(.in-lobby):not(.in-stage-select):not(.in-shop):not(.in-rec
 
   .battle-unit-slot-guard {
     left: 270px;
-    top: 56px;
+    top: 41px;
     width: 74px;
-    height: 92px;
+    height: 68px;
   }
 
   .battle-unit-slot-button[data-cost]::before {
@@ -1112,30 +1112,30 @@ body.game-started:not(.in-lobby):not(.in-stage-select):not(.in-shop):not(.in-rec
 
   .battle-unit-slot-archer {
     left: 354px;
-    top: 56px;
+    top: 41px;
     width: 74px;
-    height: 92px;
+    height: 68px;
   }
 
   .battle-unit-slot-mage {
     left: 438px;
-    top: 56px;
+    top: 41px;
     width: 74px;
-    height: 92px;
+    height: 68px;
   }
 
   .battle-unit-slot-saintess {
     left: 522px;
-    top: 56px;
+    top: 41px;
     width: 74px;
-    height: 92px;
+    height: 68px;
   }
 
   .battle-unit-slot-thief {
     left: 606px;
-    top: 56px;
+    top: 41px;
     width: 74px;
-    height: 92px;
+    height: 68px;
   }
 
   .battle-unit-card-archer {
@@ -1168,9 +1168,9 @@ body.game-started:not(.in-lobby):not(.in-stage-select):not(.in-shop):not(.in-rec
 
   .movement-joystick {
     left: 45px;
-    bottom: 18px;
+    bottom: 13px;
     width: 210px;
-    height: 112px;
+    height: 83px;
   }
 
   .movement-joystick-track {
