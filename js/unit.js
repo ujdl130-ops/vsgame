@@ -1,8 +1,6 @@
 // Friendly unit summoning, behavior, and rendering.
 
-const THIEF_HEAVY_ATTACK_DAMAGE = 34;
-const THIEF_HEAVY_ATTACK_SPEED = 1.75;
-const THIEF_HEAVY_ATTACK_DURATION = 0.5;
+const THIEF_ATTACK_DURATION = 0.42;
 const THIEF_RETREAT_DURATION = 0.45;
 const THIEF_RETREAT_SPEED = 190;
 const THIEF_RETREAT_MIN_X = PLAYER_BASE_X + 58;
@@ -15,20 +13,23 @@ function summonGuard() {
     return;
   }
   if (!spendRunestone(50)) return;
+  const stats = getGrownStats("guard", { hp: 115, damage: 10 });
   gameState.units.push({
     type: "guard",
     name: "방패병",
+    level: stats.level,
+    star: stats.star,
     x: PLAYER_BASE_X + 70,
     y: COMBAT_LINE_Y,
     w: 34,
     h: 56,
-    hp: 90,
-    maxHp: 90,
-    speed: 52,
-    damage: 13,
+    hp: stats.hp,
+    maxHp: stats.hp,
+    speed: 48,
+    damage: stats.damage,
     range: 42,
     cooldown: 0,
-    attackSpeed: 0.75,
+    attackSpeed: 1.0,
     animTime: 0,
     moving: false,
     attackAnimTimer: 0,
@@ -50,20 +51,23 @@ function summonArcher() {
     return;
   }
   if (!spendRunestone(75)) return;
-  gameState.units.push({
+  const stats = getGrownStats("archer", { hp: 48, damage: 13 });
+  gameState.units.push(applyFormationBattleStats("archer", {
     type: "archer",
     name: "궁수",
+    level: stats.level,
+    star: stats.star,
     x: PLAYER_BASE_X + 62,
     y: COMBAT_LINE_Y,
     w: 32,
     h: 52,
-    hp: 48,
-    maxHp: 48,
+    hp: stats.hp,
+    maxHp: stats.hp,
     speed: 42,
-    damage: 10,
-    range: 170,
+    damage: stats.damage,
+    range: 175,
     cooldown: 0,
-    attackSpeed: 1.05,
+    attackSpeed: 0.85,
     animTime: 0,
     moving: false,
     attackAnimTimer: 0,
@@ -74,7 +78,7 @@ function summonArcher() {
     deathAnimTimer: 0,
     deathAnimDuration: 0.85,
     deathRewarded: false,
-  });
+  }));
 }
 
 function summonMage() {
@@ -85,20 +89,23 @@ function summonMage() {
     return;
   }
   if (!spendRunestone(100)) return;
-  gameState.units.push({
+  const stats = getGrownStats("mage", { hp: 42, damage: 15 });
+  gameState.units.push(applyFormationBattleStats("mage", {
     type: "mage",
     name: "마법사",
+    level: stats.level,
+    star: stats.star,
     x: PLAYER_BASE_X + 58,
     y: COMBAT_LINE_Y,
     w: 32,
     h: 52,
-    hp: 42,
-    maxHp: 42,
+    hp: stats.hp,
+    maxHp: stats.hp,
     speed: 38,
-    damage: 8,
+    damage: stats.damage,
     range: 155,
     cooldown: 0,
-    attackSpeed: 1.18,
+    attackSpeed: 1.2,
     animTime: 0,
     moving: false,
     attackAnimTimer: 0,
@@ -109,7 +116,7 @@ function summonMage() {
     deathAnimTimer: 0,
     deathAnimDuration: 0.85,
     deathRewarded: false,
-  });
+  }));
 }
 
 function summonSaintess() {
@@ -120,22 +127,25 @@ function summonSaintess() {
     return;
   }
   if (!spendRunestone(120)) return;
-  gameState.units.push({
+  const stats = getGrownStats("saintess", { hp: 54, healAmount: 8 });
+  gameState.units.push(applyFormationBattleStats("saintess", {
     type: "saintess",
     name: "성녀",
+    level: stats.level,
+    star: stats.star,
     x: PLAYER_BASE_X + 56,
     y: COMBAT_LINE_Y,
     w: 32,
     h: 52,
-    hp: 54,
-    maxHp: 54,
+    hp: stats.hp,
+    maxHp: stats.hp,
     speed: 36,
     damage: 0,
-    range: 0,
+    range: 130,
     cooldown: 0,
     attackSpeed: 1.2,
     healRange: 130,
-    healAmount: 8,
+    healAmount: stats.healAmount,
     healInterval: 1.2,
     healCooldown: 0,
     animTime: 0,
@@ -147,7 +157,7 @@ function summonSaintess() {
     deathAnimTimer: 0,
     deathAnimDuration: 0.85,
     deathRewarded: false,
-  });
+  }));
 }
 
 function summonThief() {
@@ -158,24 +168,27 @@ function summonThief() {
     return;
   }
   if (!spendRunestone(90)) return;
-  gameState.units.push({
+  const stats = getGrownStats("thief", { hp: 58, damage: 28 });
+  gameState.units.push(applyFormationBattleStats("thief", {
     type: "thief",
     name: "도적",
+    level: stats.level,
+    star: stats.star,
     x: PLAYER_BASE_X + 64,
     y: COMBAT_LINE_Y,
     w: 30,
     h: 52,
-    hp: 58,
-    maxHp: 58,
-    speed: 78,
-    damage: THIEF_HEAVY_ATTACK_DAMAGE,
-    range: 42,
+    hp: stats.hp,
+    maxHp: stats.hp,
+    speed: 72,
+    damage: stats.damage,
+    range: 36,
     cooldown: 0,
-    attackSpeed: THIEF_HEAVY_ATTACK_SPEED,
+    attackSpeed: 1.35,
     animTime: 0,
     moving: false,
     attackAnimTimer: 0,
-    attackAnimDuration: THIEF_HEAVY_ATTACK_DURATION,
+    attackAnimDuration: THIEF_ATTACK_DURATION,
     attackImpactPending: false,
     attackTarget: null,
     retreatTimer: 0,
@@ -185,7 +198,7 @@ function summonThief() {
     deathAnimTimer: 0,
     deathAnimDuration: 0.78,
     deathRewarded: false,
-  });
+  }));
 }
 
 function startThiefRetreat(unit) {
@@ -236,7 +249,7 @@ function updateUnits(dt) {
     unit.moving = false;
 
     const previousAttackTimer = unit.attackAnimTimer || 0;
-    unit.attackAnimDuration = unit.attackAnimDuration || (unit.type === "guard" ? 0.46 : unit.type === "thief" ? THIEF_HEAVY_ATTACK_DURATION : (unit.type === "mage" || unit.type === "saintess") ? 0.72 : 0.58);
+    unit.attackAnimDuration = unit.attackAnimDuration || (unit.type === "guard" ? 0.46 : unit.type === "thief" ? THIEF_ATTACK_DURATION : (unit.type === "mage" || unit.type === "saintess") ? 0.72 : 0.58);
     unit.attackAnimTimer = Math.max(0, previousAttackTimer - dt);
 
     const attackProgress = unit.attackAnimTimer > 0
@@ -295,9 +308,9 @@ function updateUnits(dt) {
     if ((unit.type === "guard" || unit.type === "thief") && unit.attackImpactPending && (attackProgress >= 0.48 || unit.attackAnimTimer <= 0)) {
       const attackTarget = isCombatAlive(unit.attackTarget)
         ? unit.attackTarget
-        : findNearestEnemy(unit.x, unit.range + 12);
+        : findNearestEnemy(unit.x, unit.range + 12, { includeAirborne: false });
 
-      if (attackTarget) {
+      if (canDamageCombatant(attackTarget)) {
         attackTarget.hp -= unit.damage;
         if (unit.type === "thief") {
           spawnThiefStrike(attackTarget.x, attackTarget.y - Math.max(34, attackTarget.h * 0.65));
@@ -313,7 +326,9 @@ function updateUnits(dt) {
       }
     }
 
-    const target = findNearestEnemy(unit.x, unit.range);
+    const target = findNearestEnemy(unit.x, unit.range, {
+      includeAirborne: !(unit.type === "guard" || unit.type === "thief"),
+    });
 
     if (target) {
       if (unit.cooldown <= 0) {
@@ -329,11 +344,11 @@ function updateUnits(dt) {
           unit.pendingMageShot = true;
           unit.shotTarget = target;
         } else if (unit.type === "guard" || unit.type === "thief") {
-          unit.attackAnimDuration = unit.type === "guard" ? 0.46 : THIEF_HEAVY_ATTACK_DURATION;
+          unit.attackAnimDuration = unit.type === "guard" ? 0.46 : THIEF_ATTACK_DURATION;
           unit.attackAnimTimer = unit.attackAnimDuration;
           unit.attackImpactPending = true;
           unit.attackTarget = target;
-        } else {
+        } else if (canDamageCombatant(target)) {
           target.hp -= unit.damage;
         }
       }
@@ -537,7 +552,7 @@ function drawThiefSprite(unit) {
   let frame = Math.floor((unit.animTime || 0) * fps) % frameCount;
 
   if (anim === "attack") {
-    const duration = unit.attackAnimDuration || THIEF_HEAVY_ATTACK_DURATION;
+    const duration = unit.attackAnimDuration || THIEF_ATTACK_DURATION;
     const progress = 1 - unit.attackAnimTimer / duration;
     frame = Math.min(frameCount - 1, Math.max(0, Math.floor(progress * frameCount)));
   } else if (anim === "death") {
@@ -676,33 +691,17 @@ function drawUnit(unit) {
       ctx.fill();
     }
   } else if (unit.type === "thief") {
-    const isRetreating = !isDying && (unit.retreatTimer || 0) > 0;
+    const retreatRatio = unit.retreatDuration
+      ? Math.max(0, Math.min(1, (unit.retreatTimer || 0) / unit.retreatDuration))
+      : 0;
 
-    if (isRetreating) {
-      const duration = unit.retreatDuration || THIEF_RETREAT_DURATION;
-      const progress = 1 - Math.max(0, unit.retreatTimer || 0) / duration;
-
-      if (thiefSpriteReady) {
-        for (let i = 0; i < 3; i++) {
-          ctx.save();
-          ctx.globalAlpha = Math.max(0, 0.28 - i * 0.06 - progress * 0.08);
-          ctx.translate(18 + i * 17, i % 2 === 0 ? 0 : -2);
-          drawThiefSprite(unit);
-          ctx.restore();
-        }
-      }
-
-      ctx.save();
-      ctx.globalAlpha = 0.55 + Math.abs(Math.sin(progress * Math.PI * 4)) * 0.32;
-      ctx.strokeStyle = "rgba(200, 255, 255, 0.78)";
-      ctx.shadowColor = "rgba(100, 235, 255, 0.75)";
-      ctx.shadowBlur = 8;
-      ctx.lineWidth = 2;
-      for (let i = 0; i < 3; i++) {
-        ctx.beginPath();
-        ctx.moveTo(16 + i * 12, -46 + i * 9);
-        ctx.lineTo(44 + i * 14, -52 + i * 6);
-        ctx.stroke();
+    if (retreatRatio > 0 && thiefSpriteReady) {
+      for (let i = 3; i >= 1; i--) {
+        ctx.save();
+        ctx.globalAlpha = retreatRatio * (0.06 + i * 0.05);
+        ctx.translate(i * 13, 0);
+        drawThiefSprite(unit);
+        ctx.restore();
       }
     }
 
@@ -710,6 +709,20 @@ function drawUnit(unit) {
 
     if (!drewSprite) {
       ctx.translate(0, bob);
+
+      if (retreatRatio > 0) {
+        ctx.save();
+        ctx.globalAlpha = 0.45 * retreatRatio;
+        ctx.strokeStyle = "#cfffff";
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.moveTo(18, -44);
+        ctx.lineTo(44, -52);
+        ctx.moveTo(14, -28);
+        ctx.lineTo(38, -34);
+        ctx.stroke();
+        ctx.restore();
+      }
 
       ctx.fillStyle = "#2f2a42";
       ctx.fillRect(-12, -38, 24, 30);
@@ -723,10 +736,6 @@ function drawUnit(unit) {
       ctx.moveTo(14, -24);
       ctx.lineTo(32, -38);
       ctx.stroke();
-    }
-
-    if (isRetreating) {
-      ctx.restore();
     }
   }
 

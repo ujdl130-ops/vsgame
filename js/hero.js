@@ -68,20 +68,23 @@ const ZEUS_THUNDERSTORM_SKILL = {
 
 
 function createMainHero() {
+  const stats = getGrownStats("hero", { hp: 180, damage: 34 });
   return {
     type: "hero",
     name: "제우스",
+    level: stats.level,
+    star: stats.star,
     x: PLAYER_BASE_X + 112,
     y: COMBAT_LINE_Y,
     w: 38,
     h: 62,
-    hp: 120,
-    maxHp: 120,
-    speed: 150,
-    damage: 22,
-    range: 265,
+    hp: stats.hp,
+    maxHp: stats.hp,
+    speed: 145,
+    damage: stats.damage,
+    range: 275,
     cooldown: 0,
-    attackSpeed: 0.5,
+    attackSpeed: 0.48,
     attackAnimTimer: 0,
     attackAnimDuration: 0.56,
     pendingHeroShot: false,
@@ -94,7 +97,7 @@ function createMainHero() {
     face: 1,
     dead: false,
     respawnTimer: 0,
-    lastHp: 120,
+    lastHp: stats.hp,
   };
 }
 

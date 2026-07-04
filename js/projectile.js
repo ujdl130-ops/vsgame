@@ -89,6 +89,23 @@ function spawnThiefStrike(x, y) {
   spawnHit(x, y, "#e9fbff");
 }
 
+function spawnKaronSwordWave(enemy) {
+  const target = isCombatAlive(enemy.swordWaveTarget)
+    ? enemy.swordWaveTarget
+    : findNearestAlly(enemy.x, enemy.range + 40);
+
+  gameState.projectiles.push({
+    type: "karonSwordWave",
+    x: enemy.x - 48,
+    y: enemy.y - 72,
+    vx: -500,
+    damage: enemy.damage,
+    target,
+    life: 0,
+    maxLife: 1.5,
+  });
+}
+
 function fireArcherArrow(unit) {
   const shotTarget = isCombatAlive(unit.shotTarget)
     ? unit.shotTarget
@@ -164,7 +181,7 @@ function explodeMageFireball(projectile, impactX, impactY) {
   let hitCount = 0;
 
   for (const enemy of gameState.enemies) {
-    if (!isCombatAlive(enemy)) continue;
+    if (!canDamageCombatant(enemy)) continue;
     if (!isEnemyInsideMageFireball(enemy, impactX, impactY, radius)) continue;
 
     enemy.hp -= projectile.damage;
@@ -181,6 +198,21 @@ function updateProjectiles(dt) {
     projectile.life = (projectile.life || 0) + dt;
     projectile.x += projectile.vx * dt;
 
+    if (projectile.type === "karonSwordWave") {
+      const target = isCombatAlive(projectile.target)
+        ? projectile.target
+        : findNearestAlly(projectile.x, 90);
+
+      if (target && Math.abs(projectile.x - target.x) < 24) {
+        target.hp -= projectile.damage;
+        spawnHit(target.x, target.y - Math.max(38, target.h * 0.65), "#79c8ff");
+        projectile.dead = true;
+      }
+
+      if (projectile.x < -90 || projectile.life > projectile.maxLife) projectile.dead = true;
+      continue;
+    }
+
     if (projectile.type === "mageFireball") {
       const impact = getMageFireballImpactPoint(projectile);
       if (projectile.x >= impact.x - 16) {
@@ -192,7 +224,9 @@ function updateProjectiles(dt) {
     }
 
     if (isCombatAlive(projectile.target) && Math.abs(projectile.x - projectile.target.x) < 18) {
-      projectile.target.hp -= projectile.damage;
+      if (canDamageCombatant(projectile.target)) {
+        projectile.target.hp -= projectile.damage;
+      }
       projectile.dead = true;
     }
     if (projectile.x > canvas.width + 50) projectile.dead = true;
@@ -217,6 +251,46 @@ function updateParticles(dt) {
 
 function drawProjectiles() {
   for (const projectile of gameState.projectiles) {
+    if (projectile.type === "karonSwordWave") {
+      const pulse = Math.sin((projectile.life || 0) * 42) * 0.12;
+
+      ctx.save();
+      ctx.translate(projectile.x, projectile.y);
+      ctx.globalAlpha = Math.max(0.2, 1 - (projectile.life || 0) / (projectile.maxLife || 1.5) * 0.28);
+      ctx.shadowColor = "rgba(55, 156, 255, 0.95)";
+      ctx.shadowBlur = 16;
+
+      const slashGradient = ctx.createLinearGradient(-82, 0, 32, 0);
+      slashGradient.addColorStop(0, "rgba(5, 14, 45, 0)");
+      slashGradient.addColorStop(0.25, "rgba(12, 28, 82, 0.95)");
+      slashGradient.addColorStop(0.62, "rgba(24, 146, 255, 0.96)");
+      slashGradient.addColorStop(1, "rgba(250, 255, 255, 0)");
+
+      ctx.fillStyle = slashGradient;
+      ctx.beginPath();
+      ctx.moveTo(-88, -8);
+      ctx.quadraticCurveTo(-38, -25 - pulse * 18, 34, -2);
+      ctx.quadraticCurveTo(-36, 23 + pulse * 18, -88, 10);
+      ctx.closePath();
+      ctx.fill();
+
+      ctx.strokeStyle = "rgba(223, 247, 255, 0.88)";
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.moveTo(-72, 4);
+      ctx.quadraticCurveTo(-24, -18, 28, -2);
+      ctx.stroke();
+
+      ctx.strokeStyle = "rgba(4, 11, 28, 0.92)";
+      ctx.lineWidth = 5;
+      ctx.beginPath();
+      ctx.moveTo(-82, 10);
+      ctx.quadraticCurveTo(-26, 20, 24, 3);
+      ctx.stroke();
+      ctx.restore();
+      continue;
+    }
+
     if (projectile.type === "heroBolt") {
       ctx.save();
       ctx.strokeStyle = "#9fe8ff";

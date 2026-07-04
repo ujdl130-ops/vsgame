@@ -17,10 +17,10 @@ const STAGE_CONFIGS = {
   },
   3: {
     title: "마왕군 전초기지",
-    maxWave: 3,
+    maxWave: 1,
     startRunestone: 0,
     enemyBaseHp: 150,
-    baseEnemiesToSpawn: 8,
+    baseEnemiesToSpawn: 1,
   },
 };
 
@@ -83,10 +83,12 @@ function showStageSelect() {
   if (shopScreen) shopScreen.classList.add("is-hidden");
   if (recruitScreen) recruitScreen.classList.add("is-hidden");
   if (formationScreen) formationScreen.classList.add("is-hidden");
+  if (missionScreen) missionScreen.classList.add("is-hidden");
+  if (inventoryScreen) inventoryScreen.classList.add("is-hidden");
   hideRecruitDoorScene(true);
   if (chapterPanel) chapterPanel.classList.add("is-hidden");
   if (stagePanel) stagePanel.classList.remove("is-hidden");
-  document.body.classList.remove("game-started", "in-lobby", "in-shop", "in-recruit", "in-formation");
+  document.body.classList.remove("game-started", "in-lobby", "in-shop", "in-recruit", "in-formation", "in-mission", "in-inventory");
   document.body.classList.add("in-stage-select");
 
   if (gameState) {
@@ -146,7 +148,7 @@ function updateWave(dt) {
   const waveFinished = gameState.spawnedInWave >= gameState.enemiesToSpawn && gameState.enemies.length === 0;
   if (waveFinished && gameState.wave < gameState.maxWave) {
     gameState.waveBreakTimer = 3;
-    gameState.runestone += 60;
+    addRunestone(60);
   } else if (waveFinished && gameState.wave >= gameState.maxWave) {
     completeStage(`STAGE ${selectedStage} CLEAR! 모든 웨이브 방어 성공`);
   }
@@ -232,34 +234,34 @@ function getBaseRenderConfig(isPlayer) {
     return {
       image: playerCastleImage,
       ready: playerCastleReady,
-      drawX: 8,
-      drawY: GROUND_Y - 198,
-      drawW: 188,
-      drawH: 188,
-      shadowX: 92,
+      drawX: -8,
+      drawY: GROUND_Y - 285,
+      drawW: 285,
+      drawH: 285,
+      shadowX: 108,
       shadowY: GROUND_Y + 2,
-      shadowW: 58,
-      shadowH: 14,
-      hpX: 96,
-      hpY: GROUND_Y - 148,
-      hpW: 98,
+      shadowW: 84,
+      shadowH: 18,
+      hpX: 120,
+      hpY: GROUND_Y - 198,
+      hpW: 146,
     };
   }
 
   return {
     image: enemyCastleImage,
     ready: enemyCastleReady,
-    drawX: canvas.width - 208,
-    drawY: GROUND_Y - 208,
-    drawW: 198,
-    drawH: 198,
-    shadowX: canvas.width - 110,
+    drawX: canvas.width - 290,
+    drawY: GROUND_Y - 285,
+    drawW: 285,
+    drawH: 285,
+    shadowX: canvas.width - 140,
     shadowY: GROUND_Y + 2,
-    shadowW: 64,
-    shadowH: 15,
-    hpX: canvas.width - 109,
-    hpY: GROUND_Y - 148,
-    hpW: 104,
+    shadowW: 88,
+    shadowH: 18,
+    hpX: canvas.width - 141,
+    hpY: GROUND_Y - 197,
+    hpW: 148,
   };
 }
 
