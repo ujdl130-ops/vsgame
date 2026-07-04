@@ -317,6 +317,8 @@ body.game-started:not(.in-lobby):not(.in-stage-select):not(.in-shop):not(.in-rec
 
 .battle-command-panel {
   --battle-unit-zone: 58%;
+  --battle-bar-width: 706px;
+  --battle-side-extension: max(0px, calc((100% - var(--battle-bar-width)) / 2 + 2px));
   position: absolute;
   left: 0;
   right: 0;
@@ -330,11 +332,69 @@ body.game-started:not(.in-lobby):not(.in-stage-select):not(.in-shop):not(.in-rec
 }
 
 .battle-command-panel::before {
-  display: none;
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  z-index: 0;
+  display: block;
+  width: var(--battle-side-extension);
+  pointer-events: none;
+  background:
+    linear-gradient(
+      180deg,
+      rgba(13, 11, 10, 0.98) 0 5px,
+      rgba(176, 118, 43, 0.9) 5px 7px,
+      rgba(48, 34, 22, 0.96) 7px 15px,
+      rgba(31, 28, 25, 0.95) 15px calc(100% - 16px),
+      rgba(83, 55, 28, 0.96) calc(100% - 16px) calc(100% - 8px),
+      rgba(205, 143, 56, 0.82) calc(100% - 8px) calc(100% - 5px),
+      rgba(16, 13, 12, 0.98) calc(100% - 5px) 100%
+    ),
+    repeating-linear-gradient(
+      90deg,
+      rgba(255, 223, 131, 0.12) 0 1px,
+      transparent 1px 21px
+    ),
+    linear-gradient(90deg, #211710 0%, #47301e 38%, #1a1816 100%);
+  box-shadow:
+    inset 0 0 0 2px rgba(0, 0, 0, 0.52),
+    inset 0 0 0 4px rgba(186, 126, 45, 0.2),
+    inset -10px 0 16px rgba(0, 0, 0, 0.42);
 }
 
 .battle-command-panel::after {
-  display: none;
+  content: "";
+  position: absolute;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  z-index: 0;
+  display: block;
+  width: var(--battle-side-extension);
+  pointer-events: none;
+  background:
+    linear-gradient(
+      180deg,
+      rgba(13, 11, 10, 0.98) 0 5px,
+      rgba(176, 118, 43, 0.9) 5px 7px,
+      rgba(48, 34, 22, 0.96) 7px 15px,
+      rgba(31, 28, 25, 0.95) 15px calc(100% - 16px),
+      rgba(83, 55, 28, 0.96) calc(100% - 16px) calc(100% - 8px),
+      rgba(205, 143, 56, 0.82) calc(100% - 8px) calc(100% - 5px),
+      rgba(16, 13, 12, 0.98) calc(100% - 5px) 100%
+    ),
+    repeating-linear-gradient(
+      90deg,
+      rgba(255, 223, 131, 0.12) 0 1px,
+      transparent 1px 21px
+    ),
+    linear-gradient(270deg, #211710 0%, #47301e 38%, #1a1816 100%);
+  box-shadow:
+    inset 0 0 0 2px rgba(0, 0, 0, 0.52),
+    inset 0 0 0 4px rgba(186, 126, 45, 0.2),
+    inset 10px 0 16px rgba(0, 0, 0, 0.42);
 }
 
 .battle-runestone-gauge {
@@ -984,18 +1044,21 @@ body.game-started:not(.in-lobby):not(.in-stage-select):not(.in-shop):not(.in-rec
   }
 
   .battle-command-panel::before {
-    left: 130px;
-    top: 12px;
-    width: 246px;
-    height: 14px;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: var(--battle-side-extension);
+    height: auto;
   }
 
   .battle-command-panel::after {
-    left: 88px;
-    top: 3px;
-    width: 44px;
-    height: 44px;
-    background-size: 29px 35px, auto;
+    left: auto;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    width: var(--battle-side-extension);
+    height: auto;
+    background-size: auto;
   }
 
   .battle-runestone-gauge {
