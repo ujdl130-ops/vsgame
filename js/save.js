@@ -55,6 +55,8 @@ const CHARACTER_GROWTH_CONFIGS = {
       1: { hp: 1.0, damage: 1.0 },
       2: { hp: 1.25, damage: 1.275 },
       3: { hp: 1.5, damage: 1.55 },
+      4: { hp: 1.75, damage: 1.825 },
+      5: { hp: 2.0, damage: 2.1 },
     },
   },
 };
@@ -210,8 +212,9 @@ function getLevelGrowthCoefficient(type, stat, level) {
   const growthType = resolveGrowthType(type);
   const config = CHARACTER_GROWTH_CONFIGS[growthType];
   const levelGrowth = (config && config.level && config.level[stat]) || 0;
-  const definedLevel = Math.min(clampGrowthLevel(level), LEVEL_GROWTH_DEFINED_MAX_LEVEL);
-  return 1 + ((definedLevel - MIN_GROWTH_LEVEL) / (LEVEL_GROWTH_DEFINED_MAX_LEVEL - MIN_GROWTH_LEVEL)) * levelGrowth;
+  const definedMaxLevel = isHeroGrowthType(type) ? MAX_GROWTH_LEVEL : LEVEL_GROWTH_DEFINED_MAX_LEVEL;
+  const definedLevel = Math.min(clampGrowthLevel(level), definedMaxLevel);
+  return 1 + ((definedLevel - MIN_GROWTH_LEVEL) / (definedMaxLevel - MIN_GROWTH_LEVEL)) * levelGrowth;
 }
 
 function getTranscendenceCoefficient(type, stat, star) {

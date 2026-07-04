@@ -13,16 +13,25 @@ function normalizePlayerData(savedData = {}) {
   PLAYER_ESSENCE_KEYS.forEach((key) => {
     essences[key] = Math.max(0, Number(savedData.essences?.[key]) || 0);
   });
+  const growth = savedData.growth && typeof savedData.growth === "object" ? { ...savedData.growth } : {};
+  const heroGrowth = growth.hero && typeof growth.hero === "object" ? { ...growth.hero } : {};
+  growth.hero = {
+    level: Math.max(1, Number(heroGrowth.level) || 1),
+    star: Math.max(3, Number(heroGrowth.star) || 3),
+  };
+
   return {
     ...savedData,
     unlockedStage: Math.min(3, Math.max(1, Number(savedData.unlockedStage) || 1)),
     clearedStages: Array.isArray(savedData.clearedStages) ? savedData.clearedStages : [],
+    growth,
     gold: Math.max(0, Number(savedData.gold) || 0),
     diamonds: Math.max(0, Number(savedData.diamonds) || 0),
     summonTickets: Math.max(0, Number(savedData.summonTickets) || 0),
     commonEssence: Math.max(0, Number(savedData.commonEssence) || 0),
     soldierFragments: Math.max(0, Number(savedData.soldierFragments) || 0),
     essences,
+    heroGrowth: savedData.heroGrowth && typeof savedData.heroGrowth === "object" ? { ...savedData.heroGrowth } : {},
     ownedGods: savedData.ownedGods && typeof savedData.ownedGods === "object" ? { ...savedData.ownedGods } : {},
     entitlements: savedData.entitlements && typeof savedData.entitlements === "object" ? { ...savedData.entitlements } : {},
   };

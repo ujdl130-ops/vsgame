@@ -9783,14 +9783,24 @@ body:not(.game-started) .game-wrap {
   z-index: 1;
 }
 
+.formation-brand-panel {
+  z-index: 3;
+  pointer-events: auto;
+}
+
+.formation-brand-panel::after {
+  pointer-events: none;
+}
+
 /* Formation hero/unit category page */
 .formation-category-nav {
   position: relative;
-  z-index: 2;
+  z-index: 5;
   width: 150px;
   margin-top: 34px;
   display: grid;
   gap: 12px;
+  pointer-events: auto;
 }
 
 .formation-category-btn {
@@ -9805,6 +9815,7 @@ body:not(.game-started) .game-wrap {
   font-size: 18px;
   font-weight: 900;
   cursor: pointer;
+  pointer-events: auto;
 }
 
 .formation-category-btn.is-active {
