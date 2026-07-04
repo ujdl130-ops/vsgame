@@ -52,10 +52,21 @@ const FORMATION_ROSTER_UNITS = Array.from({ length: 12 }, (_, index) => {
 });
 
 const formationState = {
+  activeType: "deck",
   activePage: 1,
   selectedUnitId: "saintess",
   rosterPage: 1,
-  pages: { 1: Array(10).fill(null), 2: Array(10).fill(null) },
+  pages: {
+    deck: { 1: Array(10).fill(null), 2: Array(10).fill(null) },
+    tower: { 1: Array(10).fill(null), 2: Array(10).fill(null) },
+    unit: { 1: Array(10).fill(null), 2: Array(10).fill(null) },
+  },
+};
+
+const FORMATION_TYPE_LABELS = {
+  deck: "덱",
+  tower: "타워",
+  unit: "유닛",
 };
 
 function getFormationUnit(unitId) {
@@ -63,7 +74,7 @@ function getFormationUnit(unitId) {
 }
 
 function getFormationSlotsForCurrentPage() {
-  return formationState.pages[formationState.activePage];
+  return formationState.pages[formationState.activeType][formationState.activePage];
 }
 
 function createFormationShellMarkup() {
@@ -91,6 +102,11 @@ function createFormationShellMarkup() {
           <div class="formation-title-box">
             <p class="formation-kicker">FORMATION</p>
             <h1 id="formationTitle" class="formation-logo">덱 편성</h1>
+          </div>
+          <div class="formation-type-tabs" aria-label="편성 종류">
+            <button class="formation-type-tab is-active" type="button" data-formation-type="deck">덱</button>
+            <button class="formation-type-tab" type="button" data-formation-type="tower">타워</button>
+            <button class="formation-type-tab" type="button" data-formation-type="unit">유닛</button>
           </div>
         </header>
 
@@ -194,13 +210,40 @@ function renderFormationSlots() {
 
   const placedCount = slots.filter(Boolean).length;
   const slotTitle = document.getElementById("formationSlotTitle");
-  if (slotTitle) slotTitle.textContent = `배치 슬롯 (${placedCount}/10)`;
+  if (slotTitle) slotTitle.textContent = `${FORMATION_TYPE_LABELS[formationState.activeType]} 배치 슬롯 (${placedCount}/10)`;
 }
 
 function renderFormationRoster() {
   const rosterGrid = document.getElementById("formationRosterGrid");
   const rosterCount = document.getElementById("formationRosterCount");
   if (!rosterGrid) return;
+
+  const rosterTitle = document.querySelector(".formation-roster-head strong");
+  const selectedInfo = document.querySelector(".formation-selected-info");
+  const rosterPager = document.querySelector(".formation-roster-pager");
+  const isDeck = formationState.activeType === "deck";
+
+  if (!isDeck) {
+    if (rosterTitle) rosterTitle.textContent = `보유 ${FORMATION_TYPE_LABELS[formationState.activeType]}`;
+    if (rosterCount) rosterCount.textContent = "0 / 0";
+    rosterGrid.innerHTML = `
+      <div class="formation-roster-empty-state">
+        <span>+</span>
+        <strong>준비 중</strong>
+        <p>${FORMATION_TYPE_LABELS[formationState.activeType]} 카드는 아직 제작되지 않았습니다.</p>
+      </div>
+    `;
+    document.querySelectorAll(".formation-roster-page-btn").forEach((button) => {
+      button.classList.toggle("is-active", button.dataset.rosterPage === "1");
+    });
+    if (selectedInfo) selectedInfo.classList.add("is-hidden");
+    if (rosterPager) rosterPager.classList.add("is-hidden");
+    return;
+  }
+
+  if (rosterTitle) rosterTitle.textContent = "보유 유닛";
+  if (selectedInfo) selectedInfo.classList.remove("is-hidden");
+  if (rosterPager) rosterPager.classList.remove("is-hidden");
 
   const pageSize = 4;
   const pageCount = 3;
@@ -245,7 +288,11 @@ function renderFormationSelectedInfo() {
 
 function renderFormationTabs() {
   const title = document.getElementById("formationTitle");
-  if (title) title.textContent = "덱 편성";
+  if (title) title.textContent = `${FORMATION_TYPE_LABELS[formationState.activeType]} 편성`;
+
+  document.querySelectorAll(".formation-type-tab").forEach((tab) => {
+    tab.classList.toggle("is-active", tab.dataset.formationType === formationState.activeType);
+  });
 
   document.querySelectorAll(".formation-deck-tab").forEach((tab) => {
     tab.classList.toggle("is-active", tab.dataset.deckPage === String(formationState.activePage));
@@ -276,6 +323,10 @@ function bindFormationScreenEvents() {
 
   document.querySelectorAll(".formation-deck-tab").forEach((tab) => {
     tab.addEventListener("click", () => setFormationDeckPage(tab.dataset.deckPage || "1"));
+  });
+
+  document.querySelectorAll(".formation-type-tab").forEach((tab) => {
+    tab.addEventListener("click", () => setFormationType(tab.dataset.formationType || "deck"));
   });
 
   document.querySelectorAll(".formation-roster-page-btn").forEach((button) => {
@@ -320,6 +371,22 @@ function setFormationCategoryTab(tabName) {
   renderFormationSlots();
 }
 
+function setFormationType(type) {
+  if (!FORMATION_TYPE_LABELS[type]) return;
+  formationState.activeType = type;
+  formationState.activePage = 1;
+  formationState.rosterPage = 1;
+  const notice = document.getElementById("formationNotice");
+  if (notice) {
+    notice.textContent = type === "deck"
+      ? "보유 유닛을 선택한 뒤 빈 슬롯을 누르면 배치됩니다."
+      : `${FORMATION_TYPE_LABELS[type]} 편성 페이지입니다. 카드는 준비 중입니다.`;
+  }
+  renderFormationTabs();
+  renderFormationSlots();
+  renderFormationRoster();
+}
+
 function setFormationDeckPage(page) {
   const pageNumber = Number(page) === 2 ? 2 : 1;
   formationState.activePage = pageNumber;
@@ -336,6 +403,12 @@ function selectFormationUnit(unitId) {
 }
 
 function handleFormationSlotClick(index) {
+  if (formationState.activeType !== "deck") {
+    const notice = document.getElementById("formationNotice");
+    if (notice) notice.textContent = `${FORMATION_TYPE_LABELS[formationState.activeType]} 카드는 아직 준비 중입니다.`;
+    return;
+  }
+
   const slots = getFormationSlotsForCurrentPage();
   slots[index] = formationState.selectedUnitId;
   const unit = getFormationUnit(formationState.selectedUnitId);
