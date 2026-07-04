@@ -820,7 +820,7 @@ body.game-started:not(.in-lobby):not(.in-stage-select):not(.in-shop):not(.in-rec
   position: absolute;
   top: 50%;
   z-index: 2;
-  display: block;
+  display: none;
   width: 0;
   height: 0;
   transform: translateY(-50%);
