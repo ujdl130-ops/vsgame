@@ -6454,3 +6454,195 @@ body:not(.game-started) .game-wrap {
   }
 }
 
+/* Formation spacing refinement */
+.formation-shell {
+  left: calc(50% + 120px);
+  top: 53%;
+  width: min(calc(100vw - 410px), 1320px);
+  height: min(84vh, 820px);
+  grid-template-columns: minmax(760px, 1fr) 560px;
+  gap: 26px;
+}
+
+.formation-brand-panel {
+  position: fixed;
+  left: 42px;
+  top: 42px;
+  width: 220px;
+  height: auto;
+  padding: 0;
+  z-index: 3;
+  pointer-events: none;
+}
+
+.formation-brand-panel::after {
+  top: 124px;
+}
+
+.formation-brand-emblem {
+  width: 76px;
+  height: 76px;
+  margin-bottom: 12px;
+}
+
+.formation-main-panel {
+  padding: 30px 34px 22px;
+}
+
+.formation-roster-panel {
+  padding: 30px 30px 22px;
+}
+
+.formation-header-row {
+  margin-bottom: 16px;
+}
+
+.formation-placement-head {
+  margin-bottom: 18px;
+}
+
+.formation-slot-grid {
+  gap: 20px;
+  padding-top: 30px;
+}
+
+.formation-slot {
+  min-height: 190px;
+}
+
+.formation-slot.is-filled {
+  border-color: rgba(198, 165, 111, 0.48);
+  background: transparent;
+  box-shadow: none;
+}
+
+.formation-slot.is-filled img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.formation-roster-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px 22px;
+  min-height: 462px;
+  padding: 22px 4px 4px;
+}
+
+.formation-unit-card {
+  min-height: 220px;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+  padding: 0;
+}
+
+.formation-unit-card.is-selected {
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+  filter: drop-shadow(0 0 7px rgba(216, 165, 73, 0.55));
+}
+
+.formation-unit-card img {
+  object-fit: contain;
+}
+
+.formation-roster-pager {
+  display: none;
+}
+
+.formation-selected-info {
+  padding-top: 16px;
+}
+
+.formation-selected-info h2 {
+  margin-bottom: 12px;
+  line-height: 1.25;
+}
+
+.formation-selected-body {
+  grid-template-columns: 150px minmax(0, 1fr);
+  align-items: start;
+  gap: 18px;
+}
+
+.formation-selected-card {
+  min-height: 180px;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.formation-selected-card img {
+  object-fit: contain;
+}
+
+.formation-selected-name-row {
+  align-items: flex-start;
+  font-size: 21px;
+  line-height: 1.25;
+}
+
+.formation-selected-name-row span {
+  flex: 0 0 auto;
+  white-space: nowrap;
+  font-size: 17px;
+}
+
+.formation-selected-stats dl {
+  margin: 14px 0 16px;
+}
+
+.formation-selected-stats dl div {
+  padding: 4px 0;
+  font-size: 17px;
+}
+
+.formation-level-btn {
+  padding: 12px 14px;
+}
+
+@media (max-width: 1400px) {
+  .formation-shell {
+    left: calc(50% + 96px);
+    width: min(calc(100vw - 330px), 1180px);
+    grid-template-columns: minmax(620px, 1fr) 500px;
+  }
+
+  .formation-slot {
+    min-height: 168px;
+  }
+
+  .formation-unit-card {
+    min-height: 198px;
+  }
+}
+
+@media (max-width: 1200px) {
+  .formation-shell {
+    left: 50%;
+    width: 94vw;
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .formation-brand-panel {
+    display: none;
+  }
+
+  .formation-roster-panel {
+    grid-column: auto;
+  }
+}
+
+@media (max-width: 720px) {
+  .formation-slot-grid,
+  .formation-roster-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .formation-selected-body {
+    grid-template-columns: 130px minmax(0, 1fr);
+  }
+}
+

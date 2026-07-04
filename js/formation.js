@@ -190,7 +190,7 @@ function renderFormationRoster() {
   const rosterCount = document.getElementById("formationRosterCount");
   if (!rosterGrid) return;
 
-  const pageSize = 2;
+  const pageSize = 4;
   const pageCount = Math.max(1, Math.ceil(FORMATION_UNITS.length / pageSize));
   formationState.rosterPage = Math.min(Math.max(1, formationState.rosterPage), pageCount);
   const start = (formationState.rosterPage - 1) * pageSize;
