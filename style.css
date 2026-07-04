@@ -6646,3 +6646,146 @@ body:not(.game-started) .game-wrap {
   }
 }
 
+/* Formation 1920x1080 lock */
+.formation-brand-panel {
+  position: fixed;
+  left: 28px;
+  top: 18px;
+  width: 220px;
+  z-index: 4;
+  padding: 0;
+}
+
+.formation-brand-panel::after {
+  top: 128px;
+}
+
+.formation-shell {
+  left: 300px;
+  top: 150px;
+  transform: none;
+  width: calc(100vw - 330px);
+  max-width: 1590px;
+  height: calc(100vh - 180px);
+  max-height: 900px;
+  grid-template-columns: minmax(0, 1fr) 560px;
+  gap: 26px;
+}
+
+.formation-topbar {
+  top: 34px;
+  right: 430px;
+}
+
+.formation-close-btn {
+  top: 34px;
+  right: 212px;
+}
+
+.formation-back-btn {
+  top: 34px;
+  right: 34px;
+}
+
+.formation-main-panel,
+.formation-roster-panel {
+  min-height: 0;
+}
+
+.formation-main-panel {
+  padding: 34px 36px 24px;
+}
+
+.formation-roster-panel {
+  padding: 34px 34px 24px;
+}
+
+.formation-slot-grid {
+  gap: 22px;
+  padding-top: 24px;
+}
+
+.formation-slot {
+  min-height: 200px;
+}
+
+.formation-roster-grid {
+  gap: 22px;
+  min-height: 500px;
+  padding: 20px 0 2px;
+}
+
+.formation-unit-card {
+  min-height: 238px;
+}
+
+.formation-selected-info {
+  padding-top: 14px;
+}
+
+.formation-selected-body {
+  grid-template-columns: 150px minmax(0, 1fr);
+  gap: 18px;
+}
+
+.formation-selected-card {
+  min-height: 168px;
+}
+
+.formation-selected-info h2 {
+  margin: 0 0 10px;
+  font-size: 19px;
+}
+
+.formation-selected-name-row {
+  gap: 10px;
+  font-size: 20px;
+}
+
+.formation-selected-name-row span {
+  font-size: 16px;
+}
+
+.formation-selected-stats dl {
+  margin: 10px 0 14px;
+}
+
+.formation-selected-stats dl div {
+  padding: 3px 0;
+  font-size: 16px;
+}
+
+.formation-level-btn {
+  padding: 10px 14px;
+}
+
+@media (max-height: 980px) {
+  .formation-shell {
+    top: 132px;
+    height: calc(100vh - 148px);
+  }
+
+  .formation-main-panel,
+  .formation-roster-panel {
+    padding-top: 28px;
+    padding-bottom: 18px;
+  }
+
+  .formation-slot {
+    min-height: 174px;
+  }
+
+  .formation-roster-grid {
+    min-height: 420px;
+    gap: 18px;
+  }
+
+  .formation-unit-card {
+    min-height: 196px;
+  }
+
+  .formation-selected-card {
+    min-height: 142px;
+  }
+}
+
