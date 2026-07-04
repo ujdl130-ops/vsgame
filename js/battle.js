@@ -4,6 +4,10 @@ function isCombatAlive(entity) {
   return Boolean(entity && !entity.dead && entity.hp > 0);
 }
 
+function canDamageCombatant(entity) {
+  return Boolean(isCombatAlive(entity) && !entity.transforming);
+}
+
 function startUnitDeath(unit) {
   if (!unit || unit.dead) return;
   unit.dead = true;
@@ -24,26 +28,36 @@ function startUnitDeath(unit) {
 
 function startEnemyDeath(enemy) {
   if (!enemy || enemy.dead) return;
+  if (enemy.type === "karon" && typeof startKaronTransformation === "function" && startKaronTransformation(enemy)) return;
+
   enemy.dead = true;
   enemy.hp = 0;
   enemy.moving = false;
   enemy.cooldown = 0;
   enemy.attackAnimTimer = 0;
   enemy.paralyzeTimer = 0;
+  enemy.laserTarget = null;
+  enemy.laserHitPending = false;
+  enemy.swordWaveTarget = null;
+  enemy.swordWavePending = false;
+  enemy.clawTarget = null;
+  enemy.clawHitPending = false;
   enemy.deathAnimDuration = enemy.deathAnimDuration || 0.55;
   enemy.deathAnimTimer = enemy.deathAnimDuration;
 
   if (!enemy.deathRewarded) {
-    gameState.runestone += 18;
+    addRunestone(18);
     enemy.deathRewarded = true;
   }
 }
 
-function findNearestEnemy(fromX, range) {
+function findNearestEnemy(fromX, range, options = {}) {
   let target = null;
   let bestDistance = Infinity;
+  const includeAirborne = options.includeAirborne !== false;
   for (const enemy of gameState.enemies) {
     if (!isCombatAlive(enemy)) continue;
+    if (!includeAirborne && enemy.airborne) continue;
     const distance = enemy.x - fromX;
     if (distance >= -20 && distance <= range && distance < bestDistance) {
       target = enemy;
@@ -243,7 +257,7 @@ function applyZeusThunderstormDamage() {
   if (!effect.hitEnemies) effect.hitEnemies = new Set();
 
   for (const enemy of gameState.enemies) {
-    if (!isCombatAlive(enemy) || effect.hitEnemies.has(enemy)) continue;
+    if (!canDamageCombatant(enemy) || effect.hitEnemies.has(enemy)) continue;
     if (!isEnemyTouchedByZeusLightning(enemy, effect)) continue;
 
     enemy.hp -= ZEUS_THUNDERSTORM_SKILL.damage;
@@ -289,7 +303,7 @@ function update(dt) {
   gameState.messageTimer = Math.max(0, gameState.messageTimer - dt);
   gameState.runestoneTimer += dt;
   if (gameState.runestoneTimer >= 1) {
-    gameState.runestone += 12;
+    addRunestone(12);
     gameState.runestoneTimer = 0;
   }
   updateZeusMana(dt);

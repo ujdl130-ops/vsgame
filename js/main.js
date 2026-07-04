@@ -156,6 +156,10 @@ window.addEventListener("keydown", (event) => {
     event.preventDefault();
     summonSaintess();
   }
+  if (event.code === "Digit5") {
+    event.preventDefault();
+    summonThief();
+  }
 });
 
 window.addEventListener("keyup", (event) => {
@@ -244,8 +248,16 @@ formationSlots.forEach((slot, index) => {
 });
 if (recruitBackBtn) recruitBackBtn.addEventListener("click", showLobby);
 if (recruitCloseBtn) recruitCloseBtn.addEventListener("click", showLobby);
-if (recruitPullOneBtn) recruitPullOneBtn.addEventListener("click", () => startRecruitDoorAnimation(1));
-if (recruitPullTenBtn) recruitPullTenBtn.addEventListener("click", () => startRecruitDoorAnimation(10));
+if (recruitPullOneBtn) recruitPullOneBtn.addEventListener("click", () => {
+  const results = summonGodDescentOnce();
+  renderGachaResult(results);
+  startRecruitDoorAnimation(1, results);
+});
+if (recruitPullTenBtn) recruitPullTenBtn.addEventListener("click", () => {
+  const results = summonGodDescentTen();
+  renderGachaResult(results);
+  startRecruitDoorAnimation(10, results);
+});
 if (recruitDoorFrame) recruitDoorFrame.addEventListener("pointerdown", handleRecruitDoorTap);
 if (recruitDoorCloseBtn) recruitDoorCloseBtn.addEventListener("pointerdown", (event) => {
   event.preventDefault();
