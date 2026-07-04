@@ -4,7 +4,7 @@ const FORMATION_UNITS = [
   {
     id: "saintess",
     name: "성녀",
-    image: "assets/SaintUI.png",
+    image: "assets/maps/formation/saint.png",
     level: 4,
     maxLevel: 10,
     attack: 80,
@@ -14,7 +14,7 @@ const FORMATION_UNITS = [
   {
     id: "archer",
     name: "궁수",
-    image: "assets/ArcherUI.png",
+    image: "assets/maps/formation/archer.png",
     level: 2,
     maxLevel: 10,
     attack: 115,
@@ -24,7 +24,7 @@ const FORMATION_UNITS = [
   {
     id: "thief",
     name: "도적",
-    image: "assets/ChatGPT Image 2026년 6월 30일 오전 12_48_30.png",
+    image: "assets/maps/formation/fighter.png",
     level: 5,
     maxLevel: 10,
     attack: 135,
@@ -34,7 +34,7 @@ const FORMATION_UNITS = [
   {
     id: "mage",
     name: "마법사",
-    image: "assets/MageUI.png",
+    image: "assets/maps/formation/magic.png",
     level: 3,
     maxLevel: 10,
     attack: 150,
@@ -43,22 +43,11 @@ const FORMATION_UNITS = [
   },
 ];
 
-const FORMATION_TAB_LABELS = {
-  deck: "덱",
-  unit: "유닛",
-  tower: "타워",
-};
-
 const formationState = {
-  activeTab: "deck",
   activePage: 1,
   selectedUnitId: "saintess",
   rosterPage: 1,
-  pages: {
-    deck: { 1: Array(10).fill(null), 2: Array(10).fill(null) },
-    unit: { 1: Array(10).fill(null), 2: Array(10).fill(null) },
-    tower: { 1: Array(10).fill(null), 2: Array(10).fill(null) },
-  },
+  pages: { 1: Array(10).fill(null), 2: Array(10).fill(null) },
 };
 
 function getFormationUnit(unitId) {
@@ -66,7 +55,7 @@ function getFormationUnit(unitId) {
 }
 
 function getFormationSlotsForCurrentPage() {
-  return formationState.pages[formationState.activeTab][formationState.activePage];
+  return formationState.pages[formationState.activePage];
 }
 
 function createFormationShellMarkup() {
@@ -77,21 +66,18 @@ function createFormationShellMarkup() {
     <button id="formationCloseBtn" class="formation-ui-btn formation-close-btn" type="button">닫기</button>
 
     <div class="formation-topbar" aria-label="재화 정보">
-      <div class="formation-currency orange"><span>티켓</span><strong>125</strong></div>
-      <div class="formation-currency purple"><span>토큰</span><strong>340</strong></div>
-      <div class="formation-currency blue"><span>젬</span><strong>120</strong></div>
+      <div class="formation-currency orange"><span>티켓</span><strong>0</strong></div>
+      <div class="formation-currency purple"><span>토큰</span><strong>0</strong></div>
+      <div class="formation-currency blue"><span>젬</span><strong>0</strong></div>
       <div class="formation-currency gold"><span>골드</span><strong>8,520</strong></div>
       <button class="formation-gear" type="button" aria-label="설정">⚙</button>
     </div>
 
     <div class="formation-shell">
-      <aside class="formation-sidebar" aria-label="편성 메뉴">
-        <div class="formation-sidebar-title">편성</div>
-        <button class="formation-side-btn" type="button" data-formation-nav="battle">전투</button>
-        <button class="formation-side-btn is-active" type="button" data-formation-nav="formation">편성</button>
-        <button class="formation-side-btn" type="button" data-formation-nav="recruit">모집</button>
-        <button class="formation-side-btn" type="button" data-formation-nav="shop">상점</button>
-        <button class="formation-side-btn" type="button" data-formation-nav="mission">미션</button>
+      <aside class="formation-brand-panel" aria-label="편성 로고">
+        <div class="formation-brand-emblem" aria-hidden="true">✦</div>
+        <strong>편성</strong>
+        <span>FORMATION</span>
       </aside>
 
       <section class="formation-main-panel">
@@ -100,19 +86,10 @@ function createFormationShellMarkup() {
             <p class="formation-kicker">FORMATION</p>
             <h1 id="formationTitle" class="formation-logo">덱 편성</h1>
           </div>
-          <div class="formation-category-tabs" role="tablist" aria-label="편성 카테고리">
-            <button class="formation-category-tab is-active" type="button" data-formation-tab="deck">덱</button>
-            <button class="formation-category-tab" type="button" data-formation-tab="unit">유닛</button>
-            <button class="formation-category-tab" type="button" data-formation-tab="tower">타워</button>
-          </div>
         </header>
 
         <div class="formation-placement-head">
           <span id="formationSlotTitle">배치 슬롯 (0/10)</span>
-          <div class="formation-filter-row">
-            <button class="formation-filter-btn" type="button">모든 등급</button>
-            <button class="formation-filter-btn" type="button">모든 유닛</button>
-          </div>
         </div>
 
         <div class="formation-slots-panel" aria-label="배치 슬롯">
@@ -263,11 +240,8 @@ function renderFormationSelectedInfo() {
 
 function renderFormationTabs() {
   const title = document.getElementById("formationTitle");
-  if (title) title.textContent = `${FORMATION_TAB_LABELS[formationState.activeTab]} 편성`;
+  if (title) title.textContent = "덱 편성";
 
-  document.querySelectorAll(".formation-category-tab").forEach((tab) => {
-    tab.classList.toggle("is-active", tab.dataset.formationTab === formationState.activeTab);
-  });
   document.querySelectorAll(".formation-deck-tab").forEach((tab) => {
     tab.classList.toggle("is-active", tab.dataset.deckPage === String(formationState.activePage));
   });
@@ -296,14 +270,6 @@ function bindFormationScreenEvents() {
   if (backBtn) backBtn.addEventListener("click", showLobby);
   if (closeBtn) closeBtn.addEventListener("click", showLobby);
 
-  document.querySelectorAll(".formation-side-btn").forEach((button) => {
-    button.addEventListener("click", () => handleFormationNavigation(button.dataset.formationNav));
-  });
-
-  document.querySelectorAll(".formation-category-tab").forEach((tab) => {
-    tab.addEventListener("click", () => setFormationCategoryTab(tab.dataset.formationTab || "deck"));
-  });
-
   document.querySelectorAll(".formation-deck-tab").forEach((tab) => {
     tab.addEventListener("click", () => setFormationDeckPage(tab.dataset.deckPage || "1"));
   });
@@ -321,21 +287,6 @@ function bindFormationScreenEvents() {
     });
   }
   if (levelUpBtn) levelUpBtn.addEventListener("click", levelUpFormationUnit);
-}
-
-function handleFormationNavigation(target) {
-  document.querySelectorAll(".formation-side-btn").forEach((button) => {
-    button.classList.toggle("is-active", button.dataset.formationNav === target);
-  });
-
-  if (target === "battle") showStageSelect();
-  else if (target === "formation") showFormation();
-  else if (target === "recruit") showRecruit();
-  else if (target === "shop") showShop();
-  else if (target === "mission") {
-    showLobby();
-    showMissionNotice();
-  }
 }
 
 function showFormation() {
@@ -363,10 +314,8 @@ function showFormationNotice() {
 }
 
 function setFormationCategoryTab(tabName) {
-  if (!FORMATION_TAB_LABELS[tabName]) return;
-  formationState.activeTab = tabName;
   const notice = document.getElementById("formationNotice");
-  if (notice) notice.textContent = `${FORMATION_TAB_LABELS[tabName]} 탭입니다. 보유 유닛을 선택해 슬롯에 배치하세요.`;
+  if (notice) notice.textContent = "덱 편성 화면입니다. 보유 유닛을 선택해 슬롯에 배치하세요.";
   renderFormationTabs();
   renderFormationSlots();
 }
@@ -392,7 +341,7 @@ function handleFormationSlotClick(index) {
   const unit = getFormationUnit(formationState.selectedUnitId);
   const notice = document.getElementById("formationNotice");
   if (notice) {
-    notice.textContent = `${FORMATION_TAB_LABELS[formationState.activeTab]} ${formationState.activePage}페이지 ${index + 1}번 슬롯에 ${unit.name}을 배치했습니다.`;
+    notice.textContent = `${formationState.activePage}페이지 ${index + 1}번 슬롯에 ${unit.name}을 배치했습니다.`;
   }
   renderFormationSlots();
 }
