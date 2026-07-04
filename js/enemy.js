@@ -122,7 +122,7 @@ const KARON_WEREWOLF_SPRITE = {
   fps: { idle: 6, walk: 8, attack: 10, death: 7 },
   drawW: 280,
   drawH: 374,
-  baseOffsetY: 90,
+  baseOffsetY: 10,
   healthBarOffsetY: 226,
   healthBarWidth: 112,
   clawHitReleaseProgress: 0.55,
