@@ -7244,6 +7244,51 @@ body:not(.game-started) .game-wrap {
   display: none;
 }
 
+/* Formation refined marble frame */
+.formation-main-panel,
+.formation-roster-panel {
+  border: 1px solid rgba(178, 162, 136, 0.78);
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.82), rgba(248, 246, 241, 0.68)),
+    radial-gradient(circle at 18% 8%, rgba(255, 255, 255, 0.76), transparent 34%),
+    linear-gradient(118deg, transparent 0 17%, rgba(187, 166, 132, 0.08) 17.4%, transparent 18.1% 48%, rgba(169, 147, 116, 0.07) 48.4%, transparent 49.1%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.58), rgba(237, 232, 222, 0.34));
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.72),
+    inset 0 0 34px rgba(111, 91, 66, 0.06),
+    0 10px 24px rgba(87, 70, 47, 0.08);
+}
+
+.formation-main-panel::before,
+.formation-roster-panel::before {
+  inset: 10px;
+  border: 1px solid rgba(203, 187, 160, 0.3);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.42);
+}
+
+.formation-main-panel::after,
+.formation-roster-panel::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(132deg, transparent 0 28%, rgba(137, 115, 84, 0.035) 28.3%, transparent 29.1%),
+    linear-gradient(154deg, transparent 0 56%, rgba(150, 126, 93, 0.032) 56.3%, transparent 57.1%);
+}
+
+.formation-main-panel > *,
+.formation-roster-panel > * {
+  position: relative;
+  z-index: 1;
+}
+
+.formation-notice.is-warning {
+  color: #8f351e;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.72);
+}
+
 .formation-roster-pager.is-hidden {
   display: none;
 }

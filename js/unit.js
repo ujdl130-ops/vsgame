@@ -50,7 +50,7 @@ function summonArcher() {
     return;
   }
   if (!spendRunestone(75)) return;
-  gameState.units.push({
+  gameState.units.push(applyFormationBattleStats("archer", {
     type: "archer",
     name: "궁수",
     x: PLAYER_BASE_X + 62,
@@ -74,7 +74,7 @@ function summonArcher() {
     deathAnimTimer: 0,
     deathAnimDuration: 0.85,
     deathRewarded: false,
-  });
+  }));
 }
 
 function summonMage() {
@@ -85,7 +85,7 @@ function summonMage() {
     return;
   }
   if (!spendRunestone(100)) return;
-  gameState.units.push({
+  gameState.units.push(applyFormationBattleStats("mage", {
     type: "mage",
     name: "마법사",
     x: PLAYER_BASE_X + 58,
@@ -109,7 +109,7 @@ function summonMage() {
     deathAnimTimer: 0,
     deathAnimDuration: 0.85,
     deathRewarded: false,
-  });
+  }));
 }
 
 function summonSaintess() {
@@ -120,7 +120,7 @@ function summonSaintess() {
     return;
   }
   if (!spendRunestone(120)) return;
-  gameState.units.push({
+  gameState.units.push(applyFormationBattleStats("saintess", {
     type: "saintess",
     name: "성녀",
     x: PLAYER_BASE_X + 56,
@@ -147,7 +147,7 @@ function summonSaintess() {
     deathAnimTimer: 0,
     deathAnimDuration: 0.85,
     deathRewarded: false,
-  });
+  }));
 }
 
 function summonThief() {
@@ -158,7 +158,7 @@ function summonThief() {
     return;
   }
   if (!spendRunestone(90)) return;
-  gameState.units.push({
+  gameState.units.push(applyFormationBattleStats("thief", {
     type: "thief",
     name: "도적",
     x: PLAYER_BASE_X + 64,
@@ -185,7 +185,7 @@ function summonThief() {
     deathAnimTimer: 0,
     deathAnimDuration: 0.78,
     deathRewarded: false,
-  });
+  }));
 }
 
 function startThiefRetreat(unit) {

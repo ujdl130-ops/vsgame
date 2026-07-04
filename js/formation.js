@@ -1,60 +1,82 @@
 // Formation screen interactions.
 
-const FORMATION_UNITS = [
+const FORMATION_BASE_UNITS = [
   {
     id: "saintess",
     name: "성녀",
     image: "assets/maps/formation/saint.png",
-    level: 4,
-    maxLevel: 10,
+    baseLevel: 4,
+    maxLevel: 30,
     attack: 80,
     hp: 680,
     defense: 48,
+    rarity: "normal",
   },
   {
     id: "archer",
     name: "궁수",
     image: "assets/maps/formation/archer.png",
-    level: 2,
-    maxLevel: 10,
+    baseLevel: 2,
+    maxLevel: 30,
     attack: 115,
     hp: 520,
     defense: 34,
+    rarity: "normal",
   },
   {
     id: "thief",
     name: "도적",
     image: "assets/maps/formation/fighter.png",
-    level: 5,
-    maxLevel: 10,
+    baseLevel: 5,
+    maxLevel: 30,
     attack: 135,
     hp: 560,
     defense: 38,
+    rarity: "normal",
   },
   {
     id: "mage",
     name: "마법사",
     image: "assets/maps/formation/magic.png",
-    level: 3,
-    maxLevel: 10,
+    baseLevel: 3,
+    maxLevel: 30,
     attack: 150,
     hp: 480,
     defense: 30,
+    rarity: "normal",
   },
 ];
 
+const FORMATION_LEVEL_COSTS = [
+  { level: 1, normal: 0 },
+  { level: 10, normal: 1970 },
+  { level: 20, normal: 12010 },
+  { level: 30, normal: 38050 },
+];
+
 const FORMATION_ROSTER_UNITS = Array.from({ length: 12 }, (_, index) => {
-  const source = FORMATION_UNITS[index % FORMATION_UNITS.length];
+  const source = FORMATION_BASE_UNITS[index % FORMATION_BASE_UNITS.length];
+  const pagePenalty = Math.floor(index / FORMATION_BASE_UNITS.length);
+  const level = Math.max(1, source.baseLevel - pagePenalty);
+  const levelDelta = level - source.baseLevel;
+
   return {
     ...source,
-    rosterId: `${source.id}-${index + 1}`,
+    baseId: source.id,
+    instanceId: `${source.id}-${index + 1}`,
+    level,
+    star: 1,
+    shards: 0,
+    attack: Math.max(1, source.attack + levelDelta * 12),
+    hp: Math.max(1, source.hp + levelDelta * 70),
+    defense: Math.max(1, source.defense + levelDelta * 6),
   };
 });
 
 const formationState = {
   activeType: "deck",
   activePage: 1,
-  selectedUnitId: "saintess",
+  selectedUnitId: FORMATION_ROSTER_UNITS[0].instanceId,
   rosterPage: 1,
   pages: {
     deck: { 1: Array(10).fill(null), 2: Array(10).fill(null) },
@@ -70,11 +92,53 @@ const FORMATION_TYPE_LABELS = {
 };
 
 function getFormationUnit(unitId) {
-  return FORMATION_UNITS.find((unit) => unit.id === unitId) || FORMATION_UNITS[0];
+  return (
+    FORMATION_ROSTER_UNITS.find((unit) => unit.instanceId === unitId || unit.rosterId === unitId) ||
+    FORMATION_ROSTER_UNITS.find((unit) => unit.baseId === unitId || unit.id === unitId) ||
+    FORMATION_ROSTER_UNITS[0]
+  );
 }
 
 function getFormationSlotsForCurrentPage() {
   return formationState.pages[formationState.activeType][formationState.activePage];
+}
+
+function getNormalCumulativeLevelCost(level) {
+  const targetLevel = Math.min(Math.max(Number(level) || 1, 1), 30);
+  for (let i = 1; i < FORMATION_LEVEL_COSTS.length; i++) {
+    const previous = FORMATION_LEVEL_COSTS[i - 1];
+    const next = FORMATION_LEVEL_COSTS[i];
+    if (targetLevel <= next.level) {
+      const rangeLevel = next.level - previous.level;
+      const rangeCost = next.normal - previous.normal;
+      const progress = (targetLevel - previous.level) / rangeLevel;
+      return Math.ceil(previous.normal + rangeCost * progress);
+    }
+  }
+  return FORMATION_LEVEL_COSTS[FORMATION_LEVEL_COSTS.length - 1].normal;
+}
+
+function getFormationCumulativeLevelCost(unit, level) {
+  const normalCost = getNormalCumulativeLevelCost(level);
+  return unit.rarity === "hero" ? Math.ceil(normalCost * 1.25) : normalCost;
+}
+
+function getFormationLevelUpCost(unit) {
+  if (!unit || unit.level >= unit.maxLevel) return 0;
+  return getFormationCumulativeLevelCost(unit, unit.level + 1) - getFormationCumulativeLevelCost(unit, unit.level);
+}
+
+function getFormationTranscendCost(unit) {
+  if (!unit || unit.star >= 3) return null;
+  if (unit.rarity === "hero") return 40;
+  return unit.star === 1 ? 20 : 30;
+}
+
+function showFormationMessage(message, tone = "info") {
+  const notice = document.getElementById("formationNotice");
+  if (!notice) return;
+  notice.textContent = message;
+  notice.classList.toggle("is-warning", tone === "warning");
 }
 
 function createFormationShellMarkup() {
@@ -111,7 +175,7 @@ function createFormationShellMarkup() {
         </header>
 
         <div class="formation-placement-head">
-          <span id="formationSlotTitle">배치 슬롯 (0/10)</span>
+          <span id="formationSlotTitle">덱 배치 슬롯 (0/10)</span>
         </div>
 
         <div class="formation-slots-panel" aria-label="배치 슬롯">
@@ -127,7 +191,7 @@ function createFormationShellMarkup() {
       <aside class="formation-roster-panel" aria-label="보유 유닛 목록">
         <div class="formation-roster-head">
           <strong>보유 유닛</strong>
-          <span id="formationRosterCount">4 / 4</span>
+          <span id="formationRosterCount">12 / 12</span>
         </div>
         <div id="formationRosterGrid" class="formation-roster-grid" aria-label="보유 유닛 카드"></div>
         <div class="formation-roster-pager" aria-label="보유 유닛 페이지">
@@ -150,7 +214,7 @@ function createFormationShellMarkup() {
                 <div><dt>체력</dt><dd id="formationSelectedHp"></dd></div>
                 <div><dt>방어력</dt><dd id="formationSelectedDefense"></dd></div>
               </dl>
-              <button id="formationLevelUpBtn" class="formation-level-btn" type="button">레벨업 <span>500</span></button>
+              <button id="formationLevelUpBtn" class="formation-level-btn" type="button">레벨업 <span></span></button>
             </div>
           </div>
         </div>
@@ -162,7 +226,7 @@ function createFormationShellMarkup() {
 function renderFormationUnitCard(unit, options = {}) {
   const selectedClass = options.selected ? " is-selected" : "";
   return `
-    <button class="formation-unit-card${selectedClass}" type="button" data-unit-id="${unit.id}" data-roster-id="${unit.rosterId || unit.id}" aria-label="${unit.name}">
+    <button class="formation-unit-card${selectedClass}" type="button" data-unit-id="${unit.instanceId}" aria-label="${unit.name}">
       <img src="${unit.image}" alt="${unit.name}">
       <span class="formation-unit-name">${unit.name}</span>
       <span class="formation-unit-level">Lv.${unit.level}</span>
@@ -246,13 +310,13 @@ function renderFormationRoster() {
   if (rosterPager) rosterPager.classList.remove("is-hidden");
 
   const pageSize = 4;
-  const pageCount = 3;
+  const pageCount = Math.ceil(FORMATION_ROSTER_UNITS.length / pageSize);
   formationState.rosterPage = Math.min(Math.max(1, formationState.rosterPage), pageCount);
   const start = (formationState.rosterPage - 1) * pageSize;
   const visibleUnits = FORMATION_ROSTER_UNITS.slice(start, start + pageSize);
 
   rosterGrid.innerHTML = visibleUnits
-    .map((unit) => renderFormationUnitCard(unit, { selected: unit.id === formationState.selectedUnitId }))
+    .map((unit) => renderFormationUnitCard(unit, { selected: unit.instanceId === formationState.selectedUnitId }))
     .join("");
 
   rosterGrid.querySelectorAll(".formation-unit-card").forEach((card) => {
@@ -274,6 +338,7 @@ function renderFormationSelectedInfo() {
   const hp = document.getElementById("formationSelectedHp");
   const defense = document.getElementById("formationSelectedDefense");
   const levelBtn = document.getElementById("formationLevelUpBtn");
+  const nextCost = getFormationLevelUpCost(unit);
 
   if (card) {
     card.innerHTML = `<img src="${unit.image}" alt="${unit.name}">`;
@@ -283,7 +348,11 @@ function renderFormationSelectedInfo() {
   if (attack) attack.textContent = unit.attack;
   if (hp) hp.textContent = unit.hp;
   if (defense) defense.textContent = unit.defense;
-  if (levelBtn) levelBtn.disabled = unit.level >= unit.maxLevel;
+  if (levelBtn) {
+    const cost = levelBtn.querySelector("span");
+    if (cost) cost.textContent = unit.level >= unit.maxLevel ? "MAX" : nextCost.toLocaleString("ko-KR");
+    levelBtn.disabled = unit.level >= unit.maxLevel;
+  }
 }
 
 function renderFormationTabs() {
@@ -353,7 +422,7 @@ function showFormation() {
 
   if (gameState) {
     gameState.running = false;
-    gameState.message = "편성 화면에서 덱을 구성하세요";
+    gameState.message = "편성 화면에서 덱을 구성하세요.";
     updateButtons();
   }
 
@@ -364,9 +433,8 @@ function showFormationNotice() {
   showFormation();
 }
 
-function setFormationCategoryTab(tabName) {
-  const notice = document.getElementById("formationNotice");
-  if (notice) notice.textContent = "덱 편성 화면입니다. 보유 유닛을 선택해 슬롯에 배치하세요.";
+function setFormationCategoryTab() {
+  showFormationMessage("편성 화면입니다. 보유 유닛을 선택해 슬롯에 배치하세요.");
   renderFormationTabs();
   renderFormationSlots();
 }
@@ -376,12 +444,11 @@ function setFormationType(type) {
   formationState.activeType = type;
   formationState.activePage = 1;
   formationState.rosterPage = 1;
-  const notice = document.getElementById("formationNotice");
-  if (notice) {
-    notice.textContent = type === "deck"
+  showFormationMessage(
+    type === "deck"
       ? "보유 유닛을 선택한 뒤 빈 슬롯을 누르면 배치됩니다."
-      : `${FORMATION_TYPE_LABELS[type]} 편성 페이지입니다. 카드는 준비 중입니다.`;
-  }
+      : `${FORMATION_TYPE_LABELS[type]} 편성 페이지입니다. 카드는 준비 중입니다.`
+  );
   renderFormationTabs();
   renderFormationSlots();
   renderFormationRoster();
@@ -390,8 +457,7 @@ function setFormationType(type) {
 function setFormationDeckPage(page) {
   const pageNumber = Number(page) === 2 ? 2 : 1;
   formationState.activePage = pageNumber;
-  const notice = document.getElementById("formationNotice");
-  if (notice) notice.textContent = `${pageNumber}번 페이지로 이동했습니다.`;
+  showFormationMessage(`${pageNumber}번 페이지로 이동했습니다.`);
   renderFormationTabs();
   renderFormationSlots();
 }
@@ -404,18 +470,14 @@ function selectFormationUnit(unitId) {
 
 function handleFormationSlotClick(index) {
   if (formationState.activeType !== "deck") {
-    const notice = document.getElementById("formationNotice");
-    if (notice) notice.textContent = `${FORMATION_TYPE_LABELS[formationState.activeType]} 카드는 아직 준비 중입니다.`;
+    showFormationMessage(`${FORMATION_TYPE_LABELS[formationState.activeType]} 카드는 아직 준비 중입니다.`, "warning");
     return;
   }
 
   const slots = getFormationSlotsForCurrentPage();
   slots[index] = formationState.selectedUnitId;
   const unit = getFormationUnit(formationState.selectedUnitId);
-  const notice = document.getElementById("formationNotice");
-  if (notice) {
-    notice.textContent = `${formationState.activePage}페이지 ${index + 1}번 슬롯에 ${unit.name}을 배치했습니다.`;
-  }
+  showFormationMessage(`${formationState.activePage}페이지 ${index + 1}번 슬롯에 ${unit.name}을 배치했습니다.`);
   renderFormationSlots();
 }
 
@@ -424,23 +486,73 @@ function removeFormationSlot(index) {
   if (!slots[index]) return;
 
   slots[index] = null;
-  const notice = document.getElementById("formationNotice");
-  if (notice) notice.textContent = `${formationState.activePage}페이지 ${index + 1}번 슬롯 배치를 해제했습니다.`;
+  showFormationMessage(`${formationState.activePage}페이지 ${index + 1}번 슬롯 배치를 해제했습니다.`);
   renderFormationSlots();
 }
 
 function levelUpFormationUnit() {
   const unit = getFormationUnit(formationState.selectedUnitId);
-  if (unit.level >= unit.maxLevel) return;
+  if (unit.level >= unit.maxLevel) {
+    showFormationMessage("이미 최대 레벨입니다.", "warning");
+    return;
+  }
 
+  const cost = getFormationLevelUpCost(unit);
+  if (gameWallet.gold < cost) {
+    showFormationMessage(`골드가 부족합니다. 레벨업에는 ${cost.toLocaleString("ko-KR")}골드가 필요합니다.`, "warning");
+    return;
+  }
+
+  gameWallet.gold -= cost;
   unit.level += 1;
   unit.attack += 12;
   unit.hp += 70;
   unit.defense += 6;
 
-  const notice = document.getElementById("formationNotice");
-  if (notice) notice.textContent = `${unit.name}의 레벨이 ${unit.level}이 되었습니다.`;
+  updateWalletDisplays();
+  showFormationMessage(`${unit.name}이(가) Lv.${unit.level}이 되었습니다.`);
   renderFormationRoster();
   renderFormationSelectedInfo();
   renderFormationSlots();
+}
+
+function getBestFormationBattleUnit(baseId) {
+  const placedIds = Object.values(formationState.pages.deck)
+    .flat()
+    .filter(Boolean);
+  const placedUnits = placedIds
+    .map((unitId) => getFormationUnit(unitId))
+    .filter((unit) => unit && unit.baseId === baseId);
+
+  const candidates = placedUnits.length
+    ? placedUnits
+    : FORMATION_ROSTER_UNITS.filter((unit) => unit.baseId === baseId);
+
+  return candidates.sort((a, b) => b.level - a.level || b.attack - a.attack)[0] || null;
+}
+
+function applyFormationBattleStats(baseId, battleUnit) {
+  const formationUnit = getBestFormationBattleUnit(baseId);
+  if (!formationUnit) return battleUnit;
+
+  const levelBonus = Math.max(0, formationUnit.level - 1);
+  const multiplier = 1 + levelBonus * 0.08;
+  const nextUnit = {
+    ...battleUnit,
+    formationUnitId: formationUnit.instanceId,
+    formationLevel: formationUnit.level,
+  };
+
+  if (typeof nextUnit.maxHp === "number") {
+    nextUnit.maxHp = Math.max(1, Math.round(nextUnit.maxHp * multiplier));
+    nextUnit.hp = nextUnit.maxHp;
+  }
+  if (typeof nextUnit.damage === "number") {
+    nextUnit.damage = Math.max(0, Math.round(nextUnit.damage * multiplier));
+  }
+  if (typeof nextUnit.healAmount === "number") {
+    nextUnit.healAmount = Math.max(1, Math.round(nextUnit.healAmount * multiplier));
+  }
+
+  return nextUnit;
 }
