@@ -9854,13 +9854,15 @@ body:not(.game-started) .game-wrap {
 
 .formation-hero-detail-card {
   position: relative;
+  width: min(100%, 390px);
+  aspect-ratio: 2 / 3;
   border: 0;
   padding: 0;
   background: transparent;
   box-shadow: none;
   cursor: pointer;
   perspective: 1400px;
-  align-self: stretch;
+  align-self: center;
   min-height: 0;
   display: block;
 }
@@ -9926,28 +9928,36 @@ body:not(.game-started) .game-wrap {
   border: 0;
   color: #3b2819;
   text-align: left;
-  background: transparent;
+  background: var(--formation-hero-back-image) center / contain no-repeat;
   box-shadow: none;
   transform: rotateY(180deg);
-}
-
-.formation-hero-back-image {
-  display: block;
-  width: 100%;
-  height: 100%;
-  max-height: 560px;
-  object-fit: contain;
   filter: drop-shadow(0 12px 20px rgba(68, 43, 20, 0.2));
 }
 
 .formation-hero-back-stats {
   position: absolute;
-  left: 50%;
-  top: 53%;
-  width: min(58%, 270px);
-  display: grid;
-  gap: 8px;
-  transform: translate(-50%, -50%);
+  left: 23%;
+  right: 23%;
+  top: 27%;
+  bottom: 17%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: clamp(6px, 1vh, 10px);
+  color: #2f2118;
+  text-shadow: 0 1px 0 rgba(255, 246, 218, 0.62);
+  pointer-events: none;
+}
+
+.formation-hero-back-poseidon .formation-hero-back-stats {
+  left: 24%;
+  right: 24%;
+  top: 30%;
+  bottom: 18%;
+  color: #eef8ff;
+  text-shadow:
+    0 2px 4px rgba(0, 24, 58, 0.58),
+    0 0 10px rgba(49, 185, 255, 0.34);
 }
 
 .formation-growth-lock {
@@ -9964,10 +9974,27 @@ body:not(.game-started) .game-wrap {
 .formation-hero-flip-back strong {
   display: block;
   width: 100%;
-  margin-bottom: 4px;
-  color: #2d2118;
-  font-size: clamp(18px, 1.6vw, 30px);
+  margin: 0 0 2px;
+  color: currentColor;
+  font-size: clamp(18px, 1.7vw, 30px);
   line-height: 1;
+  text-align: center;
+}
+
+.formation-hero-flip-back em {
+  display: block;
+  width: 100%;
+  margin: 0 0 clamp(4px, 1vh, 10px);
+  color: #9a6a25;
+  font-size: clamp(11px, 0.85vw, 14px);
+  font-style: normal;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-align: center;
+}
+
+.formation-hero-back-poseidon em {
+  color: #ffd66f;
 }
 
 .formation-hero-flip-back span {
@@ -9975,14 +10002,22 @@ body:not(.game-started) .game-wrap {
   display: flex;
   justify-content: space-between;
   gap: 14px;
-  padding: 8px 0;
-  border-bottom: 1px solid rgba(145, 105, 61, 0.24);
+  padding: clamp(6px, 0.9vh, 9px) 0;
+  border-bottom: 1px solid rgba(145, 105, 61, 0.28);
   font-size: clamp(13px, 1vw, 17px);
   font-weight: 900;
 }
 
+.formation-hero-back-poseidon span {
+  border-bottom-color: rgba(189, 224, 255, 0.24);
+}
+
 .formation-hero-flip-back b {
   color: #7b5427;
+}
+
+.formation-hero-back-poseidon b {
+  color: #ffe08a;
 }
 
 .formation-hero-detail-info {

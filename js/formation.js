@@ -476,10 +476,10 @@ function renderFormationHeroDetail() {
           <span class="formation-hero-flip-face formation-hero-flip-front">
             <img src="${hero.image}" alt="${hero.name}">
           </span>
-          <span class="formation-hero-flip-face formation-hero-flip-back">
-            <img class="formation-hero-back-image" src="${backImage}" alt="${hero.name} 카드 뒷면">
+          <span class="formation-hero-flip-face formation-hero-flip-back formation-hero-back-${hero.id}" style="--formation-hero-back-image: url('${backImage}')">
             <div class="formation-hero-back-stats">
-              <strong>일반 스탯</strong>
+              <strong>${hero.name}</strong>
+              <em>일반 스탯</em>
               <span>공격력 <b>${stats.damage}</b></span>
               <span>체력 <b>${stats.hp}</b></span>
               <span>사거리 <b>${stats.range}</b></span>
