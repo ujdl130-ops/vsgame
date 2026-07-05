@@ -211,6 +211,10 @@ function toggleGameOptionsMenu() {
   else openGameOptionsMenu();
 }
 
+function handleOptionResume() {
+  closeGameOptionsMenu(true);
+}
+
 function handleOptionStageSelect() {
   closeGameOptionsMenu(false);
   showStageSelect();

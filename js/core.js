@@ -15,6 +15,7 @@ const enemyHpText = document.getElementById("enemyHpText");
 
 const gameOptionsBtn = document.getElementById("gameOptionsBtn");
 const gameOptionsMenu = document.getElementById("gameOptionsMenu");
+const optionResumeBtn = document.getElementById("optionResumeBtn");
 const optionStageSelectBtn = document.getElementById("optionStageSelectBtn");
 const optionRestartBtn = document.getElementById("optionRestartBtn");
 const movementJoystick = document.getElementById("movementJoystick");

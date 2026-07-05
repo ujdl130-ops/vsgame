@@ -227,6 +227,7 @@ function bindHeroActionIcon(button, actionFn) {
 
 if (startBtn) startBtn.addEventListener("click", () => startGame(selectedStage));
 if (gameOptionsBtn) gameOptionsBtn.addEventListener("click", toggleGameOptionsMenu);
+if (optionResumeBtn) optionResumeBtn.addEventListener("click", handleOptionResume);
 if (optionStageSelectBtn) optionStageSelectBtn.addEventListener("click", handleOptionStageSelect);
 if (optionRestartBtn) optionRestartBtn.addEventListener("click", handleOptionRestart);
 bindMovementJoystick(movementJoystick);
