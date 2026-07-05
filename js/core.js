@@ -100,17 +100,34 @@ const ZEUS_MANA_REGEN_PER_SECOND = 10;
 const gameWallet = {
   diamond: 0,
   gold: 8520,
+  summonTickets: 0,
+  commonEssence: 0,
+  soldierFragments: 0,
 };
 
 function addWalletCurrency(type, amount) {
-  if (!Object.prototype.hasOwnProperty.call(gameWallet, type)) return;
-  gameWallet[type] += Math.max(0, Number(amount) || 0);
+  const walletType = type === "diamonds" ? "diamond" : type;
+  const progressType = walletType === "diamond" ? "diamonds" : walletType;
+  const value = Math.max(0, Number(amount) || 0);
+  if (!Object.prototype.hasOwnProperty.call(gameWallet, walletType)) return;
+  gameWallet[walletType] += value;
+  if (typeof playerProgress !== "undefined" && playerProgress) {
+    playerProgress[progressType] = Math.max(0, Number(playerProgress[progressType]) || 0) + value;
+    if (typeof saveProgress === "function") saveProgress();
+  }
   updateWalletDisplays();
 }
 
 function updateWalletDisplays() {
+  if (typeof playerProgress !== "undefined" && playerProgress) {
+    gameWallet.gold = Math.max(0, Number(playerProgress.gold) || 0);
+    gameWallet.diamond = Math.max(0, Number(playerProgress.diamonds) || 0);
+    gameWallet.summonTickets = Math.max(0, Number(playerProgress.summonTickets) || 0);
+    gameWallet.commonEssence = Math.max(0, Number(playerProgress.commonEssence) || 0);
+    gameWallet.soldierFragments = Math.max(0, Number(playerProgress.soldierFragments) || 0);
+  }
   document.querySelectorAll("[data-wallet-value]").forEach((element) => {
-    const type = element.dataset.walletValue;
+    const type = element.dataset.walletValue === "diamonds" ? "diamond" : element.dataset.walletValue;
     if (!Object.prototype.hasOwnProperty.call(gameWallet, type)) return;
     element.textContent = gameWallet[type].toLocaleString("ko-KR");
   });

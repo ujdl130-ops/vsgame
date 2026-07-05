@@ -25,7 +25,7 @@ function normalizePlayerData(savedData = {}) {
     unlockedStage: Math.min(3, Math.max(1, Number(savedData.unlockedStage) || 1)),
     clearedStages: Array.isArray(savedData.clearedStages) ? savedData.clearedStages : [],
     growth,
-    gold: Math.max(0, Number(savedData.gold) || 0),
+    gold: Math.max(0, Number(Object.prototype.hasOwnProperty.call(savedData, "gold") ? savedData.gold : 8520) || 0),
     diamonds: Math.max(0, Number(savedData.diamonds) || 0),
     summonTickets: Math.max(0, Number(savedData.summonTickets) || 0),
     commonEssence: Math.max(0, Number(savedData.commonEssence) || 0),
@@ -50,6 +50,7 @@ function grantPlayerRewards(rewards = {}) {
     }
   });
   saveProgress();
+  if (typeof updateWalletDisplays === "function") updateWalletDisplays();
   return playerProgress;
 }
 

@@ -61,7 +61,7 @@
 
     <div class="lobby-menu-bar" aria-label="로비 주요 메뉴">
       <button id="lobbyShopBtn" class="lobby-btn lobby-shop" type="button">상점</button>
-      <button id="lobbyFormationBtn" class="lobby-btn lobby-formation" type="button">편성</button>
+      <button id="lobbyFormationBtn" class="lobby-btn lobby-formation" type="button">강화</button>
       <button id="lobbyRecruitBtn" class="lobby-btn lobby-recruit" type="button">모집</button>
       <button id="lobbyMissionBtn" class="lobby-btn lobby-mission" type="button">미션</button>
       <button id="lobbyBattleBtn" class="lobby-btn lobby-battle" type="button">전투</button>
@@ -236,22 +236,24 @@
   </section>
 
 
-  <section id="formationScreen" class="formation-screen is-hidden" aria-label="픽셀디펜스 편성 화면">
+  <section id="formationScreen" class="formation-screen is-hidden" aria-label="픽셀디펜스 강화 화면">
     <div class="formation-scanline" aria-hidden="true"></div>
 
     <button id="formationBackBtn" class="formation-ui-btn formation-back-btn" type="button">← 로비</button>
     <button id="formationCloseBtn" class="formation-ui-btn formation-close-btn" type="button">인벤토리</button>
 
-    <div class="formation-topbar" aria-label="재화 정보">
+    <div class="formation-topbar formation-wallet-wide" aria-label="재화 정보">
       <div class="formation-currency blue"><span>다이아</span><strong data-wallet-value="diamond">0</strong></div>
-      <div class="formation-currency gold"><span>골드</span><strong data-wallet-value="gold">8,520</strong></div>
-      <button class="formation-gear" type="button" aria-label="설정">⚙</button>
+      <div class="formation-currency gold"><span>골드</span><strong data-wallet-value="gold">0</strong></div>
+      <div class="formation-currency ticket"><span>신모집권</span><strong data-wallet-value="summonTickets">0</strong></div>
+      <div class="formation-currency essence"><span>신의정수</span><strong data-wallet-value="commonEssence">0</strong></div>
+      <div class="formation-currency soldier"><span>병사 정수</span><strong data-wallet-value="soldierFragments">0</strong></div>
     </div>
 
     <div class="formation-shell">
-      <aside class="formation-sidebar" aria-label="편성 메뉴">
-        <div class="formation-sidebar-title">편성</div>
-        <button class="formation-side-btn is-active" type="button">편성</button>
+      <aside class="formation-sidebar" aria-label="강화 메뉴">
+        <div class="formation-sidebar-title">강화</div>
+        <button class="formation-side-btn is-active" type="button">강화</button>
         <button class="formation-side-btn is-disabled" type="button" disabled>컬렉션</button>
         <button class="formation-side-btn" type="button">모집</button>
         <button class="formation-side-btn" type="button">상점</button>
@@ -261,10 +263,10 @@
       <section class="formation-main-panel">
         <header class="formation-header-row">
           <div class="formation-title-box">
-            <p class="formation-kicker">FORMATION</p>
-            <h1 class="formation-logo">덱 편성</h1>
+            <p class="formation-kicker">ENHANCE</p>
+            <h1 class="formation-logo">영웅 강화</h1>
           </div>
-          <div class="formation-category-tabs" role="tablist" aria-label="편성 카테고리">
+          <div class="formation-category-tabs" role="tablist" aria-label="강화 카테고리">
             <button class="formation-category-tab is-active" type="button" data-formation-tab="deck">덱</button>
             <button class="formation-category-tab" type="button" data-formation-tab="unit">유닛</button>
             <button class="formation-category-tab" type="button" data-formation-tab="tower">타워</button>
@@ -333,7 +335,7 @@
   <section id="inventoryScreen" class="inventory-screen is-hidden" aria-label="픽셀디펜스 인벤토리 화면">
     <div class="inventory-scanline" aria-hidden="true"></div>
     <button id="inventoryBackBtn" class="inventory-ui-btn inventory-back-btn" type="button">로비</button>
-    <button id="inventoryCloseBtn" class="inventory-ui-btn inventory-close-btn" type="button">편성</button>
+    <button id="inventoryCloseBtn" class="inventory-ui-btn inventory-close-btn" type="button">강화</button>
     <div id="inventoryRoot" class="inventory-root" aria-label="인벤토리 슬롯"></div>
   </section>
 
