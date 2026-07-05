@@ -100,10 +100,35 @@ function spawnKaronSwordWave(enemy) {
     y: enemy.y - 72,
     vx: -500,
     damage: enemy.damage,
+    splashRadius: enemy.swordWaveSplashRadius || 72,
     target,
     life: 0,
     maxLife: 1.5,
   });
+}
+
+function getKaronSwordWaveSplashTargets(impactX, radius) {
+  const targets = [];
+  if (isCombatAlive(gameState.hero)) targets.push(gameState.hero);
+
+  for (const unit of gameState.units) {
+    if (isCombatAlive(unit)) targets.push(unit);
+  }
+
+  return targets.filter((target) => Math.abs(target.x - impactX) <= radius);
+}
+
+function damageKaronSwordWaveSplash(projectile, impactX) {
+  const targets = getKaronSwordWaveSplashTargets(impactX, projectile.splashRadius || 72);
+
+  for (const target of targets) {
+    target.hp -= projectile.damage;
+    spawnHit(target.x, target.y - Math.max(38, target.h * 0.65), "#79c8ff");
+  }
+
+  if (targets.length === 0) {
+    spawnHit(impactX, projectile.y, "#79c8ff");
+  }
 }
 
 function fireArcherArrow(unit) {
@@ -204,8 +229,7 @@ function updateProjectiles(dt) {
         : findNearestAlly(projectile.x, 90);
 
       if (target && Math.abs(projectile.x - target.x) < 24) {
-        target.hp -= projectile.damage;
-        spawnHit(target.x, target.y - Math.max(38, target.h * 0.65), "#79c8ff");
+        damageKaronSwordWaveSplash(projectile, target.x);
         projectile.dead = true;
       }
 

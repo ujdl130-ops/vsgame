@@ -155,12 +155,12 @@ const KARON_WEREWOLF_SPRITE = {
 const GOBLIN_STAGE_STATS = {
   1: { hp: 70, damage: 13 },
   2: { hp: 71, damage: 13 },
-  3: { hp: 92, damage: 16 },
+  3: { hp: 128, damage: 24 },
 };
 
 const EVILEYE_STAGE_STATS = {
   2: { hp: 66, damage: 12 },
-  3: { hp: 86, damage: 15 },
+  3: { hp: 124, damage: 23 },
 };
 
 function getStageMonsterStats(table, fallbackStage) {
@@ -233,8 +233,8 @@ function shouldSpawnEvileye(wave) {
 }
 
 function createKaronBoss(wave) {
-  const phaseOneHp = 520 + wave * 90;
-  const phaseTwoHp = 760 + wave * 120;
+  const phaseOneHp = 900 + wave * 150;
+  const phaseTwoHp = 1850 + wave * 280;
   return {
     type: "karon",
     name: "karon",
@@ -251,16 +251,17 @@ function createKaronBoss(wave) {
     hp: phaseOneHp,
     maxHp: phaseOneHp,
     speed: 24,
-    damage: 28 + wave * 4,
-    range: 275,
-    cooldown: 0.45,
-    attackSpeed: 1.55,
+    damage: 44 + wave * 9,
+    range: 295,
+    cooldown: 0.35,
+    attackSpeed: 1.35,
     animTime: 0,
     moving: false,
     attackAnimTimer: 0,
     attackAnimDuration: 0.82,
     swordWaveTarget: null,
     swordWavePending: false,
+    swordWaveSplashRadius: 76,
     clawTarget: null,
     clawHitPending: false,
     transformAnimTimer: 0,
@@ -338,10 +339,10 @@ function finishKaronTransformation(enemy) {
   enemy.w = 88;
   enemy.h = 120;
   enemy.speed = 36;
-  enemy.damage = 38 + wave * 5;
-  enemy.range = 86;
+  enemy.damage = 120 + wave * 18;
+  enemy.range = 92;
   enemy.cooldown = 0.35;
-  enemy.attackSpeed = 1.05;
+  enemy.attackSpeed = 0.96;
   enemy.attackAnimTimer = 0;
   enemy.attackAnimDuration = 0.82;
   enemy.deathAnimDuration = 1.05;

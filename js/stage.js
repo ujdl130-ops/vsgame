@@ -19,8 +19,8 @@ const STAGE_CONFIGS = {
     title: "마왕군 전초기지",
     maxWave: 3,
     startRunestone: 0,
-    enemyBaseHp: 180,
-    baseEnemiesToSpawn: 7,
+    enemyBaseHp: 230,
+    baseEnemiesToSpawn: 10,
   },
 };
 
@@ -175,7 +175,9 @@ function updateWave(dt) {
   }
 
   gameState.enemySpawnTimer -= dt;
-  const spawnGap = Math.max(0.82, 1.65 - gameState.wave * 0.22);
+  const spawnGap = Number(gameState.stage) === 3
+    ? Math.max(0.68, 1.16 - gameState.wave * 0.13)
+    : Math.max(0.82, 1.65 - gameState.wave * 0.22);
 
   if (gameState.spawnedInWave < gameState.enemiesToSpawn && gameState.enemySpawnTimer <= 0) {
     spawnEnemy();
