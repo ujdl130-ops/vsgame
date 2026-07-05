@@ -2,7 +2,7 @@
 
 const POSEIDON_TSUNAMI_SKILL_ANIMATION = {
   spritePath: "assets/effects/poseidon_tsunami_spritesheet.png",
-  duration: 2.35,
+  duration: 3.25,
   waveWidth: 560,
   waveHeight: 270,
   renderStretchX: 1.42,
@@ -64,7 +64,7 @@ function updatePoseidonTsunamiAnimation(effect, dt) {
 
   effect.timer += dt;
   const progress = getPoseidonTsunamiProgress(effect);
-  const travel = smoothstep(0.04, 0.98, progress);
+  const travel = smoothstep(0.08, 0.99, progress);
   effect.impactX = lerp(effect.startX, effect.endX, travel);
 
   if (effect.timer >= effect.duration) {
@@ -103,7 +103,7 @@ function drawPoseidonTsunamiAnimation(renderCtx, effect) {
 
   const progress = getPoseidonTsunamiProgress(effect);
   const intro = smoothstep(0, 0.08, progress);
-  const fade = 1 - smoothstep(0.9, 1, progress);
+  const fade = 1 - smoothstep(0.92, 1, progress);
   const alpha = Math.max(0, intro * fade);
   if (alpha <= 0) return;
 
@@ -178,7 +178,7 @@ function drawPoseidonSpriteFrame(renderCtx, effect, progress, alpha, spriteCanva
 
 function getPoseidonSpriteFrameIndex(progress) {
   const frameCount = POSEIDON_TSUNAMI_SKILL_ANIMATION.spriteFrames.length;
-  const frameProgress = smoothstep(0.04, 0.93, progress);
+  const frameProgress = smoothstep(0.08, 0.98, progress);
   return Math.min(frameCount - 1, Math.floor(frameProgress * frameCount));
 }
 
