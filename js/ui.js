@@ -195,7 +195,7 @@ function openGameOptionsMenu() {
 
   gameOptionsWasRunning = Boolean(gameState.running);
   gameState.running = false;
-  gameState.message = "게임 일시정지";
+  gameState.message = "";
   gameState.messageTimer = 0;
 
   gameOptionsMenu.classList.remove("is-hidden");
