@@ -155,12 +155,12 @@ const KARON_WEREWOLF_SPRITE = {
 const GOBLIN_STAGE_STATS = {
   1: { hp: 70, damage: 13 },
   2: { hp: 71, damage: 13 },
-  3: { hp: 73, damage: 13 },
+  3: { hp: 92, damage: 16 },
 };
 
 const EVILEYE_STAGE_STATS = {
   2: { hp: 66, damage: 12 },
-  3: { hp: 69, damage: 12 },
+  3: { hp: 86, damage: 15 },
 };
 
 function getStageMonsterStats(table, fallbackStage) {
@@ -275,7 +275,7 @@ function createKaronBoss(wave) {
 
 function shouldSpawnKaronBoss(wave) {
   if (gameState.karonBossSpawned) return false;
-  return Number(gameState.stage) === 3 && wave === 1 && gameState.spawnedInWave === 0;
+  return Number(gameState.stage) === 3 && wave === gameState.maxWave && gameState.spawnedInWave === 0;
 }
 
 function isKaronWerewolf(enemy) {
@@ -435,6 +435,78 @@ function updateKaronEnemy(enemy, dt) {
   }
 }
 
+function createBruteEnemy(wave, stageThreeTuned = false) {
+  const hp = stageThreeTuned ? 112 + wave * 14 : 95 + wave * 8;
+  return {
+    type: "brute",
+    x: ENEMY_BASE_X - 45,
+    y: COMBAT_LINE_Y,
+    w: 44,
+    h: 66,
+    hp,
+    maxHp: hp,
+    speed: (stageThreeTuned ? 30 : 28) + wave * 2,
+    damage: stageThreeTuned ? 19 + wave * 3 : 16 + wave * 2,
+    range: 45,
+    cooldown: 0,
+    attackSpeed: stageThreeTuned ? 0.86 : 0.9,
+    animTime: 0,
+    moving: false,
+    attackAnimTimer: 0,
+    attackAnimDuration: 0.34,
+    paralyzeTimer: 0,
+    dead: false,
+    deathAnimTimer: 0,
+    deathAnimDuration: 0.55,
+    deathRewarded: false,
+  };
+}
+
+function createFastEnemy(wave, stageThreeTuned = false) {
+  const hp = stageThreeTuned ? 50 + wave * 8 : 36 + wave * 6;
+  return {
+    type: "fast",
+    x: ENEMY_BASE_X - 45,
+    y: COMBAT_LINE_Y,
+    w: 30,
+    h: 46,
+    hp,
+    maxHp: hp,
+    speed: stageThreeTuned ? 78 + wave * 4 : 74 + wave * 3,
+    damage: stageThreeTuned ? 9 + wave * 2 : 7 + wave,
+    range: 38,
+    cooldown: 0,
+    attackSpeed: stageThreeTuned ? 0.5 : 0.52,
+    animTime: 0,
+    moving: false,
+    attackAnimTimer: 0,
+    attackAnimDuration: 0.34,
+    paralyzeTimer: 0,
+    dead: false,
+    deathAnimTimer: 0,
+    deathAnimDuration: 0.55,
+    deathRewarded: false,
+  };
+}
+
+function createStageThreeMinion(wave) {
+  const spawnIndex = gameState.spawnedInWave || 0;
+
+  if (wave >= 2 && spawnIndex % 5 === 3) {
+    return createBruteEnemy(wave, true);
+  }
+
+  if (wave >= 2 && (spawnIndex % 4 === 1 || Math.random() < 0.18)) {
+    return createEvileyeEnemy(wave);
+  }
+
+  if (wave >= 3 && (spawnIndex % 5 === 2 || Math.random() < 0.24)) {
+    return createFastEnemy(wave, true);
+  }
+
+  return createGoblinEnemy(wave, false);
+}
+
 function spawnEnemy() {
   const wave = gameState.wave;
   const stage = Number(gameState.stage);
@@ -449,7 +521,9 @@ function spawnEnemy() {
     if (shouldSpawnKaronBoss(wave)) {
       gameState.karonBossSpawned = true;
       gameState.enemies.push(createKaronBoss(wave));
+      return;
     }
+    gameState.enemies.push(createStageThreeMinion(wave));
     return;
   }
 
@@ -457,29 +531,7 @@ function spawnEnemy() {
   const isFast = stage >= 3 && wave >= 3 && Math.random() < 0.25;
 
   if (isBrute) {
-    gameState.enemies.push({
-      type: "brute",
-      x: ENEMY_BASE_X - 45,
-      y: COMBAT_LINE_Y,
-      w: 44,
-      h: 66,
-      hp: 95 + wave * 8,
-      maxHp: 95 + wave * 8,
-      speed: 28 + wave * 2,
-      damage: 16 + wave * 2,
-      range: 45,
-      cooldown: 0,
-      attackSpeed: 0.9,
-      animTime: 0,
-      moving: false,
-      attackAnimTimer: 0,
-      attackAnimDuration: 0.34,
-      paralyzeTimer: 0,
-      dead: false,
-      deathAnimTimer: 0,
-      deathAnimDuration: 0.55,
-      deathRewarded: false,
-    });
+    gameState.enemies.push(createBruteEnemy(wave));
     return;
   }
 
@@ -488,29 +540,7 @@ function spawnEnemy() {
     return;
   }
 
-  gameState.enemies.push({
-    type: "fast",
-    x: ENEMY_BASE_X - 45,
-    y: COMBAT_LINE_Y,
-    w: 30,
-    h: 46,
-    hp: 36 + wave * 6,
-    maxHp: 36 + wave * 6,
-    speed: 74 + wave * 3,
-    damage: 7 + wave,
-    range: 38,
-    cooldown: 0,
-    attackSpeed: 0.52,
-    animTime: 0,
-    moving: false,
-    attackAnimTimer: 0,
-    attackAnimDuration: 0.34,
-    paralyzeTimer: 0,
-    dead: false,
-    deathAnimTimer: 0,
-    deathAnimDuration: 0.55,
-    deathRewarded: false,
-  });
+  gameState.enemies.push(createFastEnemy(wave));
 }
 
 function updateEnemies(dt) {
