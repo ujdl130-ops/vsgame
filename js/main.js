@@ -22,6 +22,7 @@ function startGame(stageNumber = selectedStage) {
   }
 
   loadStageAssets(selectedStage);
+  hideStageClearRewardUi();
   closeGameOptionsMenu(false);
   resetGame();
   if (titleScreen) titleScreen.classList.add("is-hidden");
@@ -132,6 +133,14 @@ window.addEventListener("keydown", (event) => {
     return;
   }
 
+  if (isStageClearRewardVisible()) {
+    if (event.code === "Escape" || event.code === "Enter" || event.code === "Space") {
+      event.preventDefault();
+      hideStageClearRewardUi();
+    }
+    return;
+  }
+
   if (isGameOptionsOpen()) {
     if (event.code === "Escape") {
       event.preventDefault();
@@ -230,6 +239,12 @@ if (gameOptionsBtn) gameOptionsBtn.addEventListener("click", toggleGameOptionsMe
 if (optionResumeBtn) optionResumeBtn.addEventListener("click", handleOptionResume);
 if (optionStageSelectBtn) optionStageSelectBtn.addEventListener("click", handleOptionStageSelect);
 if (optionRestartBtn) optionRestartBtn.addEventListener("click", handleOptionRestart);
+if (stageClearRewardCloseBtn) stageClearRewardCloseBtn.addEventListener("click", hideStageClearRewardUi);
+if (stageClearRewardOverlay) {
+  stageClearRewardOverlay.addEventListener("click", (event) => {
+    if (event.target === stageClearRewardOverlay) hideStageClearRewardUi();
+  });
+}
 bindMovementJoystick(movementJoystick);
 titleStartBtn.addEventListener("click", showLobby);
 if (lobbyBattleBtn) lobbyBattleBtn.addEventListener("click", showStageSelect);

@@ -164,6 +164,21 @@ function isGameOptionsOpen() {
   return Boolean(gameOptionsMenu && !gameOptionsMenu.classList.contains("is-hidden"));
 }
 
+function isStageClearRewardVisible() {
+  return Boolean(stageClearRewardOverlay && !stageClearRewardOverlay.classList.contains("is-hidden"));
+}
+
+function showStageClearRewardUi() {
+  if (!stageClearRewardOverlay) return;
+  closeGameOptionsMenu(false);
+  stageClearRewardOverlay.classList.remove("is-hidden");
+}
+
+function hideStageClearRewardUi() {
+  if (!stageClearRewardOverlay) return;
+  stageClearRewardOverlay.classList.add("is-hidden");
+}
+
 function closeGameOptionsMenu(resumeGame = true) {
   if (!gameOptionsMenu) return;
 

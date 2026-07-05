@@ -209,6 +209,7 @@ function completeStage(message) {
   gameState.message = `${message} · 스테이지 선택 버튼으로 다음 지역에 도전`;
   unlockStageProgress(selectedStage);
   updateButtons();
+  if (typeof showStageClearRewardUi === "function") showStageClearRewardUi();
 }
 
 

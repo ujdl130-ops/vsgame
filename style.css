@@ -315,6 +315,66 @@ body.game-started:not(.in-lobby):not(.in-stage-select):not(.in-shop):not(.in-rec
   box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.34);
 }
 
+.stage-clear-reward-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 9;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px;
+  background: rgba(0, 0, 0, 0.48);
+}
+
+.stage-clear-reward-overlay.is-hidden {
+  display: none;
+}
+
+.stage-clear-reward-window {
+  position: relative;
+  width: min(90%, 820px);
+  aspect-ratio: 1716 / 917;
+  animation: rewardUiPop 0.22s ease-out both;
+}
+
+.stage-clear-reward-ui {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  pointer-events: none;
+  filter: drop-shadow(0 12px 24px rgba(0, 0, 0, 0.48));
+}
+
+.stage-clear-reward-close {
+  position: absolute;
+  left: 77.4%;
+  top: 10.3%;
+  width: 6.8%;
+  height: 12.4%;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  cursor: pointer;
+}
+
+.stage-clear-reward-close:focus-visible {
+  outline: 2px solid rgba(255, 238, 163, 0.95);
+  outline-offset: 2px;
+}
+
+@keyframes rewardUiPop {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
 .battle-command-panel {
   --battle-unit-zone: 58%;
   position: absolute;
