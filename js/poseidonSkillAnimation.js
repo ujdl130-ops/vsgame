@@ -1,7 +1,7 @@
 // Poseidon tsunami skill animation, sprite-only.
 
 const POSEIDON_TSUNAMI_SKILL_ANIMATION = {
-  spritePath: "assets/effects/ChatGPT Image 2026년 7월 5일 오후 06_20_54.png",
+  spritePath: "assets/effects/poseidon_tsunami_spritesheet.png",
   duration: 1.45,
   waveWidth: 360,
   waveHeight: 238,
@@ -21,17 +21,13 @@ const POSEIDON_TSUNAMI_SKILL_ANIMATION = {
 
 const poseidonTsunamiSprite = typeof Image !== "undefined" ? new Image() : null;
 let poseidonTsunamiSpriteReady = false;
-let poseidonTsunamiSpriteCanvas = null;
-let poseidonTsunamiSpriteMaskFailed = false;
 
 if (poseidonTsunamiSprite) {
   poseidonTsunamiSprite.onload = () => {
     poseidonTsunamiSpriteReady = true;
-    poseidonTsunamiSpriteCanvas = null;
   };
   poseidonTsunamiSprite.onerror = () => {
     poseidonTsunamiSpriteReady = false;
-    poseidonTsunamiSpriteMaskFailed = true;
     console.warn("Poseidon tsunami sprite could not be loaded.");
   };
   poseidonTsunamiSprite.src = POSEIDON_TSUNAMI_SKILL_ANIMATION.spritePath;
@@ -132,47 +128,8 @@ function drawPoseidonTsunamiDebugZone(renderCtx, effect) {
 }
 
 function getPoseidonTsunamiSpriteCanvas() {
-  if (poseidonTsunamiSpriteCanvas) return poseidonTsunamiSpriteCanvas;
-  if (!poseidonTsunamiSpriteReady || !poseidonTsunamiSprite || poseidonTsunamiSpriteMaskFailed) return null;
-
-  const maskCanvas = document.createElement("canvas");
-  maskCanvas.width = poseidonTsunamiSprite.naturalWidth;
-  maskCanvas.height = poseidonTsunamiSprite.naturalHeight;
-  const maskCtx = maskCanvas.getContext("2d");
-
-  try {
-    maskCtx.drawImage(poseidonTsunamiSprite, 0, 0);
-    const imageData = maskCtx.getImageData(0, 0, maskCanvas.width, maskCanvas.height);
-    const data = imageData.data;
-
-    for (let i = 0; i < data.length; i += 4) {
-      const r = data[i];
-      const g = data[i + 1];
-      const b = data[i + 2];
-      const max = Math.max(r, g, b);
-      const min = Math.min(r, g, b);
-      const saturation = max - min;
-      const blueLift = (b - r) + (g - r) * 0.45;
-      const blueWater = b > 118 && blueLift > 22;
-      const cyanFoam = max > 206 && b > 196 && g > 190 && blueLift > -5 && r < 248;
-      const paleBackground = max > 184 && saturation < 30;
-      const checkerBackground = max > 218 && saturation < 54 && blueLift < 14;
-
-      if (!blueWater && !cyanFoam && (paleBackground || checkerBackground)) {
-        data[i + 3] = 0;
-      } else if (!blueWater && !cyanFoam && max > 235 && saturation < 70) {
-        data[i + 3] = Math.min(data[i + 3], 80);
-      }
-    }
-
-    maskCtx.putImageData(imageData, 0, 0);
-    poseidonTsunamiSpriteCanvas = maskCanvas;
-  } catch (error) {
-    poseidonTsunamiSpriteMaskFailed = true;
-    console.warn("Poseidon tsunami sprite mask could not be prepared.", error);
-  }
-
-  return poseidonTsunamiSpriteCanvas;
+  if (!poseidonTsunamiSpriteReady || !poseidonTsunamiSprite) return null;
+  return poseidonTsunamiSprite;
 }
 
 function drawPoseidonSpriteFrame(renderCtx, effect, progress, alpha, spriteCanvas) {
