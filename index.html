@@ -54,6 +54,20 @@
       <div class="lobby-hero" aria-hidden="true">
         <canvas id="lobbyHeroCanvas" width="184" height="184" class="lobby-hero-canvas"></canvas>
       </div>
+      <div id="lobbyGodShowcase" class="lobby-god-showcase" data-god="zeus">
+        <div class="lobby-god-aura" aria-hidden="true"></div>
+        <button id="lobbyGodPrevBtn" class="lobby-god-arrow lobby-god-prev" type="button" aria-label="이전 신">‹</button>
+        <div class="lobby-god-portrait">
+          <img id="lobbyGodImage" src="assets/gods/zeus.png" alt="제우스">
+        </div>
+        <button id="lobbyGodNextBtn" class="lobby-god-arrow lobby-god-next" type="button" aria-label="다음 신">›</button>
+        <div class="lobby-god-info">
+          <span id="lobbyGodTitle">천둥의 지배자</span>
+          <strong id="lobbyGodName">제우스</strong>
+          <small>SELECTED GOD</small>
+        </div>
+        <div id="lobbyGodDots" class="lobby-god-dots" aria-label="신 선택 위치"></div>
+      </div>
       <div class="lobby-guard-pixel"></div>
       <div class="lobby-flag"></div>
     </div>

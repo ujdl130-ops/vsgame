@@ -227,6 +227,72 @@ if (optionRestartBtn) optionRestartBtn.addEventListener("click", handleOptionRes
 bindMovementJoystick(movementJoystick);
 if (titleStartBtn) titleStartBtn.textContent = "TAP TO START";
 if (titleScreen) titleScreen.addEventListener("click", showLobby);
+
+(() => {
+  const showcase = document.getElementById("lobbyGodShowcase");
+  const image = document.getElementById("lobbyGodImage");
+  const name = document.getElementById("lobbyGodName");
+  const title = document.getElementById("lobbyGodTitle");
+  const dots = document.getElementById("lobbyGodDots");
+  const previousButton = document.getElementById("lobbyGodPrevBtn");
+  const nextButton = document.getElementById("lobbyGodNextBtn");
+  if (!showcase || !image || !name || !title || !dots) return;
+
+  const gods = [
+    { id: "zeus", name: "제우스", title: "천둥의 지배자", image: "assets/gods/zeus.png" },
+    { id: "poseidon", name: "포세이돈", title: "심해의 군주", image: "assets/gods/poseidon.png" },
+    { id: "hades", name: "하데스", title: "명계의 왕", image: "assets/gods/hades.png" },
+    { id: "ares", name: "아레스", title: "전쟁의 화신", image: "assets/gods/ares.png" },
+    { id: "atena", name: "아테나", title: "지혜의 수호자", image: "assets/gods/atena.png" },
+    { id: "heracles", name: "헤라클레스", title: "불굴의 영웅", image: "assets/gods/heracles.png" },
+  ];
+  let savedGod = "";
+  try {
+    savedGod = localStorage.getItem("pixelDefenseLobbyGod") || "";
+  } catch (error) {
+    savedGod = "";
+  }
+  let selectedIndex = Math.max(0, gods.findIndex((god) => god.id === savedGod));
+
+  gods.forEach((god, index) => {
+    const dot = document.createElement("button");
+    dot.type = "button";
+    dot.className = "lobby-god-dot";
+    dot.setAttribute("aria-label", `${god.name} 선택`);
+    dot.addEventListener("click", () => selectGod(index));
+    dots.appendChild(dot);
+  });
+
+  function selectGod(index, direction = 0) {
+    selectedIndex = (index + gods.length) % gods.length;
+    const god = gods[selectedIndex];
+    showcase.dataset.god = god.id;
+    showcase.dataset.direction = direction < 0 ? "previous" : "next";
+    image.classList.remove("is-changing");
+    void image.offsetWidth;
+    image.classList.add("is-changing");
+    image.src = god.image;
+    image.alt = god.name;
+    name.textContent = god.name;
+    title.textContent = god.title;
+    dots.querySelectorAll(".lobby-god-dot").forEach((dot, dotIndex) => {
+      const isSelected = dotIndex === selectedIndex;
+      dot.classList.toggle("is-selected", isSelected);
+      dot.setAttribute("aria-current", isSelected ? "true" : "false");
+    });
+    try {
+      localStorage.setItem("pixelDefenseLobbyGod", god.id);
+    } catch (error) {
+      // The carousel still works when storage is unavailable.
+    }
+  }
+
+  if (previousButton) previousButton.addEventListener("click", () => selectGod(selectedIndex - 1, -1));
+  if (nextButton) nextButton.addEventListener("click", () => selectGod(selectedIndex + 1, 1));
+  image.addEventListener("animationend", () => image.classList.remove("is-changing"));
+  selectGod(selectedIndex);
+})();
+
 if (lobbyBattleBtn) lobbyBattleBtn.addEventListener("click", showStageSelect);
 if (lobbyShopBtn) lobbyShopBtn.addEventListener("click", showShop);
 if (lobbyFormationBtn) lobbyFormationBtn.addEventListener("click", showFormation);

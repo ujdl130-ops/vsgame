@@ -9573,6 +9573,223 @@ body:not(.game-started) .game-wrap {
   }
 }
 
+/* Lobby god carousel */
+.lobby-stage .lobby-hero {
+  display: none !important;
+}
+
+.lobby-stage .lobby-god-showcase {
+  --god-color: #ffd75e;
+  --god-color-rgb: 255, 215, 94;
+  position: absolute;
+  left: 50%;
+  top: clamp(54px, 7vh, 82px);
+  z-index: 5;
+  display: block !important;
+  width: min(74vw, 600px);
+  height: min(66vh, 640px);
+  transform: translateX(-50%);
+  pointer-events: auto;
+}
+
+.lobby-god-showcase[data-god="poseidon"] { --god-color: #5ddcff; --god-color-rgb: 93, 220, 255; }
+.lobby-god-showcase[data-god="hades"] { --god-color: #ad67ff; --god-color-rgb: 173, 103, 255; }
+.lobby-god-showcase[data-god="ares"] { --god-color: #ff685c; --god-color-rgb: 255, 104, 92; }
+.lobby-god-showcase[data-god="atena"] { --god-color: #87d7ff; --god-color-rgb: 135, 215, 255; }
+.lobby-god-showcase[data-god="heracles"] { --god-color: #ffb849; --god-color-rgb: 255, 184, 73; }
+
+.lobby-god-aura {
+  position: absolute;
+  left: 50%;
+  top: 41%;
+  width: min(48vw, 410px);
+  aspect-ratio: 1;
+  border: 1px solid rgba(var(--god-color-rgb), 0.45);
+  border-radius: 50%;
+  background:
+    radial-gradient(circle, rgba(var(--god-color-rgb), 0.3), rgba(var(--god-color-rgb), 0.06) 44%, transparent 70%);
+  box-shadow:
+    0 0 50px rgba(var(--god-color-rgb), 0.28),
+    inset 0 0 45px rgba(var(--god-color-rgb), 0.16);
+  transform: translate(-50%, -50%);
+  animation: lobbyGodAura 4s ease-in-out infinite;
+}
+
+.lobby-god-aura::before,
+.lobby-god-aura::after {
+  content: "";
+  position: absolute;
+  inset: 8%;
+  border: 1px dashed rgba(var(--god-color-rgb), 0.36);
+  border-radius: 50%;
+  animation: lobbyGodOrbit 18s linear infinite;
+}
+
+.lobby-god-aura::after {
+  inset: 20%;
+  animation-direction: reverse;
+  animation-duration: 12s;
+}
+
+.lobby-god-portrait {
+  position: absolute;
+  inset: 0 50px 76px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  filter: drop-shadow(0 22px 18px rgba(0, 0, 0, 0.48));
+}
+
+.lobby-god-portrait img {
+  width: min(52vh, 500px);
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  animation: lobbyGodFloat 3.2s ease-in-out infinite;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+.lobby-god-portrait img.is-changing {
+  animation: lobbyGodEnter 0.42s cubic-bezier(.2,.8,.2,1), lobbyGodFloat 3.2s 0.42s ease-in-out infinite;
+}
+
+.lobby-god-showcase[data-direction="previous"] .lobby-god-portrait img.is-changing {
+  animation-name: lobbyGodEnterPrevious, lobbyGodFloat;
+}
+
+.lobby-god-info {
+  position: absolute;
+  left: 50%;
+  bottom: 32px;
+  min-width: min(80vw, 330px);
+  padding: 8px 34px 10px;
+  color: #fff;
+  text-align: center;
+  background: linear-gradient(90deg, transparent, rgba(4, 7, 17, 0.86) 17% 83%, transparent);
+  transform: translateX(-50%);
+  text-shadow: 0 2px 5px #000;
+}
+
+.lobby-god-info span,
+.lobby-god-info small {
+  display: block;
+  color: var(--god-color);
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 0.17em;
+}
+
+.lobby-god-info strong {
+  display: block;
+  margin: 1px 0;
+  font-size: clamp(25px, 3.3vw, 42px);
+  letter-spacing: -0.04em;
+  text-shadow: 0 3px 0 rgba(0, 0, 0, 0.75), 0 0 18px rgba(var(--god-color-rgb), 0.48);
+}
+
+.lobby-god-info small {
+  color: rgba(255, 255, 255, 0.58);
+  font-size: 8px;
+}
+
+.lobby-god-arrow {
+  position: absolute;
+  top: 42%;
+  z-index: 3;
+  width: 52px;
+  height: 72px;
+  padding: 0;
+  border: 1px solid rgba(var(--god-color-rgb), 0.65);
+  color: #fff;
+  background: rgba(4, 8, 18, 0.58);
+  box-shadow: 0 0 20px rgba(var(--god-color-rgb), 0.15);
+  font: 300 54px/1 sans-serif;
+  text-shadow: 0 0 12px var(--god-color);
+  transform: translateY(-50%);
+}
+
+.lobby-god-prev { left: -18px; }
+.lobby-god-next { right: -18px; }
+.lobby-god-arrow:hover { color: var(--god-color); filter: brightness(1.25); }
+.lobby-god-arrow:active { transform: translateY(-50%) scale(0.92); }
+
+.lobby-god-dots {
+  position: absolute;
+  left: 50%;
+  bottom: 6px;
+  display: flex;
+  gap: 9px;
+  transform: translateX(-50%);
+}
+
+.lobby-god-dot {
+  width: 8px;
+  height: 8px;
+  min-width: 0;
+  padding: 0;
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.5);
+}
+
+.lobby-god-dot.is-selected {
+  border-color: #fff;
+  background: var(--god-color);
+  box-shadow: 0 0 10px var(--god-color);
+  transform: scale(1.35);
+}
+
+@keyframes lobbyGodFloat {
+  0%, 100% { transform: translateY(2px); }
+  50% { transform: translateY(-8px); }
+}
+
+@keyframes lobbyGodEnter {
+  from { opacity: 0; transform: translateX(42px) scale(0.92); }
+  to { opacity: 1; transform: translateX(0) scale(1); }
+}
+
+@keyframes lobbyGodEnterPrevious {
+  from { opacity: 0; transform: translateX(-42px) scale(0.92); }
+  to { opacity: 1; transform: translateX(0) scale(1); }
+}
+
+@keyframes lobbyGodAura {
+  0%, 100% { opacity: 0.72; transform: translate(-50%, -50%) scale(0.96); }
+  50% { opacity: 1; transform: translate(-50%, -50%) scale(1.04); }
+}
+
+@keyframes lobbyGodOrbit {
+  to { transform: rotate(360deg); }
+}
+
+@media (max-width: 720px) {
+  .lobby-stage .lobby-god-showcase {
+    top: max(48px, calc(34px + env(safe-area-inset-top)));
+    width: 92vw;
+    height: min(61vh, 530px);
+  }
+
+  .lobby-god-portrait {
+    inset: 0 48px 68px;
+  }
+
+  .lobby-god-arrow {
+    width: 40px;
+    height: 58px;
+    font-size: 42px;
+  }
+
+  .lobby-god-prev { left: 0; }
+  .lobby-god-next { right: 0; }
+
+  .lobby-god-info {
+    bottom: 28px;
+    padding-inline: 22px;
+  }
+}
+
 /* Formation card placement and selected-info polish */
 .formation-slots-panel {
   height: calc(100% - 112px);
