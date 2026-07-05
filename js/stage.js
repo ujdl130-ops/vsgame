@@ -163,11 +163,10 @@ function updateWave(dt) {
     const remain = Math.ceil(gameState.waveBreakTimer);
     gameState.message = `다음 웨이브까지 ${remain}`;
     if (gameState.waveBreakTimer <= 0) {
-      gameState.wave += 1;
+      gameState.wave = Math.min(gameState.wave + 1, gameState.maxWave);
       gameState.enemySpawnTimer = 0;
       gameState.spawnedInWave = 0;
       gameState.enemiesToSpawn = gameState.baseEnemiesToSpawn + gameState.wave * 3;
-      gameState.enemyBaseHp = Math.min(gameState.enemyBaseMaxHp, gameState.enemyBaseHp + 18);
       gameState.message = `Wave ${gameState.wave} 시작!`;
       gameState.messageTimer = 1.1;
     }
@@ -186,19 +185,14 @@ function updateWave(dt) {
   }
 
   const waveFinished = gameState.spawnedInWave >= gameState.enemiesToSpawn && gameState.enemies.length === 0;
-  if (waveFinished && gameState.wave < gameState.maxWave) {
+  if (waveFinished) {
     gameState.waveBreakTimer = 3;
     addRunestone(60);
-  } else if (waveFinished && gameState.wave >= gameState.maxWave) {
-    if (Number(gameState.stage) === 3) {
-      if (!gameState.gateObjectiveAnnounced) {
-        gameState.gateObjectiveAnnounced = true;
-        gameState.message = "상대 게이트를 파괴해야 클리어됩니다!";
-        gameState.messageTimer = 1.4;
-      }
-      return;
+    if (gameState.wave >= gameState.maxWave && !gameState.gateObjectiveAnnounced) {
+      gameState.gateObjectiveAnnounced = true;
+      gameState.message = "상대 게이트를 파괴해야 클리어됩니다!";
+      gameState.messageTimer = 1.4;
     }
-    completeStage(`STAGE ${selectedStage} CLEAR! 모든 웨이브 방어 성공`);
   }
 }
 
