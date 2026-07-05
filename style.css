@@ -9875,13 +9875,6 @@ body:not(.game-started) .game-wrap {
   height: 100%;
   display: block;
   transform-style: preserve-3d;
-  transform-origin: center center;
-  transition: transform 0.82s cubic-bezier(.16,.72,.18,1);
-  will-change: transform;
-}
-
-.formation-hero-detail-card.is-flipped .formation-hero-flip-inner {
-  transform: rotateY(-180deg);
 }
 
 .formation-hero-detail-card.is-flipping {
@@ -9912,6 +9905,24 @@ body:not(.game-started) .game-wrap {
   display: grid;
   place-items: center;
   backface-visibility: hidden;
+  transform-style: preserve-3d;
+  transition:
+    transform 0.82s cubic-bezier(.16,.72,.18,1),
+    opacity 0.2s ease,
+    visibility 0.2s ease;
+  will-change: transform, opacity;
+}
+
+.formation-hero-flip-front {
+  opacity: 1;
+  visibility: visible;
+  transform: rotateY(0deg);
+}
+
+.formation-hero-detail-card.is-flipped .formation-hero-flip-front {
+  opacity: 0;
+  visibility: hidden;
+  transform: rotateY(-180deg);
 }
 
 .formation-hero-flip-front img {
@@ -9928,10 +9939,26 @@ body:not(.game-started) .game-wrap {
   border: 0;
   color: #3b2819;
   text-align: left;
-  background: var(--formation-hero-back-image) center / contain no-repeat;
+  opacity: 0;
+  visibility: hidden;
+  background: transparent center / contain no-repeat;
   box-shadow: none;
   transform: rotateY(180deg);
   filter: drop-shadow(0 12px 20px rgba(68, 43, 20, 0.2));
+}
+
+.formation-hero-detail-card.is-flipped .formation-hero-flip-back {
+  opacity: 1;
+  visibility: visible;
+  transform: rotateY(0deg);
+}
+
+.formation-hero-back-zeus {
+  background-image: url("assets/maps/formation/zeus_back.png");
+}
+
+.formation-hero-back-poseidon {
+  background-image: url("assets/maps/formation/poseidon_back.png");
 }
 
 .formation-hero-back-stats {

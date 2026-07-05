@@ -450,7 +450,6 @@ function renderFormationHeroDetail() {
   const actionKey = getFormationHeroGrowthActionKey(hero.id, action);
   const isPending = formationState.pendingHeroGrowthAction === actionKey;
   const stats = getFormationHeroStats(hero.id);
-  const backImage = hero.backImage || hero.image;
   const isMax = action.type === "max";
   const lacksEssenceForStar = action.type === "star" && action.cost > 0 && fragmentAmount < action.cost;
   const levelLabel = isMax
@@ -476,7 +475,7 @@ function renderFormationHeroDetail() {
           <span class="formation-hero-flip-face formation-hero-flip-front">
             <img src="${hero.image}" alt="${hero.name}">
           </span>
-          <span class="formation-hero-flip-face formation-hero-flip-back formation-hero-back-${hero.id}" style="--formation-hero-back-image: url('${backImage}')">
+          <span class="formation-hero-flip-face formation-hero-flip-back formation-hero-back-${hero.id}">
             <div class="formation-hero-back-stats">
               <strong>${hero.name}</strong>
               <em>일반 스탯</em>
