@@ -10698,20 +10698,30 @@ body:not(.game-started) .game-wrap {
 }
 
 .stage-screen::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  z-index: 0;
-  background-position: center;
-  background-repeat: no-repeat;
-  background-size: cover;
+  content: none;
 }
 
-.stage-screen.is-chapter-view::before {
+.stage-art-frame {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  z-index: 0;
+  width: min(100vw, calc(100vh * 16 / 9));
+  max-width: 100vw;
+  max-height: 100vh;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  transform: translate(-50%, -50%);
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: 100% 100%;
+}
+
+.stage-screen.is-chapter-view .stage-art-frame {
   background-image: url("assets/ui/chater UI.png");
 }
 
-.stage-screen.is-stage-view::before {
+.stage-screen.is-stage-view .stage-art-frame {
   background-image: url("assets/ui/stageUI.png");
 }
 
@@ -10734,9 +10744,9 @@ body:not(.game-started) .game-wrap {
 
 .stage-screen .stage-back-btn {
   left: 1.05%;
-  top: 2.1%;
-  width: 7.4%;
-  height: 8.4%;
+  top: 2.15%;
+  width: 6.7%;
+  height: 7.65%;
 }
 
 .stage-screen .stage-ui-btn:focus-visible,
