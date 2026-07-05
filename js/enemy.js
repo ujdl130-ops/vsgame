@@ -492,16 +492,8 @@ function createFastEnemy(wave, stageThreeTuned = false) {
 function createStageThreeMinion(wave) {
   const spawnIndex = gameState.spawnedInWave || 0;
 
-  if (wave >= 2 && spawnIndex % 5 === 3) {
-    return createBruteEnemy(wave, true);
-  }
-
-  if (wave >= 2 && (spawnIndex % 4 === 1 || Math.random() < 0.18)) {
+  if (wave >= 2 && (spawnIndex % 3 === 1 || Math.random() < (wave >= 3 ? 0.35 : 0.22))) {
     return createEvileyeEnemy(wave);
-  }
-
-  if (wave >= 3 && (spawnIndex % 5 === 2 || Math.random() < 0.24)) {
-    return createFastEnemy(wave, true);
   }
 
   return createGoblinEnemy(wave, false);
