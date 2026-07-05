@@ -9865,43 +9865,9 @@ body:not(.game-started) .game-wrap {
   display: block;
 }
 
-.formation-hero-detail-card::before,
-.formation-hero-card::before {
-  content: "";
-  position: absolute;
-  inset: -8px;
-  z-index: 0;
-  border: 1px solid rgba(189, 151, 88, 0.68);
-  border-radius: 4px;
-  background:
-    linear-gradient(90deg, rgba(255,255,255,0.72), rgba(221,211,196,0.2), rgba(255,255,255,0.52)),
-    linear-gradient(135deg, rgba(214, 200, 178, 0.55), rgba(255, 250, 239, 0.88) 34%, rgba(185, 166, 140, 0.46) 68%, rgba(255, 252, 244, 0.82));
-  box-shadow:
-    inset 0 0 0 2px rgba(255,255,255,0.72),
-    inset 0 0 18px rgba(130, 101, 64, 0.16),
-    0 10px 22px rgba(74, 45, 18, 0.12);
-  pointer-events: none;
-}
-
-.formation-hero-detail-card::after,
-.formation-hero-card::after {
-  content: "";
-  position: absolute;
-  inset: -8px;
-  z-index: 1;
-  border-radius: 4px;
-  background:
-    linear-gradient(135deg, #d8b773 0 8px, transparent 9px) left top / 42px 42px no-repeat,
-    linear-gradient(225deg, #d8b773 0 8px, transparent 9px) right top / 42px 42px no-repeat,
-    linear-gradient(45deg, #d8b773 0 8px, transparent 9px) left bottom / 42px 42px no-repeat,
-    linear-gradient(315deg, #d8b773 0 8px, transparent 9px) right bottom / 42px 42px no-repeat;
-  filter: drop-shadow(0 1px 0 rgba(255,255,255,0.65));
-  pointer-events: none;
-}
-
 .formation-hero-flip-inner {
   position: relative;
-  z-index: 2;
+  z-index: 1;
   overflow: hidden;
   width: 100%;
   height: 100%;
@@ -9914,7 +9880,10 @@ body:not(.game-started) .game-wrap {
 
 .formation-hero-detail-card.is-flipped .formation-hero-flip-inner {
   transform: rotateY(-180deg);
-  animation: formationHeroFlipLift 0.82s cubic-bezier(.16,.72,.18,1);
+}
+
+.formation-hero-detail-card.is-flipping {
+  animation: formationHeroCardLift 0.82s cubic-bezier(.16,.72,.18,1);
 }
 
 .formation-hero-flip-inner::after {
@@ -9922,16 +9891,16 @@ body:not(.game-started) .game-wrap {
   position: absolute;
   top: -18%;
   bottom: -18%;
-  left: -55%;
+  left: 0;
   z-index: 4;
   width: 38%;
   background: linear-gradient(105deg, transparent 0%, rgba(255,255,255,0.12) 22%, rgba(255,248,210,0.62) 50%, rgba(255,255,255,0.14) 76%, transparent 100%);
   opacity: 0;
-  transform: skewX(-18deg);
+  transform: translateX(-160%) skewX(-18deg);
   pointer-events: none;
 }
 
-.formation-hero-detail-card.is-flipped .formation-hero-flip-inner::after {
+.formation-hero-detail-card.is-flipping .formation-hero-flip-inner::after {
   animation: formationHeroFlipShine 0.82s ease;
 }
 
@@ -9952,16 +9921,33 @@ body:not(.game-started) .game-wrap {
 }
 
 .formation-hero-flip-back {
-  padding: clamp(24px, 3vw, 46px);
-  border: 1px solid rgba(177, 135, 68, 0.64);
+  overflow: hidden;
+  padding: 0;
+  border: 0;
   color: #3b2819;
   text-align: left;
-  background:
-    linear-gradient(135deg, rgba(255, 251, 240, 0.94), rgba(237, 220, 178, 0.86));
-  box-shadow:
-    inset 0 0 0 2px rgba(255,255,255,0.48),
-    0 12px 24px rgba(85, 58, 25, 0.12);
+  background: transparent;
+  box-shadow: none;
   transform: rotateY(180deg);
+}
+
+.formation-hero-back-image {
+  display: block;
+  width: 100%;
+  height: 100%;
+  max-height: 560px;
+  object-fit: contain;
+  filter: drop-shadow(0 12px 20px rgba(68, 43, 20, 0.2));
+}
+
+.formation-hero-back-stats {
+  position: absolute;
+  left: 50%;
+  top: 53%;
+  width: min(58%, 270px);
+  display: grid;
+  gap: 8px;
+  transform: translate(-50%, -50%);
 }
 
 .formation-growth-lock {
@@ -9978,9 +9964,9 @@ body:not(.game-started) .game-wrap {
 .formation-hero-flip-back strong {
   display: block;
   width: 100%;
-  margin-bottom: 18px;
+  margin-bottom: 4px;
   color: #2d2118;
-  font-size: clamp(24px, 2.4vw, 38px);
+  font-size: clamp(18px, 1.6vw, 30px);
   line-height: 1;
 }
 
@@ -9988,10 +9974,10 @@ body:not(.game-started) .game-wrap {
   width: 100%;
   display: flex;
   justify-content: space-between;
-  gap: 18px;
-  padding: 11px 0;
+  gap: 14px;
+  padding: 8px 0;
   border-bottom: 1px solid rgba(145, 105, 61, 0.24);
-  font-size: clamp(15px, 1.2vw, 20px);
+  font-size: clamp(13px, 1vw, 17px);
   font-weight: 900;
 }
 
@@ -10196,24 +10182,24 @@ body:not(.game-started) .game-wrap {
   pointer-events: none;
 }
 
-@keyframes formationHeroFlipLift {
+@keyframes formationHeroCardLift {
   0% {
-    transform: translateY(0) scale(1) rotateY(0deg);
+    transform: translateY(0) scale(1);
   }
   38% {
-    transform: translateY(-6px) scale(1.04) rotateY(-78deg);
+    transform: translateY(-6px) scale(1.04);
   }
   70% {
-    transform: translateY(-6px) scale(1.035) rotateY(-146deg);
+    transform: translateY(-6px) scale(1.035);
   }
   100% {
-    transform: translateY(0) scale(1) rotateY(-180deg);
+    transform: translateY(0) scale(1);
   }
 }
 
 @keyframes formationHeroFlipShine {
   0% {
-    left: -55%;
+    transform: translateX(-160%) skewX(-18deg);
     opacity: 0;
   }
   24% {
@@ -10226,7 +10212,7 @@ body:not(.game-started) .game-wrap {
     opacity: 0.7;
   }
   100% {
-    left: 118%;
+    transform: translateX(310%) skewX(-18deg);
     opacity: 0;
   }
 }

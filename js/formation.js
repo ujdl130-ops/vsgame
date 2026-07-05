@@ -83,6 +83,7 @@ const FORMATION_HEROES = [
     id: "zeus",
     name: "제우스",
     image: "assets/maps/formation/zeus.png",
+    backImage: "assets/maps/formation/zeus_back.png",
     unlocked: true,
     passive: "천벌: 일정 영역에 번개를 내려 범위 안의 적에게 지속 피해를 줍니다.",
     skillType: "",
@@ -91,6 +92,7 @@ const FORMATION_HEROES = [
     id: "poseidon",
     name: "포세이돈",
     image: "assets/maps/formation/poseidon.png",
+    backImage: "assets/maps/formation/poseidon_back.png",
     unlocked: true,
     passive: "해류의 가호: 적의 진격 속도를 늦춥니다.",
     skillType: "",
@@ -448,6 +450,7 @@ function renderFormationHeroDetail() {
   const actionKey = getFormationHeroGrowthActionKey(hero.id, action);
   const isPending = formationState.pendingHeroGrowthAction === actionKey;
   const stats = getFormationHeroStats(hero.id);
+  const backImage = hero.backImage || hero.image;
   const isMax = action.type === "max";
   const lacksEssenceForStar = action.type === "star" && action.cost > 0 && fragmentAmount < action.cost;
   const levelLabel = isMax
@@ -474,11 +477,14 @@ function renderFormationHeroDetail() {
             <img src="${hero.image}" alt="${hero.name}">
           </span>
           <span class="formation-hero-flip-face formation-hero-flip-back">
-            <strong>일반 스탯</strong>
-            <span>공격력 <b>${stats.damage}</b></span>
-            <span>체력 <b>${stats.hp}</b></span>
-            <span>사거리 <b>${stats.range}</b></span>
-            <span>공격속도 <b>${stats.attackSpeed.toFixed(2)}</b></span>
+            <img class="formation-hero-back-image" src="${backImage}" alt="${hero.name} 카드 뒷면">
+            <div class="formation-hero-back-stats">
+              <strong>일반 스탯</strong>
+              <span>공격력 <b>${stats.damage}</b></span>
+              <span>체력 <b>${stats.hp}</b></span>
+              <span>사거리 <b>${stats.range}</b></span>
+              <span>공격속도 <b>${stats.attackSpeed.toFixed(2)}</b></span>
+            </div>
           </span>
         </span>
       </button>
@@ -844,10 +850,17 @@ function selectFormationHero(heroId) {
 }
 
 function toggleFormationHeroDetailFlip() {
-  formationState.heroDetailFlipped = !formationState.heroDetailFlipped;
   const detailCard = document.querySelector(".formation-hero-detail-card");
   if (detailCard) {
+    detailCard.classList.remove("is-flipping");
+    void detailCard.offsetWidth;
+  }
+
+  formationState.heroDetailFlipped = !formationState.heroDetailFlipped;
+  if (detailCard) {
     detailCard.classList.toggle("is-flipped", formationState.heroDetailFlipped);
+    detailCard.classList.add("is-flipping");
+    window.setTimeout(() => detailCard.classList.remove("is-flipping"), 860);
   }
 }
 
