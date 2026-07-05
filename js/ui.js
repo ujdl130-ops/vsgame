@@ -373,6 +373,7 @@ function renderRoundCommand(button, labelText, label, title) {
 
 function refreshCommandButtonMarkup() {
   const hero = gameState && gameState.hero;
+  const heroIsPoseidon = hero && hero.heroId === "poseidon";
   const zeusEffectActive = Boolean(gameState && gameState.zeusSkillEffect && gameState.zeusSkillEffect.active);
   const zeusMana = Math.floor(gameState && gameState.zeusMana || 0);
   renderRoundCommand(
@@ -383,9 +384,11 @@ function refreshCommandButtonMarkup() {
   );
   renderRoundCommand(
     zeusSkillBtn,
-    zeusEffectActive ? "CAST" : "READY",
-    "천벌",
-    zeusEffectActive
+    heroIsPoseidon ? "LOCK" : zeusEffectActive ? "CAST" : "READY",
+    heroIsPoseidon ? "포세이돈" : "천벌",
+    heroIsPoseidon
+      ? "포세이돈 스킬은 아직 준비 중입니다."
+      : zeusEffectActive
       ? "천벌 발동 중입니다."
       : `마나 ${zeusMana}/${ZEUS_MANA_COST} · 50마나를 소모해 적에게 피해를 주고 2초간 마비시킵니다.`
   );
@@ -450,11 +453,14 @@ function updateButtons() {
   if (zeusSkillBtn) {
     const hero = gameState.hero;
     const heroReady = hero && !hero.dead && hero.hp > 0;
+    const heroIsPoseidon = hero && hero.heroId === "poseidon";
     const zeusEffectActive = Boolean(gameState.zeusSkillEffect && gameState.zeusSkillEffect.active);
     const zeusMana = Math.floor(gameState.zeusMana || 0);
     const zeusManaReady = zeusMana >= ZEUS_MANA_COST;
-    zeusSkillBtn.disabled = disabled || !heroReady || zeusEffectActive || !zeusManaReady;
-    zeusSkillBtn.title = zeusEffectActive
+    zeusSkillBtn.disabled = disabled || !heroReady || heroIsPoseidon || zeusEffectActive || !zeusManaReady;
+    zeusSkillBtn.title = heroIsPoseidon
+      ? "포세이돈 스킬은 아직 준비 중입니다."
+      : zeusEffectActive
       ? "천벌 발동 중입니다."
       : zeusManaReady
         ? "50마나를 소모해 천벌을 사용합니다."
@@ -475,11 +481,14 @@ function updateButtons() {
   if (zeusSkillIconBtn) {
     const hero = gameState.hero;
     const heroReady = hero && !hero.dead && hero.hp > 0;
+    const heroIsPoseidon = hero && hero.heroId === "poseidon";
     const zeusEffectActive = Boolean(gameState.zeusSkillEffect && gameState.zeusSkillEffect.active);
     const zeusMana = Math.floor(gameState.zeusMana || 0);
     const zeusManaReady = zeusMana >= ZEUS_MANA_COST;
-    zeusSkillIconBtn.disabled = disabled || !heroReady || zeusEffectActive || !zeusManaReady;
-    zeusSkillIconBtn.title = zeusEffectActive
+    zeusSkillIconBtn.disabled = disabled || !heroReady || heroIsPoseidon || zeusEffectActive || !zeusManaReady;
+    zeusSkillIconBtn.title = heroIsPoseidon
+      ? "Poseidon skill is not ready"
+      : zeusEffectActive
       ? "Zeus skill is casting"
       : zeusManaReady
         ? "Cast Zeus skill"

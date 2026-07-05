@@ -5,8 +5,17 @@ const PREBATTLE_FORMATION_DEFAULT_HERO = {
   id: "zeus",
   name: "제우스",
   level: 1,
-  image: "assets/animations/hero/zeus_hero_spritesheet_latest_transparent_aligned.png",
+  image: "assets/animations/hero/zeus_lobby_idle_hd.png",
 };
+const PREBATTLE_FORMATION_HEROES = [
+  PREBATTLE_FORMATION_DEFAULT_HERO,
+  {
+    id: "poseidon",
+    name: "포세이돈",
+    level: 1,
+    image: "assets/animations/hero/poseidon_lobby_idle_hd.png",
+  },
+];
 
 const prebattleFormationState = {
   stageNumber: 1,
@@ -14,7 +23,7 @@ const prebattleFormationState = {
 };
 
 function getPrebattleOwnedHeroes() {
-  return [PREBATTLE_FORMATION_DEFAULT_HERO];
+  return PREBATTLE_FORMATION_HEROES;
 }
 
 function getPrebattleFormationRoot() {
@@ -121,6 +130,7 @@ function confirmPrebattleFormation() {
   const root = getPrebattleFormationRoot();
   root.classList.add("is-hidden");
   document.body.classList.remove("in-prebattle-formation");
+  setSelectedHeroId(prebattleFormationState.selectedHeroId);
   startGame(prebattleFormationState.stageNumber);
 }
 

@@ -403,7 +403,7 @@ function draw() {
   drawHealthBar(enemyBaseUi.hpX, enemyBaseUi.hpY, enemyBaseUi.hpW, gameState.enemyBaseHp, gameState.enemyBaseMaxHp, "#ff6868");
 
   const drawList = [
-    ...(gameState.hero && !gameState.hero.dead && gameState.hero.hp > 0 ? [gameState.hero] : []),
+    ...(gameState.hero && (!gameState.hero.dead || gameState.hero.deathAnimTimer > 0) ? [gameState.hero] : []),
     ...gameState.units,
     ...gameState.enemies,
   ].sort((a, b) => a.y - b.y || a.x - b.x);

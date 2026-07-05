@@ -125,7 +125,9 @@ const ASSET_PATHS = {
   saintessSprite: "assets/animations/saintess/saintess_spritesheet_aligned.png",
   thiefSprite: "assets/animations/thief/female_thief_spritesheet.png",
   heroSprite: "assets/animations/hero/zeus_hero_spritesheet_latest_transparent_aligned.png",
+  poseidonHeroSprite: "assets/animations/poseidon/poseidon_sprites.png",
   lobbyHeroIdle: "assets/animations/hero/zeus_lobby_idle_hd.png",
+  poseidonLobbyIdle: "assets/animations/hero/poseidon_lobby_idle_hd.png",
   zeusStormCloudSprite: "assets/effects/zeus_storm_cloud_spritesheet.png",
   zeusStormLightningSprite: "assets/effects/zeus_storm_lightning_spritesheet.png",
   stage1EnemySprite: "assets/animations/enemy/stage1_goblin_spritesheet.png",
@@ -176,6 +178,15 @@ loadGameImage(
   [ASSET_PATHS.heroSprite, "assets/animations/hero/zeus_hero_spritesheet_latest.png", "zeus_hero_spritesheet_latest.png"],
   (ready) => { heroSpriteReady = ready; },
   "Hero Zeus sprite"
+);
+
+const poseidonHeroSprite = new Image();
+let poseidonHeroSpriteReady = false;
+loadGameImage(
+  poseidonHeroSprite,
+  [ASSET_PATHS.poseidonHeroSprite],
+  (ready) => { poseidonHeroSpriteReady = ready; },
+  "Hero Poseidon sprite"
 );
 
 const lobbyHeroImage = new Image();

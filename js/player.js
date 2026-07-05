@@ -54,6 +54,7 @@ let lastTime = 0;
 let animationId = null;
 let keys = {};
 let heroMoveInput = 0;
+let selectedHeroId = "zeus";
 let gameOptionsWasRunning = false;
 let recruitDoorState = {
   active: false,
@@ -62,6 +63,10 @@ let recruitDoorState = {
   hasThreeStar: false,
   opened: false,
 };
+
+function setSelectedHeroId(heroId) {
+  selectedHeroId = heroId || "zeus";
+}
 
 function createInitialState() {
   const stageConfig = getStageConfig(selectedStage);
@@ -88,7 +93,8 @@ function createInitialState() {
     spawnedInWave: 0,
     waveBreakTimer: 0,
     growth: playerProgress.growth || {},
-    hero: createMainHero(),
+    selectedHeroId,
+    hero: createMainHero(selectedHeroId),
     zeusSkillEffect: null,
     particles: [],
     projectiles: [],

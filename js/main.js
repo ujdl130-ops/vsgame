@@ -280,9 +280,9 @@ bindUnitSlotButton(summonMageSlotBtn, summonMage);
 bindUnitSlotButton(summonSaintessSlotBtn, summonSaintess);
 bindUnitSlotButton(summonThiefSlotBtn, summonThief);
 bindHeroActionIcon(basicAttackIconBtn, castHolySlash);
-bindHeroActionIcon(zeusSkillIconBtn, castZeusThunderstorm);
+bindHeroActionIcon(zeusSkillIconBtn, castHeroSkill);
 if (skillBtn) skillBtn.addEventListener("click", castHolySlash);
-if (zeusSkillBtn) zeusSkillBtn.addEventListener("click", castZeusThunderstorm);
+if (zeusSkillBtn) zeusSkillBtn.addEventListener("click", castHeroSkill);
 // 전투 개편: 캔버스 직접 터치 공격은 제거했습니다.
 
 resetGame();

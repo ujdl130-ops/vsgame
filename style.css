@@ -10581,15 +10581,16 @@ body:not(.game-started) .game-wrap {
 
 .prebattle-formation-portrait {
   position: absolute;
-  left: 0;
-  right: 0;
-  top: -2%;
-  bottom: 18%;
+  left: 5%;
+  right: 5%;
+  top: 5%;
+  bottom: 23%;
   z-index: 1;
   display: block;
+  border-radius: 8px;
   background-repeat: no-repeat;
-  background-size: 600% 500%;
-  background-position: 0 0;
+  background-size: cover;
+  background-position: center;
   filter: drop-shadow(0 9px 6px rgba(0, 0, 0, 0.48));
 }
 

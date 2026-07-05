@@ -291,6 +291,44 @@ function drawProjectiles() {
       continue;
     }
 
+    if (projectile.type === "poseidonBolt") {
+      const ripple = Math.sin((projectile.life || 0) * 24) * 3;
+      ctx.save();
+      ctx.translate(projectile.x, projectile.y);
+      ctx.strokeStyle = projectile.color || "#7be8ff";
+      ctx.fillStyle = "rgba(190, 245, 255, 0.92)";
+      ctx.shadowColor = "rgba(90, 220, 255, 0.95)";
+      ctx.shadowBlur = 12;
+      ctx.lineWidth = 4;
+
+      ctx.beginPath();
+      ctx.moveTo(-22, 0);
+      ctx.lineTo(18, 0);
+      ctx.stroke();
+
+      ctx.beginPath();
+      ctx.moveTo(18, 0);
+      ctx.lineTo(7, -10);
+      ctx.moveTo(18, 0);
+      ctx.lineTo(7, 10);
+      ctx.moveTo(10, 0);
+      ctx.lineTo(0, -7);
+      ctx.moveTo(10, 0);
+      ctx.lineTo(0, 7);
+      ctx.stroke();
+
+      ctx.strokeStyle = "rgba(210, 250, 255, 0.72)";
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(-30, -8 + ripple);
+      ctx.quadraticCurveTo(-16, -17 - ripple, -2, -7);
+      ctx.moveTo(-34, 8 - ripple);
+      ctx.quadraticCurveTo(-18, 18 + ripple, -1, 7);
+      ctx.stroke();
+      ctx.restore();
+      continue;
+    }
+
     if (projectile.type === "heroBolt") {
       ctx.save();
       ctx.strokeStyle = "#9fe8ff";
