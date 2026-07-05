@@ -5,7 +5,10 @@ const DUPLICATE_GOD_ESSENCE_AMOUNT = 10;
 
 function summonGodDescentOnce(random = Math.random) {
   if (random() >= GOD_DESCENT_SSR_RATE) {
-    return [{ rarity: "R", type: "normal", hero: null, isDuplicate: false, convertedEssence: null }];
+    const unitPool = ["saintess", "archer", "thief", "mage"];
+    const unitId = unitPool[Math.floor(random() * unitPool.length)];
+    const unit = window.FormationAPI?.addOwnedUnit?.(unitId) || null;
+    return [{ rarity: "R", type: "unit", hero: null, unit, isDuplicate: false, convertedEssence: null, isOverflow: !unit }];
   }
   const hero = GOD_HEROES[Math.floor(random() * GOD_HEROES.length)];
   const isDuplicate = Boolean(playerProgress.ownedGods[hero.id]);
@@ -268,6 +271,55 @@ function renderRecruitResultCards(results) {
     const name = document.createElement("span");
     name.className = "gacha-card-name";
     name.textContent = result.hero ? result.hero.name : "강림의 흔적";
+
+    card.append(rarity, icon, name);
+    if (result.isDuplicate && result.convertedEssence) {
+      const conversion = document.createElement("small");
+      conversion.textContent = `${result.convertedEssence.name} ${result.convertedEssence.amount}개`;
+      card.appendChild(conversion);
+    }
+    return card;
+  }));
+}
+
+function renderRecruitResultCards(results) {
+  const grid = recruitDoorScene?.querySelector(".gacha-result-grid");
+  if (!grid) return;
+  const list = Array.isArray(results) ? results : [];
+  grid.classList.toggle("is-ten-pull", list.length === 10);
+  grid.replaceChildren(...list.map((result, index) => {
+    const card = document.createElement("article");
+    card.className = `gacha-reveal-card is-${result.rarity.toLowerCase()}`;
+    card.style.setProperty("--card-index", index);
+
+    const rarity = document.createElement("strong");
+    rarity.className = "gacha-card-rarity";
+    rarity.textContent = result.rarity;
+
+    const icon = document.createElement("div");
+    icon.className = "gacha-card-icon";
+    const iconPath = result.hero ? getGodEssenceIcon(result.hero.id) : "";
+    if (iconPath) {
+      const image = document.createElement("img");
+      image.src = iconPath;
+      image.alt = "";
+      icon.appendChild(image);
+    } else if (result.unit && result.unit.image) {
+      const image = document.createElement("img");
+      image.src = result.unit.image;
+      image.alt = "";
+      icon.appendChild(image);
+    } else {
+      icon.textContent = "◆";
+    }
+
+    const name = document.createElement("span");
+    name.className = "gacha-card-name";
+    name.textContent = result.hero
+      ? result.hero.name
+      : result.unit
+        ? result.unit.name
+        : `보유 유닛 ${window.FormationAPI?.ownedUnitLimit || 5}개 한도`;
 
     card.append(rarity, icon, name);
     if (result.isDuplicate && result.convertedEssence) {

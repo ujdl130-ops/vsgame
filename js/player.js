@@ -32,6 +32,7 @@ function normalizePlayerData(savedData = {}) {
     soldierFragments: Math.max(0, Number(savedData.soldierFragments) || 0),
     essences,
     heroGrowth: savedData.heroGrowth && typeof savedData.heroGrowth === "object" ? { ...savedData.heroGrowth } : {},
+    ownedUnits: Array.isArray(savedData.ownedUnits) ? savedData.ownedUnits.slice(0, 5) : [],
     heroGrowthVersion: Number(savedData.heroGrowthVersion) || 0,
     ownedGods: savedData.ownedGods && typeof savedData.ownedGods === "object" ? { ...savedData.ownedGods } : {},
     entitlements: savedData.entitlements && typeof savedData.entitlements === "object" ? { ...savedData.entitlements } : {},

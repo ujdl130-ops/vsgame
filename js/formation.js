@@ -77,6 +77,8 @@ const FORMATION_ROSTER_UNITS = Array.from({ length: 12 }, (_, index) => {
   };
 });
 
+const FORMATION_OWNED_UNIT_LIMIT = 5;
+
 const FORMATION_HERO_FRAGMENT_COST = 50;
 const FORMATION_HERO_MAX_STAR = 5;
 const FORMATION_HERO_BASE_STAR = 1;
@@ -173,6 +175,31 @@ function getFormationUnit(unitId) {
 
 function getFormationSlotsForCurrentPage() {
   return formationState.pages[formationState.activeType][formationState.activePage];
+}
+
+function ensureFormationOwnedUnits() {
+  if (!playerProgress) return FORMATION_ROSTER_UNITS.slice(0, FORMATION_OWNED_UNIT_LIMIT);
+  if (!Array.isArray(playerProgress.ownedUnits) || !playerProgress.ownedUnits.length) {
+    playerProgress.ownedUnits = FORMATION_ROSTER_UNITS.slice(0, FORMATION_BASE_UNITS.length).map((unit) => unit.instanceId);
+    saveProgress();
+  }
+  playerProgress.ownedUnits = playerProgress.ownedUnits
+    .filter((unitId) => FORMATION_ROSTER_UNITS.some((unit) => unit.instanceId === unitId))
+    .slice(0, FORMATION_OWNED_UNIT_LIMIT);
+  return playerProgress.ownedUnits.map((unitId) => getFormationUnit(unitId)).filter(Boolean);
+}
+
+function addFormationOwnedUnit(baseId) {
+  if (!playerProgress) return null;
+  const ownedUnits = ensureFormationOwnedUnits();
+  if (ownedUnits.length >= FORMATION_OWNED_UNIT_LIMIT) return null;
+  const nextUnit = FORMATION_ROSTER_UNITS.find((unit) => unit.baseId === baseId && !playerProgress.ownedUnits.includes(unit.instanceId))
+    || FORMATION_ROSTER_UNITS.find((unit) => !playerProgress.ownedUnits.includes(unit.instanceId));
+  if (!nextUnit) return null;
+  playerProgress.ownedUnits.push(nextUnit.instanceId);
+  playerProgress.ownedUnits = playerProgress.ownedUnits.slice(0, FORMATION_OWNED_UNIT_LIMIT);
+  saveProgress();
+  return nextUnit;
 }
 
 function getFormationHero(heroId = formationState.selectedHeroId) {
@@ -437,7 +464,6 @@ function renderFormationUnitCard(unit, options = {}) {
     <button class="formation-unit-card${selectedClass}" type="button" data-unit-id="${unit.instanceId}" aria-label="${unit.name}">
       <img src="${unit.image}" alt="${unit.name}">
       <span class="formation-unit-name">${unit.name}</span>
-      <span class="formation-unit-level">Lv.${unit.level}</span>
     </button>
   `;
 }
@@ -1043,11 +1069,10 @@ function createFormationShellMarkup() {
     <button id="formationCloseBtn" class="formation-ui-btn formation-close-btn" type="button">인벤토리</button>
 
     <div class="formation-topbar formation-wallet-wide" aria-label="재화 정보">
-      <div class="formation-currency blue"><span>다이아</span><strong data-wallet-value="diamond">0</strong></div>
-      <div class="formation-currency gold"><span>골드</span><strong data-wallet-value="gold">0</strong></div>
-      <div class="formation-currency ticket"><span>신모집권</span><strong data-wallet-value="summonTickets">0</strong></div>
-      <div class="formation-currency essence"><span>신의정수</span><strong data-wallet-value="commonEssence">0</strong></div>
-      <div class="formation-currency soldier"><span>병사 정수</span><strong data-wallet-value="soldierFragments">0</strong></div>
+      <div class="formation-currency blue"><img src="assets/icons/diamond.png" alt=""><span>다이아몬드</span><strong data-wallet-value="diamond">0</strong></div>
+      <div class="formation-currency gold"><img src="assets/icons/gold.png" alt=""><span>골드</span><strong data-wallet-value="gold">0</strong></div>
+      <div class="formation-currency essence"><img src="assets/icons/essence_all.png" alt=""><span>신의정수</span><strong data-wallet-value="commonEssence">0</strong></div>
+      <div class="formation-currency soldier"><img src="assets/icons/essence_soldier.png" alt=""><span>병사정수</span><strong data-wallet-value="soldierFragments">0</strong></div>
     </div>
 
     <div class="formation-shell">
@@ -1123,7 +1148,6 @@ function renderFormationUnitCard(unit, options = {}) {
     <button class="formation-unit-card formation-roster-unit-card${selectedClass}" type="button" data-unit-id="${unit.instanceId}" aria-label="${unit.name}">
       <img src="${unit.image}" alt="${unit.name}">
       <span class="formation-unit-name">${unit.name}</span>
-      <span class="formation-unit-level">${"★".repeat(unit.star)} Lv.${unit.level}</span>
     </button>
   `;
 }
@@ -1225,6 +1249,10 @@ function renderFormationHeroDetail() {
 }
 
 function renderFormationUnitDetail() {
+  const ownedUnits = ensureFormationOwnedUnits();
+  if (!ownedUnits.some((ownedUnit) => ownedUnit.instanceId === formationState.selectedUnitId) && ownedUnits[0]) {
+    formationState.selectedUnitId = ownedUnits[0].instanceId;
+  }
   const unit = getFormationUnit(formationState.selectedUnitId);
   const stats = getFormationUnitStats(unit);
   const nextCost = getFormationLevelUpCost(unit);
@@ -1251,7 +1279,7 @@ function renderFormationUnitDetail() {
         <div class="formation-hero-detail-top">
           <p class="formation-kicker">UNIT</p>
           <h2>${unit.name}</h2>
-          <div class="formation-hero-stars" aria-label="현재 성급">${"★".repeat(unit.star)}${"☆".repeat(3 - unit.star)}</div>
+          <div class="formation-hero-stars formation-unit-diamonds" aria-label="현재 성급">${"◆".repeat(unit.star)}${"◇".repeat(3 - unit.star)}</div>
         </div>
         <dl class="formation-hero-detail-list">
           <div><dt>능력</dt><dd>${unit.ability || "전투에서 아군 진형을 보조합니다."}</dd></div>
@@ -1305,9 +1333,13 @@ function renderFormationRoster() {
   rosterGrid.classList.toggle("is-unit-roster", formationState.activeCategory === "unit");
 
   if (formationState.activeCategory === "unit") {
+    const ownedUnits = ensureFormationOwnedUnits();
+    if (!ownedUnits.some((unit) => unit.instanceId === formationState.selectedUnitId) && ownedUnits[0]) {
+      formationState.selectedUnitId = ownedUnits[0].instanceId;
+    }
     if (rosterTitle) rosterTitle.textContent = "보유 유닛";
-    if (rosterCount) rosterCount.textContent = `${FORMATION_ROSTER_UNITS.length} / ${FORMATION_ROSTER_UNITS.length}`;
-    rosterGrid.innerHTML = FORMATION_ROSTER_UNITS.slice(0, 6)
+    if (rosterCount) rosterCount.textContent = `${ownedUnits.length} / ${FORMATION_OWNED_UNIT_LIMIT}`;
+    rosterGrid.innerHTML = ownedUnits
       .map((unit) => renderFormationUnitCard(unit, { selected: unit.instanceId === formationState.selectedUnitId }))
       .join("");
     rosterGrid.querySelectorAll(".formation-roster-unit-card").forEach((card) => {
@@ -1416,6 +1448,12 @@ function showFormationNotice() {
   showFormation();
 }
 
+window.FormationAPI = {
+  addOwnedUnit: addFormationOwnedUnit,
+  getOwnedUnits: ensureFormationOwnedUnits,
+  ownedUnitLimit: FORMATION_OWNED_UNIT_LIMIT,
+};
+
 function getBestFormationBattleUnit(baseId) {
   const placedIds = Object.values(formationState.pages.deck)
     .flat()
@@ -1426,7 +1464,7 @@ function getBestFormationBattleUnit(baseId) {
 
   const candidates = placedUnits.length
     ? placedUnits
-    : FORMATION_ROSTER_UNITS.filter((unit) => unit.baseId === baseId);
+    : ensureFormationOwnedUnits().filter((unit) => unit.baseId === baseId);
 
   return candidates.sort((a, b) => b.level - a.level || b.attack - a.attack)[0] || null;
 }
