@@ -125,7 +125,6 @@ const POSEIDON_TSUNAMI_SKILL = {
   knockbackDistance: 118,
   bossKnockbackDistance: 54,
   hitStunDuration: 0.32,
-  fallbackDuration: 1.45,
 };
 
 
@@ -225,27 +224,6 @@ function castZeusThunderstorm() {
   updateButtons();
 }
 
-function createFallbackPoseidonTsunamiEffect() {
-  const width = 420;
-  return {
-    type: "poseidonTsunami",
-    active: true,
-    timer: 0,
-    duration: POSEIDON_TSUNAMI_SKILL.fallbackDuration,
-    laneY: COMBAT_LINE_Y,
-    groundY: COMBAT_LINE_Y + 30,
-    startX: -width * 0.72,
-    endX: canvas.width + width * 0.34,
-    width,
-    height: 260,
-    impactX: -width * 0.72,
-    hitEnemies: new Set(),
-    foam: [],
-    spray: [],
-    pulses: [],
-  };
-}
-
 function castPoseidonTsunami() {
   if (!gameState || !gameState.running || gameState.gameOver || gameState.clear) return;
   const hero = gameState.hero;
@@ -258,12 +236,27 @@ function castPoseidonTsunami() {
     return;
   }
 
+  const tsunamiApi = typeof window !== "undefined" ? window.PoseidonTsunamiAnimation : null;
+  if (!tsunamiApi || typeof tsunamiApi.create !== "function") {
+    gameState.message = "해일 스프라이트를 불러오는 중입니다.";
+    gameState.messageTimer = 0.85;
+    updateButtons();
+    return;
+  }
+  if (typeof tsunamiApi.isSpriteReady === "function" && !tsunamiApi.isSpriteReady()) {
+    gameState.message = "해일 스프라이트를 불러오는 중입니다.";
+    gameState.messageTimer = 0.85;
+    updateButtons();
+    return;
+  }
+
   gameState.zeusMana = Math.max(0, (gameState.zeusMana || 0) - ZEUS_MANA_COST);
 
-  const tsunamiApi = typeof window !== "undefined" ? window.PoseidonTsunamiAnimation : null;
-  gameState.poseidonSkillEffect = tsunamiApi && typeof tsunamiApi.create === "function"
-    ? tsunamiApi.create({ canvasWidth: canvas.width, laneY: COMBAT_LINE_Y, groundY: COMBAT_LINE_Y + 30 })
-    : createFallbackPoseidonTsunamiEffect();
+  gameState.poseidonSkillEffect = tsunamiApi.create({
+    canvasWidth: canvas.width,
+    laneY: COMBAT_LINE_Y,
+    groundY: COMBAT_LINE_Y + 30,
+  });
 
   gameState.message = `${POSEIDON_TSUNAMI_SKILL.name}!`;
   gameState.messageTimer = 0.65;

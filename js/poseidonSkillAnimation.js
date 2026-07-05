@@ -1,4 +1,4 @@
-// Standalone Poseidon tsunami skill animation.
+// Poseidon tsunami skill animation, sprite-only.
 
 const POSEIDON_TSUNAMI_SKILL_ANIMATION = {
   spritePath: "assets/effects/ChatGPT Image 2026년 7월 5일 오후 06_20_54.png",
@@ -45,7 +45,6 @@ function createPoseidonTsunamiAnimation(options = {}) {
   const width = options.width || POSEIDON_TSUNAMI_SKILL_ANIMATION.waveWidth;
   const startX = options.startX == null ? -width * 0.62 : options.startX;
   const endX = options.endX == null ? canvasWidth + width * 0.52 : options.endX;
-  const random = options.random || Math.random;
 
   return {
     type: "poseidonTsunami",
@@ -60,9 +59,6 @@ function createPoseidonTsunamiAnimation(options = {}) {
     height,
     impactX: startX,
     hitEnemies: new Set(),
-    wake: createPoseidonWakeStreaks(24, random),
-    spray: createPoseidonSprayBursts(36, random),
-    pulses: createPoseidonImpactPulses(4),
   };
 }
 
@@ -105,29 +101,19 @@ function getPoseidonTsunamiDamageZone(effect) {
 function drawPoseidonTsunamiAnimation(renderCtx, effect) {
   if (!renderCtx || !effect || !effect.active) return;
 
+  const spriteCanvas = getPoseidonTsunamiSpriteCanvas();
+  if (!spriteCanvas) return;
+
   const progress = getPoseidonTsunamiProgress(effect);
   const intro = smoothstep(0, 0.08, progress);
-  const fade = 1 - smoothstep(0.84, 1, progress);
+  const fade = 1 - smoothstep(0.88, 1, progress);
   const alpha = Math.max(0, intro * fade);
   if (alpha <= 0) return;
 
   renderCtx.save();
   renderCtx.imageSmoothingEnabled = true;
   renderCtx.imageSmoothingQuality = "high";
-
-  drawPoseidonLaneWash(renderCtx, effect, progress, alpha);
-
-  const spriteCanvas = getPoseidonTsunamiSpriteCanvas();
-  if (spriteCanvas) {
-    drawPoseidonSpriteFrame(renderCtx, effect, progress, alpha, spriteCanvas);
-  } else {
-    drawPoseidonFallbackWave(renderCtx, effect, progress, alpha);
-  }
-
-  drawPoseidonWakeFoam(renderCtx, effect, progress, alpha);
-  drawPoseidonSpray(renderCtx, effect, progress, alpha);
-  drawPoseidonImpactPulses(renderCtx, effect, progress, alpha);
-
+  drawPoseidonSpriteFrame(renderCtx, effect, progress, alpha, spriteCanvas);
   renderCtx.restore();
 }
 
@@ -202,7 +188,7 @@ function drawPoseidonSpriteFrame(renderCtx, effect, progress, alpha, spriteCanva
     const previous = POSEIDON_TSUNAMI_SKILL_ANIMATION.spriteFrames[frameIndex - 1];
     const previousH = effect.height * previous.scale * 0.96;
     const previousW = previousH * (previous.w / previous.h);
-    renderCtx.globalAlpha = alpha * 0.24;
+    renderCtx.globalAlpha = alpha * 0.2;
     renderCtx.drawImage(
       spriteCanvas,
       previous.x,
@@ -234,182 +220,6 @@ function getPoseidonSpriteFrameIndex(progress) {
   const frameCount = POSEIDON_TSUNAMI_SKILL_ANIMATION.spriteFrames.length;
   const frameProgress = smoothstep(0.04, 0.93, progress);
   return Math.min(frameCount - 1, Math.floor(frameProgress * frameCount));
-}
-
-function drawPoseidonLaneWash(renderCtx, effect, progress, alpha) {
-  const washLength = effect.width * (0.82 + progress * 0.72);
-  const washX = effect.impactX - washLength * 0.46;
-  const washY = effect.groundY - 8;
-
-  renderCtx.globalAlpha = alpha * 0.58;
-  const gradient = renderCtx.createLinearGradient(washX - washLength * 0.58, washY, washX + washLength * 0.58, washY);
-  gradient.addColorStop(0, "rgba(19, 74, 130, 0)");
-  gradient.addColorStop(0.26, "rgba(12, 151, 205, 0.26)");
-  gradient.addColorStop(0.58, "rgba(69, 224, 244, 0.36)");
-  gradient.addColorStop(1, "rgba(232, 255, 255, 0)");
-
-  renderCtx.fillStyle = gradient;
-  renderCtx.beginPath();
-  renderCtx.ellipse(washX, washY, washLength * 0.58, 22, -0.02, 0, Math.PI * 2);
-  renderCtx.fill();
-
-  renderCtx.strokeStyle = "rgba(208, 255, 255, 0.54)";
-  renderCtx.lineWidth = 3;
-  renderCtx.lineCap = "round";
-  for (let i = 0; i < 3; i += 1) {
-    const offsetY = -14 + i * 12;
-    const wave = Math.sin(progress * 9 + i) * 8;
-    renderCtx.globalAlpha = alpha * (0.4 - i * 0.08);
-    renderCtx.beginPath();
-    renderCtx.moveTo(effect.impactX - washLength * 0.72, washY + offsetY);
-    renderCtx.quadraticCurveTo(effect.impactX - washLength * 0.2, washY + offsetY - 11 - wave, effect.impactX + washLength * 0.28, washY + offsetY - 1);
-    renderCtx.stroke();
-  }
-}
-
-function drawPoseidonWakeFoam(renderCtx, effect, progress, alpha) {
-  renderCtx.fillStyle = "rgba(238, 255, 255, 0.92)";
-
-  for (const wake of effect.wake) {
-    const local = (progress * wake.speed + wake.offset) % 1;
-    const back = effect.width * (0.18 + local * 0.96);
-    const foamX = effect.impactX - back + wake.xJitter;
-    const foamY = effect.groundY - wake.yOffset + Math.sin(progress * 10 + wake.offset * 8) * wake.bob;
-    const size = wake.size * (1 - local * 0.42);
-    const foamAlpha = alpha * (1 - local) * 0.62;
-    if (foamAlpha <= 0) continue;
-
-    renderCtx.globalAlpha = foamAlpha;
-    renderCtx.beginPath();
-    renderCtx.ellipse(foamX, foamY, size * 2.2, size, wake.angle, 0, Math.PI * 2);
-    renderCtx.fill();
-  }
-}
-
-function drawPoseidonSpray(renderCtx, effect, progress, alpha) {
-  const frameIndex = getPoseidonSpriteFrameIndex(progress);
-  const crashBoost = frameIndex >= 4 ? 1.25 : 0.85;
-
-  for (const spray of effect.spray) {
-    const local = (progress - spray.delay) / spray.life;
-    if (local <= 0 || local >= 1) continue;
-
-    const arc = Math.sin(local * Math.PI);
-    const x = effect.impactX + spray.baseX + spray.vx * local;
-    const y = effect.groundY - spray.baseY - spray.vy * arc * crashBoost + local * local * 34;
-    const size = spray.size * (1 - local * 0.46);
-    const sprayAlpha = alpha * (1 - local) * 0.78;
-
-    renderCtx.globalAlpha = sprayAlpha;
-    renderCtx.fillStyle = spray.bright ? "#f5ffff" : "#a9f4ff";
-    renderCtx.beginPath();
-    renderCtx.arc(x, y, size, 0, Math.PI * 2);
-    renderCtx.fill();
-  }
-}
-
-function drawPoseidonImpactPulses(renderCtx, effect, progress, alpha) {
-  for (const pulse of effect.pulses) {
-    const local = (progress - pulse.delay) / pulse.life;
-    if (local <= 0 || local >= 1) continue;
-
-    const width = effect.width * (0.2 + local * 0.42);
-    const height = 12 + local * 24;
-    const pulseAlpha = alpha * (1 - local) * 0.42;
-
-    renderCtx.globalAlpha = pulseAlpha;
-    renderCtx.strokeStyle = pulse.color;
-    renderCtx.lineWidth = 3 + (1 - local) * 3;
-    renderCtx.beginPath();
-    renderCtx.ellipse(
-      effect.impactX + pulse.xOffset,
-      effect.groundY - pulse.yOffset,
-      width,
-      height,
-      0,
-      0,
-      Math.PI * 2
-    );
-    renderCtx.stroke();
-  }
-}
-
-function drawPoseidonFallbackWave(renderCtx, effect, progress, alpha) {
-  const x = effect.impactX;
-  const y = effect.groundY;
-  const width = effect.width;
-  const height = effect.height;
-  const crestY = y - height * (0.74 + Math.sin(progress * Math.PI * 2.1) * 0.035);
-
-  renderCtx.globalAlpha = alpha * 0.88;
-  const bodyGradient = renderCtx.createLinearGradient(x - width * 0.62, crestY, x + width * 0.34, y + 18);
-  bodyGradient.addColorStop(0, "rgba(5, 48, 112, 0.82)");
-  bodyGradient.addColorStop(0.48, "rgba(18, 165, 215, 0.9)");
-  bodyGradient.addColorStop(1, "rgba(235, 255, 255, 0.92)");
-
-  renderCtx.fillStyle = bodyGradient;
-  renderCtx.beginPath();
-  renderCtx.moveTo(x - width * 0.66, y + 18);
-  renderCtx.bezierCurveTo(x - width * 0.44, y - height * 0.32, x - width * 0.2, y - height * 0.78, x + width * 0.08, crestY);
-  renderCtx.bezierCurveTo(x + width * 0.36, crestY - height * 0.08, x + width * 0.34, y - height * 0.2, x + width * 0.12, y - height * 0.2);
-  renderCtx.bezierCurveTo(x + width * 0.38, y - height * 0.08, x + width * 0.42, y + 8, x + width * 0.32, y + 18);
-  renderCtx.closePath();
-  renderCtx.fill();
-
-  renderCtx.strokeStyle = "rgba(230, 255, 255, 0.9)";
-  renderCtx.lineWidth = 7;
-  renderCtx.lineCap = "round";
-  renderCtx.beginPath();
-  renderCtx.moveTo(x - width * 0.04, crestY + 5);
-  renderCtx.quadraticCurveTo(x + width * 0.24, crestY - 24, x + width * 0.08, y - height * 0.28);
-  renderCtx.stroke();
-}
-
-function createPoseidonWakeStreaks(count, random) {
-  const wake = [];
-  for (let i = 0; i < count; i += 1) {
-    wake.push({
-      offset: random(),
-      speed: 0.7 + random() * 0.6,
-      yOffset: 4 + random() * 30,
-      xJitter: (random() - 0.5) * 42,
-      size: 2.4 + random() * 5.2,
-      bob: 2 + random() * 5,
-      angle: (random() - 0.5) * 0.38,
-    });
-  }
-  return wake;
-}
-
-function createPoseidonSprayBursts(count, random) {
-  const spray = [];
-  for (let i = 0; i < count; i += 1) {
-    spray.push({
-      delay: 0.12 + random() * 0.48,
-      life: 0.32 + random() * 0.34,
-      baseX: -30 + random() * 130,
-      baseY: 36 + random() * 126,
-      vx: 20 + random() * 120,
-      vy: 32 + random() * 118,
-      size: 1.8 + random() * 4.2,
-      bright: random() > 0.42,
-    });
-  }
-  return spray;
-}
-
-function createPoseidonImpactPulses(count) {
-  const pulses = [];
-  for (let i = 0; i < count; i += 1) {
-    pulses.push({
-      delay: 0.22 + i * 0.11,
-      life: 0.36,
-      xOffset: 18 + i * 32,
-      yOffset: 8 + i * 2,
-      color: i % 2 === 0 ? "rgba(230, 255, 255, 0.82)" : "rgba(98, 222, 255, 0.68)",
-    });
-  }
-  return pulses;
 }
 
 function getPoseidonTsunamiProgress(effect) {

@@ -366,10 +366,7 @@ function updatePoseidonTsunamiEffect(dt) {
     tsunamiApi.update(effect, dt);
   } else {
     effect.timer += dt;
-    const progress = Math.max(0, Math.min(1, effect.timer / (effect.duration || POSEIDON_TSUNAMI_SKILL.fallbackDuration)));
-    const travel = 1 - Math.pow(1 - progress, 3);
-    effect.impactX = effect.startX + (effect.endX - effect.startX) * travel;
-    if (effect.timer >= (effect.duration || POSEIDON_TSUNAMI_SKILL.fallbackDuration)) effect.active = false;
+    if (effect.timer >= (effect.duration || 1.45)) effect.active = false;
   }
 
   applyPoseidonTsunamiDamage();
@@ -495,24 +492,7 @@ function drawPoseidonTsunamiEffect() {
   const tsunamiApi = typeof window !== "undefined" ? window.PoseidonTsunamiAnimation : null;
   if (tsunamiApi && typeof tsunamiApi.draw === "function") {
     tsunamiApi.draw(ctx, effect);
-    return;
   }
-
-  const progress = Math.max(0, Math.min(1, effect.timer / (effect.duration || 1)));
-  const alpha = Math.max(0, 1 - progress);
-  ctx.save();
-  ctx.globalAlpha = alpha;
-  ctx.fillStyle = "rgba(31, 190, 230, 0.72)";
-  ctx.beginPath();
-  ctx.ellipse(effect.impactX, effect.groundY - 72, effect.width * 0.5, effect.height * 0.44, -0.08, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.strokeStyle = "rgba(236, 255, 255, 0.92)";
-  ctx.lineWidth = 7;
-  ctx.beginPath();
-  ctx.moveTo(effect.impactX - effect.width * 0.38, effect.groundY - effect.height * 0.58);
-  ctx.quadraticCurveTo(effect.impactX, effect.groundY - effect.height * 0.88, effect.impactX + effect.width * 0.28, effect.groundY - effect.height * 0.38);
-  ctx.stroke();
-  ctx.restore();
 }
 
 function draw() {
