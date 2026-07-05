@@ -98,9 +98,12 @@ window.addEventListener("keydown", (event) => {
   }
 
   if (isFormationVisible()) {
-    if (event.code === "Escape") showLobby();
-    if (event.code === "Digit1") setFormationDeckPage(1);
-    if (event.code === "Digit2") setFormationDeckPage(2);
+    if (event.code === "Escape") handleFormationBack();
+    if (event.code === "Enter" || event.code === "Space") {
+      event.preventDefault();
+      handleFormationConfirm();
+    }
+    if (event.code === "Digit1") handleFormationSlotClick(0);
     return;
   }
 

@@ -115,6 +115,10 @@ function openStage(stageNumber) {
     showStageLockedNotice(stageNumber);
     return;
   }
+  if (typeof showPreBattleFormation === "function") {
+    showPreBattleFormation(stageNumber);
+    return;
+  }
   startGame(stageNumber);
 }
 
