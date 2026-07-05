@@ -9853,6 +9853,7 @@ body:not(.game-started) .game-wrap {
 }
 
 .formation-hero-detail-card {
+  position: relative;
   border: 0;
   padding: 0;
   background: transparent;
@@ -9864,18 +9865,74 @@ body:not(.game-started) .game-wrap {
   display: block;
 }
 
+.formation-hero-detail-card::before,
+.formation-hero-card::before {
+  content: "";
+  position: absolute;
+  inset: -8px;
+  z-index: 0;
+  border: 1px solid rgba(189, 151, 88, 0.68);
+  border-radius: 4px;
+  background:
+    linear-gradient(90deg, rgba(255,255,255,0.72), rgba(221,211,196,0.2), rgba(255,255,255,0.52)),
+    linear-gradient(135deg, rgba(214, 200, 178, 0.55), rgba(255, 250, 239, 0.88) 34%, rgba(185, 166, 140, 0.46) 68%, rgba(255, 252, 244, 0.82));
+  box-shadow:
+    inset 0 0 0 2px rgba(255,255,255,0.72),
+    inset 0 0 18px rgba(130, 101, 64, 0.16),
+    0 10px 22px rgba(74, 45, 18, 0.12);
+  pointer-events: none;
+}
+
+.formation-hero-detail-card::after,
+.formation-hero-card::after {
+  content: "";
+  position: absolute;
+  inset: -8px;
+  z-index: 1;
+  border-radius: 4px;
+  background:
+    linear-gradient(135deg, #d8b773 0 8px, transparent 9px) left top / 42px 42px no-repeat,
+    linear-gradient(225deg, #d8b773 0 8px, transparent 9px) right top / 42px 42px no-repeat,
+    linear-gradient(45deg, #d8b773 0 8px, transparent 9px) left bottom / 42px 42px no-repeat,
+    linear-gradient(315deg, #d8b773 0 8px, transparent 9px) right bottom / 42px 42px no-repeat;
+  filter: drop-shadow(0 1px 0 rgba(255,255,255,0.65));
+  pointer-events: none;
+}
+
 .formation-hero-flip-inner {
   position: relative;
+  z-index: 2;
+  overflow: hidden;
   width: 100%;
   height: 100%;
   display: block;
   transform-style: preserve-3d;
-  transform-origin: right center;
-  transition: transform 0.68s cubic-bezier(.16,.72,.18,1);
+  transform-origin: center center;
+  transition: transform 0.82s cubic-bezier(.16,.72,.18,1);
+  will-change: transform;
 }
 
 .formation-hero-detail-card.is-flipped .formation-hero-flip-inner {
-  transform: translateX(-7%) rotateY(-180deg);
+  transform: rotateY(-180deg);
+  animation: formationHeroFlipLift 0.82s cubic-bezier(.16,.72,.18,1);
+}
+
+.formation-hero-flip-inner::after {
+  content: "";
+  position: absolute;
+  top: -18%;
+  bottom: -18%;
+  left: -55%;
+  z-index: 4;
+  width: 38%;
+  background: linear-gradient(105deg, transparent 0%, rgba(255,255,255,0.12) 22%, rgba(255,248,210,0.62) 50%, rgba(255,255,255,0.14) 76%, transparent 100%);
+  opacity: 0;
+  transform: skewX(-18deg);
+  pointer-events: none;
+}
+
+.formation-hero-detail-card.is-flipped .formation-hero-flip-inner::after {
+  animation: formationHeroFlipShine 0.82s ease;
 }
 
 .formation-hero-flip-face {
@@ -10001,13 +10058,21 @@ body:not(.game-started) .game-wrap {
 }
 
 .formation-growth-confirm {
-  justify-self: center;
+  position: fixed;
+  left: 50%;
+  top: 50%;
+  z-index: 45;
+  transform: translate(-50%, -50%);
   width: min(430px, 100%);
+  max-width: calc(100vw - 36px);
   padding: 14px 16px;
   border: 1px solid rgba(183, 148, 92, 0.64);
   color: #3b2819;
-  background: rgba(255, 248, 232, 0.88);
-  box-shadow: inset 0 0 0 1px rgba(255,255,255,0.62);
+  background:
+    linear-gradient(135deg, rgba(255, 252, 240, 0.96), rgba(252, 239, 197, 0.92));
+  box-shadow:
+    inset 0 0 0 1px rgba(255,255,255,0.72),
+    0 18px 48px rgba(67, 43, 20, 0.2);
 }
 
 .formation-growth-confirm p {
@@ -10074,6 +10139,8 @@ body:not(.game-started) .game-wrap {
 }
 
 .formation-hero-card img {
+  position: relative;
+  z-index: 2;
   width: 100%;
   height: 100%;
   object-fit: contain;
@@ -10127,6 +10194,41 @@ body:not(.game-started) .game-wrap {
   transform: translate(-50%, -50%);
   filter: drop-shadow(0 3px 4px rgba(0, 0, 0, 0.72));
   pointer-events: none;
+}
+
+@keyframes formationHeroFlipLift {
+  0% {
+    transform: translateY(0) scale(1) rotateY(0deg);
+  }
+  38% {
+    transform: translateY(-6px) scale(1.04) rotateY(-78deg);
+  }
+  70% {
+    transform: translateY(-6px) scale(1.035) rotateY(-146deg);
+  }
+  100% {
+    transform: translateY(0) scale(1) rotateY(-180deg);
+  }
+}
+
+@keyframes formationHeroFlipShine {
+  0% {
+    left: -55%;
+    opacity: 0;
+  }
+  24% {
+    opacity: 0;
+  }
+  42% {
+    opacity: 0.9;
+  }
+  72% {
+    opacity: 0.7;
+  }
+  100% {
+    left: 118%;
+    opacity: 0;
+  }
 }
 
 .formation-notice.is-warning {

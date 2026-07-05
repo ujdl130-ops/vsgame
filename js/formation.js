@@ -845,7 +845,10 @@ function selectFormationHero(heroId) {
 
 function toggleFormationHeroDetailFlip() {
   formationState.heroDetailFlipped = !formationState.heroDetailFlipped;
-  renderFormationSlots();
+  const detailCard = document.querySelector(".formation-hero-detail-card");
+  if (detailCard) {
+    detailCard.classList.toggle("is-flipped", formationState.heroDetailFlipped);
+  }
 }
 
 function handleFormationSlotClick(index) {
