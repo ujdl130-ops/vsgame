@@ -10690,3 +10690,176 @@ body:not(.game-started) .game-wrap {
     flex: 0 0 auto;
   }
 }
+
+/* Chapter and stage select image UI */
+.stage-screen {
+  display: block;
+  background: #040508;
+}
+
+.stage-screen::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+}
+
+.stage-screen.is-chapter-view::before {
+  background-image: url("assets/ui/chater UI.png");
+}
+
+.stage-screen.is-stage-view::before {
+  background-image: url("assets/ui/stageUI.png");
+}
+
+.stage-screen .stage-scanline {
+  display: none;
+}
+
+.stage-screen .stage-ui-btn {
+  z-index: 5;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  color: transparent;
+  background: transparent;
+  box-shadow: none;
+  font-size: 0;
+  appearance: none;
+  cursor: pointer;
+}
+
+.stage-screen .stage-back-btn {
+  left: 1.05%;
+  top: 2.1%;
+  width: 7.4%;
+  height: 8.4%;
+}
+
+.stage-screen .stage-ui-btn:focus-visible,
+.stage-screen .chapter-card:focus-visible,
+.stage-screen .stage-card:focus-visible {
+  outline: 3px solid rgba(255, 231, 155, 0.9);
+  outline-offset: 2px;
+}
+
+.stage-screen .chapter-panel,
+.stage-screen .stage-panel {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: block;
+  width: auto;
+  height: auto;
+  min-height: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+  transform: none;
+  pointer-events: none;
+}
+
+.stage-screen .chapter-panel.is-hidden,
+.stage-screen .stage-panel.is-hidden {
+  display: none;
+}
+
+.stage-screen .chapter-card {
+  position: absolute;
+  left: 28.4%;
+  top: 9%;
+  width: 42.2%;
+  height: 75%;
+  min-height: 0;
+  padding: 0;
+  border: 0;
+  color: transparent;
+  background: transparent;
+  box-shadow: none;
+  font-size: 0;
+  appearance: none;
+  cursor: pointer;
+  pointer-events: auto;
+}
+
+.stage-screen .chapter-card > * {
+  display: none;
+}
+
+.stage-screen .chapter-card:hover {
+  background: rgba(255, 235, 174, 0.04);
+}
+
+.stage-screen .stage-map-tabs,
+.stage-screen .stage-road,
+.stage-screen .stage-road::before,
+.stage-screen .stage-road::after {
+  display: none;
+}
+
+.stage-screen .stage-card-wrap {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  margin: 0;
+  pointer-events: none;
+}
+
+.stage-screen .stage-card {
+  position: absolute;
+  width: 15%;
+  height: 11%;
+  min-height: 0;
+  padding: 0;
+  border: 0;
+  color: transparent;
+  background: transparent;
+  box-shadow: none;
+  filter: none;
+  appearance: none;
+  cursor: pointer;
+  pointer-events: auto;
+}
+
+.stage-screen .stage-card::before,
+.stage-screen .stage-card::after,
+.stage-screen .stage-card > * {
+  display: none;
+}
+
+.stage-screen .stage-card[data-stage="1"] {
+  left: 11.8%;
+  top: 51.2%;
+}
+
+.stage-screen .stage-card[data-stage="2"] {
+  left: 42.4%;
+  top: 53.8%;
+}
+
+.stage-screen .stage-card[data-stage="3"] {
+  left: 74.8%;
+  top: 51.5%;
+}
+
+.stage-screen .stage-card:hover {
+  background: rgba(255, 235, 174, 0.06);
+}
+
+.stage-screen .stage-map-notice {
+  left: 50%;
+  bottom: 4.5%;
+  z-index: 6;
+  width: min(520px, 72vw);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.16s ease;
+}
+
+.stage-screen .stage-map-notice.is-show {
+  opacity: 1;
+}

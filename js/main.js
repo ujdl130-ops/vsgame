@@ -80,15 +80,20 @@ window.addEventListener("keydown", (event) => {
   }
 
   if (isStageSelectVisible()) {
-    if (event.code === "Escape") showLobby();
+    if (event.code === "Escape") {
+      event.preventDefault();
+      handleStageBack();
+    }
     if (event.code === "Enter" || event.code === "Space") {
       event.preventDefault();
-      if (stagePanel && stagePanel.classList.contains("is-hidden")) showChapterStages();
-      else openStage(playerProgress.unlockedStage);
+      if (isChapterStageMapVisible()) openStage(playerProgress.unlockedStage);
+      else showChapterStages();
     }
-    if (event.code === "Digit1") openStage(1);
-    if (event.code === "Digit2") openStage(2);
-    if (event.code === "Digit3") openStage(3);
+    if (isChapterStageMapVisible()) {
+      if (event.code === "Digit1") openStage(1);
+      if (event.code === "Digit2") openStage(2);
+      if (event.code === "Digit3") openStage(3);
+    }
     return;
   }
 
@@ -266,7 +271,7 @@ if (shopCloseBtn) shopCloseBtn.addEventListener("click", showLobby);
 shopCards.forEach((card) => {
   card.addEventListener("click", () => showShopItemNotice(card.dataset.item || "아이템"));
 });
-if (stageBackBtn) stageBackBtn.addEventListener("click", showLobby);
+if (stageBackBtn) stageBackBtn.addEventListener("click", handleStageBack);
 if (chapter1Btn) chapter1Btn.addEventListener("click", showChapterStages);
 if (chapterBackBtn) chapterBackBtn.addEventListener("click", showStageSelect);
 stageCards.forEach((card) => {

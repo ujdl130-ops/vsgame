@@ -70,9 +70,51 @@ function updateStageUI() {
   });
 }
 
+function openStage(stageNumber) {
+  if (!isStageUnlocked(stageNumber)) {
+    showStageLockedNotice(stageNumber);
+    return;
+  }
+  if (typeof showPreBattleFormation === "function") {
+    showPreBattleFormation(stageNumber);
+    return;
+  }
+  startGame(stageNumber);
+}
+
+function setStageScreenMode(mode) {
+  if (!stageScreen) return;
+  const isStageMap = mode === "stage";
+  stageScreen.classList.toggle("is-chapter-view", !isStageMap);
+  stageScreen.classList.toggle("is-stage-view", isStageMap);
+}
+
+function isChapterStageMapVisible() {
+  return Boolean(stagePanel && !stagePanel.classList.contains("is-hidden"));
+}
+
+function hidePrebattleFormationScreen() {
+  const root = document.getElementById("prebattleFormationScreen");
+  if (root) root.classList.add("is-hidden");
+  document.body.classList.remove("in-prebattle-formation");
+}
+
+function handleStageBack() {
+  if (isChapterStageMapVisible()) {
+    showStageSelect();
+    return;
+  }
+  showLobby();
+}
+
 function showStageLockedNotice(stageNumber) {
   if (!stageSelectNotice) return;
   stageSelectNotice.textContent = `Stage ${stageNumber}는 아직 잠겨 있습니다. 먼저 Stage ${stageNumber - 1}을 클리어하세요.`;
+  stageSelectNotice.classList.add("is-show");
+  clearTimeout(showStageLockedNotice.timer);
+  showStageLockedNotice.timer = setTimeout(() => {
+    if (stageSelectNotice) stageSelectNotice.classList.remove("is-show");
+  }, 1700);
 }
 
 function showStageSelect() {
@@ -86,40 +128,32 @@ function showStageSelect() {
   if (missionScreen) missionScreen.classList.add("is-hidden");
   if (inventoryScreen) inventoryScreen.classList.add("is-hidden");
   hideRecruitDoorScene(true);
-  if (chapterPanel) chapterPanel.classList.add("is-hidden");
-  if (stagePanel) stagePanel.classList.remove("is-hidden");
+  hidePrebattleFormationScreen();
+  if (chapterPanel) chapterPanel.classList.remove("is-hidden");
+  if (stagePanel) stagePanel.classList.add("is-hidden");
+  if (stageBackBtn) stageBackBtn.setAttribute("aria-label", "Back to lobby");
+  if (stageSelectNotice) stageSelectNotice.classList.remove("is-show");
+  setStageScreenMode("chapter");
+
   document.body.classList.remove("game-started", "in-lobby", "in-shop", "in-recruit", "in-formation", "in-mission", "in-inventory");
   document.body.classList.add("in-stage-select");
 
   if (gameState) {
     gameState.running = false;
-    gameState.message = "스테이지를 선택하세요";
+    gameState.message = "챕터를 선택하세요.";
     updateButtons();
   }
 
-  if (stageSelectNotice) {
-    stageSelectNotice.textContent = "Stage 1부터 순서대로 클리어하면 다음 스테이지가 열립니다.";
-  }
   updateStageUI();
 }
 
 function showChapterStages() {
   if (chapterPanel) chapterPanel.classList.add("is-hidden");
   if (stagePanel) stagePanel.classList.remove("is-hidden");
-  if (stageSelectNotice) stageSelectNotice.textContent = "Stage 1부터 순서대로 클리어하면 다음 스테이지가 열립니다.";
+  if (stageBackBtn) stageBackBtn.setAttribute("aria-label", "Back to chapter select");
+  if (stageSelectNotice) stageSelectNotice.classList.remove("is-show");
+  setStageScreenMode("stage");
   updateStageUI();
-}
-
-function openStage(stageNumber) {
-  if (!isStageUnlocked(stageNumber)) {
-    showStageLockedNotice(stageNumber);
-    return;
-  }
-  if (typeof showPreBattleFormation === "function") {
-    showPreBattleFormation(stageNumber);
-    return;
-  }
-  startGame(stageNumber);
 }
 
 
