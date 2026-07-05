@@ -232,7 +232,8 @@ function createFallbackPoseidonTsunamiEffect() {
     active: true,
     timer: 0,
     duration: POSEIDON_TSUNAMI_SKILL.fallbackDuration,
-    groundY: GROUND_Y,
+    laneY: COMBAT_LINE_Y,
+    groundY: COMBAT_LINE_Y + 30,
     startX: -width * 0.72,
     endX: canvas.width + width * 0.34,
     width,
@@ -261,7 +262,7 @@ function castPoseidonTsunami() {
 
   const tsunamiApi = typeof window !== "undefined" ? window.PoseidonTsunamiAnimation : null;
   gameState.poseidonSkillEffect = tsunamiApi && typeof tsunamiApi.create === "function"
-    ? tsunamiApi.create({ canvasWidth: canvas.width, groundY: GROUND_Y })
+    ? tsunamiApi.create({ canvasWidth: canvas.width, laneY: COMBAT_LINE_Y, groundY: COMBAT_LINE_Y + 30 })
     : createFallbackPoseidonTsunamiEffect();
 
   gameState.message = `${POSEIDON_TSUNAMI_SKILL.name}!`;
