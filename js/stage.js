@@ -190,6 +190,14 @@ function updateWave(dt) {
     gameState.waveBreakTimer = 3;
     addRunestone(60);
   } else if (waveFinished && gameState.wave >= gameState.maxWave) {
+    if (Number(gameState.stage) === 3) {
+      if (!gameState.gateObjectiveAnnounced) {
+        gameState.gateObjectiveAnnounced = true;
+        gameState.message = "상대 게이트를 파괴해야 클리어됩니다!";
+        gameState.messageTimer = 1.4;
+      }
+      return;
+    }
     completeStage(`STAGE ${selectedStage} CLEAR! 모든 웨이브 방어 성공`);
   }
 }
