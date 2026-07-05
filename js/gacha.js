@@ -5,7 +5,7 @@ const DUPLICATE_GOD_ESSENCE_AMOUNT = 10;
 
 function summonGodDescentOnce(random = Math.random) {
   if (random() >= GOD_DESCENT_SSR_RATE) {
-    const unitPool = ["saintess", "archer", "thief", "mage"];
+    const unitPool = ["guard", "saintess", "archer", "thief", "mage"];
     const unitId = unitPool[Math.floor(random() * unitPool.length)];
     const unit = window.FormationAPI?.addOwnedUnit?.(unitId) || null;
     return [{ rarity: "R", type: "unit", hero: null, unit, isDuplicate: false, convertedEssence: null, isOverflow: !unit }];

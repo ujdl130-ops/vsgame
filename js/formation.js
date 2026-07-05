@@ -2,6 +2,18 @@
 
 const FORMATION_BASE_UNITS = [
   {
+    id: "guard",
+    name: "방패병",
+    image: "assets/maps/formation/guardpng.png",
+    baseLevel: 1,
+    maxLevel: 30,
+    attack: 10,
+    hp: 115,
+    defense: 60,
+    rarity: "normal",
+    ability: "방패 대형: 전방에서 적의 진격을 막아 아군을 보호합니다.",
+  },
+  {
     id: "saintess",
     name: "성녀",
     image: "assets/maps/formation/saint.png",
@@ -186,6 +198,16 @@ function ensureFormationOwnedUnits() {
   playerProgress.ownedUnits = playerProgress.ownedUnits
     .filter((unitId) => FORMATION_ROSTER_UNITS.some((unit) => unit.instanceId === unitId))
     .slice(0, FORMATION_OWNED_UNIT_LIMIT);
+  const hasGuard = playerProgress.ownedUnits
+    .map((unitId) => getFormationUnit(unitId))
+    .some((unit) => unit && unit.baseId === "guard");
+  if (!hasGuard && playerProgress.ownedUnits.length < FORMATION_OWNED_UNIT_LIMIT) {
+    const guardUnit = FORMATION_ROSTER_UNITS.find((unit) => unit.baseId === "guard");
+    if (guardUnit) {
+      playerProgress.ownedUnits.push(guardUnit.instanceId);
+      saveProgress();
+    }
+  }
   return playerProgress.ownedUnits.map((unitId) => getFormationUnit(unitId)).filter(Boolean);
 }
 
@@ -329,8 +351,8 @@ function getFormationUnitStats(unit = getFormationUnit(formationState.selectedUn
     hp: unit.hp,
     damage: unit.attack,
     defense: unit.defense,
-    range: unit.baseId === "archer" || unit.baseId === "mage" ? 260 : 90,
-    attackSpeed: unit.baseId === "thief" ? 0.62 : unit.baseId === "mage" ? 0.82 : 0.72,
+    range: unit.baseId === "guard" ? 42 : unit.baseId === "archer" || unit.baseId === "mage" ? 260 : 90,
+    attackSpeed: unit.baseId === "guard" ? 1.0 : unit.baseId === "thief" ? 0.62 : unit.baseId === "mage" ? 0.82 : 0.72,
   };
 }
 

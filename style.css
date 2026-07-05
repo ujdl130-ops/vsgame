@@ -9796,16 +9796,17 @@ body:not(.game-started) .game-wrap {
 .formation-category-nav {
   position: relative;
   z-index: 5;
-  width: 150px;
+  width: 178px;
   margin-top: 34px;
   display: grid;
-  gap: 12px;
+  gap: 16px;
   pointer-events: auto;
 }
 
 .formation-category-btn {
   width: 100%;
-  min-height: 48px;
+  min-height: 60px;
+  padding: 0 18px;
   border: 0;
   color: #7d603a;
   background: url("assets/maps/formation/category_off.png") center / 100% 100% no-repeat;
