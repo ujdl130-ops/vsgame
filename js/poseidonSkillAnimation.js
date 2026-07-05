@@ -2,20 +2,21 @@
 
 const POSEIDON_TSUNAMI_SKILL_ANIMATION = {
   spritePath: "assets/effects/poseidon_tsunami_spritesheet.png",
-  duration: 1.45,
-  waveWidth: 360,
-  waveHeight: 238,
-  damageWindowStart: 0.13,
-  damageWindowEnd: 0.94,
+  duration: 2.35,
+  waveWidth: 560,
+  waveHeight: 270,
+  renderStretchX: 1.42,
+  damageWindowStart: 0.1,
+  damageWindowEnd: 0.97,
   knockbackDirection: 1,
   spriteFrames: [
-    { x: 8, y: 284, w: 188, h: 310, anchorX: 0.54, anchorY: 0.94, scale: 0.76 },
-    { x: 188, y: 270, w: 214, h: 325, anchorX: 0.53, anchorY: 0.94, scale: 0.88 },
-    { x: 388, y: 254, w: 218, h: 342, anchorX: 0.53, anchorY: 0.94, scale: 1.0 },
-    { x: 602, y: 246, w: 232, h: 350, anchorX: 0.53, anchorY: 0.94, scale: 1.05 },
-    { x: 818, y: 236, w: 258, h: 360, anchorX: 0.5, anchorY: 0.94, scale: 1.1 },
-    { x: 1040, y: 272, w: 292, h: 324, anchorX: 0.43, anchorY: 0.94, scale: 0.98 },
-    { x: 1228, y: 304, w: 436, h: 292, anchorX: 0.3, anchorY: 0.94, scale: 0.82 },
+    { x: 8, y: 284, w: 188, h: 310, anchorX: 0.54, anchorY: 0.94, scale: 0.82, stretchX: 1.18 },
+    { x: 188, y: 270, w: 214, h: 325, anchorX: 0.53, anchorY: 0.94, scale: 0.95, stretchX: 1.22 },
+    { x: 388, y: 254, w: 218, h: 342, anchorX: 0.53, anchorY: 0.94, scale: 1.08, stretchX: 1.28 },
+    { x: 602, y: 246, w: 232, h: 350, anchorX: 0.53, anchorY: 0.94, scale: 1.15, stretchX: 1.34 },
+    { x: 818, y: 236, w: 258, h: 360, anchorX: 0.5, anchorY: 0.94, scale: 1.2, stretchX: 1.42 },
+    { x: 1040, y: 272, w: 292, h: 324, anchorX: 0.43, anchorY: 0.94, scale: 1.06, stretchX: 1.55 },
+    { x: 1228, y: 304, w: 436, h: 292, anchorX: 0.3, anchorY: 0.94, scale: 0.9, stretchX: 1.7 },
   ],
 };
 
@@ -39,8 +40,8 @@ function createPoseidonTsunamiAnimation(options = {}) {
   const groundY = options.groundY || laneY + 30;
   const height = options.height || POSEIDON_TSUNAMI_SKILL_ANIMATION.waveHeight;
   const width = options.width || POSEIDON_TSUNAMI_SKILL_ANIMATION.waveWidth;
-  const startX = options.startX == null ? -width * 0.62 : options.startX;
-  const endX = options.endX == null ? canvasWidth + width * 0.52 : options.endX;
+  const startX = options.startX == null ? -width * 0.86 : options.startX;
+  const endX = options.endX == null ? canvasWidth + width * 0.36 : options.endX;
 
   return {
     type: "poseidonTsunami",
@@ -63,7 +64,7 @@ function updatePoseidonTsunamiAnimation(effect, dt) {
 
   effect.timer += dt;
   const progress = getPoseidonTsunamiProgress(effect);
-  const travel = smoothstep(0.02, 0.96, progress);
+  const travel = smoothstep(0.04, 0.98, progress);
   effect.impactX = lerp(effect.startX, effect.endX, travel);
 
   if (effect.timer >= effect.duration) {
@@ -85,9 +86,9 @@ function getPoseidonTsunamiDamageZone(effect) {
   }
 
   return {
-    x: effect.impactX - effect.width * 0.5,
+    x: effect.impactX - effect.width * 0.58,
     y: effect.groundY - effect.height * 0.9,
-    w: effect.width,
+    w: effect.width * 1.16,
     h: effect.height,
     frontX: effect.impactX + effect.width * 0.24,
     knockbackX: POSEIDON_TSUNAMI_SKILL_ANIMATION.knockbackDirection,
@@ -102,7 +103,7 @@ function drawPoseidonTsunamiAnimation(renderCtx, effect) {
 
   const progress = getPoseidonTsunamiProgress(effect);
   const intro = smoothstep(0, 0.08, progress);
-  const fade = 1 - smoothstep(0.88, 1, progress);
+  const fade = 1 - smoothstep(0.9, 1, progress);
   const alpha = Math.max(0, intro * fade);
   if (alpha <= 0) return;
 
@@ -136,7 +137,8 @@ function drawPoseidonSpriteFrame(renderCtx, effect, progress, alpha, spriteCanva
   const frameIndex = getPoseidonSpriteFrameIndex(progress);
   const frame = POSEIDON_TSUNAMI_SKILL_ANIMATION.spriteFrames[frameIndex];
   const drawH = effect.height * frame.scale;
-  const drawW = drawH * (frame.w / frame.h);
+  const stretchX = POSEIDON_TSUNAMI_SKILL_ANIMATION.renderStretchX * (frame.stretchX || 1);
+  const drawW = drawH * (frame.w / frame.h) * stretchX;
   const bob = Math.sin(progress * Math.PI * 4) * 3;
   const drawX = effect.impactX - drawW * frame.anchorX;
   const drawY = effect.groundY - drawH * frame.anchorY + bob;
@@ -144,7 +146,8 @@ function drawPoseidonSpriteFrame(renderCtx, effect, progress, alpha, spriteCanva
   if (frameIndex > 0 && progress < 0.86) {
     const previous = POSEIDON_TSUNAMI_SKILL_ANIMATION.spriteFrames[frameIndex - 1];
     const previousH = effect.height * previous.scale * 0.96;
-    const previousW = previousH * (previous.w / previous.h);
+    const previousStretchX = POSEIDON_TSUNAMI_SKILL_ANIMATION.renderStretchX * (previous.stretchX || 1);
+    const previousW = previousH * (previous.w / previous.h) * previousStretchX;
     renderCtx.globalAlpha = alpha * 0.2;
     renderCtx.drawImage(
       spriteCanvas,
@@ -152,7 +155,7 @@ function drawPoseidonSpriteFrame(renderCtx, effect, progress, alpha, spriteCanva
       previous.y,
       previous.w,
       previous.h,
-      effect.impactX - previousW * previous.anchorX - 24,
+      effect.impactX - previousW * previous.anchorX - 46,
       effect.groundY - previousH * previous.anchorY + 2,
       previousW,
       previousH

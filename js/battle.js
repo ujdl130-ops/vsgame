@@ -366,7 +366,7 @@ function updatePoseidonTsunamiEffect(dt) {
     tsunamiApi.update(effect, dt);
   } else {
     effect.timer += dt;
-    if (effect.timer >= (effect.duration || 1.45)) effect.active = false;
+    if (effect.timer >= (effect.duration || 2.35)) effect.active = false;
   }
 
   applyPoseidonTsunamiDamage();
