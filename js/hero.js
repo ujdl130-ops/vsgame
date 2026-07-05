@@ -119,6 +119,15 @@ const ZEUS_THUNDERSTORM_SKILL = {
   fallbackX: ENEMY_BASE_X - 120,
 };
 
+const POSEIDON_TSUNAMI_SKILL = {
+  name: "해일",
+  damage: 40,
+  knockbackDistance: 118,
+  bossKnockbackDistance: 54,
+  hitStunDuration: 0.32,
+  fallbackDuration: 1.45,
+};
+
 
 function createMainHero(heroId = selectedHeroId) {
   const definition = getHeroDefinition(heroId);
@@ -216,6 +225,50 @@ function castZeusThunderstorm() {
   updateButtons();
 }
 
+function createFallbackPoseidonTsunamiEffect() {
+  const width = 420;
+  return {
+    type: "poseidonTsunami",
+    active: true,
+    timer: 0,
+    duration: POSEIDON_TSUNAMI_SKILL.fallbackDuration,
+    groundY: GROUND_Y,
+    startX: -width * 0.72,
+    endX: canvas.width + width * 0.34,
+    width,
+    height: 260,
+    impactX: -width * 0.72,
+    hitEnemies: new Set(),
+    foam: [],
+    spray: [],
+    pulses: [],
+  };
+}
+
+function castPoseidonTsunami() {
+  if (!gameState || !gameState.running || gameState.gameOver || gameState.clear) return;
+  const hero = gameState.hero;
+  if (!hero || hero.dead || hero.hp <= 0) return;
+  if (gameState.poseidonSkillEffect && gameState.poseidonSkillEffect.active) return;
+  if ((gameState.zeusMana || 0) < ZEUS_MANA_COST) {
+    gameState.message = `마나 부족! 해일은 ${ZEUS_MANA_COST}마나가 필요합니다.`;
+    gameState.messageTimer = 0.85;
+    updateButtons();
+    return;
+  }
+
+  gameState.zeusMana = Math.max(0, (gameState.zeusMana || 0) - ZEUS_MANA_COST);
+
+  const tsunamiApi = typeof window !== "undefined" ? window.PoseidonTsunamiAnimation : null;
+  gameState.poseidonSkillEffect = tsunamiApi && typeof tsunamiApi.create === "function"
+    ? tsunamiApi.create({ canvasWidth: canvas.width, groundY: GROUND_Y })
+    : createFallbackPoseidonTsunamiEffect();
+
+  gameState.message = `${POSEIDON_TSUNAMI_SKILL.name}!`;
+  gameState.messageTimer = 0.65;
+  updateButtons();
+}
+
 function showZeusSkillPlaceholder() {
   castHeroSkill();
 }
@@ -223,9 +276,7 @@ function showZeusSkillPlaceholder() {
 function castHeroSkill() {
   const hero = gameState && gameState.hero;
   if (hero && hero.heroId === "poseidon") {
-    gameState.message = "포세이돈 스킬은 아직 준비 중입니다.";
-    gameState.messageTimer = 0.75;
-    updateButtons();
+    castPoseidonTsunami();
     return;
   }
 

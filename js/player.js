@@ -96,6 +96,7 @@ function createInitialState() {
     selectedHeroId,
     hero: createMainHero(selectedHeroId),
     zeusSkillEffect: null,
+    poseidonSkillEffect: null,
     particles: [],
     projectiles: [],
     units: [],

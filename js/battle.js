@@ -284,6 +284,101 @@ function updateZeusThunderstormEffect(dt) {
   }
 }
 
+function getPoseidonTsunamiDamageZone(effect) {
+  const tsunamiApi = typeof window !== "undefined" ? window.PoseidonTsunamiAnimation : null;
+  if (tsunamiApi && typeof tsunamiApi.getDamageZone === "function") {
+    return tsunamiApi.getDamageZone(effect);
+  }
+
+  if (!effect || !effect.active) return null;
+  const progress = Math.max(0, Math.min(1, effect.timer / (effect.duration || 1)));
+  if (progress < 0.24 || progress > 1) return null;
+
+  return {
+    x: effect.impactX - effect.width * 0.46,
+    y: effect.groundY - effect.height * 0.82,
+    w: effect.width * 0.9,
+    h: effect.height * 0.86,
+    frontX: effect.impactX + effect.width * 0.24,
+    knockbackX: 1,
+  };
+}
+
+function isEnemyInsidePoseidonTsunami(enemy, zone) {
+  if (!enemy || !zone) return false;
+
+  const halfW = Math.max(enemy.w * 0.82, 20);
+  const enemyLeft = enemy.x - halfW;
+  const enemyRight = enemy.x + halfW;
+  const enemyTop = enemy.airborne
+    ? enemy.y - Math.max(enemy.h + 96, 128)
+    : enemy.y - Math.max(enemy.h + 26, 74);
+  const enemyBottom = enemy.y + 8;
+
+  return enemyRight >= zone.x
+    && enemyLeft <= zone.x + zone.w
+    && enemyBottom >= zone.y
+    && enemyTop <= zone.y + zone.h;
+}
+
+function applyPoseidonTsunamiDamage() {
+  const effect = gameState.poseidonSkillEffect;
+  if (!effect || !effect.active) return;
+
+  const zone = getPoseidonTsunamiDamageZone(effect);
+  if (!zone) return;
+  if (!effect.hitEnemies) effect.hitEnemies = new Set();
+
+  for (const enemy of gameState.enemies) {
+    if (!canDamageCombatant(enemy) || effect.hitEnemies.has(enemy)) continue;
+    if (!isEnemyInsidePoseidonTsunami(enemy, zone)) continue;
+
+    const isBoss = Boolean(enemy.isBoss || enemy.type === "karon");
+    const damage = isBoss
+      ? Math.round(POSEIDON_TSUNAMI_SKILL.damage * 0.72)
+      : POSEIDON_TSUNAMI_SKILL.damage;
+    const knockbackDistance = isBoss
+      ? POSEIDON_TSUNAMI_SKILL.bossKnockbackDistance
+      : POSEIDON_TSUNAMI_SKILL.knockbackDistance;
+
+    enemy.hp -= damage;
+    enemy.x = Math.min(ENEMY_BASE_X - 34, enemy.x + knockbackDistance);
+    enemy.moving = false;
+    enemy.attackAnimTimer = 0;
+    enemy.paralyzeTimer = Math.max(enemy.paralyzeTimer || 0, POSEIDON_TSUNAMI_SKILL.hitStunDuration);
+    enemy.laserTarget = null;
+    enemy.laserHitPending = false;
+    enemy.swordWaveTarget = null;
+    enemy.swordWavePending = false;
+    enemy.clawTarget = null;
+    enemy.clawHitPending = false;
+    effect.hitEnemies.add(enemy);
+    spawnHit(enemy.x, enemy.y - Math.max(36, enemy.h * 0.68), "#7be8ff");
+  }
+}
+
+function updatePoseidonTsunamiEffect(dt) {
+  const effect = gameState.poseidonSkillEffect;
+  if (!effect || !effect.active) return;
+
+  const tsunamiApi = typeof window !== "undefined" ? window.PoseidonTsunamiAnimation : null;
+  if (tsunamiApi && typeof tsunamiApi.update === "function") {
+    tsunamiApi.update(effect, dt);
+  } else {
+    effect.timer += dt;
+    const progress = Math.max(0, Math.min(1, effect.timer / (effect.duration || POSEIDON_TSUNAMI_SKILL.fallbackDuration)));
+    const travel = 1 - Math.pow(1 - progress, 3);
+    effect.impactX = effect.startX + (effect.endX - effect.startX) * travel;
+    if (effect.timer >= (effect.duration || POSEIDON_TSUNAMI_SKILL.fallbackDuration)) effect.active = false;
+  }
+
+  applyPoseidonTsunamiDamage();
+  if (!effect.active) {
+    gameState.poseidonSkillEffect = null;
+    updateButtons();
+  }
+}
+
 function updateZeusMana(dt) {
   if (!gameState) return;
 
@@ -310,6 +405,7 @@ function update(dt) {
   updateEnemies(dt);
   updateProjectiles(dt);
   updateZeusThunderstormEffect(dt);
+  updatePoseidonTsunamiEffect(dt);
   updateParticles(dt);
   cleanupDeadEntities();
   checkEndConditions();
@@ -392,6 +488,33 @@ function drawZeusThunderstormEffect() {
   ctx.restore();
 }
 
+function drawPoseidonTsunamiEffect() {
+  const effect = gameState.poseidonSkillEffect;
+  if (!effect || !effect.active) return;
+
+  const tsunamiApi = typeof window !== "undefined" ? window.PoseidonTsunamiAnimation : null;
+  if (tsunamiApi && typeof tsunamiApi.draw === "function") {
+    tsunamiApi.draw(ctx, effect);
+    return;
+  }
+
+  const progress = Math.max(0, Math.min(1, effect.timer / (effect.duration || 1)));
+  const alpha = Math.max(0, 1 - progress);
+  ctx.save();
+  ctx.globalAlpha = alpha;
+  ctx.fillStyle = "rgba(31, 190, 230, 0.72)";
+  ctx.beginPath();
+  ctx.ellipse(effect.impactX, effect.groundY - 72, effect.width * 0.5, effect.height * 0.44, -0.08, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.strokeStyle = "rgba(236, 255, 255, 0.92)";
+  ctx.lineWidth = 7;
+  ctx.beginPath();
+  ctx.moveTo(effect.impactX - effect.width * 0.38, effect.groundY - effect.height * 0.58);
+  ctx.quadraticCurveTo(effect.impactX, effect.groundY - effect.height * 0.88, effect.impactX + effect.width * 0.28, effect.groundY - effect.height * 0.38);
+  ctx.stroke();
+  ctx.restore();
+}
+
 function draw() {
   drawBackground();
   drawBase(PLAYER_BASE_X, true);
@@ -416,6 +539,7 @@ function draw() {
 
   drawProjectiles();
   drawParticles();
+  drawPoseidonTsunamiEffect();
   drawZeusThunderstormEffect();
   drawMessage();
 }
