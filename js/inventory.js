@@ -5,6 +5,42 @@ const inventoryState = {
   items: [],
 };
 
+const INVENTORY_CURRENCY_ITEMS = [
+  { key: "commonEssence", name: "신의정수", description: "신 성장에 사용하는 정수입니다.", rarity: "rare" },
+  { key: "soldierFragments", name: "병사정수", description: "유닛 성장에 사용하는 정수입니다.", rarity: "rare" },
+];
+
+const INVENTORY_HERO_ESSENCE_ITEMS = [
+  { key: "lightningEssence", name: "제우스 정수" },
+  { key: "seaEssence", name: "포세이돈 정수" },
+  { key: "wisdomEssence", name: "아테나 정수" },
+  { key: "soulEssence", name: "하데스 정수" },
+  { key: "warEssence", name: "아레스 정수" },
+  { key: "strengthEssence", name: "헤라클레스 정수" },
+];
+
+function getInventoryDisplayItems() {
+  const currencyItems = INVENTORY_CURRENCY_ITEMS
+    .map((item) => ({
+      name: item.name,
+      count: Math.max(0, Number(playerProgress?.[item.key]) || 0),
+      description: item.description,
+      rarity: item.rarity,
+    }))
+    .filter((item) => item.count > 0);
+
+  const heroEssenceItems = INVENTORY_HERO_ESSENCE_ITEMS
+    .map((item) => ({
+      name: item.name,
+      count: Math.max(0, Number(playerProgress?.essences?.[item.key]) || 0),
+      description: "신 전용 성장 정수입니다.",
+      rarity: "rare",
+    }))
+    .filter((item) => item.count > 0);
+
+  return [...currencyItems, ...heroEssenceItems, ...inventoryState.items];
+}
+
 function addInventoryItem(name, amount = 1, options = {}) {
   if (!name) return;
   const count = Math.max(1, Number(amount) || 1);
@@ -25,7 +61,7 @@ function addInventoryItem(name, amount = 1, options = {}) {
 }
 
 function renderInventorySlot(index) {
-  const item = inventoryState.items[index];
+  const item = getInventoryDisplayItems()[index];
   if (!item) {
     return `
       <button class="inventory-slot is-empty" type="button" aria-label="빈 인벤토리 슬롯 ${index + 1}">
@@ -46,6 +82,7 @@ function renderInventorySlot(index) {
 
 function renderInventoryScreen() {
   if (!inventoryRoot) return;
+  const displayItems = getInventoryDisplayItems();
   const slots = Array.from({ length: INVENTORY_SLOT_COUNT }, (_, index) => renderInventorySlot(index)).join("");
   inventoryRoot.innerHTML = `
     <aside class="inventory-brand-panel" aria-label="인벤토리 로고">
@@ -59,7 +96,7 @@ function renderInventoryScreen() {
           <p>TEMPLE VAULT</p>
           <h1>인벤토리</h1>
         </div>
-        <span>${inventoryState.items.length} / ${INVENTORY_SLOT_COUNT}</span>
+        <span>${displayItems.length} / ${INVENTORY_SLOT_COUNT}</span>
       </header>
       <div class="inventory-slot-grid">
         ${slots}

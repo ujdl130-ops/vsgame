@@ -165,3 +165,55 @@ function showMission() {
 function showMissionNotice() {
   showMission();
 }
+
+// QA_MODE_SUPPORT: reward normalization and QA-completable mission cards.
+function claimMissionReward(reward) {
+  const rewardText = String(reward || "");
+  const amountMatch = rewardText.match(/(\d+)/);
+  const amount = amountMatch ? Number(amountMatch[1]) : 1;
+
+  if (rewardText.includes("골드") || rewardText.includes("怨⑤뱶")) {
+    grantPlayerRewards({ gold: amount });
+  } else if (rewardText.includes("다이아") || rewardText.includes("?ㅼ씠")) {
+    grantPlayerRewards({ diamonds: amount });
+  } else if (rewardText.includes("모집") || rewardText.includes("소환") || rewardText.includes("?뚰솚")) {
+    grantPlayerRewards({ summonTickets: amount });
+  } else if (rewardText.includes("신의정수")) {
+    grantPlayerRewards({ commonEssence: amount });
+  } else if (rewardText.includes("병사정수")) {
+    grantPlayerRewards({ soldierFragments: amount });
+  } else {
+    addInventoryItem(rewardText.replace(/\s*\d+.*/, "").trim() || "미션 보상", amount, {
+      description: "미션 보상 아이템",
+      rarity: "rare",
+    });
+  }
+}
+
+function renderMissionCard(mission, index, groupId) {
+  const percent = window.QAAPI?.isEnabled?.() ? 100 : getMissionProgressPercent(mission);
+  const complete = window.QAAPI?.isEnabled?.() || mission.current >= mission.target;
+  const missionKey = `${groupId}-${index}`;
+  const claimed = claimedMissionRewards.has(missionKey);
+  return `
+    <article class="mission-card ${complete ? "is-complete" : ""}">
+      <div class="mission-card-main">
+        <span class="mission-card-mark" aria-hidden="true">◆</span>
+        <div>
+          <h3>${mission.title}</h3>
+          <p>${mission.detail}</p>
+        </div>
+      </div>
+      <div class="mission-progress-row">
+        <div class="mission-progress-track" aria-hidden="true">
+          <span style="width: ${percent}%"></span>
+        </div>
+        <strong>${complete && window.QAAPI?.isEnabled?.() ? mission.target : mission.current} / ${mission.target}</strong>
+      </div>
+      <div class="mission-card-foot">
+        <span>${mission.reward}</span>
+        <button type="button" data-reward="${mission.reward}" data-mission-key="${missionKey}" ${complete && !claimed ? "" : "disabled"}>${claimed ? "완료" : complete ? "받기" : "진행중"}</button>
+      </div>
+    </article>
+  `;
+}

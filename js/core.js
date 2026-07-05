@@ -116,6 +116,7 @@ function addWalletCurrency(type, amount) {
     if (typeof saveProgress === "function") saveProgress();
   }
   updateWalletDisplays();
+  if (typeof renderInventoryScreen === "function") renderInventoryScreen();
 }
 
 function updateWalletDisplays() {

@@ -581,6 +581,13 @@ function updateShopWallet() {
       soldierFragments: 0,
     };
   }
+  if (playerProgress) {
+    shopSessionBalances.gold = Math.max(0, Number(playerProgress.gold) || 0);
+    shopSessionBalances.diamonds = Math.max(0, Number(playerProgress.diamonds) || 0);
+    shopSessionBalances.summonTickets = Math.max(0, Number(playerProgress.summonTickets) || 0);
+    shopSessionBalances.commonEssence = Math.max(0, Number(playerProgress.commonEssence) || 0);
+    shopSessionBalances.soldierFragments = Math.max(0, Number(playerProgress.soldierFragments) || 0);
+  }
   const walletValues = {
     shopGoldAmount: shopSessionBalances.gold,
     shopDiamondAmount: shopSessionBalances.diamonds,
@@ -985,6 +992,7 @@ function executeCurrentShopPurchase() {
   }
 
   const cost = rule.cost || {};
+  updateShopWallet();
   if ((cost.gold || 0) > shopSessionBalances.gold) {
     return { success: false, message: "골드가 부족합니다." };
   }
@@ -992,8 +1000,11 @@ function executeCurrentShopPurchase() {
     return { success: false, message: "다이아가 부족합니다." };
   }
 
-  shopSessionBalances.gold -= Number(cost.gold) || 0;
-  shopSessionBalances.diamonds -= Number(cost.diamonds) || 0;
+  if (playerProgress) {
+    playerProgress.gold = Math.max(0, Number(playerProgress.gold) || 0) - (Number(cost.gold) || 0);
+    playerProgress.diamonds = Math.max(0, Number(playerProgress.diamonds) || 0) - (Number(cost.diamonds) || 0);
+    saveProgress();
+  }
 
   const rewards = { ...(rule.rewards || {}) };
   const shouldGrantFirstPurchaseBonus = Boolean(
@@ -1005,7 +1016,7 @@ function executeCurrentShopPurchase() {
       rewards[key] = Number(rewards[key] || 0) + Number(amount || 0);
     });
   }
-  applyShopSessionRewards(rewards);
+  grantPlayerRewards(rewards);
 
   if (rule.daily) {
     shopSessionDailyPurchases[selectedShopItem.id] = today;
@@ -1024,17 +1035,22 @@ function applyShopSessionRewards(rewards) {
       Number(shopSessionBalances[key] || 0) + Number(rewards[key] || 0)
     );
   });
+  grantPlayerRewards(rewards);
 }
 
 function getShopSessionBalance(key) {
+  updateShopWallet();
   return Math.max(0, Number(shopSessionBalances?.[key]) || 0);
 }
 
 function spendShopSessionCurrency(key, amount) {
   const cost = Math.max(0, Number(amount) || 0);
-  if (!shopSessionBalances || getShopSessionBalance(key) < cost) return false;
-  shopSessionBalances[key] -= cost;
+  if (!playerProgress || getShopSessionBalance(key) < cost) return false;
+  playerProgress[key] = Math.max(0, Number(playerProgress[key]) || 0) - cost;
+  saveProgress();
   updateShopWallet();
+  if (typeof updateWalletDisplays === "function") updateWalletDisplays();
+  if (typeof renderInventoryScreen === "function") renderInventoryScreen();
   return true;
 }
 

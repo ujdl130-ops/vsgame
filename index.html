@@ -37,6 +37,37 @@
 
     <button id="lobbyExitBtn" class="lobby-btn lobby-exit" type="button">게임종료</button>
 
+    <button id="qaModeBtn" class="qa-mode-btn" type="button">QA 모드</button>
+
+    <!-- QA_MODE_START: delete this block with js/qa.js and the QA CSS block for release. -->
+    <section id="qaPanel" class="qa-panel is-hidden" aria-label="QA 모드 관리">
+      <header class="qa-panel-head">
+        <div>
+          <p>ADMIN</p>
+          <h2>QA 모드</h2>
+        </div>
+        <button id="qaPanelCloseBtn" type="button">닫기</button>
+      </header>
+      <div class="qa-toggle-row">
+        <strong>QA 기능</strong>
+        <button id="qaToggleBtn" type="button" aria-pressed="false">OFF</button>
+      </div>
+      <div class="qa-currency-grid" aria-label="재화 직접 입력">
+        <label><span>골드</span><input id="qaGoldInput" type="number" min="0" step="1"></label>
+        <label><span>다이아</span><input id="qaDiamondInput" type="number" min="0" step="1"></label>
+        <label><span>신 모집권</span><input id="qaTicketInput" type="number" min="0" step="1"></label>
+        <label><span>신의정수</span><input id="qaCommonEssenceInput" type="number" min="0" step="1"></label>
+        <label><span>병사정수</span><input id="qaSoldierEssenceInput" type="number" min="0" step="1"></label>
+      </div>
+      <div class="qa-action-row">
+        <button id="qaApplyCurrencyBtn" type="button">재화 적용</button>
+        <button id="qaClearStagesBtn" type="button">스테이지 전체 클리어</button>
+        <button id="qaOpenFormationBtn" type="button">강화 QA 확인</button>
+      </div>
+      <p id="qaPanelNotice" class="qa-panel-notice" aria-live="polite"></p>
+    </section>
+    <!-- QA_MODE_END -->
+
     <div class="lobby-stage" aria-hidden="true">
       <div class="lobby-sun"></div>
       <div class="lobby-cloud cloud-a"></div>
@@ -245,6 +276,7 @@
     <div class="formation-topbar formation-wallet-wide" aria-label="재화 정보">
       <div class="formation-currency blue"><img src="assets/icons/diamond.png" alt=""><span>다이아몬드</span><strong data-wallet-value="diamond">0</strong></div>
       <div class="formation-currency gold"><img src="assets/icons/gold.png" alt=""><span>골드</span><strong data-wallet-value="gold">0</strong></div>
+      <div class="formation-currency ticket"><img src="assets/icons/ticket.png" alt=""><span>신 모집권</span><strong data-wallet-value="summonTickets">0</strong></div>
       <div class="formation-currency essence"><img src="assets/icons/essence_all.png" alt=""><span>신의정수</span><strong data-wallet-value="commonEssence">0</strong></div>
       <div class="formation-currency soldier"><img src="assets/icons/essence_soldier.png" alt=""><span>병사정수</span><strong data-wallet-value="soldierFragments">0</strong></div>
     </div>
@@ -472,5 +504,7 @@
   <script src="js/ui.js"></script>
   <script src="js/battle.js"></script>
   <script src="js/main.js"></script>
+  <!-- QA_MODE_SCRIPT: remove for release. -->
+  <script src="js/qa.js"></script>
 </body>
 </html>

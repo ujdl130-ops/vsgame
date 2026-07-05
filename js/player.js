@@ -52,6 +52,7 @@ function grantPlayerRewards(rewards = {}) {
   });
   saveProgress();
   if (typeof updateWalletDisplays === "function") updateWalletDisplays();
+  if (typeof renderInventoryScreen === "function") renderInventoryScreen();
   return playerProgress;
 }
 

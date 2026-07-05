@@ -24,12 +24,18 @@ const STAGE_CONFIGS = {
   },
 };
 
+const STAGE_CLEAR_REWARDS = {
+  1: { gold: 500 },
+  2: { gold: 1000, soldierFragments: 20 },
+  3: { gold: 2000, diamonds: 50, commonEssence: 1 },
+};
 
 function getStageConfig(stageNumber) {
   return STAGE_CONFIGS[stageNumber] || STAGE_CONFIGS[1];
 }
 
 function isStageUnlocked(stageNumber) {
+  if (window.QAAPI?.isEnabled?.()) return true;
   return stageNumber <= playerProgress.unlockedStage;
 }
 
@@ -48,7 +54,7 @@ function updateStageUI() {
   stageCards.forEach((card) => {
     const stageNumber = Number(card.dataset.stage);
     const unlocked = isStageUnlocked(stageNumber);
-    const cleared = playerProgress.clearedStages.includes(stageNumber);
+    const cleared = window.QAAPI?.isEnabled?.() || playerProgress.clearedStages.includes(stageNumber);
     const status = card.querySelector(".stage-status");
     const lockIcon = card.querySelector(".lock-icon");
 
@@ -156,10 +162,14 @@ function updateWave(dt) {
 
 function completeStage(message) {
   if (gameState.clear) return;
+  const alreadyCleared = playerProgress.clearedStages.includes(selectedStage);
   gameState.clear = true;
   gameState.running = false;
   gameState.message = `${message} · 스테이지 선택 버튼으로 다음 지역에 도전`;
   unlockStageProgress(selectedStage);
+  if (!alreadyCleared) {
+    grantPlayerRewards(STAGE_CLEAR_REWARDS[selectedStage] || {});
+  }
   updateButtons();
 }
 
