@@ -9600,6 +9600,27 @@ body:not(.game-started) .game-wrap {
   }
 }
 
+/* Larger, slightly lower lobby god artwork */
+.lobby-god-portrait {
+  transform: none !important;
+}
+
+.lobby-god-portrait img {
+  width: min(52vh, 500px) !important;
+  max-width: 100% !important;
+  max-height: 100% !important;
+}
+
+.lobby-stage .lobby-god-showcase {
+  transform: translateX(-50%) translateY(50px) scale(1.2) !important;
+  transform-origin: top center;
+}
+
+.lobby-stage .lobby-god-codex {
+  transform: translateY(50px) scale(1.2) !important;
+  transform-origin: top right;
+}
+
 /* Final lobby alignment and lighter lore glass */
 .lobby-stage .lobby-god-showcase {
   left: 33%;
@@ -9663,6 +9684,7 @@ body:not(.game-started) .game-wrap {
     padding: 14px 10px;
   }
 }
+
 
 /* Lobby composition polish */
 .lobby-stage .lobby-god-showcase {
@@ -11268,10 +11290,10 @@ body:not(.game-started) .game-wrap {
 }
 
 .lobby-stage .lobby-god-codex {
-  inset: clamp(86px, 10vh, 118px) auto auto 55%;
+  inset: clamp(72px, 9vh, 104px) auto auto 55%;
   width: min(38vw, 600px);
-  height: auto;
-  max-height: min(66vh, 650px);
+  height: calc(min(68vh, 670px) - 32px);
+  max-height: calc(min(68vh, 670px) - 32px);
   padding: clamp(24px, 2.5vw, 38px);
 }
 
@@ -11282,9 +11304,10 @@ body:not(.game-started) .game-wrap {
   }
 
   .lobby-stage .lobby-god-codex {
-    inset: max(64px, calc(48px + env(safe-area-inset-top))) auto auto 54%;
+    inset: max(58px, calc(42px + env(safe-area-inset-top))) auto auto 54%;
     width: 44vw;
-    max-height: 57vh;
+    height: calc(57vh - 24px);
+    max-height: calc(57vh - 24px);
     padding: 19px 15px;
   }
 }
@@ -11298,10 +11321,122 @@ body:not(.game-started) .game-wrap {
   }
 
   .lobby-stage .lobby-god-codex {
-    inset: max(50px, calc(36px + env(safe-area-inset-top))) auto auto 53%;
+    inset: max(42px, calc(28px + env(safe-area-inset-top))) auto auto 53%;
     width: 45vw;
-    max-height: 52vh;
+    height: calc(52vh - 20px);
+    max-height: calc(52vh - 20px);
     padding: 14px 10px;
+  }
+}
+
+.lobby-stage .lobby-god-codex {
+  background:
+    radial-gradient(circle at 12% 0, rgba(var(--codex-color-rgb), 0.12), transparent 50%),
+    linear-gradient(145deg, rgba(12, 18, 31, 0.34), rgba(3, 7, 15, 0.18)) !important;
+  border-color: rgba(var(--codex-color-rgb), 0.34);
+  -webkit-backdrop-filter: blur(5px) saturate(1.04);
+  backdrop-filter: blur(5px) saturate(1.04);
+}
+
+/* Lobby menu artwork */
+.lobby-screen .lobby-menu-bar {
+  bottom: max(2px, env(safe-area-inset-bottom));
+  width: min(96vw, 1500px);
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  align-items: end;
+  gap: clamp(2px, 0.4vw, 8px);
+  padding: 0;
+}
+
+.lobby-screen .lobby-menu-bar .lobby-btn {
+  position: relative;
+  inset: auto;
+  width: 100%;
+  min-width: 0;
+  min-height: 0;
+  aspect-ratio: 1922 / 818;
+  padding: 0 12%;
+  border: 0;
+  color: #182139;
+  background: transparent url("assets/lobby/lobbybasic.png") center / 100% 100% no-repeat;
+  box-shadow: none;
+  overflow: visible;
+  font-size: clamp(15px, 1.35vw, 24px);
+  font-weight: 1000;
+  letter-spacing: -0.04em;
+  text-align: center;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.9);
+  transform: none;
+  animation: none;
+  filter: drop-shadow(0 7px 7px rgba(0, 0, 0, 0.32));
+}
+
+.lobby-screen .lobby-menu-bar .lobby-btn::before,
+.lobby-screen .lobby-menu-bar .lobby-btn::after {
+  display: none;
+}
+
+.lobby-screen .lobby-menu-bar .lobby-shop { order: 1; }
+.lobby-screen .lobby-menu-bar .lobby-recruit { order: 2; }
+.lobby-screen .lobby-menu-bar .lobby-battle { order: 3; }
+.lobby-screen .lobby-menu-bar .lobby-formation { order: 4; }
+.lobby-screen .lobby-menu-bar .lobby-mission { order: 5; }
+
+.lobby-screen .lobby-menu-bar .lobby-battle {
+  position: relative;
+  inset: auto;
+  width: 118%;
+  min-width: 0;
+  min-height: 0;
+  justify-self: center;
+  padding: 0 14%;
+  color: #3b2508;
+  background-image: url("assets/lobby/lobbywar.png");
+  text-align: center;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.75);
+  transform: none;
+  animation: lobbyWarButtonGlow 1.8s ease-in-out infinite;
+  z-index: 2;
+}
+
+.lobby-screen .lobby-menu-bar .lobby-btn:hover {
+  transform: translateY(-5px);
+  filter: brightness(1.08) drop-shadow(0 9px 9px rgba(0, 0, 0, 0.34));
+}
+
+.lobby-screen .lobby-menu-bar .lobby-btn:active {
+  transform: translateY(1px) scale(0.97);
+}
+
+.lobby-screen .lobby-menu-bar .lobby-battle:hover {
+  transform: translateY(-6px) scale(1.02);
+}
+
+.lobby-screen .lobby-menu-bar .lobby-battle:active {
+  transform: translateY(1px) scale(0.98);
+}
+
+@keyframes lobbyWarButtonGlow {
+  0%, 100% { filter: brightness(1) drop-shadow(0 7px 8px rgba(0, 0, 0, 0.35)); }
+  50% { filter: brightness(1.1) drop-shadow(0 5px 14px rgba(255, 198, 66, 0.4)); }
+}
+
+@media (max-width: 720px) {
+  .lobby-screen .lobby-menu-bar {
+    bottom: max(1px, env(safe-area-inset-bottom));
+    width: 99vw;
+    gap: 0;
+  }
+
+  .lobby-screen .lobby-menu-bar .lobby-btn {
+    padding: 0 6%;
+    font-size: clamp(10px, 3vw, 14px);
+  }
+
+  .lobby-screen .lobby-menu-bar .lobby-battle {
+    width: 122%;
+    padding: 0 8%;
   }
 }
 
