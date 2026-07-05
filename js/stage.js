@@ -286,12 +286,8 @@ function getBaseRenderConfig(isPlayer) {
       drawY: GROUND_Y - 285,
       drawW: 285,
       drawH: 285,
-      shadowX: 108,
-      shadowY: GROUND_Y + 2,
-      shadowW: 84,
-      shadowH: 18,
       hpX: 120,
-      hpY: GROUND_Y - 198,
+      hpY: GROUND_Y + 8,
       hpW: 146,
     };
   }
@@ -303,12 +299,8 @@ function getBaseRenderConfig(isPlayer) {
     drawY: GROUND_Y - 285,
     drawW: 285,
     drawH: 285,
-    shadowX: canvas.width - 140,
-    shadowY: GROUND_Y + 2,
-    shadowW: 88,
-    shadowH: 18,
     hpX: canvas.width - 141,
-    hpY: GROUND_Y - 197,
+    hpY: GROUND_Y + 8,
     hpW: 148,
   };
 }
@@ -317,11 +309,6 @@ function drawBase(x, isPlayer) {
   const config = getBaseRenderConfig(isPlayer);
 
   ctx.save();
-  ctx.fillStyle = "rgba(0,0,0,0.18)";
-  ctx.beginPath();
-  ctx.ellipse(config.shadowX, config.shadowY, config.shadowW, config.shadowH, 0, 0, Math.PI * 2);
-  ctx.fill();
-
   if (config.ready) {
     ctx.imageSmoothingEnabled = true;
     ctx.drawImage(config.image, config.drawX, config.drawY, config.drawW, config.drawH);
