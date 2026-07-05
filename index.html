@@ -35,6 +35,32 @@
   <section id="lobbyScreen" class="lobby-screen is-hidden" aria-label="픽셀디펜스 로비 화면">
     <div class="lobby-scanline" aria-hidden="true"></div>
 
+    <nav class="lobby-top-tools" aria-label="로비 도구">
+      <button id="lobbyMailboxBtn" class="lobby-top-tool" type="button">
+        <span aria-hidden="true">✉</span>
+        <strong>우편함</strong>
+      </button>
+      <button id="lobbySettingsBtn" class="lobby-top-tool" type="button">
+        <span aria-hidden="true">⚙</span>
+        <strong>환경설정</strong>
+      </button>
+    </nav>
+
+    <aside class="lobby-wallet" aria-label="보유 재화">
+      <div class="lobby-wallet-item">
+        <img src="assets/icons/gold.png" alt="">
+        <strong id="lobbyGoldAmount">0</strong>
+      </div>
+      <div class="lobby-wallet-item">
+        <img src="assets/icons/diamond.png" alt="">
+        <strong id="lobbyDiamondAmount">0</strong>
+      </div>
+      <div class="lobby-wallet-item">
+        <img src="assets/icons/ticket.png" alt="">
+        <strong id="lobbyTicketAmount">0</strong>
+      </div>
+    </aside>
+
     <button id="lobbyExitBtn" class="lobby-btn lobby-exit" type="button">게임종료</button>
 
     <div class="lobby-stage" aria-hidden="true">

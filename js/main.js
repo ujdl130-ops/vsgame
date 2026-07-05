@@ -385,6 +385,25 @@ if (lobbyShopBtn) lobbyShopBtn.addEventListener("click", showShop);
 if (lobbyFormationBtn) lobbyFormationBtn.addEventListener("click", showFormation);
 if (lobbyRecruitBtn) lobbyRecruitBtn.addEventListener("click", showRecruit);
 if (lobbyMissionBtn) lobbyMissionBtn.addEventListener("click", showMission);
+const lobbyMailboxBtn = document.getElementById("lobbyMailboxBtn");
+const lobbySettingsBtn = document.getElementById("lobbySettingsBtn");
+
+function updateLobbyTopBar() {
+  const wallet = typeof playerProgress !== "undefined" && playerProgress ? playerProgress : {};
+  const values = {
+    lobbyGoldAmount: wallet.gold,
+    lobbyDiamondAmount: wallet.diamonds,
+    lobbyTicketAmount: wallet.summonTickets,
+  };
+  Object.entries(values).forEach(([id, value]) => {
+    const element = document.getElementById(id);
+    if (element) element.textContent = Math.max(0, Number(value) || 0).toLocaleString("ko-KR");
+  });
+}
+
+if (lobbyMailboxBtn) lobbyMailboxBtn.addEventListener("click", () => showLobbyMenuNotice("우편함"));
+if (lobbySettingsBtn) lobbySettingsBtn.addEventListener("click", () => showLobbyMenuNotice("환경설정"));
+updateLobbyTopBar();
 if (missionBackBtn) missionBackBtn.addEventListener("click", showLobby);
 if (missionCloseBtn) missionCloseBtn.addEventListener("click", showLobby);
 if (inventoryBackBtn) inventoryBackBtn.addEventListener("click", showLobby);
