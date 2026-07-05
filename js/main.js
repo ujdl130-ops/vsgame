@@ -225,7 +225,8 @@ if (gameOptionsBtn) gameOptionsBtn.addEventListener("click", toggleGameOptionsMe
 if (optionStageSelectBtn) optionStageSelectBtn.addEventListener("click", handleOptionStageSelect);
 if (optionRestartBtn) optionRestartBtn.addEventListener("click", handleOptionRestart);
 bindMovementJoystick(movementJoystick);
-titleStartBtn.addEventListener("click", showLobby);
+if (titleStartBtn) titleStartBtn.textContent = "TAP TO START";
+if (titleScreen) titleScreen.addEventListener("click", showLobby);
 if (lobbyBattleBtn) lobbyBattleBtn.addEventListener("click", showStageSelect);
 if (lobbyShopBtn) lobbyShopBtn.addEventListener("click", showShop);
 if (lobbyFormationBtn) lobbyFormationBtn.addEventListener("click", showFormation);

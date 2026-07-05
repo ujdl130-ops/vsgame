@@ -9471,6 +9471,67 @@ body:not(.game-started) .game-wrap {
   }
 }
 
+/* Full-screen game intro */
+.title-screen {
+  display: block;
+  padding: 0;
+  overflow: hidden;
+  cursor: pointer;
+  background: #05070d url("assets/start.png") center / cover no-repeat;
+}
+
+.title-screen .pixel-stars,
+.title-screen .title-kicker,
+.title-screen .pixel-logo,
+.title-screen .title-copy,
+.title-screen .title-preview,
+.title-screen .title-help {
+  display: none;
+}
+
+.title-screen .title-panel {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  width: auto;
+  padding: 0 20px max(7vh, env(safe-area-inset-bottom));
+  border: 0;
+  background: none;
+  box-shadow: none;
+}
+
+.title-screen .title-panel::before,
+.title-screen .title-panel::after {
+  display: none;
+}
+
+.title-screen .title-start-btn {
+  min-width: 0;
+  padding: 10px 18px;
+  border: 0;
+  color: #fff;
+  background: rgba(0, 0, 0, 0.42);
+  box-shadow: none;
+  font-family: inherit;
+  font-size: clamp(18px, 2.4vw, 34px);
+  font-weight: 900;
+  letter-spacing: 0.18em;
+  text-shadow: 0 2px 8px #000, 0 0 18px rgba(255, 255, 255, 0.6);
+  animation: titleTapPulse 1.35s ease-in-out infinite;
+}
+
+.title-screen .title-start-btn::before,
+.title-screen .title-start-btn::after {
+  display: none;
+}
+
+@keyframes titleTapPulse {
+  0%, 100% { opacity: 0.68; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.04); }
+}
+
 /* Formation card placement and selected-info polish */
 .formation-slots-panel {
   height: calc(100% - 112px);
