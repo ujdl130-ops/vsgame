@@ -410,22 +410,6 @@ function update(dt) {
   updateButtons();
 }
 
-function drawMessage() {
-  if (!gameState.message) return;
-  if (gameState.running && gameState.messageTimer <= 0 && gameState.waveBreakTimer <= 0) return;
-
-  ctx.save();
-  ctx.fillStyle = "rgba(0,0,0,0.5)";
-  ctx.fillRect(240, 42, 480, 62);
-  ctx.strokeStyle = "rgba(255,255,255,0.55)";
-  ctx.strokeRect(240, 42, 480, 62);
-  ctx.fillStyle = "#fff3a8";
-  ctx.font = "bold 28px Arial";
-  ctx.textAlign = "center";
-  ctx.fillText(gameState.message, canvas.width / 2, 82);
-  ctx.restore();
-}
-
 function drawZeusThunderstormEffect() {
   const effect = gameState.zeusSkillEffect;
   if (!effect || !effect.active || !zeusStormCloudSpriteReady) return;
@@ -521,5 +505,4 @@ function draw() {
   drawParticles();
   drawPoseidonTsunamiEffect();
   drawZeusThunderstormEffect();
-  drawMessage();
 }
