@@ -255,12 +255,13 @@ function applyZeusThunderstormDamage() {
   if (!effect || !effect.active) return;
 
   if (!effect.hitEnemies) effect.hitEnemies = new Set();
+  const thunderstormDamage = effect.damage || getZeusThunderstormDamage();
 
   for (const enemy of gameState.enemies) {
     if (!canDamageCombatant(enemy) || effect.hitEnemies.has(enemy)) continue;
     if (!isEnemyTouchedByZeusLightning(enemy, effect)) continue;
 
-    enemy.hp -= ZEUS_THUNDERSTORM_SKILL.damage;
+    enemy.hp -= thunderstormDamage;
     enemy.paralyzeTimer = Math.max(
       enemy.paralyzeTimer || 0,
       ZEUS_THUNDERSTORM_SKILL.paralysisDuration
