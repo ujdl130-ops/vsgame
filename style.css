@@ -400,7 +400,7 @@ body.game-started:not(.in-lobby):not(.in-stage-select):not(.in-shop):not(.in-rec
 
 .stage-clear-treasure-btn {
   left: 23.6%;
-  top: 44.2%;
+  top: 48.4%;
   width: 19.8%;
   height: 23.4%;
   transform-origin: center bottom;
@@ -452,7 +452,7 @@ body.game-started:not(.in-lobby):not(.in-stage-select):not(.in-shop):not(.in-rec
 
 .stage-clear-reward-ad-btn {
   left: 51.6%;
-  top: 49.2%;
+  top: 50.6%;
   width: 22.2%;
   height: 16.8%;
   color: #fff4c8;
