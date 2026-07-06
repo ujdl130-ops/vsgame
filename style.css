@@ -13858,6 +13858,98 @@ body:not(.game-started) .game-wrap {
   font-size: clamp(11px, 0.82vw, 14px);
 }
 
+/* Growth screen: owned hero board fit */
+.formation-roster-panel {
+  right: 3.8vw;
+  top: 12.6vh;
+  width: 34.8vw;
+  height: 71.8vh;
+  padding: 28px 26px 28px;
+}
+
+.formation-roster-head {
+  min-height: 38px;
+  margin-bottom: 16px;
+  padding: 0 74px 10px;
+}
+
+.formation-roster-grid.is-hero-roster {
+  height: calc(100% - 54px);
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-rows: repeat(2, minmax(0, 1fr));
+  gap: clamp(14px, 1.5vw, 24px) clamp(12px, 1.1vw, 18px);
+}
+
+.formation-roster-grid.is-hero-roster .formation-unit-card {
+  position: relative;
+  display: block;
+  overflow: hidden;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  padding: 0;
+  border: 2px solid rgba(116, 83, 45, 0.64);
+  border-radius: 4px;
+  background:
+    radial-gradient(circle at 50% 38%, rgba(245, 179, 67, 0.13), transparent 48%),
+    linear-gradient(180deg, rgba(34, 34, 34, 0.9), rgba(13, 13, 13, 0.95));
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 230, 172, 0.08),
+    0 8px 12px rgba(0, 0, 0, 0.28);
+}
+
+.formation-roster-grid.is-hero-roster .formation-unit-card.is-selected {
+  border-color: #f2b84f;
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 238, 185, 0.42),
+    0 0 0 1px rgba(91, 56, 15, 0.8),
+    0 0 16px rgba(255, 172, 42, 0.58),
+    0 8px 12px rgba(0, 0, 0, 0.3);
+}
+
+.formation-roster-grid.is-hero-roster .formation-unit-card img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: saturate(1.04) contrast(1.03) drop-shadow(0 6px 8px rgba(0, 0, 0, 0.46));
+}
+
+.formation-roster-grid.is-hero-roster .formation-unit-card.is-locked img {
+  filter: grayscale(1) brightness(0.42) contrast(1.08);
+}
+
+.formation-roster-grid.is-hero-roster .formation-unit-name {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 4;
+  min-height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px 8px 7px;
+  color: #fff0cf;
+  background:
+    linear-gradient(180deg, rgba(28, 19, 12, 0), rgba(28, 19, 12, 0.88) 42%, rgba(13, 9, 7, 0.94));
+  font-size: clamp(12px, 0.9vw, 15px);
+  font-weight: 1000;
+  line-height: 1;
+  text-align: center;
+  text-shadow:
+    0 2px 0 rgba(0, 0, 0, 0.92),
+    0 0 6px rgba(0, 0, 0, 0.48);
+}
+
+.formation-roster-grid.is-hero-roster .formation-unit-level {
+  display: none;
+}
+
+.formation-roster-grid.is-hero-roster .formation-hero-lock {
+  top: 48%;
+}
+
 @media (max-width: 1200px) {
   .formation-hero-detail-top,
   .formation-hero-detail-card,
