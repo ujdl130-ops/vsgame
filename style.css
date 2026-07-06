@@ -15567,3 +15567,183 @@ body:not(.game-started) .game-wrap {
 .formation-screen .formation-roster-grid.is-hero-roster .formation-hero-lock {
   top: 48% !important;
 }
+
+/* USER FIX: formation hero roster board fit only
+   - 카드가 석판 밖/하단 무기 장식으로 삐져나오지 않도록 우측 보유 영웅 영역만 재배치
+   - 다른 팀원 화면 영향 방지를 위해 formation-screen + is-hero-roster 범위로 한정 */
+.formation-screen .formation-roster-panel {
+  position: fixed !important;
+  left: 56.8vw !important;
+  right: 2.8vw !important;
+  top: 4.4vh !important;
+  width: auto !important;
+  height: 76vh !important;
+  min-height: 0 !important;
+  padding: 72px 28px 92px !important;
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  overflow: hidden !important;
+  transform: none !important;
+}
+
+.formation-screen .formation-roster-panel::before,
+.formation-screen .formation-roster-panel::after {
+  display: none !important;
+}
+
+.formation-screen .formation-roster-head {
+  position: absolute !important;
+  left: 0 !important;
+  right: 0 !important;
+  top: 20px !important;
+  z-index: 8 !important;
+  width: 100% !important;
+  height: 42px !important;
+  min-height: 42px !important;
+  margin: 0 !important;
+  padding: 0 32px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  border: 0 !important;
+  transform: none !important;
+  pointer-events: none !important;
+}
+
+.formation-screen .formation-roster-head strong {
+  color: #17120c !important;
+  font-size: clamp(23px, 1.55vw, 31px) !important;
+  line-height: 1 !important;
+  letter-spacing: -0.02em !important;
+  text-shadow:
+    0 1px 0 rgba(243, 215, 164, 0.9),
+    0 0 5px rgba(255, 226, 167, 0.34) !important;
+}
+
+.formation-screen .formation-roster-head span {
+  position: absolute !important;
+  right: 20.5% !important;
+  top: 50% !important;
+  color: #c4a173 !important;
+  font-size: 13px !important;
+  font-weight: 900 !important;
+  transform: translateY(-50%) !important;
+}
+
+.formation-screen .formation-roster-grid.is-hero-roster {
+  display: grid !important;
+  width: 100% !important;
+  height: 100% !important;
+  min-height: 0 !important;
+  max-height: 100% !important;
+  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  grid-template-rows: repeat(2, minmax(0, 1fr)) !important;
+  gap: clamp(22px, 3.4vh, 38px) clamp(28px, 3.1vw, 56px) !important;
+  padding: 0 4px 0 !important;
+  justify-content: center !important;
+  justify-items: center !important;
+  align-content: center !important;
+  align-items: center !important;
+  overflow: hidden !important;
+}
+
+.formation-screen .formation-roster-grid.is-hero-roster .formation-unit-card {
+  position: relative !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  width: 100% !important;
+  height: 100% !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  overflow: visible !important;
+}
+
+.formation-screen .formation-roster-grid.is-hero-roster .formation-unit-card.is-selected {
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  filter: none !important;
+}
+
+.formation-screen .formation-roster-grid.is-hero-roster .formation-unit-card img {
+  display: block !important;
+  width: auto !important;
+  height: calc(100% - 28px) !important;
+  max-width: 100% !important;
+  max-height: calc(100% - 28px) !important;
+  object-fit: contain !important;
+  flex: 0 1 auto !important;
+  filter: saturate(1.04) contrast(1.03) drop-shadow(0 6px 8px rgba(0, 0, 0, 0.48)) !important;
+}
+
+.formation-screen .formation-roster-grid.is-hero-roster .formation-unit-card.is-selected img {
+  filter:
+    saturate(1.08)
+    contrast(1.04)
+    drop-shadow(0 0 10px rgba(255, 177, 45, 0.72))
+    drop-shadow(0 7px 8px rgba(0, 0, 0, 0.48)) !important;
+}
+
+.formation-screen .formation-roster-grid.is-hero-roster .formation-unit-card.is-locked img {
+  filter: grayscale(1) brightness(0.42) contrast(1.08) !important;
+}
+
+.formation-screen .formation-roster-grid.is-hero-roster .formation-unit-name {
+  position: static !important;
+  z-index: 4 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 100% !important;
+  height: 28px !important;
+  min-height: 28px !important;
+  margin: 0 !important;
+  padding: 4px 4px 0 !important;
+  color: #fff0cf !important;
+  background: transparent !important;
+  font-size: clamp(11px, 0.8vw, 14px) !important;
+  font-weight: 1000 !important;
+  line-height: 1 !important;
+  text-align: center !important;
+  text-shadow:
+    0 2px 0 rgba(0, 0, 0, 0.92),
+    0 0 6px rgba(0, 0, 0, 0.48) !important;
+}
+
+.formation-screen .formation-roster-grid.is-hero-roster .formation-unit-level {
+  display: none !important;
+}
+
+.formation-screen .formation-roster-grid.is-hero-roster .formation-hero-lock {
+  top: 46% !important;
+}
+
+@media (max-height: 900px) {
+  .formation-screen .formation-roster-panel {
+    top: 4.8vh !important;
+    height: 75vh !important;
+    padding: 66px 30px 88px !important;
+  }
+
+  .formation-screen .formation-roster-grid.is-hero-roster {
+    gap: clamp(16px, 2.5vh, 26px) clamp(28px, 3vw, 50px) !important;
+  }
+
+  .formation-screen .formation-roster-grid.is-hero-roster .formation-unit-card img {
+    height: calc(100% - 26px) !important;
+    max-height: calc(100% - 26px) !important;
+  }
+
+  .formation-screen .formation-roster-grid.is-hero-roster .formation-unit-name {
+    height: 26px !important;
+    min-height: 26px !important;
+  }
+}
