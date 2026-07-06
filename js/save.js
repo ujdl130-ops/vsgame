@@ -4,9 +4,10 @@ const STAGE_PROGRESS_KEY = "pixelDefenseStageProgress";
 
 const MIN_GROWTH_LEVEL = 1;
 const MAX_GROWTH_LEVEL = 50;
-const LEVEL_GROWTH_DEFINED_MAX_LEVEL = 30;
+const LEVEL_GROWTH_DEFINED_MAX_LEVEL = MAX_GROWTH_LEVEL;
+const LEVEL_GROWTH_FORMULA_SPAN = 29;
 const MIN_TRANSCENDENCE_STAR = 1;
-const MAX_TRANSCENDENCE_STAR = 6;
+const MAX_TRANSCENDENCE_STAR = 5;
 
 const CHARACTER_GROWTH_CONFIGS = {
   guard: {
@@ -66,12 +67,57 @@ const GROWTH_TYPE_ALIASES = {
   zeus: "hero",
 };
 
-const LEVEL_UP_GOLD_MILESTONES = [
-  { level: 1, cumulativeGold: 0 },
-  { level: 10, cumulativeGold: 1970 },
-  { level: 20, cumulativeGold: 12010 },
-  { level: 30, cumulativeGold: 38050 },
-];
+const LEVEL_UP_GOLD_COST_BY_LEVEL = {
+  2: 80,
+  3: 100,
+  4: 120,
+  5: 150,
+  6: 190,
+  7: 240,
+  8: 300,
+  9: 360,
+  10: 430,
+  11: 510,
+  12: 600,
+  13: 700,
+  14: 800,
+  15: 900,
+  16: 1010,
+  17: 1130,
+  18: 1260,
+  19: 1400,
+  20: 1730,
+  21: 1690,
+  22: 1860,
+  23: 2040,
+  24: 2230,
+  25: 2430,
+  26: 2640,
+  27: 2850,
+  28: 3070,
+  29: 3300,
+  30: 3930,
+  31: 3840,
+  32: 4100,
+  33: 4370,
+  34: 4650,
+  35: 4930,
+  36: 5220,
+  37: 5530,
+  38: 5840,
+  39: 6160,
+  40: 5400,
+  41: 6840,
+  42: 7190,
+  43: 7560,
+  44: 7930,
+  45: 8310,
+  46: 8700,
+  47: 9100,
+  48: 9510,
+  49: 9930,
+  50: 6970,
+};
 
 const HERO_LEVEL_UP_COST_MULTIPLIER = 1.25;
 
@@ -87,11 +133,15 @@ const CHARACTER_FRAGMENT_KEYS = {
 const TRANSCENDENCE_FRAGMENT_COSTS = {
   2: 20,
   3: 30,
+  4: 50,
+  5: 80,
 };
 
 const HERO_TRANSCENDENCE_FRAGMENT_COSTS = {
   2: 40,
   3: 40,
+  4: 40,
+  5: 40,
 };
 
 function resolveGrowthType(type) {
@@ -118,22 +168,29 @@ function getCharacterFragmentKey(type) {
   return CHARACTER_FRAGMENT_KEYS[growthType] || `${growthType}Fragment`;
 }
 
+function getRequiredTranscendenceStarForLevel(level) {
+  const targetLevel = clampGrowthLevel(level);
+  if (targetLevel > 40) return 5;
+  if (targetLevel > 30) return 4;
+  return 1;
+}
+
+function meetsLevelTranscendenceRequirement(targetLevel, growthState) {
+  const star = clampTranscendenceStar(growthState && growthState.star);
+  return star >= getRequiredTranscendenceStarForLevel(targetLevel);
+}
+
 function getBaseCumulativeLevelUpGold(level) {
   const targetLevel = clampGrowthLevel(level);
-  const lastMilestone = LEVEL_UP_GOLD_MILESTONES[LEVEL_UP_GOLD_MILESTONES.length - 1];
+  let cumulativeGold = 0;
 
-  for (let index = 1; index < LEVEL_UP_GOLD_MILESTONES.length; index += 1) {
-    const previous = LEVEL_UP_GOLD_MILESTONES[index - 1];
-    const next = LEVEL_UP_GOLD_MILESTONES[index];
-
-    if (targetLevel <= next.level) {
-      const levelProgress = (targetLevel - previous.level) / (next.level - previous.level);
-      const goldRange = next.cumulativeGold - previous.cumulativeGold;
-      return Math.round(previous.cumulativeGold + goldRange * levelProgress);
-    }
+  for (let currentLevel = MIN_GROWTH_LEVEL + 1; currentLevel <= targetLevel; currentLevel += 1) {
+    const levelCost = LEVEL_UP_GOLD_COST_BY_LEVEL[currentLevel];
+    if (typeof levelCost !== "number") return null;
+    cumulativeGold += levelCost;
   }
 
-  return targetLevel <= lastMilestone.level ? lastMilestone.cumulativeGold : null;
+  return cumulativeGold;
 }
 
 function getCumulativeLevelUpGold(type, level) {
@@ -142,11 +199,11 @@ function getCumulativeLevelUpGold(type, level) {
   return Math.round(baseCost * (isHeroGrowthType(type) ? HERO_LEVEL_UP_COST_MULTIPLIER : 1));
 }
 
-function getLevelUpGoldCost(type, fromLevel, toLevel = Number(fromLevel) + 1) {
+function getLevelUpGoldCost(type, fromLevel, toLevel = Number(fromLevel) + 1, growthState = getStoredGrowthState(type)) {
   const startLevel = clampGrowthLevel(fromLevel);
   const targetLevel = clampGrowthLevel(toLevel);
   if (targetLevel <= startLevel) return 0;
-  if (targetLevel > LEVEL_GROWTH_DEFINED_MAX_LEVEL) return null;
+  if (!meetsLevelTranscendenceRequirement(targetLevel, growthState)) return null;
   const targetCost = getCumulativeLevelUpGold(type, targetLevel);
   const startCost = getCumulativeLevelUpGold(type, startLevel);
   if (targetCost === null || startCost === null) return null;
@@ -159,7 +216,7 @@ function getNextLevelUpGoldCost(type, growthState = getStoredGrowthState(type)) 
 
 function canLevelUp(type, growthState = getStoredGrowthState(type)) {
   const currentLevel = clampGrowthLevel(growthState.level);
-  return currentLevel < LEVEL_GROWTH_DEFINED_MAX_LEVEL
+  return currentLevel < MAX_GROWTH_LEVEL
     && getNextLevelUpGoldCost(type, growthState) !== null;
 }
 
@@ -211,7 +268,7 @@ function getLevelGrowthCoefficient(type, stat, level) {
   const config = CHARACTER_GROWTH_CONFIGS[growthType];
   const levelGrowth = (config && config.level && config.level[stat]) || 0;
   const definedLevel = Math.min(clampGrowthLevel(level), LEVEL_GROWTH_DEFINED_MAX_LEVEL);
-  return 1 + ((definedLevel - MIN_GROWTH_LEVEL) / (LEVEL_GROWTH_DEFINED_MAX_LEVEL - MIN_GROWTH_LEVEL)) * levelGrowth;
+  return 1 + ((definedLevel - MIN_GROWTH_LEVEL) / LEVEL_GROWTH_FORMULA_SPAN) * levelGrowth;
 }
 
 function getTranscendenceCoefficient(type, stat, star) {
