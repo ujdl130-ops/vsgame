@@ -1,0 +1,311 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Defeat UI Concept</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      width: 100%;
+      height: 100%;
+      margin: 0;
+      overflow: hidden;
+      background: #070914;
+      font-family: "Arial Black", "Malgun Gothic", "Apple SD Gothic Neo", sans-serif;
+    }
+
+    .concept {
+      position: relative;
+      width: 1280px;
+      height: 720px;
+      overflow: hidden;
+      color: #fff2c7;
+      background:
+        linear-gradient(180deg, rgba(19, 8, 13, 0.35), rgba(7, 7, 14, 0.76)),
+        url("../assets/maps/stage1/stage1_forest_bg_v2.png") center / cover no-repeat,
+        #111827;
+    }
+
+    .concept::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        linear-gradient(rgba(255, 255, 255, 0.03) 50%, rgba(0, 0, 0, 0.08) 50%),
+        radial-gradient(ellipse at 50% 46%, rgba(160, 23, 28, 0.25), transparent 38%),
+        radial-gradient(ellipse at 50% 120%, rgba(0, 0, 0, 0.72), transparent 58%);
+      background-size: 100% 4px, auto, auto;
+    }
+
+    .concept::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        linear-gradient(122deg, transparent 0 39%, rgba(255, 222, 142, 0.22) 39.2%, transparent 40.1%),
+        linear-gradient(57deg, transparent 0 58%, rgba(139, 23, 19, 0.32) 58.2%, transparent 59%),
+        radial-gradient(ellipse at 50% 50%, transparent 0 56%, rgba(0, 0, 0, 0.46) 100%);
+      pointer-events: none;
+    }
+
+    .crest {
+      position: absolute;
+      left: 50%;
+      top: 126px;
+      width: 146px;
+      height: 166px;
+      transform: translateX(-50%);
+      opacity: 0.32;
+      filter: grayscale(0.5) sepia(0.25) brightness(0.58) drop-shadow(0 16px 18px rgba(0, 0, 0, 0.58));
+    }
+
+    .crest img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+
+    .defeat-wrap {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      width: 840px;
+      min-height: 430px;
+      transform: translate(-50%, -50%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding-top: 18px;
+    }
+
+    .title-ribbon {
+      position: relative;
+      width: 760px;
+      height: 158px;
+      display: grid;
+      place-items: center;
+      border: 4px solid #d19b51;
+      border-radius: 8px;
+      background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.12), transparent 42%),
+        linear-gradient(90deg, rgba(45, 11, 16, 0.18), rgba(136, 35, 30, 0.94) 18%, rgba(88, 18, 25, 0.98) 50%, rgba(136, 35, 30, 0.94) 82%, rgba(45, 11, 16, 0.18)),
+        #5c171b;
+      box-shadow:
+        inset 0 3px 0 rgba(255, 240, 184, 0.2),
+        inset 0 -10px 0 rgba(0, 0, 0, 0.2),
+        0 8px 0 rgba(31, 14, 13, 0.85),
+        0 0 0 6px rgba(28, 18, 18, 0.8),
+        0 0 38px rgba(191, 42, 31, 0.42);
+    }
+
+    .title-ribbon::before,
+    .title-ribbon::after {
+      content: "";
+      position: absolute;
+      top: 50%;
+      width: 116px;
+      height: 98px;
+      border: 4px solid #9e6d35;
+      background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.08), transparent 44%),
+        linear-gradient(180deg, #58191d, #210d13);
+      z-index: -1;
+      transform: translateY(-50%);
+      box-shadow: 0 6px 0 rgba(23, 10, 10, 0.8);
+    }
+
+    .title-ribbon::before {
+      left: -78px;
+      clip-path: polygon(0 0, 100% 0, 80% 50%, 100% 100%, 0 100%);
+    }
+
+    .title-ribbon::after {
+      right: -78px;
+      clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%, 20% 50%);
+    }
+
+    .ornament {
+      position: absolute;
+      left: 50%;
+      bottom: -41px;
+      width: 560px;
+      height: 54px;
+      transform: translateX(-50%);
+      pointer-events: none;
+    }
+
+    .ornament::before,
+    .ornament::after {
+      content: "";
+      position: absolute;
+      top: 7px;
+      width: 248px;
+      height: 34px;
+      border-bottom: 7px solid rgba(185, 133, 72, 0.82);
+      filter: drop-shadow(0 4px 0 rgba(0, 0, 0, 0.32));
+    }
+
+    .ornament::before {
+      left: 0;
+      border-left: 7px solid rgba(185, 133, 72, 0.82);
+      border-radius: 0 0 0 92px;
+      transform: skewX(-23deg);
+    }
+
+    .ornament::after {
+      right: 0;
+      border-right: 7px solid rgba(185, 133, 72, 0.82);
+      border-radius: 0 0 92px 0;
+      transform: skewX(23deg);
+    }
+
+    .defeat-text {
+      position: relative;
+      z-index: 2;
+      color: #e8b4a0;
+      font-size: 106px;
+      font-weight: 1000;
+      letter-spacing: 0;
+      line-height: 0.9;
+      text-align: center;
+      -webkit-text-stroke: 4px rgba(55, 21, 24, 0.95);
+      text-shadow:
+        0 5px 0 #5f221f,
+        0 11px 0 rgba(0, 0, 0, 0.38),
+        0 0 20px rgba(183, 64, 48, 0.58),
+        0 0 34px rgba(75, 34, 147, 0.3);
+    }
+
+    .defeat-text::before {
+      content: "";
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      width: 112px;
+      height: 172px;
+      transform: translate(-50%, -51%) rotate(3deg);
+      background:
+        linear-gradient(140deg, transparent 0 34%, rgba(235, 199, 156, 0.3) 35% 42%, transparent 43% 100%),
+        linear-gradient(40deg, transparent 0 32%, rgba(45, 26, 29, 0.78) 33% 47%, transparent 48% 100%);
+      border: 4px solid rgba(194, 156, 105, 0.5);
+      clip-path: polygon(50% 0, 82% 20%, 74% 78%, 50% 100%, 26% 78%, 18% 20%);
+      z-index: -1;
+      filter: drop-shadow(0 0 12px rgba(75, 34, 147, 0.3));
+    }
+
+    .subcopy {
+      margin: 50px 0 0;
+      color: #fff0c4;
+      font-size: 26px;
+      font-weight: 1000;
+      letter-spacing: 0;
+      text-shadow:
+        0 3px 0 #1b0b0c,
+        0 0 12px rgba(255, 89, 43, 0.4);
+    }
+
+    .button-row {
+      display: grid;
+      grid-template-columns: repeat(3, 174px);
+      gap: 22px;
+      margin-top: 24px;
+    }
+
+    .ui-btn {
+      position: relative;
+      height: 64px;
+      display: grid;
+      place-items: center;
+      border: 4px solid #efd28b;
+      border-radius: 7px;
+      color: #fff8d9;
+      font-size: 24px;
+      font-weight: 1000;
+      letter-spacing: 0;
+      text-shadow: 0 3px 0 #17100f;
+      box-shadow:
+        inset 0 3px 0 rgba(255, 255, 255, 0.25),
+        inset 0 -8px 0 rgba(0, 0, 0, 0.27),
+        0 6px 0 #3c1d12,
+        0 0 0 4px rgba(19, 13, 17, 0.9),
+        0 0 18px rgba(255, 209, 112, 0.18);
+    }
+
+    .ui-btn::before {
+      content: "";
+      position: absolute;
+      left: 12px;
+      top: 50%;
+      width: 9px;
+      height: 9px;
+      transform: translateY(-50%) rotate(45deg);
+      background: #ffe6a3;
+      box-shadow: 139px 0 0 #ffe6a3;
+    }
+
+    .lobby {
+      background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.12), transparent 42%),
+        linear-gradient(180deg, #4e7195, #1d354f 58%, #111c2f);
+    }
+
+    .restart {
+      background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.14), transparent 40%),
+        linear-gradient(180deg, #d35732, #8f241a 58%, #3c1113);
+    }
+
+    .upgrade {
+      color: #2b1a0e;
+      text-shadow: 0 1px 0 rgba(255, 255, 255, 0.55);
+      background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.26), transparent 42%),
+        linear-gradient(180deg, #fff0a8, #e0a23c 58%, #9c5d1d);
+    }
+
+    .embers span {
+      position: absolute;
+      width: 8px;
+      height: 8px;
+      background: #d2512c;
+      box-shadow: 0 0 12px rgba(255, 91, 40, 0.7);
+      transform: rotate(45deg);
+      opacity: 0.75;
+    }
+
+    .embers span:nth-child(1) { left: 18%; top: 20%; }
+    .embers span:nth-child(2) { left: 30%; top: 14%; width: 6px; height: 6px; }
+    .embers span:nth-child(3) { right: 24%; top: 18%; }
+    .embers span:nth-child(4) { right: 16%; top: 31%; width: 5px; height: 5px; }
+    .embers span:nth-child(5) { left: 47%; bottom: 18%; width: 6px; height: 6px; }
+  </style>
+</head>
+<body>
+  <main class="concept">
+    <div class="embers" aria-hidden="true">
+      <span></span><span></span><span></span><span></span><span></span>
+    </div>
+    <div class="crest" aria-hidden="true">
+      <img src="../assets/maps/stage1/player_castle_stage1.png" alt="">
+    </div>
+    <section class="defeat-wrap" aria-label="패배 UI 시안">
+      <div class="title-ribbon">
+        <div class="defeat-text">DEFEAT</div>
+        <div class="ornament" aria-hidden="true"></div>
+      </div>
+      <p class="subcopy">성이 함락되었습니다</p>
+      <div class="button-row" aria-label="패배 행동 버튼">
+        <div class="ui-btn lobby">로비</div>
+        <div class="ui-btn restart">재시작</div>
+        <div class="ui-btn upgrade">강화</div>
+      </div>
+    </section>
+  </main>
+</body>
+</html>
