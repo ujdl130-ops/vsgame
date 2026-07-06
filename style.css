@@ -12118,6 +12118,11 @@ body:not(.game-started) .game-wrap {
     drop-shadow(0 0 12px rgba(245, 178, 41, 0.18));
 }
 
+.stage-detail-panel[data-stage="2"] .stage-detail-gold-reward,
+.stage-detail-panel[data-stage="3"] .stage-detail-gold-reward {
+  top: 56%;
+}
+
 .stage-detail-close-btn,
 .stage-detail-start-btn {
   position: absolute;
