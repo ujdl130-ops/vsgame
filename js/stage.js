@@ -194,7 +194,7 @@ function showStageDetailPanel(stageNumber) {
   const detailConfig = getStageDetailConfig(stageNumber);
   if (!stageDetailPanel || !detailConfig) return false;
 
-  const detailImage = stageDetailPanel.querySelector("img");
+  const detailImage = stageDetailPanel.querySelector(".stage-detail-bg");
   if (detailImage) {
     detailImage.src = detailConfig.image;
     detailImage.alt = detailConfig.alt;
