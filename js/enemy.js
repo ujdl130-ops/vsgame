@@ -122,7 +122,7 @@ const KARON_WEREWOLF_SPRITE = {
   fps: { idle: 6, walk: 8, attack: 10, death: 7 },
   drawW: 280,
   drawH: 374,
-  baseOffsetY: 90,
+  baseOffsetY: 18,
   healthBarOffsetY: 226,
   healthBarWidth: 112,
   clawHitReleaseProgress: 0.55,
@@ -137,20 +137,89 @@ const KARON_WEREWOLF_SPRITE = {
   visualBottomsByAnim: {
     idle: [268, 268, 267, 268, 267, 268],
     walk: [268, 268, 267, 268, 267, 268],
-    attack: [246, 246, 268, 268, 268, 268],
+    attack: [246, 246, 253, 255, 254, 255],
+    death: [245, 241, 247, 250, 252, 253],
+  },
+  frameOverrides: {
+    attack: {
+      4: {
+        sourceCrop: { left: 52 },
+      },
+      5: {
+        sourceCrop: { left: 36 },
+      },
+    },
   },
 };
 
 const GOBLIN_STAGE_STATS = {
   1: { hp: 70, damage: 13 },
   2: { hp: 71, damage: 13 },
-  3: { hp: 73, damage: 13 },
+  3: { hp: 128, damage: 24 },
 };
 
 const EVILEYE_STAGE_STATS = {
   2: { hp: 66, damage: 12 },
-  3: { hp: 69, damage: 12 },
+  3: { hp: 124, damage: 23 },
 };
+
+function getEnemyPlayerBaseDamageScale(enemy) {
+  return enemy && enemy.type === "evileye" ? 0.65 : 0.8;
+}
+
+function getEnemyPlayerBaseReleaseProgress(enemy) {
+  return enemy && enemy.type === "evileye" ? 0.58 : 0.5;
+}
+
+function getEnemyPlayerBaseHitY(enemy) {
+  return enemy && enemy.type === "evileye" ? GROUND_Y - 118 : GROUND_Y - 76;
+}
+
+function damageEnemyPlayerBase(enemy) {
+  const damageScale = getEnemyPlayerBaseDamageScale(enemy);
+  const attackInterval = enemy.attackSpeed || 1;
+  gameState.playerBaseHp -= enemy.damage * damageScale * attackInterval;
+  spawnHit(PLAYER_BASE_ATTACK_HIT_X, getEnemyPlayerBaseHitY(enemy), enemy.type === "evileye" ? "#c56dff" : "#ff9090");
+  enemy.playerGateHitPending = false;
+}
+
+function updateEnemyPlayerBaseAttackHit(enemy, attackProgress) {
+  if (!enemy.playerGateHitPending) return;
+  if (attackProgress >= getEnemyPlayerBaseReleaseProgress(enemy) || enemy.attackAnimTimer <= 0) {
+    damageEnemyPlayerBase(enemy);
+  }
+}
+
+function startEnemyPlayerBaseAttack(enemy, attackDuration) {
+  enemy.cooldown = enemy.attackSpeed;
+  enemy.attackAnimTimer = attackDuration;
+  enemy.playerGateHitPending = true;
+  enemy.laserTarget = null;
+  enemy.laserHitPending = false;
+  enemy.moving = false;
+}
+
+function advanceEnemyTowardPlayerBase(enemy, dt, attackDuration) {
+  if (enemy.x <= PLAYER_BASE_ATTACK_X) {
+    enemy.x = PLAYER_BASE_ATTACK_X;
+    enemy.moving = false;
+    if (enemy.cooldown <= 0 && enemy.attackAnimTimer <= 0) {
+      startEnemyPlayerBaseAttack(enemy, attackDuration);
+    }
+    return;
+  }
+
+  enemy.x -= enemy.speed * dt;
+  enemy.moving = true;
+
+  if (enemy.x <= PLAYER_BASE_ATTACK_X) {
+    enemy.x = PLAYER_BASE_ATTACK_X;
+    enemy.moving = false;
+    if (enemy.cooldown <= 0 && enemy.attackAnimTimer <= 0) {
+      startEnemyPlayerBaseAttack(enemy, attackDuration);
+    }
+  }
+}
 
 function getStageMonsterStats(table, fallbackStage) {
   const stage = Number(gameState && gameState.stage) || fallbackStage;
@@ -222,8 +291,8 @@ function shouldSpawnEvileye(wave) {
 }
 
 function createKaronBoss(wave) {
-  const phaseOneHp = 520 + wave * 90;
-  const phaseTwoHp = 760 + wave * 120;
+  const phaseOneHp = 900 + wave * 150;
+  const phaseTwoHp = 1850 + wave * 280;
   return {
     type: "karon",
     name: "karon",
@@ -240,18 +309,20 @@ function createKaronBoss(wave) {
     hp: phaseOneHp,
     maxHp: phaseOneHp,
     speed: 24,
-    damage: 28 + wave * 4,
-    range: 275,
-    cooldown: 0.45,
-    attackSpeed: 1.55,
+    damage: 44 + wave * 9,
+    range: 295,
+    cooldown: 0.35,
+    attackSpeed: 1.35,
     animTime: 0,
     moving: false,
     attackAnimTimer: 0,
     attackAnimDuration: 0.82,
     swordWaveTarget: null,
     swordWavePending: false,
+    swordWaveSplashRadius: 76,
     clawTarget: null,
     clawHitPending: false,
+    playerGateHitPending: false,
     transformAnimTimer: 0,
     transformAnimDuration: KARON_TRANSFORM_SPRITE.transformDuration,
     paralyzeTimer: 0,
@@ -264,7 +335,7 @@ function createKaronBoss(wave) {
 
 function shouldSpawnKaronBoss(wave) {
   if (gameState.karonBossSpawned) return false;
-  return Number(gameState.stage) === 3 && wave === 1 && gameState.spawnedInWave === 0;
+  return Number(gameState.stage) === 3 && wave === gameState.maxWave && gameState.spawnedInWave === 0;
 }
 
 function isKaronWerewolf(enemy) {
@@ -304,6 +375,7 @@ function startKaronTransformation(enemy) {
   enemy.swordWavePending = false;
   enemy.clawTarget = null;
   enemy.clawHitPending = false;
+  enemy.playerGateHitPending = false;
   enemy.paralyzeTimer = 0;
   enemy.transformAnimDuration = KARON_TRANSFORM_SPRITE.transformDuration;
   enemy.transformAnimTimer = 0;
@@ -327,10 +399,10 @@ function finishKaronTransformation(enemy) {
   enemy.w = 88;
   enemy.h = 120;
   enemy.speed = 36;
-  enemy.damage = 38 + wave * 5;
-  enemy.range = 86;
+  enemy.damage = 120 + wave * 18;
+  enemy.range = 92;
   enemy.cooldown = 0.35;
-  enemy.attackSpeed = 1.05;
+  enemy.attackSpeed = 0.96;
   enemy.attackAnimTimer = 0;
   enemy.attackAnimDuration = 0.82;
   enemy.deathAnimDuration = 1.05;
@@ -338,6 +410,7 @@ function finishKaronTransformation(enemy) {
   enemy.swordWavePending = false;
   enemy.clawTarget = null;
   enemy.clawHitPending = false;
+  enemy.playerGateHitPending = false;
 }
 
 function updateKaronTransformation(enemy, dt) {
@@ -365,6 +438,33 @@ function damageKaronClawTarget(enemy) {
   enemy.clawTarget = null;
 }
 
+function getKaronPlayerGateStopX(werewolf) {
+  return werewolf ? PLAYER_BASE_ATTACK_X + 12 : PLAYER_BASE_ATTACK_X;
+}
+
+function getKaronPlayerGateDamageScale(werewolf) {
+  return werewolf ? 0.75 : 0.55;
+}
+
+function damageKaronPlayerGate(enemy, werewolf) {
+  const damageScale = getKaronPlayerGateDamageScale(werewolf);
+  const attackInterval = enemy.attackSpeed || 1;
+  gameState.playerBaseHp -= enemy.damage * damageScale * attackInterval;
+  spawnHit(PLAYER_BASE_ATTACK_HIT_X, GROUND_Y - (werewolf ? 90 : 78), werewolf ? "#ff3b79" : "#ff6d4a");
+  enemy.playerGateHitPending = false;
+}
+
+function startKaronPlayerGateAttack(enemy, attackDuration) {
+  enemy.cooldown = enemy.attackSpeed;
+  enemy.attackAnimTimer = attackDuration;
+  enemy.playerGateHitPending = true;
+  enemy.swordWaveTarget = null;
+  enemy.swordWavePending = false;
+  enemy.clawTarget = null;
+  enemy.clawHitPending = false;
+  enemy.moving = false;
+}
+
 function updateKaronEnemy(enemy, dt) {
   if (enemy.transforming || enemy.bossPhase === "transform") {
     updateKaronTransformation(enemy, dt);
@@ -376,6 +476,7 @@ function updateKaronEnemy(enemy, dt) {
     enemy.attackAnimTimer = 0;
     enemy.swordWavePending = false;
     enemy.clawHitPending = false;
+    enemy.playerGateHitPending = false;
     return;
   }
 
@@ -396,7 +497,12 @@ function updateKaronEnemy(enemy, dt) {
     damageKaronClawTarget(enemy);
   }
 
+  if (enemy.playerGateHitPending && (attackProgress >= (werewolf ? spriteSpec.clawHitReleaseProgress : spriteSpec.swordWaveReleaseProgress) || enemy.attackAnimTimer <= 0)) {
+    damageKaronPlayerGate(enemy, werewolf);
+  }
+
   const target = findNearestAlly(enemy.x, enemy.range);
+  const baseStopX = getKaronPlayerGateStopX(werewolf);
 
   if (target) {
     if (enemy.cooldown <= 0 && enemy.attackAnimTimer <= 0) {
@@ -410,18 +516,87 @@ function updateKaronEnemy(enemy, dt) {
         enemy.swordWavePending = true;
       }
     }
+  } else if (enemy.x <= baseStopX) {
+    enemy.x = baseStopX;
+    enemy.moving = false;
+    if (enemy.cooldown <= 0 && enemy.attackAnimTimer <= 0) {
+      startKaronPlayerGateAttack(enemy, attackDuration);
+    }
   } else {
     enemy.x -= enemy.speed * dt;
     enemy.moving = true;
+    if (enemy.x <= baseStopX) {
+      enemy.x = baseStopX;
+      enemy.moving = false;
+      if (enemy.cooldown <= 0 && enemy.attackAnimTimer <= 0) {
+        startKaronPlayerGateAttack(enemy, attackDuration);
+      }
+    }
+  }
+}
+
+function createBruteEnemy(wave, stageThreeTuned = false) {
+  const hp = stageThreeTuned ? 112 + wave * 14 : 95 + wave * 8;
+  return {
+    type: "brute",
+    x: ENEMY_BASE_X - 45,
+    y: COMBAT_LINE_Y,
+    w: 44,
+    h: 66,
+    hp,
+    maxHp: hp,
+    speed: (stageThreeTuned ? 30 : 28) + wave * 2,
+    damage: stageThreeTuned ? 19 + wave * 3 : 16 + wave * 2,
+    range: 45,
+    cooldown: 0,
+    attackSpeed: stageThreeTuned ? 0.86 : 0.9,
+    animTime: 0,
+    moving: false,
+    attackAnimTimer: 0,
+    attackAnimDuration: 0.34,
+    paralyzeTimer: 0,
+    dead: false,
+    deathAnimTimer: 0,
+    deathAnimDuration: 0.55,
+    deathRewarded: false,
+  };
+}
+
+function createFastEnemy(wave, stageThreeTuned = false) {
+  const hp = stageThreeTuned ? 50 + wave * 8 : 36 + wave * 6;
+  return {
+    type: "fast",
+    x: ENEMY_BASE_X - 45,
+    y: COMBAT_LINE_Y,
+    w: 30,
+    h: 46,
+    hp,
+    maxHp: hp,
+    speed: stageThreeTuned ? 78 + wave * 4 : 74 + wave * 3,
+    damage: stageThreeTuned ? 9 + wave * 2 : 7 + wave,
+    range: 38,
+    cooldown: 0,
+    attackSpeed: stageThreeTuned ? 0.5 : 0.52,
+    animTime: 0,
+    moving: false,
+    attackAnimTimer: 0,
+    attackAnimDuration: 0.34,
+    paralyzeTimer: 0,
+    dead: false,
+    deathAnimTimer: 0,
+    deathAnimDuration: 0.55,
+    deathRewarded: false,
+  };
+}
+
+function createStageThreeMinion(wave) {
+  const spawnIndex = gameState.spawnedInWave || 0;
+
+  if (wave >= 2 && (spawnIndex % 3 === 1 || Math.random() < (wave >= 3 ? 0.35 : 0.22))) {
+    return createEvileyeEnemy(wave);
   }
 
-  const baseStopX = werewolf ? PLAYER_BASE_X + 62 : PLAYER_BASE_X + 42;
-  const baseDamageScale = werewolf ? 0.75 : 0.55;
-  if (enemy.x < baseStopX) {
-    gameState.playerBaseHp -= enemy.damage * dt * baseDamageScale;
-    enemy.x = baseStopX;
-    enemy.moving = false;
-  }
+  return createGoblinEnemy(wave, false);
 }
 
 function spawnEnemy() {
@@ -438,7 +613,9 @@ function spawnEnemy() {
     if (shouldSpawnKaronBoss(wave)) {
       gameState.karonBossSpawned = true;
       gameState.enemies.push(createKaronBoss(wave));
+      return;
     }
+    gameState.enemies.push(createStageThreeMinion(wave));
     return;
   }
 
@@ -446,29 +623,7 @@ function spawnEnemy() {
   const isFast = stage >= 3 && wave >= 3 && Math.random() < 0.25;
 
   if (isBrute) {
-    gameState.enemies.push({
-      type: "brute",
-      x: ENEMY_BASE_X - 45,
-      y: COMBAT_LINE_Y,
-      w: 44,
-      h: 66,
-      hp: 95 + wave * 8,
-      maxHp: 95 + wave * 8,
-      speed: 28 + wave * 2,
-      damage: 16 + wave * 2,
-      range: 45,
-      cooldown: 0,
-      attackSpeed: 0.9,
-      animTime: 0,
-      moving: false,
-      attackAnimTimer: 0,
-      attackAnimDuration: 0.34,
-      paralyzeTimer: 0,
-      dead: false,
-      deathAnimTimer: 0,
-      deathAnimDuration: 0.55,
-      deathRewarded: false,
-    });
+    gameState.enemies.push(createBruteEnemy(wave));
     return;
   }
 
@@ -477,29 +632,7 @@ function spawnEnemy() {
     return;
   }
 
-  gameState.enemies.push({
-    type: "fast",
-    x: ENEMY_BASE_X - 45,
-    y: COMBAT_LINE_Y,
-    w: 30,
-    h: 46,
-    hp: 36 + wave * 6,
-    maxHp: 36 + wave * 6,
-    speed: 74 + wave * 3,
-    damage: 7 + wave,
-    range: 38,
-    cooldown: 0,
-    attackSpeed: 0.52,
-    animTime: 0,
-    moving: false,
-    attackAnimTimer: 0,
-    attackAnimDuration: 0.34,
-    paralyzeTimer: 0,
-    dead: false,
-    deathAnimTimer: 0,
-    deathAnimDuration: 0.55,
-    deathRewarded: false,
-  });
+  gameState.enemies.push(createFastEnemy(wave));
 }
 
 function updateEnemies(dt) {
@@ -529,6 +662,7 @@ function updateEnemies(dt) {
     if (enemy.paralyzeTimer > 0) {
       enemy.animTime = Math.max(0, (enemy.animTime || 0) - dt);
       enemy.attackAnimTimer = 0;
+      enemy.playerGateHitPending = false;
       continue;
     }
 
@@ -537,6 +671,8 @@ function updateEnemies(dt) {
       const attackProgress = enemy.attackAnimTimer > 0
         ? 1 - enemy.attackAnimTimer / attackDuration
         : 1;
+
+      updateEnemyPlayerBaseAttackHit(enemy, attackProgress);
 
       if (enemy.laserHitPending && (attackProgress >= 0.58 || enemy.attackAnimTimer <= 0)) {
         const laserTarget = isCombatAlive(enemy.laserTarget)
@@ -562,25 +698,24 @@ function updateEnemies(dt) {
           enemy.laserHitPending = true;
         }
       } else {
-        enemy.x -= enemy.speed * dt;
-        enemy.moving = true;
-      }
-
-      if (enemy.x < PLAYER_BASE_X + 28) {
-        gameState.playerBaseHp -= enemy.damage * dt * 0.65;
-        enemy.x = PLAYER_BASE_X + 28;
-        enemy.moving = false;
+        advanceEnemyTowardPlayerBase(enemy, dt, attackDuration);
       }
 
       continue;
     }
+
+    const attackDuration = enemy.attackAnimDuration || 0.34;
+    const attackProgress = enemy.attackAnimTimer > 0
+      ? 1 - enemy.attackAnimTimer / attackDuration
+      : 1;
+    updateEnemyPlayerBaseAttackHit(enemy, attackProgress);
 
     const target = findNearestAlly(enemy.x, enemy.range);
 
     if (target) {
       if (enemy.cooldown <= 0) {
         enemy.cooldown = enemy.attackSpeed;
-        enemy.attackAnimTimer = enemy.attackAnimDuration || 0.34;
+        enemy.attackAnimTimer = attackDuration;
         target.hp -= enemy.damage;
 
         // 피격 시스템은 메인 영웅에게만 적용합니다.
@@ -589,14 +724,7 @@ function updateEnemies(dt) {
         }
       }
     } else {
-      enemy.x -= enemy.speed * dt;
-      enemy.moving = true;
-    }
-
-    if (enemy.x < PLAYER_BASE_X + 28) {
-      gameState.playerBaseHp -= enemy.damage * dt * 0.8;
-      enemy.x = PLAYER_BASE_X + 28;
-      enemy.moving = false;
+      advanceEnemyTowardPlayerBase(enemy, dt, attackDuration);
     }
   }
 }
@@ -666,11 +794,12 @@ function drawKaronSprite(enemy) {
     x: baseDrawOffset.x + (extraDrawOffset.x || 0),
     y: baseDrawOffset.y + (extraDrawOffset.y || 0),
   };
-  const sourceCrop = (spec.sourceCrops && spec.sourceCrops[anim]) || {};
-  const cropLeft = sourceCrop.left || 0;
-  const cropRight = sourceCrop.right || 0;
-  const cropTop = sourceCrop.top || 0;
-  const cropBottom = sourceCrop.bottom || 0;
+  const baseSourceCrop = (spec.sourceCrops && spec.sourceCrops[anim]) || {};
+  const frameSourceCrop = frameOverride.sourceCrop || {};
+  const cropLeft = frameSourceCrop.left ?? baseSourceCrop.left ?? 0;
+  const cropRight = frameSourceCrop.right ?? baseSourceCrop.right ?? 0;
+  const cropTop = frameSourceCrop.top ?? baseSourceCrop.top ?? 0;
+  const cropBottom = frameSourceCrop.bottom ?? baseSourceCrop.bottom ?? 0;
   const croppedFrameW = Math.max(1, sourceW - cropLeft - cropRight);
   const croppedFrameH = Math.max(1, sourceH - cropTop - cropBottom);
   const scaleX = dw / sourceW;
@@ -905,14 +1034,18 @@ function drawEnemy(enemy) {
   const isDying = enemy.dead || enemy.hp <= 0;
   const duration = enemy.deathAnimDuration || 0.55;
   const deathProgress = isDying ? 1 - Math.max(0, enemy.deathAnimTimer || 0) / duration : 0;
-  const bob = isDying || enemy.paralyzeTimer > 0 ? 0 : Math.sin((performance.now() + enemy.x * 11) * 0.012) * 2;
+  const isAttacking = !isDying && enemy.attackAnimTimer > 0;
+  const attackDuration = enemy.attackAnimDuration || 0.34;
+  const attackProgress = isAttacking ? 1 - Math.max(0, enemy.attackAnimTimer || 0) / attackDuration : 0;
+  const attackLunge = isAttacking ? -Math.sin(Math.min(1, Math.max(0, attackProgress)) * Math.PI) * 8 : 0;
+  const bob = isDying || isAttacking || enemy.paralyzeTimer > 0 ? 0 : Math.sin((performance.now() + enemy.x * 11) * 0.012) * 2;
 
   if (isDying) {
     ctx.globalAlpha = Math.max(0.1, 1 - deathProgress * 0.85);
     ctx.translate(0, deathProgress * 20);
     ctx.scale(1, Math.max(0.25, 1 - deathProgress * 0.65));
   } else {
-    ctx.translate(0, bob);
+    ctx.translate(attackLunge, bob);
   }
 
   ctx.fillStyle = "rgba(0,0,0,0.22)";

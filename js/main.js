@@ -22,6 +22,8 @@ function startGame(stageNumber = selectedStage) {
   }
 
   loadStageAssets(selectedStage);
+  hideStageClearRewardUi();
+  hideStageDefeatUi();
   closeGameOptionsMenu(false);
   resetGame();
   if (titleScreen) titleScreen.classList.add("is-hidden");
@@ -80,15 +82,35 @@ window.addEventListener("keydown", (event) => {
   }
 
   if (isStageSelectVisible()) {
-    if (event.code === "Escape") showLobby();
+    if (typeof isStageDetailVisible === "function" && isStageDetailVisible()) {
+      const detailButton = event.target && typeof event.target.closest === "function"
+        ? event.target.closest("#stageDetailCloseBtn, #stageDetailStartBtn")
+        : null;
+
+      if (event.code === "Escape") {
+        event.preventDefault();
+        hideStageDetailPanel();
+      } else if ((event.code === "Enter" || event.code === "Space") && !detailButton) {
+        event.preventDefault();
+        proceedStageDetailPanel();
+      }
+      return;
+    }
+
+    if (event.code === "Escape") {
+      event.preventDefault();
+      handleStageBack();
+    }
     if (event.code === "Enter" || event.code === "Space") {
       event.preventDefault();
-      if (stagePanel && stagePanel.classList.contains("is-hidden")) showChapterStages();
-      else openStage(playerProgress.unlockedStage);
+      if (isChapterStageMapVisible()) openStage(playerProgress.unlockedStage);
+      else showChapterStages();
     }
-    if (event.code === "Digit1") openStage(1);
-    if (event.code === "Digit2") openStage(2);
-    if (event.code === "Digit3") openStage(3);
+    if (isChapterStageMapVisible()) {
+      if (event.code === "Digit1") openStage(1);
+      if (event.code === "Digit2") openStage(2);
+      if (event.code === "Digit3") openStage(3);
+    }
     return;
   }
 
@@ -123,6 +145,29 @@ window.addEventListener("keydown", (event) => {
       event.preventDefault();
       if (recruitDoorScene && !recruitDoorScene.classList.contains("is-hidden")) handleRecruitDoorTap(event);
       else startRecruitDoorAnimation(1);
+    }
+    return;
+  }
+
+  if (isStageClearRewardVisible()) {
+    const rewardInteractive = event.target && typeof event.target.closest === "function"
+      ? event.target.closest(".stage-clear-reward-action, .stage-clear-reward-interactive")
+      : null;
+    if (rewardInteractive && (event.code === "Enter" || event.code === "Space")) return;
+    if (event.code === "Escape" || event.code === "Enter" || event.code === "Space") {
+      event.preventDefault();
+    }
+    return;
+  }
+
+  if (isStageDefeatVisible()) {
+    const defeatAction = event.target && typeof event.target.closest === "function"
+      ? event.target.closest(".stage-defeat-action")
+      : null;
+    if (defeatAction && (event.code === "Enter" || event.code === "Space")) return;
+    if (event.code === "Escape") {
+      event.preventDefault();
+      handleStageDefeatLobby();
     }
     return;
   }
@@ -222,8 +267,16 @@ function bindHeroActionIcon(button, actionFn) {
 
 if (startBtn) startBtn.addEventListener("click", () => startGame(selectedStage));
 if (gameOptionsBtn) gameOptionsBtn.addEventListener("click", toggleGameOptionsMenu);
+if (optionResumeBtn) optionResumeBtn.addEventListener("click", handleOptionResume);
 if (optionStageSelectBtn) optionStageSelectBtn.addEventListener("click", handleOptionStageSelect);
 if (optionRestartBtn) optionRestartBtn.addEventListener("click", handleOptionRestart);
+if (stageClearTreasureBtn) stageClearTreasureBtn.addEventListener("click", handleStageClearTreasureOpen);
+if (stageClearRewardAdBtn) stageClearRewardAdBtn.addEventListener("click", handleStageClearRewardAdPreview);
+if (stageClearRewardLobbyBtn) stageClearRewardLobbyBtn.addEventListener("click", handleStageClearRewardLobby);
+if (stageClearRewardRetryBtn) stageClearRewardRetryBtn.addEventListener("click", handleStageClearRewardRetry);
+if (stageClearRewardNextBtn) stageClearRewardNextBtn.addEventListener("click", handleStageClearRewardNext);
+if (stageDefeatLobbyBtn) stageDefeatLobbyBtn.addEventListener("click", handleStageDefeatLobby);
+if (stageDefeatRetryBtn) stageDefeatRetryBtn.addEventListener("click", handleStageDefeatRetry);
 bindMovementJoystick(movementJoystick);
 if (titleStartBtn) titleStartBtn.textContent = "TAP TO START";
 if (titleScreen) titleScreen.addEventListener("click", showLobby);
@@ -439,9 +492,11 @@ if (shopCloseBtn) shopCloseBtn.addEventListener("click", showLobby);
 shopCards.forEach((card) => {
   card.addEventListener("click", () => showShopItemNotice(card.dataset.item || "아이템"));
 });
-if (stageBackBtn) stageBackBtn.addEventListener("click", showLobby);
+if (stageBackBtn) stageBackBtn.addEventListener("click", handleStageBack);
 if (chapter1Btn) chapter1Btn.addEventListener("click", showChapterStages);
 if (chapterBackBtn) chapterBackBtn.addEventListener("click", showStageSelect);
+if (stageDetailCloseBtn) stageDetailCloseBtn.addEventListener("click", hideStageDetailPanel);
+if (stageDetailStartBtn) stageDetailStartBtn.addEventListener("click", proceedStageDetailPanel);
 stageCards.forEach((card) => {
   card.addEventListener("click", () => openStage(Number(card.dataset.stage)));
 });
@@ -453,9 +508,9 @@ bindUnitSlotButton(summonMageSlotBtn, summonMage);
 bindUnitSlotButton(summonSaintessSlotBtn, summonSaintess);
 bindUnitSlotButton(summonThiefSlotBtn, summonThief);
 bindHeroActionIcon(basicAttackIconBtn, castHolySlash);
-bindHeroActionIcon(zeusSkillIconBtn, castZeusThunderstorm);
+bindHeroActionIcon(zeusSkillIconBtn, castHeroSkill);
 if (skillBtn) skillBtn.addEventListener("click", castHolySlash);
-if (zeusSkillBtn) zeusSkillBtn.addEventListener("click", castZeusThunderstorm);
+if (zeusSkillBtn) zeusSkillBtn.addEventListener("click", castHeroSkill);
 // 전투 개편: 캔버스 직접 터치 공격은 제거했습니다.
 
 resetGame();

@@ -2,6 +2,74 @@
 
 const MAGE_FIREBALL_SPLASH_RADIUS = 52;
 const MAGE_FIREBALL_VERTICAL_RADIUS = 44;
+const PROJECTILE_DEFAULT_MAX_LIFE = 3.2;
+const KARON_SWORD_WAVE_GATE_X = PLAYER_BASE_ATTACK_X;
+const KARON_SWORD_WAVE_GATE_DAMAGE_SCALE = 0.55;
+
+function getEnemyProjectileHitPoint(enemy) {
+  if (!enemy) return { x: 0, y: 0 };
+
+  if (enemy.airborne) {
+    const evileyeConfig = typeof EVILEYE_SPRITE !== "undefined" ? EVILEYE_SPRITE : null;
+    const flightOffset = enemy.type === "evileye" && evileyeConfig
+      ? evileyeConfig.flightOffsetY
+      : Math.max(78, enemy.h * 1.15);
+    const visualHeight = enemy.type === "evileye" && evileyeConfig
+      ? evileyeConfig.drawH
+      : Math.max(enemy.h, 72);
+
+    return {
+      x: enemy.x,
+      y: enemy.y - flightOffset - visualHeight * 0.42,
+    };
+  }
+
+  return {
+    x: enemy.x,
+    y: enemy.y - Math.max(34, enemy.h * 0.65),
+  };
+}
+
+function updateProjectileImpactPoint(projectile) {
+  if (
+    projectile.target
+    && (isCombatAlive(projectile.target)
+      || typeof projectile.targetX !== "number"
+      || typeof projectile.targetY !== "number")
+  ) {
+    const hitPoint = getEnemyProjectileHitPoint(projectile.target);
+    projectile.targetX = hitPoint.x;
+    projectile.targetY = hitPoint.y;
+  }
+
+  return {
+    x: typeof projectile.targetX === "number" ? projectile.targetX : projectile.x,
+    y: typeof projectile.targetY === "number" ? projectile.targetY : projectile.y,
+  };
+}
+
+function moveProjectileTowardImpact(projectile, dt) {
+  const impact = updateProjectileImpactPoint(projectile);
+  const speed = projectile.speed || Math.abs(projectile.vx || 0) || 420;
+  const dx = impact.x - projectile.x;
+  const dy = impact.y - projectile.y;
+  const distance = Math.hypot(dx, dy);
+
+  projectile.reachedImpact = false;
+  if (distance <= speed * dt || distance <= 0.01) {
+    projectile.x = impact.x;
+    projectile.y = impact.y;
+    projectile.angle = Math.atan2(dy, dx || 1);
+    projectile.reachedImpact = true;
+    return impact;
+  }
+
+  const step = speed * dt;
+  projectile.x += (dx / distance) * step;
+  projectile.y += (dy / distance) * step;
+  projectile.angle = Math.atan2(dy, dx);
+  return impact;
+}
 
 function spawnHit(x, y, color) {
   for (let i = 0; i < 8; i++) {
@@ -100,10 +168,54 @@ function spawnKaronSwordWave(enemy) {
     y: enemy.y - 72,
     vx: -500,
     damage: enemy.damage,
+    splashRadius: enemy.swordWaveSplashRadius || 72,
     target,
     life: 0,
     maxLife: 1.5,
   });
+}
+
+function getKaronSwordWaveSplashTargets(impactX, radius) {
+  const targets = [];
+  if (isCombatAlive(gameState.hero)) targets.push(gameState.hero);
+
+  for (const unit of gameState.units) {
+    if (isCombatAlive(unit)) targets.push(unit);
+  }
+
+  return targets.filter((target) => Math.abs(target.x - impactX) <= radius);
+}
+
+function damageKaronSwordWaveSplash(projectile, impactX) {
+  const radius = projectile.splashRadius || 72;
+  const targets = getKaronSwordWaveSplashTargets(impactX, radius);
+
+  for (const target of targets) {
+    target.hp -= projectile.damage;
+    spawnHit(target.x, target.y - Math.max(38, target.h * 0.65), "#79c8ff");
+  }
+
+  const gateHit = isKaronSwordWavePlayerGateInSplash(impactX, radius);
+  if (gateHit) {
+    damageKaronSwordWavePlayerGate(projectile);
+  }
+
+  if (targets.length === 0 && !gateHit) {
+    spawnHit(impactX, projectile.y, "#79c8ff");
+  }
+}
+
+function isKaronSwordWavePlayerGateInSplash(impactX, radius) {
+  return Math.abs(impactX - KARON_SWORD_WAVE_GATE_X) <= radius;
+}
+
+function hasKaronSwordWaveReachedPlayerGate(projectile) {
+  return projectile.x <= KARON_SWORD_WAVE_GATE_X;
+}
+
+function damageKaronSwordWavePlayerGate(projectile) {
+  gameState.playerBaseHp -= projectile.damage * KARON_SWORD_WAVE_GATE_DAMAGE_SCALE;
+  spawnHit(PLAYER_BASE_ATTACK_HIT_X, GROUND_Y - 78, "#79c8ff");
 }
 
 function fireArcherArrow(unit) {
@@ -121,8 +233,9 @@ function fireArcherArrow(unit) {
     type: "arrow",
     x: unit.x + 34,
     y: unit.y - 44,
-    vx: 420,
+    speed: 420,
     damage: unit.damage,
+    maxLife: PROJECTILE_DEFAULT_MAX_LIFE,
     target: shotTarget,
   });
 
@@ -145,11 +258,12 @@ function fireMageBolt(unit) {
     type: "mageFireball",
     x: unit.x + 32,
     y: unit.y - 48,
-    vx: 360,
+    speed: 360,
     damage: unit.damage,
     splashRadius: MAGE_FIREBALL_SPLASH_RADIUS,
-    targetX: shotTarget.x,
-    targetY: shotTarget.y - Math.max(34, shotTarget.h * 0.72),
+    maxLife: PROJECTILE_DEFAULT_MAX_LIFE,
+    targetX: getEnemyProjectileHitPoint(shotTarget).x,
+    targetY: getEnemyProjectileHitPoint(shotTarget).y,
     target: shotTarget,
   });
 
@@ -158,19 +272,11 @@ function fireMageBolt(unit) {
 }
 
 function getMageFireballImpactPoint(projectile) {
-  if (isCombatAlive(projectile.target)) {
-    projectile.targetX = projectile.target.x;
-    projectile.targetY = projectile.target.y - Math.max(34, projectile.target.h * 0.72);
-  }
-
-  return {
-    x: projectile.targetX || projectile.x,
-    y: projectile.targetY || projectile.y,
-  };
+  return updateProjectileImpactPoint(projectile);
 }
 
 function isEnemyInsideMageFireball(enemy, impactX, impactY, radius) {
-  const enemyHitY = enemy.y - Math.max(30, enemy.h * 0.65);
+  const enemyHitY = getEnemyProjectileHitPoint(enemy).y;
   const dx = enemy.x - impactX;
   const dy = enemyHitY - impactY;
   return (dx * dx) / (radius * radius) + (dy * dy) / (MAGE_FIREBALL_VERTICAL_RADIUS * MAGE_FIREBALL_VERTICAL_RADIUS) <= 1;
@@ -186,7 +292,8 @@ function explodeMageFireball(projectile, impactX, impactY) {
 
     enemy.hp -= projectile.damage;
     hitCount += 1;
-    spawnHit(enemy.x, enemy.y - Math.max(34, enemy.h * 0.65), "#ffbd35");
+    const hitPoint = getEnemyProjectileHitPoint(enemy);
+    spawnHit(hitPoint.x, hitPoint.y, "#ffbd35");
   }
 
   spawnFireballBurst(impactX, impactY, radius);
@@ -196,16 +303,20 @@ function explodeMageFireball(projectile, impactX, impactY) {
 function updateProjectiles(dt) {
   for (const projectile of gameState.projectiles) {
     projectile.life = (projectile.life || 0) + dt;
-    projectile.x += projectile.vx * dt;
 
     if (projectile.type === "karonSwordWave") {
+      projectile.x += projectile.vx * dt;
       const target = isCombatAlive(projectile.target)
         ? projectile.target
         : findNearestAlly(projectile.x, 90);
 
       if (target && Math.abs(projectile.x - target.x) < 24) {
-        target.hp -= projectile.damage;
-        spawnHit(target.x, target.y - Math.max(38, target.h * 0.65), "#79c8ff");
+        damageKaronSwordWaveSplash(projectile, target.x);
+        projectile.dead = true;
+      }
+
+      if (!projectile.dead && hasKaronSwordWaveReachedPlayerGate(projectile)) {
+        damageKaronSwordWavePlayerGate(projectile);
         projectile.dead = true;
       }
 
@@ -214,22 +325,24 @@ function updateProjectiles(dt) {
     }
 
     if (projectile.type === "mageFireball") {
-      const impact = getMageFireballImpactPoint(projectile);
-      if (projectile.x >= impact.x - 16) {
+      const impact = moveProjectileTowardImpact(projectile, dt);
+      if (projectile.reachedImpact) {
         explodeMageFireball(projectile, impact.x, impact.y);
         projectile.dead = true;
       }
-      if (projectile.x > canvas.width + 50) projectile.dead = true;
+      if (projectile.x > canvas.width + 50 || projectile.life > (projectile.maxLife || PROJECTILE_DEFAULT_MAX_LIFE)) projectile.dead = true;
       continue;
     }
 
-    if (isCombatAlive(projectile.target) && Math.abs(projectile.x - projectile.target.x) < 18) {
-      if (canDamageCombatant(projectile.target)) {
+    const impact = moveProjectileTowardImpact(projectile, dt);
+    if (projectile.reachedImpact) {
+      if (isCombatAlive(projectile.target) && canDamageCombatant(projectile.target)) {
         projectile.target.hp -= projectile.damage;
+        spawnHit(impact.x, impact.y, projectile.color || "#f2fdff");
       }
       projectile.dead = true;
     }
-    if (projectile.x > canvas.width + 50) projectile.dead = true;
+    if (projectile.x > canvas.width + 50 || projectile.life > (projectile.maxLife || PROJECTILE_DEFAULT_MAX_LIFE)) projectile.dead = true;
   }
   gameState.projectiles = gameState.projectiles.filter((p) => !p.dead);
 }
@@ -291,18 +404,59 @@ function drawProjectiles() {
       continue;
     }
 
+    if (projectile.type === "poseidonBolt") {
+      const ripple = Math.sin((projectile.life || 0) * 24) * 3;
+      ctx.save();
+      ctx.translate(projectile.x, projectile.y);
+      ctx.rotate(projectile.angle || 0);
+      ctx.strokeStyle = projectile.color || "#7be8ff";
+      ctx.fillStyle = "rgba(190, 245, 255, 0.92)";
+      ctx.shadowColor = "rgba(90, 220, 255, 0.95)";
+      ctx.shadowBlur = 12;
+      ctx.lineWidth = 4;
+
+      ctx.beginPath();
+      ctx.moveTo(-22, 0);
+      ctx.lineTo(18, 0);
+      ctx.stroke();
+
+      ctx.beginPath();
+      ctx.moveTo(18, 0);
+      ctx.lineTo(7, -10);
+      ctx.moveTo(18, 0);
+      ctx.lineTo(7, 10);
+      ctx.moveTo(10, 0);
+      ctx.lineTo(0, -7);
+      ctx.moveTo(10, 0);
+      ctx.lineTo(0, 7);
+      ctx.stroke();
+
+      ctx.strokeStyle = "rgba(210, 250, 255, 0.72)";
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(-30, -8 + ripple);
+      ctx.quadraticCurveTo(-16, -17 - ripple, -2, -7);
+      ctx.moveTo(-34, 8 - ripple);
+      ctx.quadraticCurveTo(-18, 18 + ripple, -1, 7);
+      ctx.stroke();
+      ctx.restore();
+      continue;
+    }
+
     if (projectile.type === "heroBolt") {
       ctx.save();
+      ctx.translate(projectile.x, projectile.y);
+      ctx.rotate(projectile.angle || 0);
       ctx.strokeStyle = "#9fe8ff";
       ctx.shadowColor = "rgba(120, 220, 255, 0.95)";
       ctx.shadowBlur = 10;
       ctx.lineWidth = 4;
       ctx.beginPath();
-      ctx.moveTo(projectile.x - 18, projectile.y + 2);
-      ctx.lineTo(projectile.x - 10, projectile.y - 9);
-      ctx.lineTo(projectile.x - 1, projectile.y + 1);
-      ctx.lineTo(projectile.x + 8, projectile.y - 10);
-      ctx.lineTo(projectile.x + 18, projectile.y);
+      ctx.moveTo(-18, 2);
+      ctx.lineTo(-10, -9);
+      ctx.lineTo(-1, 1);
+      ctx.lineTo(8, -10);
+      ctx.lineTo(18, 0);
       ctx.stroke();
       ctx.restore();
       continue;
@@ -312,6 +466,7 @@ function drawProjectiles() {
       const flicker = Math.sin((projectile.life || 0) * 36) * 2;
       ctx.save();
       ctx.translate(projectile.x, projectile.y);
+      ctx.rotate(projectile.angle || 0);
       ctx.shadowColor = "rgba(255, 117, 24, 0.85)";
       ctx.shadowBlur = 10;
 
@@ -331,12 +486,16 @@ function drawProjectiles() {
       continue;
     }
 
+    ctx.save();
+    ctx.translate(projectile.x, projectile.y);
+    ctx.rotate(projectile.angle || 0);
     ctx.strokeStyle = "#f2fdff";
     ctx.lineWidth = 3;
     ctx.beginPath();
-    ctx.moveTo(projectile.x - 14, projectile.y);
-    ctx.lineTo(projectile.x + 12, projectile.y - 2);
+    ctx.moveTo(-14, 0);
+    ctx.lineTo(12, -2);
     ctx.stroke();
+    ctx.restore();
   }
 }
 

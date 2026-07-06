@@ -42,8 +42,13 @@ function startEnemyDeath(enemy) {
   enemy.swordWavePending = false;
   enemy.clawTarget = null;
   enemy.clawHitPending = false;
+  enemy.playerGateHitPending = false;
   enemy.deathAnimDuration = enemy.deathAnimDuration || 0.55;
   enemy.deathAnimTimer = enemy.deathAnimDuration;
+
+  if (enemy.isBoss && typeof recordStageMissionBossDefeat === "function") {
+    recordStageMissionBossDefeat();
+  }
 
   if (!enemy.deathRewarded) {
     addRunestone(18);
@@ -101,14 +106,19 @@ function cleanupDeadEntities() {
 }
 
 function checkEndConditions() {
+  if (gameState.clear || gameState.gameOver) return;
+
   if (gameState.enemyBaseHp <= 0) {
     completeStage(`STAGE ${selectedStage} CLEAR! 적 기지 파괴`);
+    return;
   }
 
   if (gameState.playerBaseHp <= 0) {
     gameState.gameOver = true;
     gameState.running = false;
-    gameState.message = "GAME OVER! 아군 기지가 파괴되었습니다.";
+    gameState.message = "DEFEAT! 성이 함락되었습니다.";
+    updateButtons();
+    if (typeof showStageDefeatUi === "function") showStageDefeatUi();
   }
 }
 
@@ -255,12 +265,13 @@ function applyZeusThunderstormDamage() {
   if (!effect || !effect.active) return;
 
   if (!effect.hitEnemies) effect.hitEnemies = new Set();
+  const thunderstormDamage = effect.damage || getZeusThunderstormDamage();
 
   for (const enemy of gameState.enemies) {
     if (!canDamageCombatant(enemy) || effect.hitEnemies.has(enemy)) continue;
     if (!isEnemyTouchedByZeusLightning(enemy, effect)) continue;
 
-    enemy.hp -= ZEUS_THUNDERSTORM_SKILL.damage;
+    enemy.hp -= thunderstormDamage;
     enemy.paralyzeTimer = Math.max(
       enemy.paralyzeTimer || 0,
       ZEUS_THUNDERSTORM_SKILL.paralysisDuration
@@ -284,6 +295,99 @@ function updateZeusThunderstormEffect(dt) {
   }
 }
 
+function getPoseidonTsunamiDamageZone(effect) {
+  const tsunamiApi = typeof window !== "undefined" ? window.PoseidonTsunamiAnimation : null;
+  if (tsunamiApi && typeof tsunamiApi.getDamageZone === "function") {
+    return tsunamiApi.getDamageZone(effect);
+  }
+
+  if (!effect || !effect.active) return null;
+  const progress = Math.max(0, Math.min(1, effect.timer / (effect.duration || 1)));
+  if (progress < 0.24 || progress > 1) return null;
+
+  return {
+    x: effect.impactX - effect.width * 0.46,
+    y: effect.groundY - effect.height * 0.82,
+    w: effect.width * 0.9,
+    h: effect.height * 0.86,
+    frontX: effect.impactX + effect.width * 0.24,
+    knockbackX: 1,
+  };
+}
+
+function isEnemyInsidePoseidonTsunami(enemy, zone) {
+  if (!enemy || !zone) return false;
+
+  const halfW = Math.max(enemy.w * 0.82, 20);
+  const enemyLeft = enemy.x - halfW;
+  const enemyRight = enemy.x + halfW;
+  const enemyTop = enemy.airborne
+    ? enemy.y - Math.max(enemy.h + 96, 128)
+    : enemy.y - Math.max(enemy.h + 26, 74);
+  const enemyBottom = enemy.y + 8;
+
+  return enemyRight >= zone.x
+    && enemyLeft <= zone.x + zone.w
+    && enemyBottom >= zone.y
+    && enemyTop <= zone.y + zone.h;
+}
+
+function applyPoseidonTsunamiDamage() {
+  const effect = gameState.poseidonSkillEffect;
+  if (!effect || !effect.active) return;
+
+  const zone = getPoseidonTsunamiDamageZone(effect);
+  if (!zone) return;
+  if (!effect.hitEnemies) effect.hitEnemies = new Set();
+
+  for (const enemy of gameState.enemies) {
+    if (!canDamageCombatant(enemy) || effect.hitEnemies.has(enemy)) continue;
+    if (!isEnemyInsidePoseidonTsunami(enemy, zone)) continue;
+
+    const isBoss = Boolean(enemy.isBoss || enemy.type === "karon");
+    const damage = isBoss
+      ? Math.round(POSEIDON_TSUNAMI_SKILL.damage * 0.72)
+      : POSEIDON_TSUNAMI_SKILL.damage;
+    const knockbackDistance = isBoss
+      ? POSEIDON_TSUNAMI_SKILL.bossKnockbackDistance
+      : POSEIDON_TSUNAMI_SKILL.knockbackDistance;
+
+    enemy.hp -= damage;
+    enemy.x = Math.min(ENEMY_BASE_X - 34, enemy.x + knockbackDistance);
+    enemy.moving = false;
+    enemy.attackAnimTimer = 0;
+    enemy.paralyzeTimer = Math.max(enemy.paralyzeTimer || 0, POSEIDON_TSUNAMI_SKILL.hitStunDuration);
+    enemy.laserTarget = null;
+    enemy.laserHitPending = false;
+    enemy.swordWaveTarget = null;
+    enemy.swordWavePending = false;
+    enemy.clawTarget = null;
+    enemy.clawHitPending = false;
+    enemy.playerGateHitPending = false;
+    effect.hitEnemies.add(enemy);
+    spawnHit(enemy.x, enemy.y - Math.max(36, enemy.h * 0.68), "#7be8ff");
+  }
+}
+
+function updatePoseidonTsunamiEffect(dt) {
+  const effect = gameState.poseidonSkillEffect;
+  if (!effect || !effect.active) return;
+
+  const tsunamiApi = typeof window !== "undefined" ? window.PoseidonTsunamiAnimation : null;
+  if (tsunamiApi && typeof tsunamiApi.update === "function") {
+    tsunamiApi.update(effect, dt);
+  } else {
+    effect.timer += dt;
+    if (effect.timer >= (effect.duration || 3.25)) effect.active = false;
+  }
+
+  applyPoseidonTsunamiDamage();
+  if (!effect.active) {
+    gameState.poseidonSkillEffect = null;
+    updateButtons();
+  }
+}
+
 function updateZeusMana(dt) {
   if (!gameState) return;
 
@@ -301,11 +405,7 @@ function update(dt) {
   }
 
   gameState.messageTimer = Math.max(0, gameState.messageTimer - dt);
-  gameState.runestoneTimer += dt;
-  if (gameState.runestoneTimer >= 1) {
-    addRunestone(12);
-    gameState.runestoneTimer = 0;
-  }
+  addRunestone(RUNESTONE_REGEN_PER_SECOND * dt);
   updateZeusMana(dt);
 
   updateWave(dt);
@@ -314,27 +414,12 @@ function update(dt) {
   updateEnemies(dt);
   updateProjectiles(dt);
   updateZeusThunderstormEffect(dt);
+  updatePoseidonTsunamiEffect(dt);
   updateParticles(dt);
   cleanupDeadEntities();
   checkEndConditions();
   updateHud();
   updateButtons();
-}
-
-function drawMessage() {
-  if (!gameState.message) return;
-  if (gameState.running && gameState.messageTimer <= 0 && gameState.waveBreakTimer <= 0) return;
-
-  ctx.save();
-  ctx.fillStyle = "rgba(0,0,0,0.5)";
-  ctx.fillRect(240, 42, 480, 62);
-  ctx.strokeStyle = "rgba(255,255,255,0.55)";
-  ctx.strokeRect(240, 42, 480, 62);
-  ctx.fillStyle = "#fff3a8";
-  ctx.font = "bold 28px Arial";
-  ctx.textAlign = "center";
-  ctx.fillText(gameState.message, canvas.width / 2, 82);
-  ctx.restore();
 }
 
 function drawZeusThunderstormEffect() {
@@ -396,6 +481,16 @@ function drawZeusThunderstormEffect() {
   ctx.restore();
 }
 
+function drawPoseidonTsunamiEffect() {
+  const effect = gameState.poseidonSkillEffect;
+  if (!effect || !effect.active) return;
+
+  const tsunamiApi = typeof window !== "undefined" ? window.PoseidonTsunamiAnimation : null;
+  if (tsunamiApi && typeof tsunamiApi.draw === "function") {
+    tsunamiApi.draw(ctx, effect);
+  }
+}
+
 function draw() {
   drawBackground();
   drawBase(PLAYER_BASE_X, true);
@@ -407,7 +502,7 @@ function draw() {
   drawHealthBar(enemyBaseUi.hpX, enemyBaseUi.hpY, enemyBaseUi.hpW, gameState.enemyBaseHp, gameState.enemyBaseMaxHp, "#ff6868");
 
   const drawList = [
-    ...(gameState.hero && !gameState.hero.dead && gameState.hero.hp > 0 ? [gameState.hero] : []),
+    ...(gameState.hero && (!gameState.hero.dead || gameState.hero.deathAnimTimer > 0) ? [gameState.hero] : []),
     ...gameState.units,
     ...gameState.enemies,
   ].sort((a, b) => a.y - b.y || a.x - b.x);
@@ -420,6 +515,6 @@ function draw() {
 
   drawProjectiles();
   drawParticles();
+  drawPoseidonTsunamiEffect();
   drawZeusThunderstormEffect();
-  drawMessage();
 }
