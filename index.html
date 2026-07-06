@@ -34,6 +34,32 @@
   <section id="lobbyScreen" class="lobby-screen is-hidden" aria-label="픽셀디펜스 로비 화면">
     <div class="lobby-scanline" aria-hidden="true"></div>
 
+    <nav class="lobby-top-tools" aria-label="로비 도구">
+      <button id="lobbyMailboxBtn" class="lobby-top-tool" type="button">
+        <span aria-hidden="true">✉</span>
+        <strong>우편함</strong>
+      </button>
+      <button id="lobbySettingsBtn" class="lobby-top-tool" type="button">
+        <span aria-hidden="true">⚙</span>
+        <strong>환경설정</strong>
+      </button>
+    </nav>
+
+    <aside class="lobby-wallet" aria-label="보유 재화">
+      <div class="lobby-wallet-item">
+        <img src="assets/icons/gold.png" alt="">
+        <strong id="lobbyGoldAmount">0</strong>
+      </div>
+      <div class="lobby-wallet-item">
+        <img src="assets/icons/diamond.png" alt="">
+        <strong id="lobbyDiamondAmount">0</strong>
+      </div>
+      <div class="lobby-wallet-item">
+        <img src="assets/icons/ticket.png" alt="">
+        <strong id="lobbyTicketAmount">0</strong>
+      </div>
+    </aside>
+
     <button id="lobbyExitBtn" class="lobby-btn lobby-exit" type="button">게임종료</button>
 
     <div class="lobby-stage" aria-hidden="true">
@@ -53,6 +79,38 @@
       <div class="lobby-hero" aria-hidden="true">
         <canvas id="lobbyHeroCanvas" width="184" height="184" class="lobby-hero-canvas"></canvas>
       </div>
+      <div id="lobbyGodShowcase" class="lobby-god-showcase" data-god="zeus">
+        <div class="lobby-god-aura" aria-hidden="true"></div>
+        <button id="lobbyGodPrevBtn" class="lobby-god-arrow lobby-god-prev" type="button" aria-label="이전 신">‹</button>
+        <div class="lobby-god-portrait">
+          <img id="lobbyGodImage" src="assets/gods/zeus.png" alt="제우스">
+        </div>
+        <button id="lobbyGodNextBtn" class="lobby-god-arrow lobby-god-next" type="button" aria-label="다음 신">›</button>
+        <div class="lobby-god-info">
+          <span id="lobbyGodTitle">천둥의 지배자</span>
+          <strong id="lobbyGodName">제우스</strong>
+          <small>SELECTED GOD</small>
+        </div>
+        <div id="lobbyGodDots" class="lobby-god-dots" aria-label="신 선택 위치"></div>
+      </div>
+      <section id="lobbyGodCodex" class="lobby-god-codex" role="region" aria-labelledby="lobbyCodexName">
+        <p id="lobbyCodexTitle" class="lobby-codex-kicker">천둥의 지배자</p>
+        <h2 id="lobbyCodexName">제우스</h2>
+        <p id="lobbyCodexStory" class="lobby-codex-story"></p>
+        <div id="lobbyCodexSkills" class="lobby-codex-skills">
+          <article class="lobby-codex-skill">
+            <span>기본 스킬</span>
+            <strong id="lobbyCodexBasicName">뇌광의 창</strong>
+            <p id="lobbyCodexBasicDescription"></p>
+          </article>
+          <article class="lobby-codex-skill lobby-codex-ultimate">
+            <span>궁극기</span>
+            <strong id="lobbyCodexUltimateName">천벌</strong>
+            <p id="lobbyCodexUltimateDescription"></p>
+          </article>
+        </div>
+        <p id="lobbyCodexLocked" class="lobby-codex-locked is-hidden">아직 전투에 참여할 수 없는 신입니다.</p>
+      </section>
       <div class="lobby-guard-pixel"></div>
       <div class="lobby-flag"></div>
     </div>
@@ -60,10 +118,10 @@
 
     <div class="lobby-menu-bar" aria-label="로비 주요 메뉴">
       <button id="lobbyShopBtn" class="lobby-btn lobby-shop" type="button">상점</button>
-      <button id="lobbyFormationBtn" class="lobby-btn lobby-formation" type="button">편성</button>
       <button id="lobbyRecruitBtn" class="lobby-btn lobby-recruit" type="button">모집</button>
-      <button id="lobbyMissionBtn" class="lobby-btn lobby-mission" type="button">미션</button>
       <button id="lobbyBattleBtn" class="lobby-btn lobby-battle" type="button">전투</button>
+      <button id="lobbyFormationBtn" class="lobby-btn lobby-formation" type="button">편성</button>
+      <button id="lobbyMissionBtn" class="lobby-btn lobby-mission" type="button">미션</button>
     </div>
     <p id="lobbyMenuNotice" class="lobby-menu-notice" aria-live="polite"></p>
   </section>
@@ -128,8 +186,8 @@
           </button>
         </div>
         <p id="recruitNotice" class="recruit-notice">
-          <strong>SSR 확률 3%</strong>
-          <span>중복 신 획득 시 해당 신의 정수로 변환됩니다.</span>
+          <strong>AWESOME 신 3%</strong>
+          <span>BASIC: 병사 정수 10개 · GOOD: 무작위 신의 정수 10개</span>
         </p>
       </div>
     </div>
@@ -543,7 +601,6 @@
   <script src="js/shop.js"></script>
   <script src="js/mission.js"></script>
   <script src="js/inventory.js"></script>
-  <script src="js/audio.js"></script>
   <script src="js/ui.js"></script>
   <script src="js/battle.js"></script>
   <script src="js/main.js"></script>

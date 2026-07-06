@@ -45,6 +45,7 @@ function showLobby() {
   hideRecruitDoorScene(true);
   document.body.classList.remove("game-started", "in-stage-select", "in-shop", "in-recruit", "in-formation", "in-mission", "in-inventory");
   document.body.classList.add("in-lobby");
+  if (typeof updateLobbyTopBar === "function") updateLobbyTopBar();
   if (gameState) {
     gameState.running = false;
     gameState.message = "로비에서 전투를 준비하세요";

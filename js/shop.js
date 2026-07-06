@@ -271,11 +271,29 @@ const SHOP_CATEGORY_ITEMS = {
       dailyLimit: "1일 1회",
     },
     {
-      id: "growth-soldier-20",
+      id: "growth-soldier-1",
       name: "병사 정수",
-      amount: "×20",
+      amount: "×1",
       image: "assets/icons/essence_soldier.png",
       price: "20,000",
+      priceIcon: "assets/icons/gold.png",
+      dailyLimit: "1일 1회",
+    },
+    {
+      id: "growth-soldier-10",
+      name: "병사 정수",
+      amount: "×10",
+      image: "assets/icons/essence_soldier.png",
+      price: "200,000",
+      priceIcon: "assets/icons/gold.png",
+      dailyLimit: "1일 1회",
+    },
+    {
+      id: "growth-soldier-30",
+      name: "병사 정수",
+      amount: "×30",
+      image: "assets/icons/essence_soldier.png",
+      price: "600,000",
       priceIcon: "assets/icons/gold.png",
       dailyLimit: "1일 1회",
     },
@@ -284,26 +302,44 @@ const SHOP_CATEGORY_ITEMS = {
       name: "병사 정수",
       amount: "×50",
       image: "assets/icons/essence_soldier.png",
-      price: "50,000",
+      price: "1,000,000",
       priceIcon: "assets/icons/gold.png",
       dailyLimit: "1일 1회",
     },
     {
-      id: "growth-soldier-100",
-      name: "병사 정수",
-      amount: "×100",
-      image: "assets/icons/essence_soldier.png",
-      price: "100,000",
-      priceIcon: "assets/icons/gold.png",
+      id: "growth-gold-20000",
+      name: "골드",
+      amount: "×20,000",
+      image: "assets/icons/gold.png",
+      price: "100",
+      priceIcon: "assets/icons/diamond.png",
       dailyLimit: "1일 1회",
     },
     {
-      id: "growth-soldier-200",
-      name: "병사 정수",
-      amount: "×200",
-      image: "assets/icons/essence_soldier.png",
-      price: "200,000",
-      priceIcon: "assets/icons/gold.png",
+      id: "growth-gold-60000",
+      name: "골드",
+      amount: "×60,000",
+      image: "assets/icons/gold.png",
+      price: "300",
+      priceIcon: "assets/icons/diamond.png",
+      dailyLimit: "1일 1회",
+    },
+    {
+      id: "growth-gold-100000",
+      name: "골드",
+      amount: "×100,000",
+      image: "assets/icons/gold.png",
+      price: "500",
+      priceIcon: "assets/icons/diamond.png",
+      dailyLimit: "1일 1회",
+    },
+    {
+      id: "growth-gold-200000",
+      name: "골드",
+      amount: "×200,000",
+      image: "assets/icons/gold.png",
+      price: "1,000",
+      priceIcon: "assets/icons/diamond.png",
       dailyLimit: "1일 1회",
     },
   ],
@@ -357,14 +393,18 @@ const SHOP_PURCHASE_RULES = {
   "diamond-box": { rewards: { diamonds: 1100 } },
   "diamond-vault": { rewards: { diamonds: 2300 } },
   "diamond-sacred-vault": { rewards: { diamonds: 6000 } },
+  "growth-gold-20000": { cost: { diamonds: 100 }, rewards: { gold: 20000 }, daily: true },
+  "growth-gold-60000": { cost: { diamonds: 300 }, rewards: { gold: 60000 }, daily: true },
+  "growth-gold-100000": { cost: { diamonds: 500 }, rewards: { gold: 100000 }, daily: true },
+  "growth-gold-200000": { cost: { diamonds: 1000 }, rewards: { gold: 200000 }, daily: true },
   "growth-essence-free": { rewards: { commonEssence: 1 }, daily: true },
   "growth-essence-3": { cost: { diamonds: 200 }, rewards: { commonEssence: 3 }, daily: true },
   "growth-essence-5": { cost: { diamonds: 300 }, rewards: { commonEssence: 5 }, daily: true },
   "growth-essence-10": { cost: { diamonds: 500 }, rewards: { commonEssence: 10 }, daily: true },
-  "growth-soldier-20": { cost: { gold: 20000 }, rewards: { soldierFragments: 20 }, daily: true },
-  "growth-soldier-50": { cost: { gold: 50000 }, rewards: { soldierFragments: 50 }, daily: true },
-  "growth-soldier-100": { cost: { gold: 100000 }, rewards: { soldierFragments: 100 }, daily: true },
-  "growth-soldier-200": { cost: { gold: 200000 }, rewards: { soldierFragments: 200 }, daily: true },
+  "growth-soldier-1": { cost: { gold: 20000 }, rewards: { soldierFragments: 1 }, daily: true },
+  "growth-soldier-10": { cost: { gold: 200000 }, rewards: { soldierFragments: 10 }, daily: true },
+  "growth-soldier-30": { cost: { gold: 600000 }, rewards: { soldierFragments: 30 }, daily: true },
+  "growth-soldier-50": { cost: { gold: 1000000 }, rewards: { soldierFragments: 50 }, daily: true },
 };
 
 let selectedShopCategory = "recommend";
@@ -645,7 +685,9 @@ function renderShopUI() {
   });
 
   const categoryItems = SHOP_CATEGORY_ITEMS[selectedShopCategory] || [];
-  const visibleItemCount = selectedShopCategory === "growth" ? 8 : SHOP_ITEM_COUNT;
+  const visibleItemCount = selectedShopCategory === "growth"
+    ? categoryItems.length
+    : SHOP_ITEM_COUNT;
 
   categoryItems.slice(0, visibleItemCount).forEach((item) => {
     const card = document.createElement("button");
