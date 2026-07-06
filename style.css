@@ -11068,6 +11068,13 @@ body:not(.game-started) .game-wrap {
   height: 4.5%;
 }
 
+.stage-detail-panel[data-stage="1"] .stage-detail-close-btn {
+  right: 9.8%;
+  top: 5.7%;
+  width: 11.8%;
+  height: 4.9%;
+}
+
 .stage-detail-start-btn {
   left: 12.5%;
   bottom: 14.8%;
