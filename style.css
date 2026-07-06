@@ -15427,10 +15427,10 @@ body:not(.game-started) .game-wrap {
   position: fixed !important;
   left: 57.8vw !important;
   right: 2.9vw !important;
-  top: 3.9vh !important;
+  top: 4.2vh !important;
   width: auto !important;
-  height: 84.8vh !important;
-  padding: 88px 18px 34px !important;
+  height: 76.5vh !important;
+  padding: 92px 22px 48px !important;
   border: 0 !important;
   background: transparent !important;
   box-shadow: none !important;
@@ -15446,7 +15446,7 @@ body:not(.game-started) .game-wrap {
 .formation-screen .formation-roster-head {
   position: absolute !important;
   left: 50% !important;
-  top: 24px !important;
+  top: 26px !important;
   z-index: 5 !important;
   width: min(360px, 58%) !important;
   height: 42px !important;
@@ -15462,12 +15462,12 @@ body:not(.game-started) .game-wrap {
 }
 
 .formation-screen .formation-roster-head strong {
-  color: #ecd8b5 !important;
-  font-size: clamp(22px, 1.55vw, 30px) !important;
+  color: #11100d !important;
+  font-size: clamp(24px, 1.7vw, 34px) !important;
   line-height: 1 !important;
   text-shadow:
-    0 2px 0 rgba(18, 12, 8, 0.9),
-    0 0 5px rgba(0, 0, 0, 0.5) !important;
+    0 1px 0 rgba(241, 214, 163, 0.86),
+    0 0 4px rgba(255, 226, 167, 0.42) !important;
 }
 
 .formation-screen .formation-roster-head span {
@@ -15483,6 +15483,7 @@ body:not(.game-started) .game-wrap {
   display: grid !important;
   width: 100% !important;
   height: 100% !important;
+  max-height: calc(100% - 4px) !important;
   min-height: 0 !important;
   grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
   grid-template-rows: repeat(2, minmax(0, 1fr)) !important;
@@ -15490,8 +15491,8 @@ body:not(.game-started) .game-wrap {
   justify-items: stretch !important;
   align-content: center !important;
   align-items: stretch !important;
-  gap: clamp(10px, 1.45vh, 14px) clamp(10px, 0.9vw, 16px) !important;
-  padding: 0 !important;
+  gap: clamp(10px, 1.35vh, 13px) clamp(10px, 0.9vw, 16px) !important;
+  padding: 0 0 8px !important;
   overflow: hidden !important;
 }
 
@@ -15520,10 +15521,11 @@ body:not(.game-started) .game-wrap {
 
 .formation-screen .formation-roster-grid.is-hero-roster .formation-unit-card img {
   display: block !important;
-  width: 100% !important;
+  width: 92% !important;
   height: auto !important;
-  max-height: calc(100% - 24px) !important;
+  max-height: calc(100% - 26px) !important;
   object-fit: contain !important;
+  align-self: center !important;
   filter: saturate(1.04) contrast(1.03) drop-shadow(0 6px 8px rgba(0, 0, 0, 0.46)) !important;
 }
 
