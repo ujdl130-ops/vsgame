@@ -273,6 +273,10 @@ function updateUnits(dt) {
       fireMageBolt(unit);
     }
 
+    if (unit.type === "mage" && unit.attackAnimTimer > 0) {
+      continue;
+    }
+
     if (unit.type === "saintess") {
       unit.healCooldown = Math.max(0, (unit.healCooldown || 0) - dt);
 
@@ -290,6 +294,10 @@ function updateUnits(dt) {
         unit.attackAnimDuration = 0.72;
         unit.attackAnimTimer = unit.attackAnimDuration;
         unit.pendingHealPulse = true;
+        continue;
+      }
+
+      if (healTargets.length) {
         continue;
       }
 
