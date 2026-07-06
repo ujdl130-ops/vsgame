@@ -107,7 +107,7 @@ const FORMATION_HEROES = [
     name: "포세이돈",
     image: "assets/maps/formation/poseidon.png",
     backImage: "assets/maps/formation/poseidon_back.png",
-    unlocked: true,
+    unlocked: false,
     passive: "해류의 가호: 적의 진격 속도를 늦춥니다.",
     skillType: "",
   },
