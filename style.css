@@ -324,6 +324,8 @@ body.game-started:not(.in-lobby):not(.in-stage-select):not(.in-shop):not(.in-rec
   justify-content: center;
   padding: 12px;
   background: rgba(0, 0, 0, 0.48);
+  user-select: none;
+  -webkit-user-select: none;
 }
 
 .stage-clear-reward-overlay.is-hidden {
@@ -335,6 +337,8 @@ body.game-started:not(.in-lobby):not(.in-stage-select):not(.in-shop):not(.in-rec
   width: min(90%, 820px);
   aspect-ratio: 1716 / 917;
   animation: rewardUiPop 0.22s ease-out both;
+  user-select: none;
+  -webkit-user-select: none;
 }
 
 .stage-clear-reward-ui {
@@ -343,6 +347,9 @@ body.game-started:not(.in-lobby):not(.in-stage-select):not(.in-shop):not(.in-rec
   height: 100%;
   object-fit: contain;
   pointer-events: none;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-user-drag: none;
   filter: drop-shadow(0 12px 24px rgba(0, 0, 0, 0.48));
 }
 
@@ -374,6 +381,10 @@ body.game-started:not(.in-lobby):not(.in-stage-select):not(.in-shop):not(.in-rec
   gap: 5%;
   height: 8.6%;
   align-items: center;
+  background: transparent;
+  box-shadow: none;
+  user-select: none;
+  -webkit-user-select: none;
 }
 
 .stage-clear-reward-action {
