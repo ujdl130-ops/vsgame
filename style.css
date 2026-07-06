@@ -450,6 +450,33 @@ body.game-started:not(.in-lobby):not(.in-stage-select):not(.in-shop):not(.in-rec
   animation: rewardTreasureOpenPop 0.48s cubic-bezier(.17, .84, .36, 1.24) both;
 }
 
+.stage-clear-gold-result {
+  position: absolute;
+  left: 17.4%;
+  top: 18.6%;
+  z-index: 1;
+  width: 10.8%;
+  aspect-ratio: 1;
+  object-fit: contain;
+  opacity: 0;
+  transform: translateY(6%) scale(0.78);
+  pointer-events: none;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-user-drag: none;
+  filter:
+    drop-shadow(0 8px 8px rgba(100, 58, 12, 0.34))
+    drop-shadow(0 0 13px rgba(255, 203, 62, 0.26));
+}
+
+.stage-clear-treasure-btn.is-open ~ .stage-clear-gold-result {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  transition:
+    opacity 0.18s ease-out 0.16s,
+    transform 0.28s cubic-bezier(.17, .84, .36, 1.18) 0.16s;
+}
+
 .stage-clear-reward-ad-btn {
   left: 51.6%;
   top: 50.6%;
