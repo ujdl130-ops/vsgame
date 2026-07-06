@@ -5,57 +5,86 @@ const STAGE_PROGRESS_KEY = "pixelDefenseStageProgress";
 const MIN_GROWTH_LEVEL = 1;
 const MAX_GROWTH_LEVEL = 50;
 const LEVEL_GROWTH_DEFINED_MAX_LEVEL = MAX_GROWTH_LEVEL;
-const LEVEL_GROWTH_FORMULA_SPAN = 29;
 const MIN_TRANSCENDENCE_STAR = 1;
 const MAX_TRANSCENDENCE_STAR = 5;
 
 const CHARACTER_GROWTH_CONFIGS = {
   guard: {
-    level: { hp: 1.4, damage: 0.8 },
+    level: {
+      hp: { early: 0.0483, mid: 0.0966, late: 0.1448 },
+      damage: { early: 0.0276, mid: 0.0386, late: 0.0552 },
+    },
     transcendence: {
       1: { hp: 1.0, damage: 1.0 },
       2: { hp: 1.25, damage: 1.125 },
       3: { hp: 1.5, damage: 1.25 },
+      4: { hp: 1.75, damage: 1.4 },
+      5: { hp: 2.1, damage: 1.6 },
     },
   },
   archer: {
-    level: { hp: 0.8, damage: 1.3 },
+    level: {
+      hp: { early: 0.0276, mid: 0.0386, late: 0.0552 },
+      damage: { early: 0.0448, mid: 0.0897, late: 0.1345 },
+    },
     transcendence: {
       1: { hp: 1.0, damage: 1.0 },
       2: { hp: 1.125, damage: 1.25 },
       3: { hp: 1.25, damage: 1.5 },
+      4: { hp: 1.4, damage: 1.75 },
+      5: { hp: 1.6, damage: 2.1 },
     },
   },
   thief: {
-    level: { hp: 0.8, damage: 1.3 },
+    level: {
+      hp: { early: 0.0276, mid: 0.0386, late: 0.0552 },
+      damage: { early: 0.0448, mid: 0.0941, late: 0.1434 },
+    },
     transcendence: {
       1: { hp: 1.0, damage: 1.0 },
       2: { hp: 1.15, damage: 1.275 },
       3: { hp: 1.3, damage: 1.55 },
+      4: { hp: 1.48, damage: 1.85 },
+      5: { hp: 1.7, damage: 2.25 },
     },
   },
   mage: {
-    level: { hp: 0.7, damage: 1.15 },
+    level: {
+      hp: { early: 0.0241, mid: 0.0338, late: 0.0483 },
+      damage: { early: 0.0397, mid: 0.0714, late: 0.1031 },
+    },
     transcendence: {
       1: { hp: 1.0, damage: 1.0 },
       2: { hp: 1.125, damage: 1.225 },
       3: { hp: 1.25, damage: 1.45 },
+      4: { hp: 1.4, damage: 1.68 },
+      5: { hp: 1.6, damage: 2.0 },
     },
   },
   saintess: {
-    level: { hp: 0.9, healAmount: 1.4 },
+    level: {
+      hp: { early: 0.031, mid: 0.0434, late: 0.0621 },
+      healAmount: { early: 0.0483, mid: 0.1014, late: 0.1545 },
+    },
     transcendence: {
       1: { hp: 1.0, healAmount: 1.0 },
       2: { hp: 1.175, healAmount: 1.275 },
       3: { hp: 1.35, healAmount: 1.55 },
+      4: { hp: 1.55, healAmount: 1.85 },
+      5: { hp: 1.8, healAmount: 2.25 },
     },
   },
   hero: {
-    level: { hp: 1.35, damage: 1.45 },
+    level: {
+      hp: { early: 0.0466, mid: 0.0978, late: 0.149 },
+      damage: { early: 0.05, mid: 0.105, late: 0.16 },
+    },
     transcendence: {
       1: { hp: 1.0, damage: 1.0 },
       2: { hp: 1.25, damage: 1.275 },
       3: { hp: 1.5, damage: 1.55 },
+      4: { hp: 1.85, damage: 1.95 },
+      5: { hp: 2.25, damage: 2.45 },
     },
   },
 };
@@ -266,9 +295,54 @@ function getStoredGrowthState(type) {
 function getLevelGrowthCoefficient(type, stat, level) {
   const growthType = resolveGrowthType(type);
   const config = CHARACTER_GROWTH_CONFIGS[growthType];
-  const levelGrowth = (config && config.level && config.level[stat]) || 0;
+  const levelConfig = config && config.level && config.level[stat];
   const definedLevel = Math.min(clampGrowthLevel(level), LEVEL_GROWTH_DEFINED_MAX_LEVEL);
-  return 1 + ((definedLevel - MIN_GROWTH_LEVEL) / LEVEL_GROWTH_FORMULA_SPAN) * levelGrowth;
+
+  if (typeof levelConfig === "number") {
+    return 1 + ((definedLevel - MIN_GROWTH_LEVEL) / 29) * levelConfig;
+  }
+
+  if (!levelConfig || typeof levelConfig !== "object") return 1;
+
+  if (typeof levelConfig.early === "number") {
+    const earlyGrowth = levelConfig.early;
+    const midGrowth = typeof levelConfig.mid === "number" ? levelConfig.mid : earlyGrowth;
+    const lateGrowth = typeof levelConfig.late === "number" ? levelConfig.late : midGrowth;
+    const level30Coefficient = 1 + (30 - MIN_GROWTH_LEVEL) * earlyGrowth;
+    const level40Coefficient = level30Coefficient + (40 - 30) * midGrowth;
+
+    if (definedLevel <= 30) {
+      return 1 + (definedLevel - MIN_GROWTH_LEVEL) * earlyGrowth;
+    }
+
+    if (definedLevel <= 40) {
+      return level30Coefficient + (definedLevel - 30) * midGrowth;
+    }
+
+    return level40Coefficient + (definedLevel - 40) * lateGrowth;
+  }
+
+  const milestones = Object.keys(levelConfig)
+    .map(Number)
+    .filter((milestone) => Number.isFinite(milestone))
+    .sort((a, b) => a - b);
+
+  if (!milestones.length) return 1;
+  if (definedLevel <= milestones[0]) return levelConfig[milestones[0]];
+
+  for (let index = 1; index < milestones.length; index += 1) {
+    const previousLevel = milestones[index - 1];
+    const nextLevel = milestones[index];
+
+    if (definedLevel <= nextLevel) {
+      const previousCoefficient = levelConfig[previousLevel];
+      const nextCoefficient = levelConfig[nextLevel];
+      const progress = (definedLevel - previousLevel) / (nextLevel - previousLevel);
+      return previousCoefficient + (nextCoefficient - previousCoefficient) * progress;
+    }
+  }
+
+  return levelConfig[milestones[milestones.length - 1]];
 }
 
 function getTranscendenceCoefficient(type, stat, star) {
