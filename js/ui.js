@@ -33,6 +33,7 @@ function isInventoryVisible() {
 }
 
 function showLobby() {
+  hideStageDefeatUi();
   if (titleScreen) titleScreen.classList.add("is-hidden");
   if (lobbyScreen) lobbyScreen.classList.remove("is-hidden");
   if (stageScreen) stageScreen.classList.add("is-hidden");
@@ -44,6 +45,7 @@ function showLobby() {
   hideRecruitDoorScene(true);
   document.body.classList.remove("game-started", "in-stage-select", "in-shop", "in-recruit", "in-formation", "in-mission", "in-inventory");
   document.body.classList.add("in-lobby");
+  if (typeof updateLobbyTopBar === "function") updateLobbyTopBar();
   if (gameState) {
     gameState.running = false;
     gameState.message = "로비에서 전투를 준비하세요";
@@ -164,6 +166,109 @@ function isGameOptionsOpen() {
   return Boolean(gameOptionsMenu && !gameOptionsMenu.classList.contains("is-hidden"));
 }
 
+function isStageClearRewardVisible() {
+  return Boolean(stageClearRewardOverlay && !stageClearRewardOverlay.classList.contains("is-hidden"));
+}
+
+function isStageDefeatVisible() {
+  return Boolean(stageDefeatOverlay && !stageDefeatOverlay.classList.contains("is-hidden"));
+}
+
+function updateStageClearRewardActions() {
+  if (!stageClearRewardNextBtn) return;
+  const nextStage = Number(selectedStage) + 1;
+  const canGoNext = Boolean(STAGE_CONFIGS[nextStage] && isStageUnlocked(nextStage));
+  stageClearRewardNextBtn.disabled = !canGoNext;
+  stageClearRewardNextBtn.setAttribute("aria-disabled", canGoNext ? "false" : "true");
+}
+
+function resetStageClearRewardEffects() {
+  if (stageClearTreasureBtn) {
+    stageClearTreasureBtn.classList.remove("is-open");
+    stageClearTreasureBtn.setAttribute("aria-label", "보물상자 열기");
+  }
+  if (stageClearRewardAdBtn) {
+    stageClearRewardAdBtn.classList.remove("is-preview");
+  }
+  if (stageClearRewardMultiplierIndicator) {
+    stageClearRewardMultiplierIndicator.classList.remove("is-show");
+  }
+}
+
+function handleStageClearTreasureOpen() {
+  if (!stageClearTreasureBtn || stageClearTreasureBtn.classList.contains("is-open")) return;
+  stageClearTreasureBtn.classList.add("is-open");
+  stageClearTreasureBtn.setAttribute("aria-label", "보물상자 열림");
+}
+
+function handleStageClearRewardAdPreview() {
+  if (!stageClearRewardAdBtn) return;
+  stageClearRewardAdBtn.classList.remove("is-preview");
+  if (stageClearRewardMultiplierIndicator) {
+    stageClearRewardMultiplierIndicator.classList.remove("is-show");
+    void stageClearRewardMultiplierIndicator.offsetWidth;
+    stageClearRewardMultiplierIndicator.classList.add("is-show");
+  }
+  void stageClearRewardAdBtn.offsetWidth;
+  stageClearRewardAdBtn.classList.add("is-preview");
+  clearTimeout(handleStageClearRewardAdPreview.timer);
+  handleStageClearRewardAdPreview.timer = setTimeout(() => {
+    if (stageClearRewardAdBtn) stageClearRewardAdBtn.classList.remove("is-preview");
+  }, 720);
+}
+
+function showStageClearRewardUi() {
+  if (!stageClearRewardOverlay) return;
+  closeGameOptionsMenu(false);
+  updateStageClearRewardActions();
+  resetStageClearRewardEffects();
+  stageClearRewardOverlay.classList.remove("is-hidden");
+}
+
+function hideStageClearRewardUi() {
+  if (!stageClearRewardOverlay) return;
+  stageClearRewardOverlay.classList.add("is-hidden");
+}
+
+function showStageDefeatUi() {
+  if (!stageDefeatOverlay) return;
+  closeGameOptionsMenu(false);
+  hideStageClearRewardUi();
+  stageDefeatOverlay.classList.remove("is-hidden");
+}
+
+function hideStageDefeatUi() {
+  if (!stageDefeatOverlay) return;
+  stageDefeatOverlay.classList.add("is-hidden");
+}
+
+function handleStageClearRewardLobby() {
+  hideStageClearRewardUi();
+  showLobby();
+}
+
+function handleStageClearRewardRetry() {
+  hideStageClearRewardUi();
+  restartGame();
+}
+
+function handleStageClearRewardNext() {
+  const nextStage = Number(selectedStage) + 1;
+  if (!STAGE_CONFIGS[nextStage] || !isStageUnlocked(nextStage)) return;
+  hideStageClearRewardUi();
+  startGame(nextStage);
+}
+
+function handleStageDefeatLobby() {
+  hideStageDefeatUi();
+  showLobby();
+}
+
+function handleStageDefeatRetry() {
+  hideStageDefeatUi();
+  restartGame();
+}
+
 function closeGameOptionsMenu(resumeGame = true) {
   if (!gameOptionsMenu) return;
 
@@ -195,7 +300,7 @@ function openGameOptionsMenu() {
 
   gameOptionsWasRunning = Boolean(gameState.running);
   gameState.running = false;
-  gameState.message = "게임 일시정지";
+  gameState.message = "";
   gameState.messageTimer = 0;
 
   gameOptionsMenu.classList.remove("is-hidden");
@@ -209,6 +314,10 @@ function openGameOptionsMenu() {
 function toggleGameOptionsMenu() {
   if (isGameOptionsOpen()) closeGameOptionsMenu(true);
   else openGameOptionsMenu();
+}
+
+function handleOptionResume() {
+  closeGameOptionsMenu(true);
 }
 
 function handleOptionStageSelect() {
@@ -242,10 +351,10 @@ function bindMovementJoystick(joystick) {
 
   let activePointerId = null;
 
-  const setJoystickInput = (direction) => {
-    heroMoveInput = direction;
-    joystick.classList.toggle("is-left", direction < 0);
-    joystick.classList.toggle("is-right", direction > 0);
+  const setJoystickInput = (amount) => {
+    heroMoveInput = Math.max(-1, Math.min(1, Number(amount) || 0));
+    joystick.classList.toggle("is-left", heroMoveInput < 0);
+    joystick.classList.toggle("is-right", heroMoveInput > 0);
   };
 
   const resetJoystick = () => {
@@ -270,7 +379,7 @@ function bindMovementJoystick(joystick) {
       setJoystickInput(0);
       return;
     }
-    setJoystickInput(offset < 0 ? -1 : 1);
+    setJoystickInput(offset / maxOffset);
   };
 
   joystick.addEventListener("pointerdown", (event) => {
@@ -354,7 +463,7 @@ function renderRoundCommand(button, labelText, label, title) {
     button.dataset.renderKey = renderKey;
     button.innerHTML = `
       <span class="zeus-action-icon ${isSkill ? "skill" : "basic"}" aria-hidden="true"></span>
-      <span class="zeus-action-label">${isSkill ? "천벌" : "기본공격"}</span>
+      <span class="zeus-action-label">${isSkill ? label : "기본공격"}</span>
       <span class="zeus-action-key">${labelText}</span>
     `;
     return;
@@ -373,8 +482,14 @@ function renderRoundCommand(button, labelText, label, title) {
 
 function refreshCommandButtonMarkup() {
   const hero = gameState && gameState.hero;
+  const heroIsPoseidon = hero && hero.heroId === "poseidon";
   const zeusEffectActive = Boolean(gameState && gameState.zeusSkillEffect && gameState.zeusSkillEffect.active);
+  const poseidonEffectActive = Boolean(gameState && gameState.poseidonSkillEffect && gameState.poseidonSkillEffect.active);
+  const heroSkillActive = heroIsPoseidon ? poseidonEffectActive : zeusEffectActive;
   const zeusMana = Math.floor(gameState && gameState.zeusMana || 0);
+  const zeusSkillDamage = typeof getZeusThunderstormDamage === "function"
+    ? getZeusThunderstormDamage(hero)
+    : 0;
   renderRoundCommand(
     skillBtn,
     hero && hero.dead ? `부활 ${Math.ceil(hero.respawnTimer)}` : "SPACE",
@@ -383,11 +498,15 @@ function refreshCommandButtonMarkup() {
   );
   renderRoundCommand(
     zeusSkillBtn,
-    zeusEffectActive ? "CAST" : "READY",
-    "천벌",
-    zeusEffectActive
+    heroSkillActive ? "CAST" : "READY",
+    heroIsPoseidon ? "해일" : "천벌",
+    heroIsPoseidon
+      ? poseidonEffectActive
+        ? "해일 발동 중입니다."
+        : `마나 ${zeusMana}/${ZEUS_MANA_COST} · 50마나를 소모해 해일로 적을 밀어냅니다.`
+      : zeusEffectActive
       ? "천벌 발동 중입니다."
-      : `마나 ${zeusMana}/${ZEUS_MANA_COST} · 50마나를 소모해 적에게 피해를 주고 2초간 마비시킵니다.`
+      : `마나 ${zeusMana}/${ZEUS_MANA_COST} · ${zeusSkillDamage} 피해를 주고 2초간 마비시킵니다.`
   );
 }
 
@@ -437,22 +556,33 @@ function updateButtons() {
   if (skillBtn) {
     const hero = gameState.hero;
     const heroReady = hero && !hero.dead && hero.hp > 0 && hero.cooldown <= 0;
+    const zeusMana = Math.floor(gameState.zeusMana || 0);
+    const basicAttackManaReady = zeusMana >= BASIC_ATTACK_MANA_COST;
     if (!skillBtn.classList.contains("zeus-action-btn")) {
       skillBtn.textContent = hero && hero.dead
         ? `영웅 부활 ${Math.ceil(hero.respawnTimer)}초`
         : "영웅 공격 Space";
     }
-    skillBtn.disabled = disabled || !heroReady;
+    skillBtn.disabled = disabled || !heroReady || !basicAttackManaReady;
     skillBtn.title = "메인 영웅이 가장 가까운 적에게 투사체를 발사합니다.";
   }
   if (zeusSkillBtn) {
     const hero = gameState.hero;
     const heroReady = hero && !hero.dead && hero.hp > 0;
+    const heroIsPoseidon = hero && hero.heroId === "poseidon";
     const zeusEffectActive = Boolean(gameState.zeusSkillEffect && gameState.zeusSkillEffect.active);
+    const poseidonEffectActive = Boolean(gameState.poseidonSkillEffect && gameState.poseidonSkillEffect.active);
+    const heroSkillActive = heroIsPoseidon ? poseidonEffectActive : zeusEffectActive;
     const zeusMana = Math.floor(gameState.zeusMana || 0);
     const zeusManaReady = zeusMana >= ZEUS_MANA_COST;
-    zeusSkillBtn.disabled = disabled || !heroReady || zeusEffectActive || !zeusManaReady;
-    zeusSkillBtn.title = zeusEffectActive
+    zeusSkillBtn.disabled = disabled || !heroReady || heroSkillActive || !zeusManaReady;
+    zeusSkillBtn.title = heroIsPoseidon
+      ? poseidonEffectActive
+        ? "해일 발동 중입니다."
+        : zeusManaReady
+          ? "50마나를 소모해 해일을 사용합니다."
+          : `마나 충전 중 ${zeusMana}/${ZEUS_MANA_COST}`
+      : zeusEffectActive
       ? "천벌 발동 중입니다."
       : zeusManaReady
         ? "50마나를 소모해 천벌을 사용합니다."
@@ -461,17 +591,32 @@ function updateButtons() {
   if (basicAttackIconBtn) {
     const hero = gameState.hero;
     const heroReady = hero && !hero.dead && hero.hp > 0 && hero.cooldown <= 0;
-    basicAttackIconBtn.disabled = disabled || !heroReady;
-    basicAttackIconBtn.title = heroReady ? "Basic attack" : "Basic attack is not ready";
+    const zeusMana = Math.floor(gameState.zeusMana || 0);
+    const basicAttackManaReady = zeusMana >= BASIC_ATTACK_MANA_COST;
+    basicAttackIconBtn.disabled = disabled || !heroReady || !basicAttackManaReady;
+    basicAttackIconBtn.title = heroReady
+      ? basicAttackManaReady
+        ? `Basic attack · Mana ${BASIC_ATTACK_MANA_COST}`
+        : `Mana ${zeusMana}/${BASIC_ATTACK_MANA_COST}`
+      : "Basic attack is not ready";
   }
   if (zeusSkillIconBtn) {
     const hero = gameState.hero;
     const heroReady = hero && !hero.dead && hero.hp > 0;
+    const heroIsPoseidon = hero && hero.heroId === "poseidon";
     const zeusEffectActive = Boolean(gameState.zeusSkillEffect && gameState.zeusSkillEffect.active);
+    const poseidonEffectActive = Boolean(gameState.poseidonSkillEffect && gameState.poseidonSkillEffect.active);
+    const heroSkillActive = heroIsPoseidon ? poseidonEffectActive : zeusEffectActive;
     const zeusMana = Math.floor(gameState.zeusMana || 0);
     const zeusManaReady = zeusMana >= ZEUS_MANA_COST;
-    zeusSkillIconBtn.disabled = disabled || !heroReady || zeusEffectActive || !zeusManaReady;
-    zeusSkillIconBtn.title = zeusEffectActive
+    zeusSkillIconBtn.disabled = disabled || !heroReady || heroSkillActive || !zeusManaReady;
+    zeusSkillIconBtn.title = heroIsPoseidon
+      ? poseidonEffectActive
+        ? "Poseidon skill is casting"
+        : zeusManaReady
+          ? "Cast Poseidon skill"
+          : `Mana ${zeusMana}/${ZEUS_MANA_COST}`
+      : zeusEffectActive
       ? "Zeus skill is casting"
       : zeusManaReady
         ? "Cast Zeus skill"

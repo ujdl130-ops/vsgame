@@ -17,10 +17,10 @@ const STAGE_CONFIGS = {
   },
   3: {
     title: "마왕군 전초기지",
-    maxWave: 1,
+    maxWave: 3,
     startRunestone: 0,
-    enemyBaseHp: 150,
-    baseEnemiesToSpawn: 1,
+    enemyBaseHp: 230,
+    baseEnemiesToSpawn: 10,
   },
 };
 
@@ -76,9 +76,215 @@ function updateStageUI() {
   });
 }
 
+const STAGE_DETAIL_CONFIGS = {
+  1: {
+    image: "assets/ui/stage1 info UI.png",
+    alt: "Stage 1 detail info",
+    missionIds: ["clear", "guard5", "noChampionDeath"],
+  },
+  2: {
+    image: "assets/ui/stgae 2 ui info.png",
+    alt: "Stage 2 detail info",
+    missionIds: ["clear", "archer3", "noChampionDeath"],
+  },
+  3: {
+    image: "assets/ui/stage3 info UI.png",
+    alt: "Stage 3 detail info",
+    missionIds: ["clear", "bossDefeat", "noChampionDeath"],
+  },
+};
+
+function getStageDetailConfig(stageNumber) {
+  return STAGE_DETAIL_CONFIGS[Number(stageNumber)] || null;
+}
+
+function getStageMissionProgress(stageNumber) {
+  const allProgress = playerProgress.stageMissionStars && typeof playerProgress.stageMissionStars === "object"
+    ? playerProgress.stageMissionStars
+    : {};
+  const progress = allProgress[String(stageNumber)] || allProgress[stageNumber] || {};
+  const normalizedProgress = progress && typeof progress === "object" ? { ...progress } : {};
+  if (getStageDetailConfig(stageNumber) && Array.isArray(playerProgress.clearedStages) && playerProgress.clearedStages.includes(Number(stageNumber))) {
+    normalizedProgress.clear = true;
+  }
+  return normalizedProgress;
+}
+
+function updateStageDetailStars() {
+  if (!stageDetailPanel) return;
+
+  const stageNumber = Number(stageDetailPanel.dataset.stage) || 1;
+  const detailConfig = getStageDetailConfig(stageNumber);
+  const missionIds = detailConfig ? detailConfig.missionIds : [];
+  const progress = getStageMissionProgress(stageNumber);
+  stageDetailPanel.querySelectorAll(".stage-detail-star").forEach((star, index) => {
+    const missionId = missionIds[index] || "";
+    star.dataset.missionId = missionId;
+    const completed = Boolean(missionId && progress[missionId]);
+    star.classList.toggle("is-earned", completed);
+    star.dataset.completed = completed ? "true" : "false";
+  });
+}
+
+function recordStageMissionGuardSummon() {
+  if (!gameState || Number(gameState.stage) !== 1 || !gameState.stageMissionRun) return;
+  gameState.stageMissionRun.guardSummons = Math.max(0, Number(gameState.stageMissionRun.guardSummons) || 0) + 1;
+}
+
+function recordStageMissionArcherSummon() {
+  if (!gameState || Number(gameState.stage) !== 2 || !gameState.stageMissionRun) return;
+  gameState.stageMissionRun.archerSummons = Math.max(0, Number(gameState.stageMissionRun.archerSummons) || 0) + 1;
+}
+
+function recordStageMissionChampionDeath() {
+  if (!gameState || !getStageDetailConfig(gameState.stage) || !gameState.stageMissionRun) return;
+  gameState.stageMissionRun.championDied = true;
+}
+
+function recordStageMissionBossDefeat() {
+  if (!gameState || Number(gameState.stage) !== 3 || !gameState.stageMissionRun) return;
+  gameState.stageMissionRun.bossDefeated = true;
+}
+
+function completeStageMissions(stageNumber) {
+  const detailConfig = getStageDetailConfig(stageNumber);
+  if (!detailConfig) return;
+
+  if (!playerProgress.stageMissionStars || typeof playerProgress.stageMissionStars !== "object") {
+    playerProgress.stageMissionStars = {};
+  }
+
+  const progress = {
+    ...getStageMissionProgress(stageNumber),
+    clear: true,
+  };
+  const run = gameState && gameState.stageMissionRun ? gameState.stageMissionRun : {};
+
+  if (detailConfig.missionIds.includes("guard5") && (Number(run.guardSummons) || 0) >= 5) {
+    progress.guard5 = true;
+  }
+  if (detailConfig.missionIds.includes("archer3") && (Number(run.archerSummons) || 0) >= 3) {
+    progress.archer3 = true;
+  }
+  if (detailConfig.missionIds.includes("bossDefeat") && run.bossDefeated) {
+    progress.bossDefeat = true;
+  }
+  if (detailConfig.missionIds.includes("noChampionDeath") && !run.championDied) {
+    progress.noChampionDeath = true;
+  }
+
+  playerProgress.stageMissionStars[String(stageNumber)] = progress;
+  updateStageDetailStars();
+}
+
+function isStageDetailVisible() {
+  return Boolean(stageDetailPanel && !stageDetailPanel.classList.contains("is-hidden"));
+}
+
+function setStageDetailSelectedCard(stageNumber) {
+  stageCards.forEach((card) => {
+    card.classList.toggle("is-detail-selected", Number(card.dataset.stage) === Number(stageNumber));
+  });
+}
+
+function hideStageDetailPanel() {
+  if (stageDetailPanel) {
+    stageDetailPanel.classList.add("is-hidden");
+    stageDetailPanel.removeAttribute("data-stage");
+  }
+  if (stageScreen) stageScreen.classList.remove("is-stage-detail-open");
+  setStageDetailSelectedCard(0);
+}
+
+function showStageDetailPanel(stageNumber) {
+  const detailConfig = getStageDetailConfig(stageNumber);
+  if (!stageDetailPanel || !detailConfig) return false;
+
+  const detailImage = stageDetailPanel.querySelector(".stage-detail-bg");
+  if (detailImage) {
+    detailImage.src = detailConfig.image;
+    detailImage.alt = detailConfig.alt;
+  }
+  stageDetailPanel.setAttribute("aria-label", detailConfig.alt);
+
+  stageDetailPanel.dataset.stage = String(stageNumber);
+  stageDetailPanel.classList.remove("is-hidden");
+  if (stageScreen) stageScreen.classList.add("is-stage-detail-open");
+  if (stageSelectNotice) stageSelectNotice.classList.remove("is-show");
+  setStageDetailSelectedCard(stageNumber);
+  updateStageDetailStars();
+
+  requestAnimationFrame(() => {
+    if (stageDetailStartBtn && isStageDetailVisible()) stageDetailStartBtn.focus({ preventScroll: true });
+  });
+
+  return true;
+}
+
+function proceedStageDetailPanel() {
+  const stageNumber = Number(stageDetailPanel?.dataset.stage) || 1;
+  hideStageDetailPanel();
+
+  if (typeof showPreBattleFormation === "function") {
+    showPreBattleFormation(stageNumber);
+    return;
+  }
+
+  startGame(stageNumber);
+}
+
+function openStage(stageNumber) {
+  if (!isStageUnlocked(stageNumber)) {
+    showStageLockedNotice(stageNumber);
+    return;
+  }
+  if (showStageDetailPanel(stageNumber)) {
+    return;
+  }
+  if (typeof showPreBattleFormation === "function") {
+    showPreBattleFormation(stageNumber);
+    return;
+  }
+  startGame(stageNumber);
+}
+
+function setStageScreenMode(mode) {
+  if (!stageScreen) return;
+  const isStageMap = mode === "stage";
+  stageScreen.classList.toggle("is-chapter-view", !isStageMap);
+  stageScreen.classList.toggle("is-stage-view", isStageMap);
+}
+
+function isChapterStageMapVisible() {
+  return Boolean(stagePanel && !stagePanel.classList.contains("is-hidden"));
+}
+
+function hidePrebattleFormationScreen() {
+  const root = document.getElementById("prebattleFormationScreen");
+  if (root) root.classList.add("is-hidden");
+  document.body.classList.remove("in-prebattle-formation");
+}
+
+function handleStageBack() {
+  if (isStageDetailVisible()) {
+    hideStageDetailPanel();
+    return;
+  }
+  if (isChapterStageMapVisible()) {
+    showStageSelect();
+    return;
+  }
+  showLobby();
+}
+
 function showStageLockedNotice(stageNumber) {
   if (!stageSelectNotice) return;
   stageSelectNotice.textContent = `Stage ${stageNumber}는 아직 잠겨 있습니다. 먼저 Stage ${stageNumber - 1}을 클리어하세요.`;
+  stageSelectNotice.classList.add("is-show");
+  clearTimeout(showStageLockedNotice.timer);
+  showStageLockedNotice.timer = setTimeout(() => {
+    if (stageSelectNotice) stageSelectNotice.classList.remove("is-show");
+  }, 1700);
 }
 
 function showStageSelect() {
@@ -92,36 +298,34 @@ function showStageSelect() {
   if (missionScreen) missionScreen.classList.add("is-hidden");
   if (inventoryScreen) inventoryScreen.classList.add("is-hidden");
   hideRecruitDoorScene(true);
-  if (chapterPanel) chapterPanel.classList.add("is-hidden");
-  if (stagePanel) stagePanel.classList.remove("is-hidden");
+  hidePrebattleFormationScreen();
+  if (chapterPanel) chapterPanel.classList.remove("is-hidden");
+  if (stagePanel) stagePanel.classList.add("is-hidden");
+  hideStageDetailPanel();
+  if (stageBackBtn) stageBackBtn.setAttribute("aria-label", "Back to lobby");
+  if (stageSelectNotice) stageSelectNotice.classList.remove("is-show");
+  setStageScreenMode("chapter");
+
   document.body.classList.remove("game-started", "in-lobby", "in-shop", "in-recruit", "in-formation", "in-mission", "in-inventory");
   document.body.classList.add("in-stage-select");
 
   if (gameState) {
     gameState.running = false;
-    gameState.message = "스테이지를 선택하세요";
+    gameState.message = "챕터를 선택하세요.";
     updateButtons();
   }
 
-  if (stageSelectNotice) {
-    stageSelectNotice.textContent = "Stage 1부터 순서대로 클리어하면 다음 스테이지가 열립니다.";
-  }
   updateStageUI();
 }
 
 function showChapterStages() {
   if (chapterPanel) chapterPanel.classList.add("is-hidden");
   if (stagePanel) stagePanel.classList.remove("is-hidden");
-  if (stageSelectNotice) stageSelectNotice.textContent = "Stage 1부터 순서대로 클리어하면 다음 스테이지가 열립니다.";
+  hideStageDetailPanel();
+  if (stageBackBtn) stageBackBtn.setAttribute("aria-label", "Back to chapter select");
+  if (stageSelectNotice) stageSelectNotice.classList.remove("is-show");
+  setStageScreenMode("stage");
   updateStageUI();
-}
-
-function openStage(stageNumber) {
-  if (!isStageUnlocked(stageNumber)) {
-    showStageLockedNotice(stageNumber);
-    return;
-  }
-  startGame(stageNumber);
 }
 
 
@@ -131,11 +335,10 @@ function updateWave(dt) {
     const remain = Math.ceil(gameState.waveBreakTimer);
     gameState.message = `다음 웨이브까지 ${remain}`;
     if (gameState.waveBreakTimer <= 0) {
-      gameState.wave += 1;
+      gameState.wave = Math.min(gameState.wave + 1, gameState.maxWave);
       gameState.enemySpawnTimer = 0;
       gameState.spawnedInWave = 0;
       gameState.enemiesToSpawn = gameState.baseEnemiesToSpawn + gameState.wave * 3;
-      gameState.enemyBaseHp = Math.min(gameState.enemyBaseMaxHp, gameState.enemyBaseHp + 18);
       gameState.message = `Wave ${gameState.wave} 시작!`;
       gameState.messageTimer = 1.1;
     }
@@ -143,7 +346,9 @@ function updateWave(dt) {
   }
 
   gameState.enemySpawnTimer -= dt;
-  const spawnGap = Math.max(0.82, 1.65 - gameState.wave * 0.22);
+  const spawnGap = Number(gameState.stage) === 3
+    ? Math.max(0.68, 1.16 - gameState.wave * 0.13)
+    : Math.max(0.82, 1.65 - gameState.wave * 0.22);
 
   if (gameState.spawnedInWave < gameState.enemiesToSpawn && gameState.enemySpawnTimer <= 0) {
     spawnEnemy();
@@ -152,11 +357,14 @@ function updateWave(dt) {
   }
 
   const waveFinished = gameState.spawnedInWave >= gameState.enemiesToSpawn && gameState.enemies.length === 0;
-  if (waveFinished && gameState.wave < gameState.maxWave) {
+  if (waveFinished) {
     gameState.waveBreakTimer = 3;
     addRunestone(60);
-  } else if (waveFinished && gameState.wave >= gameState.maxWave) {
-    completeStage(`STAGE ${selectedStage} CLEAR! 모든 웨이브 방어 성공`);
+    if (gameState.wave >= gameState.maxWave && !gameState.gateObjectiveAnnounced) {
+      gameState.gateObjectiveAnnounced = true;
+      gameState.message = "상대 게이트를 파괴해야 클리어됩니다!";
+      gameState.messageTimer = 1.4;
+    }
   }
 }
 
@@ -166,11 +374,13 @@ function completeStage(message) {
   gameState.clear = true;
   gameState.running = false;
   gameState.message = `${message} · 스테이지 선택 버튼으로 다음 지역에 도전`;
+  completeStageMissions(selectedStage);
   unlockStageProgress(selectedStage);
   if (!alreadyCleared) {
     grantPlayerRewards(STAGE_CLEAR_REWARDS[selectedStage] || {});
   }
   updateButtons();
+  if (typeof showStageClearRewardUi === "function") showStageClearRewardUi();
 }
 
 
@@ -248,12 +458,8 @@ function getBaseRenderConfig(isPlayer) {
       drawY: GROUND_Y - 285,
       drawW: 285,
       drawH: 285,
-      shadowX: 108,
-      shadowY: GROUND_Y + 2,
-      shadowW: 84,
-      shadowH: 18,
       hpX: 120,
-      hpY: GROUND_Y - 198,
+      hpY: GROUND_Y + 8,
       hpW: 146,
     };
   }
@@ -265,12 +471,8 @@ function getBaseRenderConfig(isPlayer) {
     drawY: GROUND_Y - 285,
     drawW: 285,
     drawH: 285,
-    shadowX: canvas.width - 140,
-    shadowY: GROUND_Y + 2,
-    shadowW: 88,
-    shadowH: 18,
     hpX: canvas.width - 141,
-    hpY: GROUND_Y - 197,
+    hpY: GROUND_Y + 8,
     hpW: 148,
   };
 }
@@ -279,11 +481,6 @@ function drawBase(x, isPlayer) {
   const config = getBaseRenderConfig(isPlayer);
 
   ctx.save();
-  ctx.fillStyle = "rgba(0,0,0,0.18)";
-  ctx.beginPath();
-  ctx.ellipse(config.shadowX, config.shadowY, config.shadowW, config.shadowH, 0, 0, Math.PI * 2);
-  ctx.fill();
-
   if (config.ready) {
     ctx.imageSmoothingEnabled = true;
     ctx.drawImage(config.image, config.drawX, config.drawY, config.drawW, config.drawH);

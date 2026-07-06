@@ -13,29 +13,29 @@ function normalizePlayerData(savedData = {}) {
   PLAYER_ESSENCE_KEYS.forEach((key) => {
     essences[key] = Math.max(0, Number(savedData.essences?.[key]) || 0);
   });
-  const growth = savedData.growth && typeof savedData.growth === "object" ? { ...savedData.growth } : {};
-  const heroGrowth = growth.hero && typeof growth.hero === "object" ? { ...growth.hero } : {};
-  growth.hero = {
-    level: Math.max(1, Number(heroGrowth.level) || 1),
-    star: Math.max(1, Number(heroGrowth.star) || 1),
-  };
+
+  const stageMissionStars = {};
+  const savedStageMissionStars = savedData.stageMissionStars && typeof savedData.stageMissionStars === "object"
+    ? savedData.stageMissionStars
+    : {};
+  Object.entries(savedStageMissionStars).forEach(([stageNumber, missions]) => {
+    if (!missions || typeof missions !== "object") return;
+    stageMissionStars[stageNumber] = { ...missions };
+  });
 
   return {
     ...savedData,
     unlockedStage: Math.min(3, Math.max(1, Number(savedData.unlockedStage) || 1)),
     clearedStages: Array.isArray(savedData.clearedStages) ? savedData.clearedStages : [],
-    growth,
-    gold: Math.max(0, Number(Object.prototype.hasOwnProperty.call(savedData, "gold") ? savedData.gold : 8520) || 0),
+    gold: Math.max(0, Number(savedData.gold) || 0),
     diamonds: Math.max(0, Number(savedData.diamonds) || 0),
     summonTickets: Math.max(0, Number(savedData.summonTickets) || 0),
     commonEssence: Math.max(0, Number(savedData.commonEssence) || 0),
     soldierFragments: Math.max(0, Number(savedData.soldierFragments) || 0),
     essences,
-    heroGrowth: savedData.heroGrowth && typeof savedData.heroGrowth === "object" ? { ...savedData.heroGrowth } : {},
-    ownedUnits: Array.isArray(savedData.ownedUnits) ? savedData.ownedUnits.slice(0, 5) : [],
-    heroGrowthVersion: Number(savedData.heroGrowthVersion) || 0,
     ownedGods: savedData.ownedGods && typeof savedData.ownedGods === "object" ? { ...savedData.ownedGods } : {},
     entitlements: savedData.entitlements && typeof savedData.entitlements === "object" ? { ...savedData.entitlements } : {},
+    stageMissionStars,
   };
 }
 
@@ -51,8 +51,6 @@ function grantPlayerRewards(rewards = {}) {
     }
   });
   saveProgress();
-  if (typeof updateWalletDisplays === "function") updateWalletDisplays();
-  if (typeof renderInventoryScreen === "function") renderInventoryScreen();
   return playerProgress;
 }
 
@@ -67,6 +65,7 @@ let lastTime = 0;
 let animationId = null;
 let keys = {};
 let heroMoveInput = 0;
+let selectedHeroId = "zeus";
 let gameOptionsWasRunning = false;
 let recruitDoorState = {
   active: false,
@@ -75,6 +74,10 @@ let recruitDoorState = {
   hasThreeStar: false,
   opened: false,
 };
+
+function setSelectedHeroId(heroId) {
+  selectedHeroId = heroId || "zeus";
+}
 
 function createInitialState() {
   const stageConfig = getStageConfig(selectedStage);
@@ -91,7 +94,6 @@ function createInitialState() {
     messageTimer: 0,
     wave: 1,
     runestone: clampRunestone(stageConfig.startRunestone),
-    runestoneTimer: 0,
     zeusMana: 0,
     zeusManaMax: ZEUS_MANA_MAX,
     playerBaseHp: 100,
@@ -102,11 +104,19 @@ function createInitialState() {
     spawnedInWave: 0,
     waveBreakTimer: 0,
     growth: playerProgress.growth || {},
-    hero: createMainHero(),
+    selectedHeroId,
+    hero: createMainHero(selectedHeroId),
     zeusSkillEffect: null,
+    poseidonSkillEffect: null,
     particles: [],
     projectiles: [],
     units: [],
     enemies: [],
+    stageMissionRun: {
+      guardSummons: 0,
+      archerSummons: 0,
+      bossDefeated: false,
+      championDied: false,
+    },
   };
 }

@@ -1,26 +1,56 @@
 // Recruit/gacha screen and door animation.
 
 const GOD_DESCENT_SSR_RATE = 0.03;
+const GOD_DESCENT_GOOD_RATE = 0.27;
+const GACHA_ESSENCE_AMOUNT = 10;
 const DUPLICATE_GOD_ESSENCE_AMOUNT = 10;
+const GACHA_SSR_VIDEO_SRC = "assets/ui/gacha 1.mp4";
+const GACHA_NORMAL_VIDEO_SRC = "assets/ui/gacha 2.mp4";
+let recruitBgmWasPlayingBeforeSummon = false;
+
+function isGodOwned(heroId) {
+  const ownedGod = playerProgress.ownedGods?.[heroId];
+  return Boolean(ownedGod && ownedGod.owned === true);
+}
 
 function summonGodDescentOnce(random = Math.random) {
-  if (random() >= GOD_DESCENT_SSR_RATE) {
-    const unitPool = ["guard", "saintess", "archer", "thief", "mage"];
-    const unitId = unitPool[Math.floor(random() * unitPool.length)];
-    const unit = window.FormationAPI?.addOwnedUnit?.(unitId) || null;
-    return [{ rarity: "R", type: "unit", hero: null, unit, isDuplicate: false, convertedEssence: null, isOverflow: !unit }];
+  const roll = random();
+
+  if (roll >= GOD_DESCENT_SSR_RATE + GOD_DESCENT_GOOD_RATE) {
+    grantPlayerRewards({ soldierFragments: GACHA_ESSENCE_AMOUNT });
+    return [{
+      rarity: "BASIC", type: "basic", hero: null,
+      rewardName: "병사 정수", rewardAmount: GACHA_ESSENCE_AMOUNT,
+      iconPath: "assets/icons/essence_soldier.png",
+      isDuplicate: false, convertedEssence: null,
+    }];
   }
+
+  if (roll >= GOD_DESCENT_SSR_RATE) {
+    const essenceHero = GOD_HEROES[Math.floor(random() * GOD_HEROES.length)];
+    grantPlayerRewards({ essences: { [essenceHero.essenceKey]: GACHA_ESSENCE_AMOUNT } });
+    return [{
+      rarity: "GOOD", type: "good", hero: null,
+      rewardName: essenceHero.essenceName, rewardAmount: GACHA_ESSENCE_AMOUNT,
+      iconPath: getGodEssenceIcon(essenceHero.id),
+      isDuplicate: false, convertedEssence: null,
+    }];
+  }
+
   const hero = GOD_HEROES[Math.floor(random() * GOD_HEROES.length)];
-  const isDuplicate = Boolean(playerProgress.ownedGods[hero.id]);
+  const isDuplicate = isGodOwned(hero.id);
   let convertedEssence = null;
   if (isDuplicate) {
     convertedEssence = { key: hero.essenceKey, name: hero.essenceName, amount: DUPLICATE_GOD_ESSENCE_AMOUNT };
     grantPlayerRewards({ essences: { [hero.essenceKey]: DUPLICATE_GOD_ESSENCE_AMOUNT } });
   } else {
-    playerProgress.ownedGods[hero.id] = { ...hero };
+    playerProgress.ownedGods[hero.id] = { ...hero, owned: true };
     saveProgress();
   }
-  return [{ rarity: "SSR", type: "god", hero: { ...hero }, isDuplicate, convertedEssence }];
+  return [{
+    rarity: "AWESOME", type: "awesome", hero: { ...hero },
+    rewardName: hero.name, rewardAmount: 1, isDuplicate, convertedEssence,
+  }];
 }
 
 function summonGodDescentTen(random = Math.random) {
@@ -32,10 +62,10 @@ function renderGachaResult(results, container = null) {
   if (!container) return list;
   container.replaceChildren(...list.map((result) => {
     const item = document.createElement("div");
-    item.className = `gacha-result gacha-result-${result.rarity.toLowerCase()}`;
-    item.textContent = result.hero
-      ? `${result.rarity} ${result.hero.name}${result.isDuplicate ? ` → ${result.convertedEssence.name} ${result.convertedEssence.amount}개` : ""}`
-      : result.rarity;
+    item.className = `gacha-result gacha-result-${result.type}`;
+    item.textContent = result.isDuplicate && result.convertedEssence
+      ? `${result.rarity} ${result.rewardName} → ${result.convertedEssence.name} ${result.convertedEssence.amount}개`
+      : `${result.rarity} ${result.rewardName}${result.type === "awesome" ? "" : ` ${result.rewardAmount}개`}`;
     return item;
   }));
   return list;
@@ -67,7 +97,7 @@ function showRecruit() {
   bindRecruitTicketPopup();
 
   if (recruitNotice) {
-    recruitNotice.innerHTML = "<strong>SSR 확률 3%</strong><span>중복 신 획득 시 해당 신의 정수로 변환됩니다.</span>";
+    recruitNotice.innerHTML = "<strong>AWESOME 신 3%</strong><span>BASIC: 병사 정수 10개 · GOOD: 무작위 신의 정수 10개</span>";
   }
 }
 
@@ -76,12 +106,14 @@ function getRecruitBalance(key) {
 }
 
 function updateRecruitWallet() {
+  const godEssenceTotal = Object.values(playerProgress?.essences || {})
+    .reduce((total, amount) => total + Math.max(0, Number(amount) || 0), 0);
   const walletValues = {
     recruitGoldAmount: getRecruitBalance("gold"),
     recruitDiamondAmount: getRecruitBalance("diamonds"),
     recruitTicketAmount: getRecruitBalance("summonTickets"),
-    recruitEssenceAmount: getRecruitBalance("commonEssence"),
-    recruitSoldierEssenceAmount: getRecruitBalance("soldierFragments"),
+    recruitEssenceAmount: godEssenceTotal,
+    recruitSoldierEssenceAmount: Math.max(0, Number(playerProgress?.soldierFragments) || 0),
   };
 
   Object.entries(walletValues).forEach(([elementId, value]) => {
@@ -156,6 +188,7 @@ function requestRecruitPull(count) {
 
   updateRecruitWallet();
   const results = pullCount === 10 ? summonGodDescentTen() : summonGodDescentOnce();
+  updateRecruitWallet();
   renderGachaResult(results);
   startRecruitDoorAnimation(pullCount, results);
   return true;
@@ -178,7 +211,21 @@ function clearRecruitAnimationTimers() {
 }
 
 function ensureRecruitAnimationUI() {
-  if (!recruitDoorScene || recruitDoorScene.querySelector(".gacha-result-layer")) return;
+  if (!recruitDoorScene) return;
+
+  if (!recruitDoorScene.querySelector(".gacha-summon-video")) {
+    const summonVideo = document.createElement("video");
+    summonVideo.className = "gacha-summon-video";
+    summonVideo.muted = false;
+    summonVideo.volume = 1;
+    summonVideo.playsInline = true;
+    summonVideo.preload = "auto";
+    summonVideo.setAttribute("aria-hidden", "true");
+    summonVideo.setAttribute("tabindex", "-1");
+    recruitDoorScene.prepend(summonVideo);
+  }
+
+  if (recruitDoorScene.querySelector(".gacha-result-layer")) return;
 
   const particles = document.createElement("div");
   particles.className = "summon-particles";
@@ -230,6 +277,72 @@ function ensureRecruitAnimationUI() {
   recruitDoorScene.append(particles, heavenStrike, flash, resultLayer);
 }
 
+function getRecruitSummonVideo() {
+  return recruitDoorScene ? recruitDoorScene.querySelector(".gacha-summon-video") : null;
+}
+
+function resetRecruitSummonVideo() {
+  const summonVideo = getRecruitSummonVideo();
+  if (!summonVideo) return;
+
+  summonVideo.pause();
+  summonVideo.onended = null;
+  summonVideo.onerror = null;
+  summonVideo.removeAttribute("src");
+  summonVideo.load();
+}
+
+function pauseRecruitBgmForSummon() {
+  if (typeof recruitBgm === "undefined") return;
+
+  recruitBgmWasPlayingBeforeSummon = !recruitBgm.paused;
+  if (recruitBgmWasPlayingBeforeSummon) recruitBgm.pause();
+}
+
+function resumeRecruitBgmAfterSummon() {
+  if (typeof recruitBgm === "undefined" || !recruitBgmWasPlayingBeforeSummon) return;
+  if (!document.body.classList.contains("in-recruit")) return;
+
+  recruitBgm.play().catch(() => {});
+  recruitBgmWasPlayingBeforeSummon = false;
+}
+
+function showRecruitAnimationResults() {
+  if (!recruitDoorScene || recruitDoorScene.classList.contains("is-hidden")) return;
+  recruitDoorScene.classList.add("is-results-visible");
+  resumeRecruitBgmAfterSummon();
+}
+
+function playRecruitSummonVideo(hasSsr) {
+  const summonVideo = getRecruitSummonVideo();
+  if (!summonVideo) {
+    scheduleRecruitAnimation(showRecruitAnimationResults, 2200);
+    return;
+  }
+
+  const videoSrc = hasSsr ? GACHA_SSR_VIDEO_SRC : GACHA_NORMAL_VIDEO_SRC;
+  summonVideo.pause();
+  summonVideo.muted = false;
+  summonVideo.volume = 1;
+  summonVideo.onended = showRecruitAnimationResults;
+  summonVideo.onerror = () => scheduleRecruitAnimation(showRecruitAnimationResults, 600);
+  summonVideo.src = videoSrc;
+  summonVideo.load();
+  try {
+    summonVideo.currentTime = 0;
+  } catch (error) {
+    // Some browsers only allow seeking after metadata is loaded.
+  }
+
+  const playPromise = summonVideo.play();
+  if (playPromise && typeof playPromise.catch === "function") {
+    playPromise.catch(() => {
+      resumeRecruitBgmAfterSummon();
+      scheduleRecruitAnimation(showRecruitAnimationResults, 600);
+    });
+  }
+}
+
 function getGodEssenceIcon(heroId) {
   const iconNames = {
     zeus: "zeus",
@@ -242,6 +355,11 @@ function getGodEssenceIcon(heroId) {
   return iconNames[heroId] ? `assets/icons/essence_${iconNames[heroId]}.png` : "";
 }
 
+function getGodImage(heroId) {
+  const imageNames = { athena: "atena" };
+  return `assets/gods/${imageNames[heroId] || heroId}.png`;
+}
+
 function renderRecruitResultCards(results) {
   const grid = recruitDoorScene?.querySelector(".gacha-result-grid");
   if (!grid) return;
@@ -249,16 +367,12 @@ function renderRecruitResultCards(results) {
   grid.classList.toggle("is-ten-pull", list.length === 10);
   grid.replaceChildren(...list.map((result, index) => {
     const card = document.createElement("article");
-    card.className = `gacha-reveal-card is-${result.rarity.toLowerCase()}`;
+    card.className = `gacha-reveal-card is-${result.type}`;
     card.style.setProperty("--card-index", index);
-
-    const rarity = document.createElement("strong");
-    rarity.className = "gacha-card-rarity";
-    rarity.textContent = result.rarity;
 
     const icon = document.createElement("div");
     icon.className = "gacha-card-icon";
-    const iconPath = result.hero ? getGodEssenceIcon(result.hero.id) : "";
+    const iconPath = result.iconPath || (result.hero ? getGodImage(result.hero.id) : "");
     if (iconPath) {
       const image = document.createElement("img");
       image.src = iconPath;
@@ -270,63 +384,14 @@ function renderRecruitResultCards(results) {
 
     const name = document.createElement("span");
     name.className = "gacha-card-name";
-    name.textContent = result.hero ? result.hero.name : "강림의 흔적";
+    name.textContent = result.rewardName;
 
-    card.append(rarity, icon, name);
-    if (result.isDuplicate && result.convertedEssence) {
-      const conversion = document.createElement("small");
-      conversion.textContent = `${result.convertedEssence.name} ${result.convertedEssence.amount}개`;
-      card.appendChild(conversion);
-    }
-    return card;
-  }));
-}
-
-function renderRecruitResultCards(results) {
-  const grid = recruitDoorScene?.querySelector(".gacha-result-grid");
-  if (!grid) return;
-  const list = Array.isArray(results) ? results : [];
-  grid.classList.toggle("is-ten-pull", list.length === 10);
-  grid.replaceChildren(...list.map((result, index) => {
-    const card = document.createElement("article");
-    card.className = `gacha-reveal-card is-${result.rarity.toLowerCase()}`;
-    card.style.setProperty("--card-index", index);
-
-    const rarity = document.createElement("strong");
-    rarity.className = "gacha-card-rarity";
-    rarity.textContent = result.rarity;
-
-    const icon = document.createElement("div");
-    icon.className = "gacha-card-icon";
-    const iconPath = result.hero ? getGodEssenceIcon(result.hero.id) : "";
-    if (iconPath) {
-      const image = document.createElement("img");
-      image.src = iconPath;
-      image.alt = "";
-      icon.appendChild(image);
-    } else if (result.unit && result.unit.image) {
-      const image = document.createElement("img");
-      image.src = result.unit.image;
-      image.alt = "";
-      icon.appendChild(image);
-    } else {
-      icon.textContent = "◆";
-    }
-
-    const name = document.createElement("span");
-    name.className = "gacha-card-name";
-    name.textContent = result.hero
-      ? result.hero.name
-      : result.unit
-        ? result.unit.name
-        : `보유 유닛 ${window.FormationAPI?.ownedUnitLimit || 5}개 한도`;
-
-    card.append(rarity, icon, name);
-    if (result.isDuplicate && result.convertedEssence) {
-      const conversion = document.createElement("small");
-      conversion.textContent = `${result.convertedEssence.name} ${result.convertedEssence.amount}개`;
-      card.appendChild(conversion);
-    }
+    card.append(icon, name);
+    const detail = document.createElement("small");
+    detail.textContent = result.isDuplicate && result.convertedEssence
+      ? `중복 변환: ${result.convertedEssence.name} ${result.convertedEssence.amount}개`
+      : result.type === "awesome" ? "신 획득" : `${result.rewardAmount}개 획득`;
+    card.appendChild(detail);
     return card;
   }));
 }
@@ -345,51 +410,38 @@ function startRecruitDoorAnimation(count, results = null) {
     pullCount: count,
     results: summonResults,
     hasThreeStar: summonResults.length
-      ? summonResults.some((result) => result.rarity === "SSR")
+      ? summonResults.some((result) => result.type === "awesome")
       : getRecruitThreeStarResult(count),
     opened: false,
   };
 
-  recruitDoorScene.className = `recruit-door-scene is-summoning ${recruitDoorState.hasThreeStar ? "is-three-star" : "is-normal"}`;
+  recruitDoorScene.className = `recruit-door-scene is-summoning is-video-summon ${recruitDoorState.hasThreeStar ? "is-three-star" : "is-normal"}`;
   if (recruitDoorCloseBtn) recruitDoorCloseBtn.textContent = "닫기";
   if (doorTapGuide) doorTapGuide.textContent = "올림포스에 신성한 빛이 내립니다...";
   if (doorResultText) doorResultText.textContent = "";
   if (doorKnockText) doorKnockText.textContent = "";
   renderRecruitResultCards(summonResults);
-
-  scheduleRecruitAnimation(() => recruitDoorScene.classList.add("is-door-visible", "is-auto-shake"), 120);
-  scheduleRecruitAnimation(() => recruitDoorScene.classList.remove("is-auto-shake"), 620);
-  scheduleRecruitAnimation(() => recruitDoorScene.classList.add("is-charging"), 500);
-  scheduleRecruitAnimation(() => recruitDoorScene.classList.add("is-light-leak", "is-screen-shake"), 1050);
-  scheduleRecruitAnimation(() => recruitDoorScene.classList.add("is-heaven-strike"), 1280);
-  scheduleRecruitAnimation(() => {
-    recruitDoorScene.classList.add("is-impact-spread");
-    openRecruitDoor();
-  }, 1720);
-  scheduleRecruitAnimation(() => recruitDoorScene.classList.add("is-flashing"), 2000);
-  scheduleRecruitAnimation(() => {
-    recruitDoorScene.classList.add("is-results-visible");
-  }, 2250);
-  scheduleRecruitAnimation(() => {
-    recruitDoorScene.classList.remove("is-flashing", "is-screen-shake");
-  }, 2500);
+  pauseRecruitBgmForSummon();
+  playRecruitSummonVideo(recruitDoorState.hasThreeStar);
 }
 
 function hideRecruitDoorScene(silent = false) {
   if (!recruitDoorScene) return;
   clearRecruitAnimationTimers();
+  resetRecruitSummonVideo();
+  resumeRecruitBgmAfterSummon();
   recruitDoorScene.classList.add("is-hidden");
   recruitDoorScene.classList.remove(
     "is-summoning", "is-door-visible", "is-auto-shake", "is-charging",
     "is-light-leak", "is-screen-shake", "is-opening", "is-flashing",
     "is-heaven-strike", "is-impact-spread", "is-results-visible",
-    "is-three-star", "is-normal"
+    "is-three-star", "is-normal", "is-video-summon"
   );
   recruitDoorState.active = false;
   recruitDoorState.opened = false;
   recruitDoorState.tapCount = 0;
   if (!silent && recruitNotice) {
-    recruitNotice.innerHTML = "<strong>SSR 확률 3%</strong><span>중복 신 획득 시 해당 신의 정수로 변환됩니다.</span>";
+    recruitNotice.innerHTML = "<strong>AWESOME 신 3%</strong><span>BASIC: 병사 정수 10개 · GOOD: 무작위 신의 정수 10개</span>";
   }
 }
 
@@ -423,6 +475,7 @@ function showRecruitNotice() {
 
 window.GachaAPI = {
   SSR_RATE: GOD_DESCENT_SSR_RATE,
+  GOOD_RATE: GOD_DESCENT_GOOD_RATE,
   DUPLICATE_ESSENCE_AMOUNT: DUPLICATE_GOD_ESSENCE_AMOUNT,
   summonGodDescentOnce,
   summonGodDescentTen,
