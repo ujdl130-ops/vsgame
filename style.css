@@ -366,28 +366,29 @@ body.game-started:not(.in-lobby):not(.in-stage-select):not(.in-shop):not(.in-rec
 
 .stage-clear-reward-actions {
   position: absolute;
-  left: 14%;
-  right: 14%;
-  bottom: 7.4%;
+  left: 18%;
+  right: 18%;
+  bottom: 9.1%;
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 9%;
-  height: 13.4%;
+  gap: 7%;
+  height: 10.5%;
   align-items: center;
 }
 
 .stage-clear-reward-action {
   width: 100%;
   height: 100%;
+  box-sizing: border-box;
   min-width: 0;
-  padding: 0 8px;
-  border: 3px solid #e8ba5f;
-  border-radius: 8px;
+  padding: 0 5px;
+  border: 2px solid #e8ba5f;
+  border-radius: 7px;
   background:
     linear-gradient(180deg, rgba(38, 119, 202, 0.96), rgba(5, 46, 112, 0.98) 55%, rgba(2, 29, 80, 0.98)),
     #083878;
   color: #fff5c4;
-  font-size: clamp(11px, 2.1vw, 21px);
+  font-size: clamp(9px, 1.45vw, 16px);
   font-weight: 900;
   letter-spacing: 0;
   line-height: 1.05;
