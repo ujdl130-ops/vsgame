@@ -17,7 +17,6 @@
       <p class="title-kicker">ARCADE LINE DEFENSE</p>
       <h1 class="pixel-logo" aria-label="픽셀디펜스">픽셀디펜스</h1>
       <p class="title-copy">병사를 소환해 몬스터 기지를 밀어붙이는 픽셀풍 횡스크롤 디펜스</p>
-
       <div class="title-preview" aria-hidden="true">
         <div class="mini-base player"></div>
         <div class="mini-unit"></div>
@@ -71,6 +70,9 @@
 
 
   <section id="recruitScreen" class="recruit-screen is-hidden" aria-label="신의 강림 화면">
+    <video class="recruit-bg-video" autoplay muted loop playsinline preload="auto" aria-hidden="true" tabindex="-1">
+      <source src="assets/ui/gacha bg.mp4" type="video/mp4">
+    </video>
     <div class="recruit-divine-overlay" aria-hidden="true"></div>
 
     <button id="recruitBackBtn" class="recruit-ui-btn recruit-back-btn" type="button">← 로비</button>

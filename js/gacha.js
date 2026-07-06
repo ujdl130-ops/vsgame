@@ -2,6 +2,9 @@
 
 const GOD_DESCENT_SSR_RATE = 0.03;
 const DUPLICATE_GOD_ESSENCE_AMOUNT = 10;
+const GACHA_SSR_VIDEO_SRC = "assets/ui/gacha 1.mp4";
+const GACHA_NORMAL_VIDEO_SRC = "assets/ui/gacha 2.mp4";
+let recruitBgmWasPlayingBeforeSummon = false;
 
 function summonGodDescentOnce(random = Math.random) {
   if (random() >= GOD_DESCENT_SSR_RATE) {
@@ -175,7 +178,21 @@ function clearRecruitAnimationTimers() {
 }
 
 function ensureRecruitAnimationUI() {
-  if (!recruitDoorScene || recruitDoorScene.querySelector(".gacha-result-layer")) return;
+  if (!recruitDoorScene) return;
+
+  if (!recruitDoorScene.querySelector(".gacha-summon-video")) {
+    const summonVideo = document.createElement("video");
+    summonVideo.className = "gacha-summon-video";
+    summonVideo.muted = false;
+    summonVideo.volume = 1;
+    summonVideo.playsInline = true;
+    summonVideo.preload = "auto";
+    summonVideo.setAttribute("aria-hidden", "true");
+    summonVideo.setAttribute("tabindex", "-1");
+    recruitDoorScene.prepend(summonVideo);
+  }
+
+  if (recruitDoorScene.querySelector(".gacha-result-layer")) return;
 
   const particles = document.createElement("div");
   particles.className = "summon-particles";
@@ -225,6 +242,72 @@ function ensureRecruitAnimationUI() {
   });
 
   recruitDoorScene.append(particles, heavenStrike, flash, resultLayer);
+}
+
+function getRecruitSummonVideo() {
+  return recruitDoorScene ? recruitDoorScene.querySelector(".gacha-summon-video") : null;
+}
+
+function resetRecruitSummonVideo() {
+  const summonVideo = getRecruitSummonVideo();
+  if (!summonVideo) return;
+
+  summonVideo.pause();
+  summonVideo.onended = null;
+  summonVideo.onerror = null;
+  summonVideo.removeAttribute("src");
+  summonVideo.load();
+}
+
+function pauseRecruitBgmForSummon() {
+  if (typeof recruitBgm === "undefined") return;
+
+  recruitBgmWasPlayingBeforeSummon = !recruitBgm.paused;
+  if (recruitBgmWasPlayingBeforeSummon) recruitBgm.pause();
+}
+
+function resumeRecruitBgmAfterSummon() {
+  if (typeof recruitBgm === "undefined" || !recruitBgmWasPlayingBeforeSummon) return;
+  if (!document.body.classList.contains("in-recruit")) return;
+
+  recruitBgm.play().catch(() => {});
+  recruitBgmWasPlayingBeforeSummon = false;
+}
+
+function showRecruitAnimationResults() {
+  if (!recruitDoorScene || recruitDoorScene.classList.contains("is-hidden")) return;
+  recruitDoorScene.classList.add("is-results-visible");
+  resumeRecruitBgmAfterSummon();
+}
+
+function playRecruitSummonVideo(hasSsr) {
+  const summonVideo = getRecruitSummonVideo();
+  if (!summonVideo) {
+    scheduleRecruitAnimation(showRecruitAnimationResults, 2200);
+    return;
+  }
+
+  const videoSrc = hasSsr ? GACHA_SSR_VIDEO_SRC : GACHA_NORMAL_VIDEO_SRC;
+  summonVideo.pause();
+  summonVideo.muted = false;
+  summonVideo.volume = 1;
+  summonVideo.onended = showRecruitAnimationResults;
+  summonVideo.onerror = () => scheduleRecruitAnimation(showRecruitAnimationResults, 600);
+  summonVideo.src = videoSrc;
+  summonVideo.load();
+  try {
+    summonVideo.currentTime = 0;
+  } catch (error) {
+    // Some browsers only allow seeking after metadata is loaded.
+  }
+
+  const playPromise = summonVideo.play();
+  if (playPromise && typeof playPromise.catch === "function") {
+    playPromise.catch(() => {
+      resumeRecruitBgmAfterSummon();
+      scheduleRecruitAnimation(showRecruitAnimationResults, 600);
+    });
+  }
 }
 
 function getGodEssenceIcon(heroId) {
@@ -298,40 +381,27 @@ function startRecruitDoorAnimation(count, results = null) {
     opened: false,
   };
 
-  recruitDoorScene.className = `recruit-door-scene is-summoning ${recruitDoorState.hasThreeStar ? "is-three-star" : "is-normal"}`;
+  recruitDoorScene.className = `recruit-door-scene is-summoning is-video-summon ${recruitDoorState.hasThreeStar ? "is-three-star" : "is-normal"}`;
   if (recruitDoorCloseBtn) recruitDoorCloseBtn.textContent = "닫기";
   if (doorTapGuide) doorTapGuide.textContent = "올림포스에 신성한 빛이 내립니다...";
   if (doorResultText) doorResultText.textContent = "";
   if (doorKnockText) doorKnockText.textContent = "";
   renderRecruitResultCards(summonResults);
-
-  scheduleRecruitAnimation(() => recruitDoorScene.classList.add("is-door-visible", "is-auto-shake"), 120);
-  scheduleRecruitAnimation(() => recruitDoorScene.classList.remove("is-auto-shake"), 620);
-  scheduleRecruitAnimation(() => recruitDoorScene.classList.add("is-charging"), 500);
-  scheduleRecruitAnimation(() => recruitDoorScene.classList.add("is-light-leak", "is-screen-shake"), 1050);
-  scheduleRecruitAnimation(() => recruitDoorScene.classList.add("is-heaven-strike"), 1280);
-  scheduleRecruitAnimation(() => {
-    recruitDoorScene.classList.add("is-impact-spread");
-    openRecruitDoor();
-  }, 1720);
-  scheduleRecruitAnimation(() => recruitDoorScene.classList.add("is-flashing"), 2000);
-  scheduleRecruitAnimation(() => {
-    recruitDoorScene.classList.add("is-results-visible");
-  }, 2250);
-  scheduleRecruitAnimation(() => {
-    recruitDoorScene.classList.remove("is-flashing", "is-screen-shake");
-  }, 2500);
+  pauseRecruitBgmForSummon();
+  playRecruitSummonVideo(recruitDoorState.hasThreeStar);
 }
 
 function hideRecruitDoorScene(silent = false) {
   if (!recruitDoorScene) return;
   clearRecruitAnimationTimers();
+  resetRecruitSummonVideo();
+  resumeRecruitBgmAfterSummon();
   recruitDoorScene.classList.add("is-hidden");
   recruitDoorScene.classList.remove(
     "is-summoning", "is-door-visible", "is-auto-shake", "is-charging",
     "is-light-leak", "is-screen-shake", "is-opening", "is-flashing",
     "is-heaven-strike", "is-impact-spread", "is-results-visible",
-    "is-three-star", "is-normal"
+    "is-three-star", "is-normal", "is-video-summon"
   );
   recruitDoorState.active = false;
   recruitDoorState.opened = false;
