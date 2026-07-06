@@ -13,6 +13,16 @@ function normalizePlayerData(savedData = {}) {
   PLAYER_ESSENCE_KEYS.forEach((key) => {
     essences[key] = Math.max(0, Number(savedData.essences?.[key]) || 0);
   });
+
+  const stageMissionStars = {};
+  const savedStageMissionStars = savedData.stageMissionStars && typeof savedData.stageMissionStars === "object"
+    ? savedData.stageMissionStars
+    : {};
+  Object.entries(savedStageMissionStars).forEach(([stageNumber, missions]) => {
+    if (!missions || typeof missions !== "object") return;
+    stageMissionStars[stageNumber] = { ...missions };
+  });
+
   return {
     ...savedData,
     unlockedStage: Math.min(3, Math.max(1, Number(savedData.unlockedStage) || 1)),
@@ -25,6 +35,7 @@ function normalizePlayerData(savedData = {}) {
     essences,
     ownedGods: savedData.ownedGods && typeof savedData.ownedGods === "object" ? { ...savedData.ownedGods } : {},
     entitlements: savedData.entitlements && typeof savedData.entitlements === "object" ? { ...savedData.entitlements } : {},
+    stageMissionStars,
   };
 }
 
@@ -101,5 +112,9 @@ function createInitialState() {
     projectiles: [],
     units: [],
     enemies: [],
+    stageMissionRun: {
+      guardSummons: 0,
+      championDied: false,
+    },
   };
 }

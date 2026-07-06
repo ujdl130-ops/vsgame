@@ -362,6 +362,7 @@ function updateHero(dt) {
   if (hero.hp <= 0) {
     if (!hero.dead) {
       hero.dead = true;
+      if (typeof recordStageMissionChampionDeath === "function") recordStageMissionChampionDeath();
       hero.respawnTimer = HERO_RESPAWN_SECONDS;
       hero.deathAnimTimer = hero.deathAnimDuration || 0.85;
       hero.pendingHeroShot = false;

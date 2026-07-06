@@ -70,6 +70,66 @@ function updateStageUI() {
   });
 }
 
+const STAGE1_MISSION_IDS = ["clear", "guard5", "noChampionDeath"];
+
+function getStageMissionProgress(stageNumber) {
+  const allProgress = playerProgress.stageMissionStars && typeof playerProgress.stageMissionStars === "object"
+    ? playerProgress.stageMissionStars
+    : {};
+  const progress = allProgress[String(stageNumber)] || allProgress[stageNumber] || {};
+  const normalizedProgress = progress && typeof progress === "object" ? { ...progress } : {};
+  if (Number(stageNumber) === 1 && Array.isArray(playerProgress.clearedStages) && playerProgress.clearedStages.includes(1)) {
+    normalizedProgress.clear = true;
+  }
+  return normalizedProgress;
+}
+
+function updateStageDetailStars() {
+  if (!stageDetailPanel) return;
+
+  const progress = getStageMissionProgress(1);
+  stageDetailPanel.querySelectorAll(".stage-detail-star").forEach((star) => {
+    const missionId = star.dataset.missionId;
+    const completed = STAGE1_MISSION_IDS.includes(missionId) && Boolean(progress[missionId]);
+    star.classList.toggle("is-earned", completed);
+    star.dataset.completed = completed ? "true" : "false";
+  });
+}
+
+function recordStageMissionGuardSummon() {
+  if (!gameState || Number(gameState.stage) !== 1 || !gameState.stageMissionRun) return;
+  gameState.stageMissionRun.guardSummons = Math.max(0, Number(gameState.stageMissionRun.guardSummons) || 0) + 1;
+}
+
+function recordStageMissionChampionDeath() {
+  if (!gameState || Number(gameState.stage) !== 1 || !gameState.stageMissionRun) return;
+  gameState.stageMissionRun.championDied = true;
+}
+
+function completeStageMissions(stageNumber) {
+  if (Number(stageNumber) !== 1) return;
+
+  if (!playerProgress.stageMissionStars || typeof playerProgress.stageMissionStars !== "object") {
+    playerProgress.stageMissionStars = {};
+  }
+
+  const progress = {
+    ...getStageMissionProgress(stageNumber),
+    clear: true,
+  };
+  const run = gameState && gameState.stageMissionRun ? gameState.stageMissionRun : {};
+
+  if ((Number(run.guardSummons) || 0) >= 5) {
+    progress.guard5 = true;
+  }
+  if (!run.championDied) {
+    progress.noChampionDeath = true;
+  }
+
+  playerProgress.stageMissionStars[String(stageNumber)] = progress;
+  updateStageDetailStars();
+}
+
 function isStageDetailVisible() {
   return Boolean(stageDetailPanel && !stageDetailPanel.classList.contains("is-hidden"));
 }
@@ -97,6 +157,7 @@ function showStageDetailPanel(stageNumber) {
   if (stageScreen) stageScreen.classList.add("is-stage-detail-open");
   if (stageSelectNotice) stageSelectNotice.classList.remove("is-show");
   setStageDetailSelectedCard(stageNumber);
+  updateStageDetailStars();
 
   requestAnimationFrame(() => {
     if (stageDetailStartBtn && isStageDetailVisible()) stageDetailStartBtn.focus({ preventScroll: true });
@@ -257,6 +318,7 @@ function completeStage(message) {
   gameState.clear = true;
   gameState.running = false;
   gameState.message = `${message} · 스테이지 선택 버튼으로 다음 지역에 도전`;
+  completeStageMissions(selectedStage);
   unlockStageProgress(selectedStage);
   updateButtons();
   if (typeof showStageClearRewardUi === "function") showStageClearRewardUi();

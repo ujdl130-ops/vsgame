@@ -41,6 +41,7 @@ function summonGuard() {
     deathAnimDuration: 0.85,
     deathRewarded: false,
   });
+  if (typeof recordStageMissionGuardSummon === "function") recordStageMissionGuardSummon();
 }
 
 function summonArcher() {
