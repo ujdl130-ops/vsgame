@@ -264,6 +264,7 @@ function createKaronBoss(wave) {
     swordWaveSplashRadius: 76,
     clawTarget: null,
     clawHitPending: false,
+    playerGateHitPending: false,
     transformAnimTimer: 0,
     transformAnimDuration: KARON_TRANSFORM_SPRITE.transformDuration,
     paralyzeTimer: 0,
@@ -316,6 +317,7 @@ function startKaronTransformation(enemy) {
   enemy.swordWavePending = false;
   enemy.clawTarget = null;
   enemy.clawHitPending = false;
+  enemy.playerGateHitPending = false;
   enemy.paralyzeTimer = 0;
   enemy.transformAnimDuration = KARON_TRANSFORM_SPRITE.transformDuration;
   enemy.transformAnimTimer = 0;
@@ -350,6 +352,7 @@ function finishKaronTransformation(enemy) {
   enemy.swordWavePending = false;
   enemy.clawTarget = null;
   enemy.clawHitPending = false;
+  enemy.playerGateHitPending = false;
 }
 
 function updateKaronTransformation(enemy, dt) {
@@ -377,6 +380,33 @@ function damageKaronClawTarget(enemy) {
   enemy.clawTarget = null;
 }
 
+function getKaronPlayerGateStopX(werewolf) {
+  return werewolf ? PLAYER_BASE_X + 62 : PLAYER_BASE_X + 42;
+}
+
+function getKaronPlayerGateDamageScale(werewolf) {
+  return werewolf ? 0.75 : 0.55;
+}
+
+function damageKaronPlayerGate(enemy, werewolf) {
+  const damageScale = getKaronPlayerGateDamageScale(werewolf);
+  const attackInterval = enemy.attackSpeed || 1;
+  gameState.playerBaseHp -= enemy.damage * damageScale * attackInterval;
+  spawnHit(PLAYER_BASE_X + (werewolf ? 72 : 64), GROUND_Y - (werewolf ? 80 : 72), werewolf ? "#ff3b79" : "#ff6d4a");
+  enemy.playerGateHitPending = false;
+}
+
+function startKaronPlayerGateAttack(enemy, attackDuration) {
+  enemy.cooldown = enemy.attackSpeed;
+  enemy.attackAnimTimer = attackDuration;
+  enemy.playerGateHitPending = true;
+  enemy.swordWaveTarget = null;
+  enemy.swordWavePending = false;
+  enemy.clawTarget = null;
+  enemy.clawHitPending = false;
+  enemy.moving = false;
+}
+
 function updateKaronEnemy(enemy, dt) {
   if (enemy.transforming || enemy.bossPhase === "transform") {
     updateKaronTransformation(enemy, dt);
@@ -388,6 +418,7 @@ function updateKaronEnemy(enemy, dt) {
     enemy.attackAnimTimer = 0;
     enemy.swordWavePending = false;
     enemy.clawHitPending = false;
+    enemy.playerGateHitPending = false;
     return;
   }
 
@@ -408,7 +439,12 @@ function updateKaronEnemy(enemy, dt) {
     damageKaronClawTarget(enemy);
   }
 
+  if (enemy.playerGateHitPending && (attackProgress >= (werewolf ? spriteSpec.clawHitReleaseProgress : spriteSpec.swordWaveReleaseProgress) || enemy.attackAnimTimer <= 0)) {
+    damageKaronPlayerGate(enemy, werewolf);
+  }
+
   const target = findNearestAlly(enemy.x, enemy.range);
+  const baseStopX = getKaronPlayerGateStopX(werewolf);
 
   if (target) {
     if (enemy.cooldown <= 0 && enemy.attackAnimTimer <= 0) {
@@ -422,17 +458,22 @@ function updateKaronEnemy(enemy, dt) {
         enemy.swordWavePending = true;
       }
     }
+  } else if (enemy.x <= baseStopX) {
+    enemy.x = baseStopX;
+    enemy.moving = false;
+    if (enemy.cooldown <= 0 && enemy.attackAnimTimer <= 0) {
+      startKaronPlayerGateAttack(enemy, attackDuration);
+    }
   } else {
     enemy.x -= enemy.speed * dt;
     enemy.moving = true;
-  }
-
-  const baseStopX = werewolf ? PLAYER_BASE_X + 62 : PLAYER_BASE_X + 42;
-  const baseDamageScale = werewolf ? 0.75 : 0.55;
-  if (enemy.x < baseStopX) {
-    gameState.playerBaseHp -= enemy.damage * dt * baseDamageScale;
-    enemy.x = baseStopX;
-    enemy.moving = false;
+    if (enemy.x <= baseStopX) {
+      enemy.x = baseStopX;
+      enemy.moving = false;
+      if (enemy.cooldown <= 0 && enemy.attackAnimTimer <= 0) {
+        startKaronPlayerGateAttack(enemy, attackDuration);
+      }
+    }
   }
 }
 

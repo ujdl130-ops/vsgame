@@ -42,6 +42,7 @@ function startEnemyDeath(enemy) {
   enemy.swordWavePending = false;
   enemy.clawTarget = null;
   enemy.clawHitPending = false;
+  enemy.playerGateHitPending = false;
   enemy.deathAnimDuration = enemy.deathAnimDuration || 0.55;
   enemy.deathAnimTimer = enemy.deathAnimDuration;
 
@@ -352,6 +353,7 @@ function applyPoseidonTsunamiDamage() {
     enemy.swordWavePending = false;
     enemy.clawTarget = null;
     enemy.clawHitPending = false;
+    enemy.playerGateHitPending = false;
     effect.hitEnemies.add(enemy);
     spawnHit(enemy.x, enemy.y - Math.max(36, enemy.h * 0.68), "#7be8ff");
   }
