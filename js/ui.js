@@ -168,15 +168,41 @@ function isStageClearRewardVisible() {
   return Boolean(stageClearRewardOverlay && !stageClearRewardOverlay.classList.contains("is-hidden"));
 }
 
+function updateStageClearRewardActions() {
+  if (!stageClearRewardNextBtn) return;
+  const nextStage = Number(selectedStage) + 1;
+  const canGoNext = Boolean(STAGE_CONFIGS[nextStage] && isStageUnlocked(nextStage));
+  stageClearRewardNextBtn.disabled = !canGoNext;
+  stageClearRewardNextBtn.setAttribute("aria-disabled", canGoNext ? "false" : "true");
+}
+
 function showStageClearRewardUi() {
   if (!stageClearRewardOverlay) return;
   closeGameOptionsMenu(false);
+  updateStageClearRewardActions();
   stageClearRewardOverlay.classList.remove("is-hidden");
 }
 
 function hideStageClearRewardUi() {
   if (!stageClearRewardOverlay) return;
   stageClearRewardOverlay.classList.add("is-hidden");
+}
+
+function handleStageClearRewardLobby() {
+  hideStageClearRewardUi();
+  showLobby();
+}
+
+function handleStageClearRewardRetry() {
+  hideStageClearRewardUi();
+  restartGame();
+}
+
+function handleStageClearRewardNext() {
+  const nextStage = Number(selectedStage) + 1;
+  if (!STAGE_CONFIGS[nextStage] || !isStageUnlocked(nextStage)) return;
+  hideStageClearRewardUi();
+  startGame(nextStage);
 }
 
 function closeGameOptionsMenu(resumeGame = true) {

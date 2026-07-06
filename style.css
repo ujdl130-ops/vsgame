@@ -364,6 +364,74 @@ body.game-started:not(.in-lobby):not(.in-stage-select):not(.in-shop):not(.in-rec
   outline-offset: 2px;
 }
 
+.stage-clear-reward-actions {
+  position: absolute;
+  left: 14%;
+  right: 14%;
+  bottom: 7.4%;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 9%;
+  height: 13.4%;
+  align-items: center;
+}
+
+.stage-clear-reward-action {
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  padding: 0 8px;
+  border: 3px solid #e8ba5f;
+  border-radius: 8px;
+  background:
+    linear-gradient(180deg, rgba(38, 119, 202, 0.96), rgba(5, 46, 112, 0.98) 55%, rgba(2, 29, 80, 0.98)),
+    #083878;
+  color: #fff5c4;
+  font-size: clamp(11px, 2.1vw, 21px);
+  font-weight: 900;
+  letter-spacing: 0;
+  line-height: 1.05;
+  white-space: normal;
+  word-break: keep-all;
+  text-shadow:
+    0 2px 0 #1a0d04,
+    0 0 6px rgba(11, 35, 81, 0.9);
+  box-shadow:
+    inset 0 2px 0 rgba(255, 255, 255, 0.28),
+    inset 0 -5px 0 rgba(0, 0, 0, 0.28),
+    0 3px 0 #5e3714,
+    0 6px 12px rgba(0, 0, 0, 0.28);
+  cursor: pointer;
+}
+
+.stage-clear-reward-action:hover {
+  filter: brightness(1.08);
+  transform: translateY(-1px);
+}
+
+.stage-clear-reward-action:active {
+  transform: translateY(2px);
+  box-shadow:
+    inset 0 3px 6px rgba(0, 0, 0, 0.32),
+    0 1px 0 #5e3714;
+}
+
+.stage-clear-reward-action:focus-visible {
+  outline: 2px solid rgba(255, 238, 163, 0.95);
+  outline-offset: 3px;
+}
+
+.stage-clear-reward-action:disabled {
+  cursor: default;
+  filter: grayscale(0.82) brightness(0.58);
+  color: rgba(255, 245, 196, 0.58);
+}
+
+.stage-clear-reward-action:disabled:hover,
+.stage-clear-reward-action:disabled:active {
+  transform: none;
+}
+
 @keyframes rewardUiPop {
   from {
     opacity: 0;

@@ -134,6 +134,10 @@ window.addEventListener("keydown", (event) => {
   }
 
   if (isStageClearRewardVisible()) {
+    const rewardAction = event.target && typeof event.target.closest === "function"
+      ? event.target.closest(".stage-clear-reward-action")
+      : null;
+    if (rewardAction && (event.code === "Enter" || event.code === "Space")) return;
     if (event.code === "Escape" || event.code === "Enter" || event.code === "Space") {
       event.preventDefault();
       hideStageClearRewardUi();
@@ -240,6 +244,9 @@ if (optionResumeBtn) optionResumeBtn.addEventListener("click", handleOptionResum
 if (optionStageSelectBtn) optionStageSelectBtn.addEventListener("click", handleOptionStageSelect);
 if (optionRestartBtn) optionRestartBtn.addEventListener("click", handleOptionRestart);
 if (stageClearRewardCloseBtn) stageClearRewardCloseBtn.addEventListener("click", hideStageClearRewardUi);
+if (stageClearRewardLobbyBtn) stageClearRewardLobbyBtn.addEventListener("click", handleStageClearRewardLobby);
+if (stageClearRewardRetryBtn) stageClearRewardRetryBtn.addEventListener("click", handleStageClearRewardRetry);
+if (stageClearRewardNextBtn) stageClearRewardNextBtn.addEventListener("click", handleStageClearRewardNext);
 if (stageClearRewardOverlay) {
   stageClearRewardOverlay.addEventListener("click", (event) => {
     if (event.target === stageClearRewardOverlay) hideStageClearRewardUi();
