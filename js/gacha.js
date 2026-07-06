@@ -1,12 +1,34 @@
 // Recruit/gacha screen and door animation.
 
 const GOD_DESCENT_SSR_RATE = 0.03;
+const GOD_DESCENT_GOOD_RATE = 0.27;
+const GACHA_ESSENCE_AMOUNT = 10;
 const DUPLICATE_GOD_ESSENCE_AMOUNT = 10;
 
 function summonGodDescentOnce(random = Math.random) {
-  if (random() >= GOD_DESCENT_SSR_RATE) {
-    return [{ rarity: "R", type: "normal", hero: null, isDuplicate: false, convertedEssence: null }];
+  const roll = random();
+
+  if (roll >= GOD_DESCENT_SSR_RATE + GOD_DESCENT_GOOD_RATE) {
+    grantPlayerRewards({ soldierFragments: GACHA_ESSENCE_AMOUNT });
+    return [{
+      rarity: "BASIC", type: "basic", hero: null,
+      rewardName: "병사 정수", rewardAmount: GACHA_ESSENCE_AMOUNT,
+      iconPath: "assets/icons/essence_soldier.png",
+      isDuplicate: false, convertedEssence: null,
+    }];
   }
+
+  if (roll >= GOD_DESCENT_SSR_RATE) {
+    const essenceHero = GOD_HEROES[Math.floor(random() * GOD_HEROES.length)];
+    grantPlayerRewards({ essences: { [essenceHero.essenceKey]: GACHA_ESSENCE_AMOUNT } });
+    return [{
+      rarity: "GOOD", type: "good", hero: null,
+      rewardName: essenceHero.essenceName, rewardAmount: GACHA_ESSENCE_AMOUNT,
+      iconPath: getGodEssenceIcon(essenceHero.id),
+      isDuplicate: false, convertedEssence: null,
+    }];
+  }
+
   const hero = GOD_HEROES[Math.floor(random() * GOD_HEROES.length)];
   const isDuplicate = Boolean(playerProgress.ownedGods[hero.id]);
   let convertedEssence = null;
@@ -17,7 +39,10 @@ function summonGodDescentOnce(random = Math.random) {
     playerProgress.ownedGods[hero.id] = { ...hero };
     saveProgress();
   }
-  return [{ rarity: "SSR", type: "god", hero: { ...hero }, isDuplicate, convertedEssence }];
+  return [{
+    rarity: "AWESOME", type: "awesome", hero: { ...hero },
+    rewardName: hero.name, rewardAmount: 1, isDuplicate, convertedEssence,
+  }];
 }
 
 function summonGodDescentTen(random = Math.random) {
@@ -29,10 +54,10 @@ function renderGachaResult(results, container = null) {
   if (!container) return list;
   container.replaceChildren(...list.map((result) => {
     const item = document.createElement("div");
-    item.className = `gacha-result gacha-result-${result.rarity.toLowerCase()}`;
-    item.textContent = result.hero
-      ? `${result.rarity} ${result.hero.name}${result.isDuplicate ? ` → ${result.convertedEssence.name} ${result.convertedEssence.amount}개` : ""}`
-      : result.rarity;
+    item.className = `gacha-result gacha-result-${result.type}`;
+    item.textContent = result.isDuplicate && result.convertedEssence
+      ? `${result.rarity} ${result.rewardName} → ${result.convertedEssence.name} ${result.convertedEssence.amount}개`
+      : `${result.rarity} ${result.rewardName}${result.type === "awesome" ? "" : ` ${result.rewardAmount}개`}`;
     return item;
   }));
   return list;
@@ -64,7 +89,7 @@ function showRecruit() {
   bindRecruitTicketPopup();
 
   if (recruitNotice) {
-    recruitNotice.innerHTML = "<strong>SSR 확률 3%</strong><span>중복 신 획득 시 해당 신의 정수로 변환됩니다.</span>";
+    recruitNotice.innerHTML = "<strong>AWESOME 신 3%</strong><span>BASIC: 병사 정수 10개 · GOOD: 무작위 신의 정수 10개</span>";
   }
 }
 
@@ -73,12 +98,14 @@ function getRecruitBalance(key) {
 }
 
 function updateRecruitWallet() {
+  const godEssenceTotal = Object.values(playerProgress?.essences || {})
+    .reduce((total, amount) => total + Math.max(0, Number(amount) || 0), 0);
   const walletValues = {
     recruitGoldAmount: getRecruitBalance("gold"),
     recruitDiamondAmount: getRecruitBalance("diamonds"),
     recruitTicketAmount: getRecruitBalance("summonTickets"),
-    recruitEssenceAmount: getRecruitBalance("commonEssence"),
-    recruitSoldierEssenceAmount: getRecruitBalance("soldierFragments"),
+    recruitEssenceAmount: godEssenceTotal,
+    recruitSoldierEssenceAmount: Math.max(0, Number(playerProgress?.soldierFragments) || 0),
   };
 
   Object.entries(walletValues).forEach(([elementId, value]) => {
@@ -153,6 +180,7 @@ function requestRecruitPull(count) {
 
   updateRecruitWallet();
   const results = pullCount === 10 ? summonGodDescentTen() : summonGodDescentOnce();
+  updateRecruitWallet();
   renderGachaResult(results);
   startRecruitDoorAnimation(pullCount, results);
   return true;
@@ -239,6 +267,11 @@ function getGodEssenceIcon(heroId) {
   return iconNames[heroId] ? `assets/icons/essence_${iconNames[heroId]}.png` : "";
 }
 
+function getGodImage(heroId) {
+  const imageNames = { athena: "atena" };
+  return `assets/gods/${imageNames[heroId] || heroId}.png`;
+}
+
 function renderRecruitResultCards(results) {
   const grid = recruitDoorScene?.querySelector(".gacha-result-grid");
   if (!grid) return;
@@ -246,7 +279,7 @@ function renderRecruitResultCards(results) {
   grid.classList.toggle("is-ten-pull", list.length === 10);
   grid.replaceChildren(...list.map((result, index) => {
     const card = document.createElement("article");
-    card.className = `gacha-reveal-card is-${result.rarity.toLowerCase()}`;
+    card.className = `gacha-reveal-card is-${result.type}`;
     card.style.setProperty("--card-index", index);
 
     const rarity = document.createElement("strong");
@@ -255,7 +288,7 @@ function renderRecruitResultCards(results) {
 
     const icon = document.createElement("div");
     icon.className = "gacha-card-icon";
-    const iconPath = result.hero ? getGodEssenceIcon(result.hero.id) : "";
+    const iconPath = result.iconPath || (result.hero ? getGodImage(result.hero.id) : "");
     if (iconPath) {
       const image = document.createElement("img");
       image.src = iconPath;
@@ -267,14 +300,14 @@ function renderRecruitResultCards(results) {
 
     const name = document.createElement("span");
     name.className = "gacha-card-name";
-    name.textContent = result.hero ? result.hero.name : "강림의 흔적";
+    name.textContent = result.rewardName;
 
     card.append(rarity, icon, name);
-    if (result.isDuplicate && result.convertedEssence) {
-      const conversion = document.createElement("small");
-      conversion.textContent = `${result.convertedEssence.name} ${result.convertedEssence.amount}개`;
-      card.appendChild(conversion);
-    }
+    const detail = document.createElement("small");
+    detail.textContent = result.isDuplicate && result.convertedEssence
+      ? `중복 변환: ${result.convertedEssence.name} ${result.convertedEssence.amount}개`
+      : result.type === "awesome" ? "신 획득" : `${result.rewardAmount}개 획득`;
+    card.appendChild(detail);
     return card;
   }));
 }
@@ -293,7 +326,7 @@ function startRecruitDoorAnimation(count, results = null) {
     pullCount: count,
     results: summonResults,
     hasThreeStar: summonResults.length
-      ? summonResults.some((result) => result.rarity === "SSR")
+      ? summonResults.some((result) => result.type === "awesome")
       : getRecruitThreeStarResult(count),
     opened: false,
   };
@@ -337,7 +370,7 @@ function hideRecruitDoorScene(silent = false) {
   recruitDoorState.opened = false;
   recruitDoorState.tapCount = 0;
   if (!silent && recruitNotice) {
-    recruitNotice.innerHTML = "<strong>SSR 확률 3%</strong><span>중복 신 획득 시 해당 신의 정수로 변환됩니다.</span>";
+    recruitNotice.innerHTML = "<strong>AWESOME 신 3%</strong><span>BASIC: 병사 정수 10개 · GOOD: 무작위 신의 정수 10개</span>";
   }
 }
 
@@ -371,6 +404,7 @@ function showRecruitNotice() {
 
 window.GachaAPI = {
   SSR_RATE: GOD_DESCENT_SSR_RATE,
+  GOOD_RATE: GOD_DESCENT_GOOD_RATE,
   DUPLICATE_ESSENCE_AMOUNT: DUPLICATE_GOD_ESSENCE_AMOUNT,
   summonGodDescentOnce,
   summonGodDescentTen,

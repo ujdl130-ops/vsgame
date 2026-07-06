@@ -3988,7 +3988,7 @@ body:not(.game-started) .game-wrap {
   isolation: isolate;
   background:
     linear-gradient(180deg, rgba(8, 8, 20, 0.22), rgba(5, 4, 13, 0.54)),
-    url("assets/ui/gacha_bg.png") center / cover no-repeat;
+    url("assets/gacha/gacha_bg.png") center / cover no-repeat;
   font-family: "Noto Serif KR", "Malgun Gothic", serif;
 }
 
@@ -4491,7 +4491,7 @@ body:not(.game-started) .game-wrap {
 
 /* 배경 일러스트 중심의 미니멀 가챠 레이아웃 */
 .recruit-screen {
-  background: url("assets/ui/gacha_bg.png") center center / cover no-repeat;
+  background: url("assets/gacha/gacha_bg.png") center center / cover no-repeat;
 }
 
 .recruit-divine-overlay {
@@ -5714,7 +5714,7 @@ body:not(.game-started) .game-wrap {
   overflow: hidden;
   border: 1px solid #88745c;
   border-radius: 8px;
-  background: linear-gradient(155deg, rgba(53,48,68,0.98), rgba(17,15,26,0.99));
+  background: center / 100% 100% no-repeat;
   box-shadow: inset 0 0 22px rgba(255,255,255,0.04), 0 12px 26px rgba(0,0,0,0.48);
   opacity: 0;
   transform: scale(0.8);
@@ -5730,15 +5730,21 @@ body:not(.game-started) .game-wrap {
   100% { opacity: 1; transform: scale(1); }
 }
 
-.gacha-reveal-card.is-ssr {
+.gacha-reveal-card.is-basic {
+  background-image: url("assets/gacha/gachacard_basic.png");
+}
+
+.gacha-reveal-card.is-good {
+  background-image: url("assets/gacha/gachacard_good.png");
+}
+
+.gacha-reveal-card.is-awesome {
   border: 2px solid #f2cb68;
-  background:
-    radial-gradient(circle at 50% 38%, rgba(255,226,132,0.28), transparent 36%),
-    linear-gradient(155deg, #594322, #191320);
+  background-image: url("assets/gacha/gachacard_awesome.png");
   box-shadow: inset 0 0 28px rgba(255,217,112,0.16), 0 0 22px rgba(255,197,67,0.38);
 }
 
-.gacha-reveal-card.is-ssr::before {
+.gacha-reveal-card.is-awesome::before {
   content: "";
   position: absolute;
   inset: -80%;
@@ -5764,7 +5770,7 @@ body:not(.game-started) .game-wrap {
   letter-spacing: 0.16em;
 }
 
-.is-ssr .gacha-card-rarity {
+.is-awesome .gacha-card-rarity {
   color: #ffe69a;
   font-size: 17px;
   text-shadow: 0 0 12px #ffbf3f;
