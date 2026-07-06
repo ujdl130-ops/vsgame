@@ -306,6 +306,42 @@ const SHOP_CATEGORY_ITEMS = {
       priceIcon: "assets/icons/gold.png",
       dailyLimit: "1일 1회",
     },
+    {
+      id: "growth-gold-20000",
+      name: "골드",
+      amount: "×20,000",
+      image: "assets/icons/gold.png",
+      price: "100",
+      priceIcon: "assets/icons/diamond.png",
+      dailyLimit: "1일 1회",
+    },
+    {
+      id: "growth-gold-60000",
+      name: "골드",
+      amount: "×60,000",
+      image: "assets/icons/gold.png",
+      price: "300",
+      priceIcon: "assets/icons/diamond.png",
+      dailyLimit: "1일 1회",
+    },
+    {
+      id: "growth-gold-100000",
+      name: "골드",
+      amount: "×100,000",
+      image: "assets/icons/gold.png",
+      price: "500",
+      priceIcon: "assets/icons/diamond.png",
+      dailyLimit: "1일 1회",
+    },
+    {
+      id: "growth-gold-200000",
+      name: "골드",
+      amount: "×200,000",
+      image: "assets/icons/gold.png",
+      price: "1,000",
+      priceIcon: "assets/icons/diamond.png",
+      dailyLimit: "1일 1회",
+    },
   ],
   monthly: [
     {
@@ -357,6 +393,10 @@ const SHOP_PURCHASE_RULES = {
   "diamond-box": { rewards: { diamonds: 1100 } },
   "diamond-vault": { rewards: { diamonds: 2300 } },
   "diamond-sacred-vault": { rewards: { diamonds: 6000 } },
+  "growth-gold-20000": { cost: { diamonds: 100 }, rewards: { gold: 20000 }, daily: true },
+  "growth-gold-60000": { cost: { diamonds: 300 }, rewards: { gold: 60000 }, daily: true },
+  "growth-gold-100000": { cost: { diamonds: 500 }, rewards: { gold: 100000 }, daily: true },
+  "growth-gold-200000": { cost: { diamonds: 1000 }, rewards: { gold: 200000 }, daily: true },
   "growth-essence-free": { rewards: { commonEssence: 1 }, daily: true },
   "growth-essence-3": { cost: { diamonds: 200 }, rewards: { commonEssence: 3 }, daily: true },
   "growth-essence-5": { cost: { diamonds: 300 }, rewards: { commonEssence: 5 }, daily: true },
@@ -645,7 +685,9 @@ function renderShopUI() {
   });
 
   const categoryItems = SHOP_CATEGORY_ITEMS[selectedShopCategory] || [];
-  const visibleItemCount = selectedShopCategory === "growth" ? 8 : SHOP_ITEM_COUNT;
+  const visibleItemCount = selectedShopCategory === "growth"
+    ? categoryItems.length
+    : SHOP_ITEM_COUNT;
 
   categoryItems.slice(0, visibleItemCount).forEach((item) => {
     const card = document.createElement("button");

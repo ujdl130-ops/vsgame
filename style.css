@@ -7992,7 +7992,7 @@ body:not(.game-started) .game-wrap {
 
   .shop-item-list[data-category="growth"] {
     grid-template-columns: repeat(4, minmax(0, 1fr));
-    width: min(54vw, 1050px);
+    width: min(46vw, 900px);
     gap: clamp(8px, 1vh, 13px) clamp(10px, 1vw, 18px);
     margin-inline: auto;
   }
