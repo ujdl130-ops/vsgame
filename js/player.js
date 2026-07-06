@@ -8,10 +8,20 @@ const PLAYER_ESSENCE_KEYS = [
   "wisdomEssence", "warEssence", "strengthEssence",
 ];
 
+const PLAYER_UNIT_ESSENCE_KEYS = [
+  "guardEssence", "archerEssence", "thiefEssence",
+  "mageEssence", "saintessEssence",
+];
+
 function normalizePlayerData(savedData = {}) {
   const essences = {};
   PLAYER_ESSENCE_KEYS.forEach((key) => {
     essences[key] = Math.max(0, Number(savedData.essences?.[key]) || 0);
+  });
+
+  const unitEssences = {};
+  PLAYER_UNIT_ESSENCE_KEYS.forEach((key) => {
+    unitEssences[key] = Math.max(0, Number(savedData.unitEssences?.[key]) || 0);
   });
 
   const stageMissionStars = {};
@@ -33,6 +43,7 @@ function normalizePlayerData(savedData = {}) {
     commonEssence: Math.max(0, Number(savedData.commonEssence) || 0),
     soldierFragments: Math.max(0, Number(savedData.soldierFragments) || 0),
     essences,
+    unitEssences,
     ownedGods: savedData.ownedGods && typeof savedData.ownedGods === "object" ? { ...savedData.ownedGods } : {},
     entitlements: savedData.entitlements && typeof savedData.entitlements === "object" ? { ...savedData.entitlements } : {},
     stageMissionStars,
@@ -48,6 +59,11 @@ function grantPlayerRewards(rewards = {}) {
   Object.entries(rewards.essences || {}).forEach(([key, amount]) => {
     if (PLAYER_ESSENCE_KEYS.includes(key)) {
       playerProgress.essences[key] = Math.max(0, playerProgress.essences[key] + Number(amount));
+    }
+  });
+  Object.entries(rewards.unitEssences || {}).forEach(([key, amount]) => {
+    if (PLAYER_UNIT_ESSENCE_KEYS.includes(key)) {
+      playerProgress.unitEssences[key] = Math.max(0, playerProgress.unitEssences[key] + Number(amount));
     }
   });
   saveProgress();
