@@ -5805,10 +5805,93 @@ body:not(.game-started) .game-wrap {
 
 /* 배경 일러스트 중심의 미니멀 가챠 레이아웃 */
 .recruit-screen {
-  background: url("assets/ui/gacha_bg.png") center center / cover no-repeat;
+  background: #05040b url("assets/ui/gacha_bg.png") center center / cover no-repeat;
+}
+
+.recruit-bg-video {
+  position: absolute;
+  z-index: 0;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  pointer-events: none;
+}
+
+.recruit-divine-copy {
+  position: absolute;
+  z-index: 3;
+  top: max(88px, calc(88px + env(safe-area-inset-top)));
+  left: max(42px, calc(42px + env(safe-area-inset-left)));
+  width: min(560px, 43vw);
+  color: #fff3cf;
+  text-align: center;
+  pointer-events: none;
+  text-shadow:
+    0 2px 0 rgba(62, 34, 12, 0.86),
+    0 0 15px rgba(250, 192, 91, 0.46),
+    0 0 28px rgba(255, 232, 163, 0.24);
+}
+
+.recruit-divine-title {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 14px;
+  font-family: "Noto Serif KR", "Malgun Gothic", serif;
+}
+
+.recruit-divine-title span {
+  height: 2px;
+  background:
+    linear-gradient(90deg, transparent, rgba(246, 204, 124, 0.92) 42%, rgba(255, 244, 191, 0.9));
+  box-shadow: 0 0 10px rgba(255, 223, 143, 0.42);
+}
+
+.recruit-divine-title span:last-child {
+  transform: scaleX(-1);
+}
+
+.recruit-divine-title strong {
+  position: relative;
+  font-size: clamp(44px, 4.5vw, 72px);
+  font-weight: 900;
+  letter-spacing: 0;
+  line-height: 1.08;
+  white-space: nowrap;
+}
+
+.recruit-divine-title strong::before,
+.recruit-divine-title strong::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  width: 9px;
+  height: 9px;
+  border: 2px solid rgba(255, 221, 139, 0.88);
+  transform: translateY(-50%) rotate(45deg);
+  box-shadow: 0 0 9px rgba(255, 224, 143, 0.64);
+}
+
+.recruit-divine-title strong::before {
+  left: -28px;
+}
+
+.recruit-divine-title strong::after {
+  right: -28px;
+}
+
+.recruit-divine-copy p {
+  margin: 10px 0 0;
+  color: #f6e7c6;
+  font-family: "Noto Serif KR", "Malgun Gothic", serif;
+  font-size: clamp(17px, 1.45vw, 22px);
+  font-weight: 700;
+  line-height: 1.35;
 }
 
 .recruit-divine-overlay {
+  z-index: 1;
   background: linear-gradient(
     180deg,
     rgba(7, 6, 12, 0.28) 0%,
@@ -5826,6 +5909,7 @@ body:not(.game-started) .game-wrap {
 }
 
 .recruit-frame {
+  z-index: 2;
   inset: 0;
   width: 100%;
   height: 100%;
@@ -5930,6 +6014,16 @@ body:not(.game-started) .game-wrap {
     width: 170px;
   }
 
+  .recruit-divine-copy {
+    top: max(118px, calc(118px + env(safe-area-inset-top)));
+    left: max(18px, calc(18px + env(safe-area-inset-left)));
+    width: min(430px, calc(100vw - 36px));
+  }
+
+  .recruit-divine-title {
+    gap: 10px;
+  }
+
   .recruit-frame {
     width: 100%;
     height: 100%;
@@ -5964,6 +6058,32 @@ body:not(.game-started) .game-wrap {
     right: max(18px, calc(18px + env(safe-area-inset-right)));
     left: auto;
     width: 145px;
+  }
+
+  .recruit-divine-copy {
+    top: max(112px, calc(112px + env(safe-area-inset-top)));
+    left: 14px;
+    width: min(360px, calc(100vw - 28px));
+  }
+
+  .recruit-divine-title {
+    gap: 8px;
+  }
+
+  .recruit-divine-title strong {
+    font-size: clamp(34px, 9.4vw, 46px);
+  }
+
+  .recruit-divine-title strong::before {
+    left: -20px;
+  }
+
+  .recruit-divine-title strong::after {
+    right: -20px;
+  }
+
+  .recruit-divine-copy p {
+    font-size: 13px;
   }
 
   .recruit-frame {
@@ -6754,6 +6874,38 @@ body:not(.game-started) .game-wrap {
   background:
     radial-gradient(circle at 50% 47%, rgba(58, 43, 20, 0.3), transparent 34%),
     rgba(1, 1, 5, 0.96);
+}
+
+.gacha-summon-video {
+  position: absolute;
+  z-index: 41;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  background: #000;
+  pointer-events: none;
+}
+
+.recruit-door-scene.is-video-summon {
+  background: #000;
+}
+
+.recruit-door-scene.is-video-summon .door-light,
+.recruit-door-scene.is-video-summon .summon-particles,
+.recruit-door-scene.is-video-summon .summon-white-flash,
+.recruit-door-scene.is-video-summon .summon-heaven-strike {
+  display: none;
+}
+
+.recruit-door-scene.is-video-summon .gacha-result-layer {
+  background:
+    radial-gradient(circle at 50% 46%, rgba(255, 229, 152, 0.12), transparent 34%),
+    linear-gradient(180deg, rgba(2, 2, 7, 0.28), rgba(2, 2, 7, 0.68));
+}
+
+.recruit-door-scene.is-video-summon.is-results-visible .gacha-summon-video {
+  filter: brightness(0.72) saturate(1.08);
 }
 
 .recruit-door-scene.is-summoning .door-pixel-scanline,
