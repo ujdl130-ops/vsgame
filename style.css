@@ -5691,11 +5691,16 @@ body:not(.game-started) .game-wrap {
 .gacha-result-grid {
   align-self: center;
   display: grid;
-  grid-template-columns: minmax(190px, 260px);
+  grid-template-columns: minmax(320px, 420px);
   justify-content: center;
   row-gap: 14px;
   column-gap: 4px;
   width: min(98vw, 1500px);
+}
+
+.gacha-result-grid:not(.is-ten-pull) .gacha-reveal-card {
+  width: 420px;
+  justify-self: center;
 }
 
 .gacha-result-grid.is-ten-pull {
@@ -5813,6 +5818,14 @@ body:not(.game-started) .game-wrap {
     grid-template-rows: repeat(2, minmax(0, 1fr));
     row-gap: 5px;
     column-gap: 0;
+  }
+
+  .gacha-result-grid:not(.is-ten-pull) {
+    grid-template-columns: minmax(240px, 78vw);
+  }
+
+  .gacha-result-grid:not(.is-ten-pull) .gacha-reveal-card {
+    width: min(78vw, 360px);
   }
 
   .gacha-result-grid.is-ten-pull .gacha-reveal-card {
