@@ -33,6 +33,7 @@ function isInventoryVisible() {
 }
 
 function showLobby() {
+  hideStageDefeatUi();
   if (titleScreen) titleScreen.classList.add("is-hidden");
   if (lobbyScreen) lobbyScreen.classList.remove("is-hidden");
   if (stageScreen) stageScreen.classList.add("is-hidden");
@@ -168,6 +169,10 @@ function isStageClearRewardVisible() {
   return Boolean(stageClearRewardOverlay && !stageClearRewardOverlay.classList.contains("is-hidden"));
 }
 
+function isStageDefeatVisible() {
+  return Boolean(stageDefeatOverlay && !stageDefeatOverlay.classList.contains("is-hidden"));
+}
+
 function updateStageClearRewardActions() {
   if (!stageClearRewardNextBtn) return;
   const nextStage = Number(selectedStage) + 1;
@@ -224,6 +229,18 @@ function hideStageClearRewardUi() {
   stageClearRewardOverlay.classList.add("is-hidden");
 }
 
+function showStageDefeatUi() {
+  if (!stageDefeatOverlay) return;
+  closeGameOptionsMenu(false);
+  hideStageClearRewardUi();
+  stageDefeatOverlay.classList.remove("is-hidden");
+}
+
+function hideStageDefeatUi() {
+  if (!stageDefeatOverlay) return;
+  stageDefeatOverlay.classList.add("is-hidden");
+}
+
 function handleStageClearRewardLobby() {
   hideStageClearRewardUi();
   showLobby();
@@ -239,6 +256,16 @@ function handleStageClearRewardNext() {
   if (!STAGE_CONFIGS[nextStage] || !isStageUnlocked(nextStage)) return;
   hideStageClearRewardUi();
   startGame(nextStage);
+}
+
+function handleStageDefeatLobby() {
+  hideStageDefeatUi();
+  showLobby();
+}
+
+function handleStageDefeatRetry() {
+  hideStageDefeatUi();
+  restartGame();
 }
 
 function closeGameOptionsMenu(resumeGame = true) {

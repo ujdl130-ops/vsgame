@@ -23,6 +23,7 @@ function startGame(stageNumber = selectedStage) {
 
   loadStageAssets(selectedStage);
   hideStageClearRewardUi();
+  hideStageDefeatUi();
   closeGameOptionsMenu(false);
   resetGame();
   if (titleScreen) titleScreen.classList.add("is-hidden");
@@ -160,6 +161,18 @@ window.addEventListener("keydown", (event) => {
     return;
   }
 
+  if (isStageDefeatVisible()) {
+    const defeatAction = event.target && typeof event.target.closest === "function"
+      ? event.target.closest(".stage-defeat-action")
+      : null;
+    if (defeatAction && (event.code === "Enter" || event.code === "Space")) return;
+    if (event.code === "Escape") {
+      event.preventDefault();
+      handleStageDefeatLobby();
+    }
+    return;
+  }
+
   if (isGameOptionsOpen()) {
     if (event.code === "Escape") {
       event.preventDefault();
@@ -264,6 +277,8 @@ if (stageClearRewardAdBtn) stageClearRewardAdBtn.addEventListener("click", handl
 if (stageClearRewardLobbyBtn) stageClearRewardLobbyBtn.addEventListener("click", handleStageClearRewardLobby);
 if (stageClearRewardRetryBtn) stageClearRewardRetryBtn.addEventListener("click", handleStageClearRewardRetry);
 if (stageClearRewardNextBtn) stageClearRewardNextBtn.addEventListener("click", handleStageClearRewardNext);
+if (stageDefeatLobbyBtn) stageDefeatLobbyBtn.addEventListener("click", handleStageDefeatLobby);
+if (stageDefeatRetryBtn) stageDefeatRetryBtn.addEventListener("click", handleStageDefeatRetry);
 if (stageClearRewardOverlay) {
   stageClearRewardOverlay.addEventListener("click", (event) => {
     if (event.target === stageClearRewardOverlay) hideStageClearRewardUi();

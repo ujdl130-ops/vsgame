@@ -106,14 +106,19 @@ function cleanupDeadEntities() {
 }
 
 function checkEndConditions() {
+  if (gameState.clear || gameState.gameOver) return;
+
   if (gameState.enemyBaseHp <= 0) {
     completeStage(`STAGE ${selectedStage} CLEAR! 적 기지 파괴`);
+    return;
   }
 
   if (gameState.playerBaseHp <= 0) {
     gameState.gameOver = true;
     gameState.running = false;
-    gameState.message = "GAME OVER! 아군 기지가 파괴되었습니다.";
+    gameState.message = "DEFEAT! 성이 함락되었습니다.";
+    updateButtons();
+    if (typeof showStageDefeatUi === "function") showStageDefeatUi();
   }
 }
 
