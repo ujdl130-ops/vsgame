@@ -13858,7 +13858,7 @@ body:not(.game-started) .game-wrap {
   max-width: 100vw;
   max-height: 100vh;
   aspect-ratio: 16 / 9;
-  background: url("assets/ui/Settign_UI.png") center / 100% 100% no-repeat;
+  background: url("assets/ui/ChoiceUI.png") center / 100% 100% no-repeat;
   filter: drop-shadow(0 24px 34px rgba(0, 0, 0, 0.4));
 }
 
@@ -13869,9 +13869,25 @@ body:not(.game-started) .game-wrap {
   z-index: 4;
   width: 8.4%;
   height: 5.7%;
-  border: 0;
-  background: transparent;
+  border: 1px solid rgba(242, 208, 132, 0.78);
+  border-radius: 999px;
+  color: #fff0bb;
+  background: rgba(7, 12, 21, 0.68);
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.12),
+    0 8px 18px rgba(0, 0, 0, 0.34);
   cursor: pointer;
+}
+
+.prebattle-formation-back-btn::before {
+  content: "<";
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: 100%;
+  font-size: clamp(18px, 1.65vw, 30px);
+  font-weight: 1000;
+  line-height: 1;
 }
 
 .prebattle-formation-back-btn:focus-visible,
@@ -13883,16 +13899,16 @@ body:not(.game-started) .game-wrap {
 
 .prebattle-formation-slot-grid {
   position: absolute;
-  left: 17.35%;
-  top: 26.35%;
+  left: 18%;
+  top: 29%;
   z-index: 2;
-  width: 66.75%;
-  height: 52.65%;
+  width: 64%;
+  height: 42%;
   display: grid;
   grid-template-columns: repeat(5, minmax(0, 1fr));
   grid-template-rows: repeat(2, minmax(0, 1fr));
   column-gap: 2.75%;
-  row-gap: 7.8%;
+  row-gap: 8.5%;
 }
 
 .prebattle-formation-slot {
@@ -13986,7 +14002,7 @@ body:not(.game-started) .game-wrap {
 .prebattle-formation-actions {
   position: absolute;
   left: 50%;
-  bottom: 3.2%;
+  bottom: 17%;
   z-index: 3;
   display: flex;
   align-items: center;
@@ -14038,7 +14054,7 @@ body:not(.game-started) .game-wrap {
   }
 
   .prebattle-formation-actions {
-    bottom: 2.2%;
+    bottom: 15.5%;
     width: 94%;
     gap: 8px;
   }
