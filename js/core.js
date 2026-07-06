@@ -88,6 +88,9 @@ const chapter1Btn = document.getElementById("chapter1Btn");
 const chapterBackBtn = document.getElementById("chapterBackBtn");
 const stageSelectNotice = document.getElementById("stageSelectNotice");
 const stageCards = document.querySelectorAll(".stage-card");
+const stageDetailPanel = document.getElementById("stageDetailPanel");
+const stageDetailCloseBtn = document.getElementById("stageDetailCloseBtn");
+const stageDetailStartBtn = document.getElementById("stageDetailStartBtn");
 
 const GROUND_Y = 300;
 const COMBAT_LINE_Y = GROUND_Y - 42;

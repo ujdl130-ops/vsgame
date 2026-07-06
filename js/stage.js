@@ -70,9 +70,59 @@ function updateStageUI() {
   });
 }
 
+function isStageDetailVisible() {
+  return Boolean(stageDetailPanel && !stageDetailPanel.classList.contains("is-hidden"));
+}
+
+function setStageDetailSelectedCard(stageNumber) {
+  stageCards.forEach((card) => {
+    card.classList.toggle("is-detail-selected", Number(card.dataset.stage) === Number(stageNumber));
+  });
+}
+
+function hideStageDetailPanel() {
+  if (stageDetailPanel) {
+    stageDetailPanel.classList.add("is-hidden");
+    stageDetailPanel.removeAttribute("data-stage");
+  }
+  if (stageScreen) stageScreen.classList.remove("is-stage-detail-open");
+  setStageDetailSelectedCard(0);
+}
+
+function showStageDetailPanel(stageNumber) {
+  if (!stageDetailPanel || Number(stageNumber) !== 1) return false;
+
+  stageDetailPanel.dataset.stage = String(stageNumber);
+  stageDetailPanel.classList.remove("is-hidden");
+  if (stageScreen) stageScreen.classList.add("is-stage-detail-open");
+  if (stageSelectNotice) stageSelectNotice.classList.remove("is-show");
+  setStageDetailSelectedCard(stageNumber);
+
+  requestAnimationFrame(() => {
+    if (stageDetailStartBtn && isStageDetailVisible()) stageDetailStartBtn.focus({ preventScroll: true });
+  });
+
+  return true;
+}
+
+function proceedStageDetailPanel() {
+  const stageNumber = Number(stageDetailPanel?.dataset.stage) || 1;
+  hideStageDetailPanel();
+
+  if (typeof showPreBattleFormation === "function") {
+    showPreBattleFormation(stageNumber);
+    return;
+  }
+
+  startGame(stageNumber);
+}
+
 function openStage(stageNumber) {
   if (!isStageUnlocked(stageNumber)) {
     showStageLockedNotice(stageNumber);
+    return;
+  }
+  if (Number(stageNumber) === 1 && showStageDetailPanel(stageNumber)) {
     return;
   }
   if (typeof showPreBattleFormation === "function") {
@@ -100,6 +150,10 @@ function hidePrebattleFormationScreen() {
 }
 
 function handleStageBack() {
+  if (isStageDetailVisible()) {
+    hideStageDetailPanel();
+    return;
+  }
   if (isChapterStageMapVisible()) {
     showStageSelect();
     return;
@@ -131,6 +185,7 @@ function showStageSelect() {
   hidePrebattleFormationScreen();
   if (chapterPanel) chapterPanel.classList.remove("is-hidden");
   if (stagePanel) stagePanel.classList.add("is-hidden");
+  hideStageDetailPanel();
   if (stageBackBtn) stageBackBtn.setAttribute("aria-label", "Back to lobby");
   if (stageSelectNotice) stageSelectNotice.classList.remove("is-show");
   setStageScreenMode("chapter");
@@ -150,6 +205,7 @@ function showStageSelect() {
 function showChapterStages() {
   if (chapterPanel) chapterPanel.classList.add("is-hidden");
   if (stagePanel) stagePanel.classList.remove("is-hidden");
+  hideStageDetailPanel();
   if (stageBackBtn) stageBackBtn.setAttribute("aria-label", "Back to chapter select");
   if (stageSelectNotice) stageSelectNotice.classList.remove("is-show");
   setStageScreenMode("stage");

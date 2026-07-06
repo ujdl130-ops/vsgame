@@ -81,6 +81,21 @@ window.addEventListener("keydown", (event) => {
   }
 
   if (isStageSelectVisible()) {
+    if (typeof isStageDetailVisible === "function" && isStageDetailVisible()) {
+      const detailButton = event.target && typeof event.target.closest === "function"
+        ? event.target.closest("#stageDetailCloseBtn, #stageDetailStartBtn")
+        : null;
+
+      if (event.code === "Escape") {
+        event.preventDefault();
+        hideStageDetailPanel();
+      } else if ((event.code === "Enter" || event.code === "Space") && !detailButton) {
+        event.preventDefault();
+        proceedStageDetailPanel();
+      }
+      return;
+    }
+
     if (event.code === "Escape") {
       event.preventDefault();
       handleStageBack();
@@ -297,6 +312,8 @@ shopCards.forEach((card) => {
 if (stageBackBtn) stageBackBtn.addEventListener("click", handleStageBack);
 if (chapter1Btn) chapter1Btn.addEventListener("click", showChapterStages);
 if (chapterBackBtn) chapterBackBtn.addEventListener("click", showStageSelect);
+if (stageDetailCloseBtn) stageDetailCloseBtn.addEventListener("click", hideStageDetailPanel);
+if (stageDetailStartBtn) stageDetailStartBtn.addEventListener("click", proceedStageDetailPanel);
 stageCards.forEach((card) => {
   card.addEventListener("click", () => openStage(Number(card.dataset.stage)));
 });
