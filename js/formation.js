@@ -741,12 +741,12 @@ function renderFormationHeroDetail() {
       : action.cost > 0
         ? action.cost
         : "성급 상승";
-  const costLabel = action.type === "level" ? "골드" : action.type === "star" && action.cost > 0 ? "정수" : "";
+  const costLabel = action.type === "level" ? "골드" : action.type === "star" && action.cost > 0 ? "신의정수" : "";
   const pendingMessage = action.type === "level"
     ? `골드 ${action.cost.toLocaleString("ko-KR")}을 소모해 Lv.${action.nextLevel}로 성장시킵니다.`
     : action.type === "star"
       ? action.cost > 0
-        ? `${getFormationHeroEssenceSpendLabel(hero.id, action.cost)}를 소모해 ${action.nextStar}성으로 성장시킵니다.`
+        ? `신의정수 ${action.cost}개를 소모해 ${action.nextStar}성으로 성장시킵니다.`
         : `${action.nextStar}성으로 성장시킵니다.`
       : "";
 
@@ -780,14 +780,12 @@ function renderFormationHeroDetail() {
           <div><dt>스킬 종류</dt><dd>${hero.skillType || ""}</dd></div>
           <div><dt>현재 성급</dt><dd>${star}성 / ${FORMATION_HERO_MAX_STAR}성</dd></div>
           <div><dt>현재 레벨</dt><dd>Lv.${level} / ${levelCap}</dd></div>
-          <div><dt>${essenceInfo.name}</dt><dd>${essenceInfo.specificAmount.toLocaleString("ko-KR")}</dd></div>
-          <div><dt>공통 신의정수</dt><dd>${essenceInfo.commonAmount.toLocaleString("ko-KR")}</dd></div>
-          <div><dt>${action.type === "star" && action.cost > 0 ? "초월 가능 정수" : "보유 정수 합계"}</dt><dd>${fragmentAmount.toLocaleString("ko-KR")}${action.type === "star" && action.cost > 0 ? ` / ${action.cost.toLocaleString("ko-KR")}` : ""}</dd></div>
+          <div><dt>신의정수</dt><dd>${fragmentAmount.toLocaleString("ko-KR")} / ${FORMATION_HERO_FRAGMENT_COST}</dd></div>
         </dl>
         <button id="formationHeroLevelUpBtn" class="formation-level-btn formation-hero-level-btn" type="button" ${hero.unlocked && !isMax && !lacksEssenceForStar ? "" : "disabled"}>
           레벨업 하기 <span>${costLabel ? `${costLabel} ${levelLabel}` : levelLabel}</span>
         </button>
-        ${lacksEssenceForStar ? `<p class="formation-growth-lock">${essenceInfo.name}와 공통 신의정수 합계 ${action.cost}개를 모으면 ${action.nextStar}성 성장이 가능합니다.</p>` : ""}
+        ${lacksEssenceForStar ? `<p class="formation-growth-lock">신의정수 ${action.cost}개를 모으면 ${action.nextStar}성 성장이 가능합니다.</p>` : ""}
         ${isPending ? `
           <div class="formation-growth-confirm" role="dialog" aria-label="영웅 성장 확인">
             <p>${pendingMessage}</p>
@@ -965,7 +963,7 @@ function renderFormationSelectedInfo() {
       || (action.type === "star" && action.cost > 0 && !getFormationUnitEssenceInfo(unit, action.cost).canAfford);
     if (cost) {
       cost.textContent = action.type === "star"
-        ? `정수 ${action.cost.toLocaleString("ko-KR")}`
+        ? `병사정수 ${action.cost.toLocaleString("ko-KR")}`
         : action.type === "level"
           ? action.cost.toLocaleString("ko-KR")
           : "MAX";
@@ -1189,12 +1187,12 @@ function levelUpFormationUnit() {
   if (action.type === "star") {
     const essenceInfo = getFormationUnitEssenceInfo(unit, action.cost);
     if (!essenceInfo.canAfford) {
-      showFormationMessage(`${essenceInfo.name}와 공통 병사정수 합계가 부족합니다. 초월에는 ${action.cost}개가 필요합니다.`, "warning");
+      showFormationMessage(`병사정수가 부족합니다. 초월에는 ${action.cost}개가 필요합니다.`, "warning");
       return;
     }
 
     if (!consumeFormationUnitEssences(unit, action.cost)) {
-      showFormationMessage(`${essenceInfo.name}와 공통 병사정수 합계가 부족합니다.`, "warning");
+      showFormationMessage("병사정수가 부족합니다.", "warning");
       return;
     }
 
@@ -1260,7 +1258,7 @@ function levelUpFormationHero() {
     }
   }
   if (action.type === "star" && action.cost > 0 && !getFormationHeroEssenceInfo(hero.id, action.cost).canAfford) {
-    showFormationMessage(`${hero.name} 전용 정수와 공통 신의정수 합계가 부족합니다. 성급업에는 ${action.cost}개가 필요합니다.`, "warning");
+    showFormationMessage(`신의정수가 부족합니다. 성급업에는 ${action.cost}개가 필요합니다.`, "warning");
     return;
   }
 
@@ -1317,14 +1315,14 @@ function confirmFormationHeroGrowth() {
   }
 
   if (action.cost > 0 && !getFormationHeroEssenceInfo(hero.id, action.cost).canAfford) {
-    showFormationMessage(`${hero.name} 전용 정수와 공통 신의정수 합계가 부족합니다. 성급업에는 ${action.cost}개가 필요합니다.`, "warning");
+    showFormationMessage(`신의정수가 부족합니다. 성급업에는 ${action.cost}개가 필요합니다.`, "warning");
     formationState.pendingHeroGrowthAction = null;
     renderFormationSlots();
     return;
   }
 
   if (action.cost > 0 && !consumeFormationHeroEssences(hero.id, action.cost)) {
-    showFormationMessage(`${hero.name} 전용 정수와 공통 신의정수 합계가 부족합니다.`, "warning");
+    showFormationMessage("신의정수가 부족합니다.", "warning");
     formationState.pendingHeroGrowthAction = null;
     renderFormationSlots();
     return;
@@ -1478,12 +1476,12 @@ function renderFormationHeroDetail() {
       : action.cost > 0
         ? action.cost
         : "성급 상승";
-  const costLabel = action.type === "level" ? "골드" : action.type === "star" && action.cost > 0 ? "정수" : "";
+  const costLabel = action.type === "level" ? "골드" : action.type === "star" && action.cost > 0 ? "신의정수" : "";
   const pendingMessage = action.type === "level"
     ? `골드 ${action.cost.toLocaleString("ko-KR")}을 소모해 Lv.${action.nextLevel}로 성장시킵니다.`
     : action.type === "star"
       ? action.cost > 0
-        ? `${getFormationHeroEssenceSpendLabel(hero.id, action.cost)}를 소모해 ${action.nextStar}성으로 성장시킵니다.`
+        ? `신의정수 ${action.cost}개를 소모해 ${action.nextStar}성으로 성장시킵니다.`
         : `${action.nextStar}성으로 성장시킵니다.`
       : "";
 
@@ -1513,14 +1511,12 @@ function renderFormationHeroDetail() {
           <div><dt>스킬 종류</dt><dd>${hero.skillType || ""}</dd></div>
           <div><dt>현재 성급</dt><dd>${star}성 / ${FORMATION_HERO_MAX_STAR}성</dd></div>
           <div><dt>현재 레벨</dt><dd>Lv.${level} / ${levelCap}</dd></div>
-          <div><dt>${essenceInfo.name}</dt><dd>${essenceInfo.specificAmount.toLocaleString("ko-KR")}</dd></div>
-          <div><dt>공통 신의정수</dt><dd>${essenceInfo.commonAmount.toLocaleString("ko-KR")}</dd></div>
-          <div><dt>${action.type === "star" && action.cost > 0 ? "초월 가능 정수" : "보유 정수 합계"}</dt><dd>${fragmentAmount.toLocaleString("ko-KR")}${action.type === "star" && action.cost > 0 ? ` / ${action.cost.toLocaleString("ko-KR")}` : ""}</dd></div>
+          <div><dt>신의정수</dt><dd>${fragmentAmount.toLocaleString("ko-KR")} / ${FORMATION_HERO_FRAGMENT_COST}</dd></div>
         </dl>
         <button id="formationHeroLevelUpBtn" class="formation-level-btn formation-hero-level-btn" type="button" ${hero.unlocked && !isMax && !lacksEssenceForStar ? "" : "disabled"}>
           레벨업 하기 <span>${costLabel ? `${costLabel} ${levelLabel}` : levelLabel}</span>
         </button>
-        ${lacksEssenceForStar ? `<p class="formation-growth-lock">${essenceInfo.name}와 공통 신의정수 합계 ${action.cost}개를 모으면 ${action.nextStar}성 성장이 가능합니다.</p>` : ""}
+        ${lacksEssenceForStar ? `<p class="formation-growth-lock">신의정수 ${action.cost}개를 모으면 ${action.nextStar}성 성장이 가능합니다.</p>` : ""}
         ${isPending ? `
           <div class="formation-growth-confirm" role="dialog" aria-label="영웅 성장 확인">
             <p>${pendingMessage}</p>
@@ -1546,11 +1542,10 @@ function renderFormationUnitDetail() {
   const essenceInfo = getFormationUnitEssenceInfo(unit, action.type === "star" ? action.cost : 0);
   const isMax = action.type === "max" || action.type === "none";
   const lacksEssenceForStar = action.type === "star" && action.cost > 0 && !essenceInfo.canAfford;
-  const buttonLabel = action.type === "star" ? "초월 하기" : "레벨업 하기";
   const buttonCostLabel = isMax
     ? "MAX"
     : action.type === "star"
-      ? `정수 ${action.cost.toLocaleString("ko-KR")}`
+      ? `병사정수 ${action.cost.toLocaleString("ko-KR")}`
       : `골드 ${action.cost.toLocaleString("ko-KR")}`;
 
   return `
@@ -1580,14 +1575,11 @@ function renderFormationUnitDetail() {
           <div><dt>능력</dt><dd>${unit.ability || "전투에서 아군 진형을 보조합니다."}</dd></div>
           <div><dt>현재 성급</dt><dd>${unit.star}성 / ${FORMATION_MAX_STAR}성</dd></div>
           <div><dt>현재 레벨</dt><dd>Lv.${unit.level} / ${unit.maxLevel}</dd></div>
-          <div><dt>${essenceInfo.name}</dt><dd>${essenceInfo.specificAmount.toLocaleString("ko-KR")}</dd></div>
-          <div><dt>공통 병사정수</dt><dd>${essenceInfo.commonAmount.toLocaleString("ko-KR")}</dd></div>
-          <div><dt>${action.type === "star" && action.cost > 0 ? "초월 가능 정수" : "보유 정수 합계"}</dt><dd>${essenceInfo.totalAmount.toLocaleString("ko-KR")}${action.type === "star" && action.cost > 0 ? ` / ${action.cost.toLocaleString("ko-KR")}` : ""}</dd></div>
+          <div><dt>병사정수</dt><dd>${essenceInfo.totalAmount.toLocaleString("ko-KR")}</dd></div>
         </dl>
         <button id="formationUnitLevelUpBtn" class="formation-level-btn formation-hero-level-btn" type="button" ${isMax || lacksEssenceForStar ? "disabled" : ""}>
-          ${buttonLabel} <span>${buttonCostLabel}</span>
+          레벨업 하기 <span>${buttonCostLabel}</span>
         </button>
-        ${lacksEssenceForStar ? `<p class="formation-growth-lock">${essenceInfo.name}와 공통 병사정수 합계 ${action.cost}개를 모으면 ${action.nextStar}성 초월이 가능합니다.</p>` : ""}
       </div>
     </div>
   `;
