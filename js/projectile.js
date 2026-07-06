@@ -3,6 +3,8 @@
 const MAGE_FIREBALL_SPLASH_RADIUS = 52;
 const MAGE_FIREBALL_VERTICAL_RADIUS = 44;
 const PROJECTILE_DEFAULT_MAX_LIFE = 3.2;
+const KARON_SWORD_WAVE_GATE_X = PLAYER_BASE_X + 42;
+const KARON_SWORD_WAVE_GATE_DAMAGE_SCALE = 0.55;
 
 function getEnemyProjectileHitPoint(enemy) {
   if (!enemy) return { x: 0, y: 0 };
@@ -185,16 +187,35 @@ function getKaronSwordWaveSplashTargets(impactX, radius) {
 }
 
 function damageKaronSwordWaveSplash(projectile, impactX) {
-  const targets = getKaronSwordWaveSplashTargets(impactX, projectile.splashRadius || 72);
+  const radius = projectile.splashRadius || 72;
+  const targets = getKaronSwordWaveSplashTargets(impactX, radius);
 
   for (const target of targets) {
     target.hp -= projectile.damage;
     spawnHit(target.x, target.y - Math.max(38, target.h * 0.65), "#79c8ff");
   }
 
-  if (targets.length === 0) {
+  const gateHit = isKaronSwordWavePlayerGateInSplash(impactX, radius);
+  if (gateHit) {
+    damageKaronSwordWavePlayerGate(projectile);
+  }
+
+  if (targets.length === 0 && !gateHit) {
     spawnHit(impactX, projectile.y, "#79c8ff");
   }
+}
+
+function isKaronSwordWavePlayerGateInSplash(impactX, radius) {
+  return Math.abs(impactX - KARON_SWORD_WAVE_GATE_X) <= radius;
+}
+
+function hasKaronSwordWaveReachedPlayerGate(projectile) {
+  return projectile.x <= KARON_SWORD_WAVE_GATE_X;
+}
+
+function damageKaronSwordWavePlayerGate(projectile) {
+  gameState.playerBaseHp -= projectile.damage * KARON_SWORD_WAVE_GATE_DAMAGE_SCALE;
+  spawnHit(KARON_SWORD_WAVE_GATE_X + 24, GROUND_Y - 78, "#79c8ff");
 }
 
 function fireArcherArrow(unit) {
@@ -291,6 +312,11 @@ function updateProjectiles(dt) {
 
       if (target && Math.abs(projectile.x - target.x) < 24) {
         damageKaronSwordWaveSplash(projectile, target.x);
+        projectile.dead = true;
+      }
+
+      if (!projectile.dead && hasKaronSwordWaveReachedPlayerGate(projectile)) {
+        damageKaronSwordWavePlayerGate(projectile);
         projectile.dead = true;
       }
 
