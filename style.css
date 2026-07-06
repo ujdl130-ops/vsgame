@@ -524,6 +524,31 @@ body.game-started:not(.in-lobby):not(.in-stage-select):not(.in-shop):not(.in-rec
   pointer-events: none;
 }
 
+.stage-clear-reward-multiplier {
+  position: absolute;
+  left: 80.8%;
+  top: 24.8%;
+  z-index: 3;
+  color: #fff1bd;
+  font-size: clamp(18px, 4vw, 48px);
+  font-weight: 1000;
+  line-height: 1;
+  letter-spacing: 0;
+  opacity: 0;
+  pointer-events: none;
+  transform: translate(-50%, -50%) scale(0.72);
+  text-shadow:
+    0 3px 0 #8d1b13,
+    0 0 9px rgba(255, 233, 119, 0.72),
+    0 0 16px rgba(255, 62, 42, 0.36);
+  -webkit-text-stroke: 1px rgba(101, 30, 16, 0.92);
+}
+
+.stage-clear-reward-multiplier.is-show {
+  opacity: 1;
+  animation: rewardMultiplierPop 0.44s cubic-bezier(.18, .86, .32, 1.28) both;
+}
+
 .stage-clear-reward-ad-btn:hover,
 .stage-clear-treasure-btn:hover {
   transform: translateY(-2px);
@@ -661,6 +686,21 @@ body.game-started:not(.in-lobby):not(.in-stage-select):not(.in-shop):not(.in-rec
   100% {
     transform: scale(1);
     filter: brightness(1);
+  }
+}
+
+@keyframes rewardMultiplierPop {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.48) rotate(-7deg);
+  }
+  58% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1.12) rotate(2deg);
+  }
+  100% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1) rotate(0);
   }
 }
 

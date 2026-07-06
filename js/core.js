@@ -22,6 +22,7 @@ const stageClearRewardOverlay = document.getElementById("stageClearRewardOverlay
 const stageClearRewardCloseBtn = document.getElementById("stageClearRewardCloseBtn");
 const stageClearTreasureBtn = document.getElementById("stageClearTreasureBtn");
 const stageClearRewardAdBtn = document.getElementById("stageClearRewardAdBtn");
+const stageClearRewardMultiplierIndicator = document.getElementById("stageClearRewardMultiplierIndicator");
 const stageClearRewardLobbyBtn = document.getElementById("stageClearRewardLobbyBtn");
 const stageClearRewardRetryBtn = document.getElementById("stageClearRewardRetryBtn");
 const stageClearRewardNextBtn = document.getElementById("stageClearRewardNextBtn");

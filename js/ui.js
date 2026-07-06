@@ -184,6 +184,9 @@ function resetStageClearRewardEffects() {
   if (stageClearRewardAdBtn) {
     stageClearRewardAdBtn.classList.remove("is-preview");
   }
+  if (stageClearRewardMultiplierIndicator) {
+    stageClearRewardMultiplierIndicator.classList.remove("is-show");
+  }
 }
 
 function handleStageClearTreasureOpen() {
@@ -195,6 +198,11 @@ function handleStageClearTreasureOpen() {
 function handleStageClearRewardAdPreview() {
   if (!stageClearRewardAdBtn) return;
   stageClearRewardAdBtn.classList.remove("is-preview");
+  if (stageClearRewardMultiplierIndicator) {
+    stageClearRewardMultiplierIndicator.classList.remove("is-show");
+    void stageClearRewardMultiplierIndicator.offsetWidth;
+    stageClearRewardMultiplierIndicator.classList.add("is-show");
+  }
   void stageClearRewardAdBtn.offsetWidth;
   stageClearRewardAdBtn.classList.add("is-preview");
   clearTimeout(handleStageClearRewardAdPreview.timer);
