@@ -17,6 +17,7 @@ function renderPrebattleFormation() {
 
   root.innerHTML = `
     <div class="prebattle-formation-board">
+      <img class="prebattle-formation-arrow prebattle-formation-arrow-left" src="assets/ui/arrow_right_redesign.png" alt="" aria-hidden="true" draggable="false">
       <img class="prebattle-formation-hero-card" src="assets/maps/formation/zeus.png" alt="제우스 카드" draggable="false">
       <img class="prebattle-formation-arrow prebattle-formation-arrow-right" src="assets/ui/arrow_right_redesign.png" alt="" aria-hidden="true" draggable="false">
     </div>
