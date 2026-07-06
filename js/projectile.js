@@ -3,7 +3,7 @@
 const MAGE_FIREBALL_SPLASH_RADIUS = 52;
 const MAGE_FIREBALL_VERTICAL_RADIUS = 44;
 const PROJECTILE_DEFAULT_MAX_LIFE = 3.2;
-const KARON_SWORD_WAVE_GATE_X = PLAYER_BASE_X + 42;
+const KARON_SWORD_WAVE_GATE_X = PLAYER_BASE_ATTACK_X;
 const KARON_SWORD_WAVE_GATE_DAMAGE_SCALE = 0.55;
 
 function getEnemyProjectileHitPoint(enemy) {
@@ -215,7 +215,7 @@ function hasKaronSwordWaveReachedPlayerGate(projectile) {
 
 function damageKaronSwordWavePlayerGate(projectile) {
   gameState.playerBaseHp -= projectile.damage * KARON_SWORD_WAVE_GATE_DAMAGE_SCALE;
-  spawnHit(KARON_SWORD_WAVE_GATE_X + 24, GROUND_Y - 78, "#79c8ff");
+  spawnHit(PLAYER_BASE_ATTACK_HIT_X, GROUND_Y - 78, "#79c8ff");
 }
 
 function fireArcherArrow(unit) {

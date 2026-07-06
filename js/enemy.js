@@ -163,6 +163,64 @@ const EVILEYE_STAGE_STATS = {
   3: { hp: 124, damage: 23 },
 };
 
+function getEnemyPlayerBaseDamageScale(enemy) {
+  return enemy && enemy.type === "evileye" ? 0.65 : 0.8;
+}
+
+function getEnemyPlayerBaseReleaseProgress(enemy) {
+  return enemy && enemy.type === "evileye" ? 0.58 : 0.5;
+}
+
+function getEnemyPlayerBaseHitY(enemy) {
+  return enemy && enemy.type === "evileye" ? GROUND_Y - 118 : GROUND_Y - 76;
+}
+
+function damageEnemyPlayerBase(enemy) {
+  const damageScale = getEnemyPlayerBaseDamageScale(enemy);
+  const attackInterval = enemy.attackSpeed || 1;
+  gameState.playerBaseHp -= enemy.damage * damageScale * attackInterval;
+  spawnHit(PLAYER_BASE_ATTACK_HIT_X, getEnemyPlayerBaseHitY(enemy), enemy.type === "evileye" ? "#c56dff" : "#ff9090");
+  enemy.playerGateHitPending = false;
+}
+
+function updateEnemyPlayerBaseAttackHit(enemy, attackProgress) {
+  if (!enemy.playerGateHitPending) return;
+  if (attackProgress >= getEnemyPlayerBaseReleaseProgress(enemy) || enemy.attackAnimTimer <= 0) {
+    damageEnemyPlayerBase(enemy);
+  }
+}
+
+function startEnemyPlayerBaseAttack(enemy, attackDuration) {
+  enemy.cooldown = enemy.attackSpeed;
+  enemy.attackAnimTimer = attackDuration;
+  enemy.playerGateHitPending = true;
+  enemy.laserTarget = null;
+  enemy.laserHitPending = false;
+  enemy.moving = false;
+}
+
+function advanceEnemyTowardPlayerBase(enemy, dt, attackDuration) {
+  if (enemy.x <= PLAYER_BASE_ATTACK_X) {
+    enemy.x = PLAYER_BASE_ATTACK_X;
+    enemy.moving = false;
+    if (enemy.cooldown <= 0 && enemy.attackAnimTimer <= 0) {
+      startEnemyPlayerBaseAttack(enemy, attackDuration);
+    }
+    return;
+  }
+
+  enemy.x -= enemy.speed * dt;
+  enemy.moving = true;
+
+  if (enemy.x <= PLAYER_BASE_ATTACK_X) {
+    enemy.x = PLAYER_BASE_ATTACK_X;
+    enemy.moving = false;
+    if (enemy.cooldown <= 0 && enemy.attackAnimTimer <= 0) {
+      startEnemyPlayerBaseAttack(enemy, attackDuration);
+    }
+  }
+}
+
 function getStageMonsterStats(table, fallbackStage) {
   const stage = Number(gameState && gameState.stage) || fallbackStage;
   return table[stage] || table[fallbackStage];
@@ -381,7 +439,7 @@ function damageKaronClawTarget(enemy) {
 }
 
 function getKaronPlayerGateStopX(werewolf) {
-  return werewolf ? PLAYER_BASE_X + 62 : PLAYER_BASE_X + 42;
+  return werewolf ? PLAYER_BASE_ATTACK_X + 12 : PLAYER_BASE_ATTACK_X;
 }
 
 function getKaronPlayerGateDamageScale(werewolf) {
@@ -392,7 +450,7 @@ function damageKaronPlayerGate(enemy, werewolf) {
   const damageScale = getKaronPlayerGateDamageScale(werewolf);
   const attackInterval = enemy.attackSpeed || 1;
   gameState.playerBaseHp -= enemy.damage * damageScale * attackInterval;
-  spawnHit(PLAYER_BASE_X + (werewolf ? 72 : 64), GROUND_Y - (werewolf ? 80 : 72), werewolf ? "#ff3b79" : "#ff6d4a");
+  spawnHit(PLAYER_BASE_ATTACK_HIT_X, GROUND_Y - (werewolf ? 90 : 78), werewolf ? "#ff3b79" : "#ff6d4a");
   enemy.playerGateHitPending = false;
 }
 
@@ -604,6 +662,7 @@ function updateEnemies(dt) {
     if (enemy.paralyzeTimer > 0) {
       enemy.animTime = Math.max(0, (enemy.animTime || 0) - dt);
       enemy.attackAnimTimer = 0;
+      enemy.playerGateHitPending = false;
       continue;
     }
 
@@ -612,6 +671,8 @@ function updateEnemies(dt) {
       const attackProgress = enemy.attackAnimTimer > 0
         ? 1 - enemy.attackAnimTimer / attackDuration
         : 1;
+
+      updateEnemyPlayerBaseAttackHit(enemy, attackProgress);
 
       if (enemy.laserHitPending && (attackProgress >= 0.58 || enemy.attackAnimTimer <= 0)) {
         const laserTarget = isCombatAlive(enemy.laserTarget)
@@ -637,25 +698,24 @@ function updateEnemies(dt) {
           enemy.laserHitPending = true;
         }
       } else {
-        enemy.x -= enemy.speed * dt;
-        enemy.moving = true;
-      }
-
-      if (enemy.x < PLAYER_BASE_X + 28) {
-        gameState.playerBaseHp -= enemy.damage * dt * 0.65;
-        enemy.x = PLAYER_BASE_X + 28;
-        enemy.moving = false;
+        advanceEnemyTowardPlayerBase(enemy, dt, attackDuration);
       }
 
       continue;
     }
+
+    const attackDuration = enemy.attackAnimDuration || 0.34;
+    const attackProgress = enemy.attackAnimTimer > 0
+      ? 1 - enemy.attackAnimTimer / attackDuration
+      : 1;
+    updateEnemyPlayerBaseAttackHit(enemy, attackProgress);
 
     const target = findNearestAlly(enemy.x, enemy.range);
 
     if (target) {
       if (enemy.cooldown <= 0) {
         enemy.cooldown = enemy.attackSpeed;
-        enemy.attackAnimTimer = enemy.attackAnimDuration || 0.34;
+        enemy.attackAnimTimer = attackDuration;
         target.hp -= enemy.damage;
 
         // 피격 시스템은 메인 영웅에게만 적용합니다.
@@ -664,14 +724,7 @@ function updateEnemies(dt) {
         }
       }
     } else {
-      enemy.x -= enemy.speed * dt;
-      enemy.moving = true;
-    }
-
-    if (enemy.x < PLAYER_BASE_X + 28) {
-      gameState.playerBaseHp -= enemy.damage * dt * 0.8;
-      enemy.x = PLAYER_BASE_X + 28;
-      enemy.moving = false;
+      advanceEnemyTowardPlayerBase(enemy, dt, attackDuration);
     }
   }
 }
@@ -981,14 +1034,18 @@ function drawEnemy(enemy) {
   const isDying = enemy.dead || enemy.hp <= 0;
   const duration = enemy.deathAnimDuration || 0.55;
   const deathProgress = isDying ? 1 - Math.max(0, enemy.deathAnimTimer || 0) / duration : 0;
-  const bob = isDying || enemy.paralyzeTimer > 0 ? 0 : Math.sin((performance.now() + enemy.x * 11) * 0.012) * 2;
+  const isAttacking = !isDying && enemy.attackAnimTimer > 0;
+  const attackDuration = enemy.attackAnimDuration || 0.34;
+  const attackProgress = isAttacking ? 1 - Math.max(0, enemy.attackAnimTimer || 0) / attackDuration : 0;
+  const attackLunge = isAttacking ? -Math.sin(Math.min(1, Math.max(0, attackProgress)) * Math.PI) * 8 : 0;
+  const bob = isDying || isAttacking || enemy.paralyzeTimer > 0 ? 0 : Math.sin((performance.now() + enemy.x * 11) * 0.012) * 2;
 
   if (isDying) {
     ctx.globalAlpha = Math.max(0.1, 1 - deathProgress * 0.85);
     ctx.translate(0, deathProgress * 20);
     ctx.scale(1, Math.max(0.25, 1 - deathProgress * 0.65));
   } else {
-    ctx.translate(0, bob);
+    ctx.translate(attackLunge, bob);
   }
 
   ctx.fillStyle = "rgba(0,0,0,0.22)";
