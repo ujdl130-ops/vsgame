@@ -5693,29 +5693,32 @@ body:not(.game-started) .game-wrap {
   display: grid;
   grid-template-columns: minmax(190px, 260px);
   justify-content: center;
-  gap: 14px;
-  width: min(94vw, 1120px);
+  row-gap: 14px;
+  column-gap: 4px;
+  width: min(98vw, 1500px);
 }
 
 .gacha-result-grid.is-ten-pull {
-  grid-template-columns: repeat(5, minmax(130px, 1fr));
-  grid-template-rows: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(5, 228px);
+  grid-template-rows: repeat(2, 288px);
 }
 
 .gacha-reveal-card {
   position: relative;
-  min-height: 210px;
+  width: 100%;
+  aspect-ratio: 1;
+  min-height: 0;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  padding: 14px 10px;
-  overflow: hidden;
-  border: 1px solid #88745c;
-  border-radius: 8px;
+  gap: 6px;
+  padding: 20% 18% 17%;
+  overflow: visible;
+  border: 0;
+  border-radius: 0;
   background: center / 100% 100% no-repeat;
-  box-shadow: inset 0 0 22px rgba(255,255,255,0.04), 0 12px 26px rgba(0,0,0,0.48);
+  box-shadow: none;
   opacity: 0;
   transform: scale(0.8);
 }
@@ -5734,29 +5737,19 @@ body:not(.game-started) .game-wrap {
   background-image: url("assets/gacha/gachacard_basic.png");
 }
 
+.gacha-result-grid.is-ten-pull .gacha-reveal-card {
+  width: 288px;
+  justify-self: center;
+}
+
 .gacha-reveal-card.is-good {
   background-image: url("assets/gacha/gachacard_good.png");
 }
 
 .gacha-reveal-card.is-awesome {
-  border: 2px solid #f2cb68;
   background-image: url("assets/gacha/gachacard_awesome.png");
-  box-shadow: inset 0 0 28px rgba(255,217,112,0.16), 0 0 22px rgba(255,197,67,0.38);
 }
 
-.gacha-reveal-card.is-awesome::before {
-  content: "";
-  position: absolute;
-  inset: -80%;
-  background: conic-gradient(transparent, rgba(255,242,190,0.34), transparent 24%);
-  animation: ssrCardShine 2.8s linear infinite;
-}
-
-@keyframes ssrCardShine {
-  to { transform: rotate(360deg); }
-}
-
-.gacha-card-rarity,
 .gacha-card-icon,
 .gacha-card-name,
 .gacha-reveal-card small {
@@ -5764,21 +5757,9 @@ body:not(.game-started) .game-wrap {
   z-index: 1;
 }
 
-.gacha-card-rarity {
-  color: #c8bfd5;
-  font: 800 13px/1 Georgia, serif;
-  letter-spacing: 0.16em;
-}
-
-.is-awesome .gacha-card-rarity {
-  color: #ffe69a;
-  font-size: 17px;
-  text-shadow: 0 0 12px #ffbf3f;
-}
-
 .gacha-card-icon {
-  width: 82px;
-  height: 82px;
+  width: clamp(72px, 7vw, 104px);
+  height: clamp(72px, 7vw, 104px);
   display: grid;
   place-items: center;
   color: #e5d7ff;
@@ -5800,8 +5781,10 @@ body:not(.game-started) .game-wrap {
 
 .gacha-reveal-card small {
   color: #f2cf77;
-  font-size: 11px;
+  font-size: 12px;
+  line-height: 1.2;
   text-align: center;
+  white-space: nowrap;
 }
 
 .gacha-result-confirm {
@@ -5827,12 +5810,18 @@ body:not(.game-started) .game-wrap {
 
   .gacha-result-grid.is-ten-pull {
     grid-template-columns: repeat(5, minmax(56px, 1fr));
-    gap: 5px;
+    grid-template-rows: repeat(2, minmax(0, 1fr));
+    row-gap: 5px;
+    column-gap: 0;
+  }
+
+  .gacha-result-grid.is-ten-pull .gacha-reveal-card {
+    width: 120%;
   }
 
   .gacha-reveal-card {
-    min-height: 142px;
-    padding: 8px 3px;
+    min-height: 0;
+    padding: 20% 15% 16%;
     gap: 4px;
   }
 
@@ -5861,7 +5850,7 @@ body:not(.game-started) .game-wrap {
   }
 
   .gacha-reveal-card {
-    min-height: 130px;
+    min-height: 0;
   }
 
   .gacha-card-icon {

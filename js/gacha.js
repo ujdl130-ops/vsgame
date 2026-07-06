@@ -5,6 +5,11 @@ const GOD_DESCENT_GOOD_RATE = 0.27;
 const GACHA_ESSENCE_AMOUNT = 10;
 const DUPLICATE_GOD_ESSENCE_AMOUNT = 10;
 
+function isGodOwned(heroId) {
+  const ownedGod = playerProgress.ownedGods?.[heroId];
+  return Boolean(ownedGod && ownedGod.owned === true);
+}
+
 function summonGodDescentOnce(random = Math.random) {
   const roll = random();
 
@@ -30,13 +35,13 @@ function summonGodDescentOnce(random = Math.random) {
   }
 
   const hero = GOD_HEROES[Math.floor(random() * GOD_HEROES.length)];
-  const isDuplicate = Boolean(playerProgress.ownedGods[hero.id]);
+  const isDuplicate = isGodOwned(hero.id);
   let convertedEssence = null;
   if (isDuplicate) {
     convertedEssence = { key: hero.essenceKey, name: hero.essenceName, amount: DUPLICATE_GOD_ESSENCE_AMOUNT };
     grantPlayerRewards({ essences: { [hero.essenceKey]: DUPLICATE_GOD_ESSENCE_AMOUNT } });
   } else {
-    playerProgress.ownedGods[hero.id] = { ...hero };
+    playerProgress.ownedGods[hero.id] = { ...hero, owned: true };
     saveProgress();
   }
   return [{
@@ -282,10 +287,6 @@ function renderRecruitResultCards(results) {
     card.className = `gacha-reveal-card is-${result.type}`;
     card.style.setProperty("--card-index", index);
 
-    const rarity = document.createElement("strong");
-    rarity.className = "gacha-card-rarity";
-    rarity.textContent = result.rarity;
-
     const icon = document.createElement("div");
     icon.className = "gacha-card-icon";
     const iconPath = result.iconPath || (result.hero ? getGodImage(result.hero.id) : "");
@@ -302,7 +303,7 @@ function renderRecruitResultCards(results) {
     name.className = "gacha-card-name";
     name.textContent = result.rewardName;
 
-    card.append(rarity, icon, name);
+    card.append(icon, name);
     const detail = document.createElement("small");
     detail.textContent = result.isDuplicate && result.convertedEssence
       ? `중복 변환: ${result.convertedEssence.name} ${result.convertedEssence.amount}개`
