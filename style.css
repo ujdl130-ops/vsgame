@@ -13984,8 +13984,11 @@ body:not(.game-started) .game-wrap {
   border: 0;
   appearance: none;
   -webkit-appearance: none;
-  background: transparent;
+  background: transparent !important;
+  box-shadow: none !important;
   transform: translateY(-50%);
+  text-shadow: none;
+  font-size: 0;
   line-height: 0;
   cursor: pointer;
 }
@@ -14018,6 +14021,8 @@ body:not(.game-started) .game-wrap {
 }
 
 .prebattle-formation-arrow-btn:hover {
+  background: transparent !important;
+  box-shadow: none !important;
   margin: 0;
   transform: translateY(-50%);
 }
@@ -14030,6 +14035,8 @@ body:not(.game-started) .game-wrap {
 }
 
 .prebattle-formation-arrow-btn:active {
+  background: transparent !important;
+  box-shadow: none !important;
   margin: 0;
   transform: translateY(-50%);
 }
