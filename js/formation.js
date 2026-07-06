@@ -171,6 +171,7 @@ const FORMATION_TYPE_LABELS = {
 const FORMATION_CATEGORY_LABELS = {
   hero: "영웅",
   unit: "유닛",
+  inventory: "인벤토리",
 };
 
 function getFormationUnit(unitId) {
@@ -1136,33 +1137,34 @@ function createFormationShellMarkup() {
     </div>
 
     <div class="formation-shell">
-      <aside class="formation-brand-panel" aria-label="강화 로고">
+      <aside class="formation-brand-panel" aria-label="성장 로고">
         <div class="formation-brand-emblem" aria-hidden="true">✦</div>
-        <strong>강화</strong>
-        <span>ENHANCE</span>
-        <nav class="formation-category-nav" aria-label="강화 카테고리">
+        <strong>성장</strong>
+        <span>GROWTH</span>
+        <nav class="formation-category-nav" aria-label="성장 카테고리">
           <button class="formation-category-btn is-active" type="button" data-formation-category="hero">영웅</button>
           <button class="formation-category-btn" type="button" data-formation-category="unit">유닛</button>
+          <button class="formation-category-btn" type="button" data-formation-category="inventory">인벤토리</button>
         </nav>
       </aside>
 
       <section class="formation-main-panel">
         <header class="formation-header-row">
           <div class="formation-title-box">
-            <p class="formation-kicker">ENHANCE</p>
-            <h1 id="formationTitle" class="formation-logo">영웅 강화</h1>
+            <p class="formation-kicker">GROWTH</p>
+            <h1 id="formationTitle" class="formation-logo">영웅 성장</h1>
           </div>
-          <div class="formation-type-tabs is-hidden" aria-label="강화 종류"></div>
+          <div class="formation-type-tabs is-hidden" aria-label="성장 종류"></div>
         </header>
 
         <div class="formation-placement-head">
           <span id="formationSlotTitle">영웅</span>
         </div>
 
-        <div class="formation-slots-panel is-hero-detail" aria-label="강화 상세">
+        <div class="formation-slots-panel is-hero-detail" aria-label="성장 상세">
           <div id="formationSlotGrid" class="formation-slot-grid is-hero-detail-grid"></div>
-          <div class="formation-deck-tabs is-hidden" aria-label="강화 페이지"></div>
-          <p id="formationNotice" class="formation-notice" aria-live="polite">보유 카드를 선택하면 강화 정보를 확인할 수 있습니다.</p>
+          <div class="formation-deck-tabs is-hidden" aria-label="성장 페이지"></div>
+          <p id="formationNotice" class="formation-notice" aria-live="polite">보유 카드를 선택하면 성장 정보를 확인할 수 있습니다.</p>
         </div>
       </section>
 
@@ -1420,7 +1422,7 @@ function renderFormationRoster() {
 
 function renderFormationTabs() {
   const title = document.getElementById("formationTitle");
-  if (title) title.textContent = formationState.activeCategory === "unit" ? "유닛 강화" : "영웅 강화";
+  if (title) title.textContent = formationState.activeCategory === "unit" ? "유닛 성장" : "영웅 성장";
 
   document.querySelectorAll(".formation-category-btn").forEach((button) => {
     button.classList.toggle("is-active", button.dataset.formationCategory === formationState.activeCategory);
@@ -1440,6 +1442,10 @@ function selectFormationUnit(unitId) {
 
 function setFormationCategory(category) {
   if (!FORMATION_CATEGORY_LABELS[category]) return;
+  if (category === "inventory") {
+    showInventory();
+    return;
+  }
   formationState.activeCategory = category;
   formationState.rosterPage = 1;
   formationState.pendingHeroGrowthAction = null;
@@ -1497,7 +1503,7 @@ function showFormation() {
 
   if (gameState) {
     gameState.running = false;
-    gameState.message = "강화 화면에서 영웅과 유닛을 성장시키세요.";
+    gameState.message = "성장 화면에서 영웅과 유닛을 성장시키세요.";
     updateButtons();
   }
 

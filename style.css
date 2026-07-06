@@ -12948,6 +12948,196 @@ body:not(.game-started) .game-wrap {
   }
 }
 
+/* Growth screen final art pass */
+.formation-screen {
+  color: #3d2b1f;
+  background: url("assets/maps/formation/background.png") center / cover no-repeat;
+}
+
+.formation-screen::before,
+.formation-scanline {
+  display: none;
+}
+
+.formation-brand-emblem,
+.formation-brand-panel::after {
+  display: none;
+}
+
+.formation-brand-panel {
+  left: 48px;
+  top: 70px;
+  width: 154px;
+  color: #342217;
+  text-align: left;
+}
+
+.formation-brand-panel strong {
+  color: #3a2418;
+  font-size: 36px;
+  font-weight: 1000;
+  text-shadow:
+    0 2px 0 rgba(255, 245, 222, 0.62),
+    0 7px 9px rgba(39, 27, 18, 0.22);
+}
+
+.formation-brand-panel span {
+  margin-top: 3px;
+  color: #9b6a2d;
+  font-size: 14px;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+}
+
+.formation-category-nav {
+  width: 160px;
+  margin-top: 40px;
+  gap: 17px;
+}
+
+.formation-category-btn {
+  min-height: 42px;
+  padding: 0 22px;
+  color: #65452d;
+  background: url("assets/maps/formation/bg_normal.png") center / 100% 100% no-repeat;
+  font-size: 17px;
+  font-weight: 1000;
+  line-height: 1;
+  text-align: center;
+  text-shadow: 0 1px 0 rgba(255, 249, 232, 0.82);
+}
+
+.formation-category-btn.is-active {
+  color: #3d2819;
+  background-image: url("assets/maps/formation/bg_selected.png");
+  filter: drop-shadow(0 4px 5px rgba(76, 49, 24, 0.16));
+}
+
+.formation-shell {
+  left: 260px;
+  top: 118px;
+  width: calc(100vw - 290px);
+  height: calc(100vh - 136px);
+  grid-template-columns: minmax(0, 1fr) minmax(430px, 500px);
+  gap: 22px;
+}
+
+.formation-main-panel,
+.formation-roster-panel {
+  border: 2px solid rgba(165, 129, 78, 0.62);
+  color: #3f2d21;
+  background:
+    linear-gradient(135deg, rgba(255, 253, 247, 0.94), rgba(235, 225, 207, 0.84)),
+    rgba(236, 225, 206, 0.9);
+  box-shadow:
+    inset 0 0 0 2px rgba(255, 255, 255, 0.58),
+    inset 0 -22px 42px rgba(124, 91, 54, 0.05),
+    0 12px 24px rgba(50, 38, 29, 0.16);
+}
+
+.formation-main-panel::before,
+.formation-roster-panel::before {
+  inset: 9px;
+  border-color: rgba(164, 128, 77, 0.24);
+}
+
+.formation-kicker {
+  color: #a16d2f;
+}
+
+.formation-logo,
+.formation-hero-detail-top h2 {
+  color: #332215;
+}
+
+.formation-placement-head,
+.formation-roster-head,
+.formation-selected-info {
+  border-color: rgba(118, 86, 50, 0.24);
+}
+
+.formation-placement-head,
+.formation-roster-head {
+  color: #67452c;
+}
+
+.formation-roster-head strong {
+  color: #533622;
+}
+
+.formation-roster-head span,
+.formation-notice {
+  color: rgba(89, 65, 42, 0.82);
+}
+
+.formation-hero-detail-info,
+.formation-hero-detail-list dd,
+.formation-selected-name-row,
+.formation-selected-stats dd {
+  color: #3a281c;
+}
+
+.formation-hero-detail-list dt,
+.formation-selected-stats dt {
+  color: #835c2f;
+}
+
+.formation-hero-stars {
+  color: #c48624;
+}
+
+.formation-level-btn,
+.formation-growth-confirm button {
+  border-color: #c58d38;
+  color: #4a2f17;
+  background:
+    linear-gradient(180deg, #fff0bf, #e5b85e 52%, #d89837);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.72),
+    inset 0 -4px 0 rgba(119, 74, 26, 0.18),
+    0 3px 0 rgba(123, 78, 31, 0.38);
+}
+
+.formation-level-btn span {
+  color: #fff8dc;
+  background: rgba(103, 68, 31, 0.5);
+}
+
+.formation-topbar {
+  background: rgba(255, 248, 236, 0.9);
+  border-color: rgba(180, 141, 83, 0.58);
+  box-shadow: 0 8px 16px rgba(55, 43, 31, 0.14);
+}
+
+.formation-ui-btn,
+.formation-gear {
+  border-color: rgba(180, 141, 83, 0.72);
+  color: #4b321e;
+  background: linear-gradient(180deg, rgba(255, 250, 240, 0.96), rgba(235, 222, 201, 0.94));
+}
+
+.formation-unit-card.is-selected img {
+  filter:
+    drop-shadow(0 0 10px rgba(215, 157, 48, 0.52))
+    drop-shadow(0 10px 11px rgba(68, 43, 20, 0.18));
+}
+
+@media (max-width: 900px) {
+  .formation-brand-panel {
+    left: 22px;
+    top: 58px;
+  }
+
+  .formation-shell {
+    left: 190px;
+    width: calc(100vw - 208px);
+  }
+
+  .formation-category-nav {
+    width: 142px;
+  }
+}
+
 /* Mission screen */
 .mission-screen {
   position: fixed;
