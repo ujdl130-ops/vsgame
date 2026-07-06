@@ -80,6 +80,7 @@ function summonArcher() {
     deathAnimDuration: 0.85,
     deathRewarded: false,
   }));
+  if (typeof recordStageMissionArcherSummon === "function") recordStageMissionArcherSummon();
 }
 
 function summonMage() {

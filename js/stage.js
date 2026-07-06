@@ -70,7 +70,22 @@ function updateStageUI() {
   });
 }
 
-const STAGE1_MISSION_IDS = ["clear", "guard5", "noChampionDeath"];
+const STAGE_DETAIL_CONFIGS = {
+  1: {
+    image: "assets/ui/stage1 info UI.png",
+    alt: "Stage 1 detail info",
+    missionIds: ["clear", "guard5", "noChampionDeath"],
+  },
+  2: {
+    image: "assets/ui/stgae 2 ui info.png",
+    alt: "Stage 2 detail info",
+    missionIds: ["clear", "archer3", "noChampionDeath"],
+  },
+};
+
+function getStageDetailConfig(stageNumber) {
+  return STAGE_DETAIL_CONFIGS[Number(stageNumber)] || null;
+}
 
 function getStageMissionProgress(stageNumber) {
   const allProgress = playerProgress.stageMissionStars && typeof playerProgress.stageMissionStars === "object"
@@ -78,7 +93,7 @@ function getStageMissionProgress(stageNumber) {
     : {};
   const progress = allProgress[String(stageNumber)] || allProgress[stageNumber] || {};
   const normalizedProgress = progress && typeof progress === "object" ? { ...progress } : {};
-  if (Number(stageNumber) === 1 && Array.isArray(playerProgress.clearedStages) && playerProgress.clearedStages.includes(1)) {
+  if (getStageDetailConfig(stageNumber) && Array.isArray(playerProgress.clearedStages) && playerProgress.clearedStages.includes(Number(stageNumber))) {
     normalizedProgress.clear = true;
   }
   return normalizedProgress;
@@ -87,10 +102,14 @@ function getStageMissionProgress(stageNumber) {
 function updateStageDetailStars() {
   if (!stageDetailPanel) return;
 
-  const progress = getStageMissionProgress(1);
-  stageDetailPanel.querySelectorAll(".stage-detail-star").forEach((star) => {
-    const missionId = star.dataset.missionId;
-    const completed = STAGE1_MISSION_IDS.includes(missionId) && Boolean(progress[missionId]);
+  const stageNumber = Number(stageDetailPanel.dataset.stage) || 1;
+  const detailConfig = getStageDetailConfig(stageNumber);
+  const missionIds = detailConfig ? detailConfig.missionIds : [];
+  const progress = getStageMissionProgress(stageNumber);
+  stageDetailPanel.querySelectorAll(".stage-detail-star").forEach((star, index) => {
+    const missionId = missionIds[index] || "";
+    star.dataset.missionId = missionId;
+    const completed = Boolean(missionId && progress[missionId]);
     star.classList.toggle("is-earned", completed);
     star.dataset.completed = completed ? "true" : "false";
   });
@@ -101,13 +120,19 @@ function recordStageMissionGuardSummon() {
   gameState.stageMissionRun.guardSummons = Math.max(0, Number(gameState.stageMissionRun.guardSummons) || 0) + 1;
 }
 
+function recordStageMissionArcherSummon() {
+  if (!gameState || Number(gameState.stage) !== 2 || !gameState.stageMissionRun) return;
+  gameState.stageMissionRun.archerSummons = Math.max(0, Number(gameState.stageMissionRun.archerSummons) || 0) + 1;
+}
+
 function recordStageMissionChampionDeath() {
-  if (!gameState || Number(gameState.stage) !== 1 || !gameState.stageMissionRun) return;
+  if (!gameState || !getStageDetailConfig(gameState.stage) || !gameState.stageMissionRun) return;
   gameState.stageMissionRun.championDied = true;
 }
 
 function completeStageMissions(stageNumber) {
-  if (Number(stageNumber) !== 1) return;
+  const detailConfig = getStageDetailConfig(stageNumber);
+  if (!detailConfig) return;
 
   if (!playerProgress.stageMissionStars || typeof playerProgress.stageMissionStars !== "object") {
     playerProgress.stageMissionStars = {};
@@ -119,10 +144,13 @@ function completeStageMissions(stageNumber) {
   };
   const run = gameState && gameState.stageMissionRun ? gameState.stageMissionRun : {};
 
-  if ((Number(run.guardSummons) || 0) >= 5) {
+  if (detailConfig.missionIds.includes("guard5") && (Number(run.guardSummons) || 0) >= 5) {
     progress.guard5 = true;
   }
-  if (!run.championDied) {
+  if (detailConfig.missionIds.includes("archer3") && (Number(run.archerSummons) || 0) >= 3) {
+    progress.archer3 = true;
+  }
+  if (detailConfig.missionIds.includes("noChampionDeath") && !run.championDied) {
     progress.noChampionDeath = true;
   }
 
@@ -150,7 +178,15 @@ function hideStageDetailPanel() {
 }
 
 function showStageDetailPanel(stageNumber) {
-  if (!stageDetailPanel || Number(stageNumber) !== 1) return false;
+  const detailConfig = getStageDetailConfig(stageNumber);
+  if (!stageDetailPanel || !detailConfig) return false;
+
+  const detailImage = stageDetailPanel.querySelector("img");
+  if (detailImage) {
+    detailImage.src = detailConfig.image;
+    detailImage.alt = detailConfig.alt;
+  }
+  stageDetailPanel.setAttribute("aria-label", detailConfig.alt);
 
   stageDetailPanel.dataset.stage = String(stageNumber);
   stageDetailPanel.classList.remove("is-hidden");
@@ -183,7 +219,7 @@ function openStage(stageNumber) {
     showStageLockedNotice(stageNumber);
     return;
   }
-  if (Number(stageNumber) === 1 && showStageDetailPanel(stageNumber)) {
+  if (showStageDetailPanel(stageNumber)) {
     return;
   }
   if (typeof showPreBattleFormation === "function") {

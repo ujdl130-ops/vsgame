@@ -114,6 +114,7 @@ function createInitialState() {
     enemies: [],
     stageMissionRun: {
       guardSummons: 0,
+      archerSummons: 0,
       championDied: false,
     },
   };
