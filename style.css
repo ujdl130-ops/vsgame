@@ -15425,12 +15425,12 @@ body:not(.game-started) .game-wrap {
 /* Final growth roster placement: fit the right background board */
 .formation-screen .formation-roster-panel {
   position: fixed !important;
-  left: 58.8vw !important;
-  right: 3.8vw !important;
-  top: 5.7vh !important;
+  left: 58.5vw !important;
+  right: 3.2vw !important;
+  top: 4.4vh !important;
   width: auto !important;
-  height: 82vh !important;
-  padding: 86px 54px 66px !important;
+  height: 84vh !important;
+  padding: 82px 24px 42px !important;
   border: 0 !important;
   background: transparent !important;
   box-shadow: none !important;
@@ -15446,7 +15446,7 @@ body:not(.game-started) .game-wrap {
 .formation-screen .formation-roster-head {
   position: absolute !important;
   left: 50% !important;
-  top: 18px !important;
+  top: 22px !important;
   z-index: 5 !important;
   width: min(280px, 48%) !important;
   height: 40px !important;
@@ -15463,7 +15463,7 @@ body:not(.game-started) .game-wrap {
 
 .formation-screen .formation-roster-head strong {
   color: #ecd8b5 !important;
-  font-size: clamp(18px, 1.25vw, 24px) !important;
+  font-size: clamp(21px, 1.45vw, 28px) !important;
   line-height: 1 !important;
   text-shadow:
     0 2px 0 rgba(18, 12, 8, 0.9),
@@ -15484,11 +15484,11 @@ body:not(.game-started) .game-wrap {
   width: 100% !important;
   height: auto !important;
   min-height: 0 !important;
-  grid-template-columns: repeat(3, clamp(142px, 9.2vw, 180px)) !important;
-  grid-template-rows: repeat(2, clamp(204px, 29.6vh, 270px)) !important;
+  grid-template-columns: repeat(3, clamp(168px, 10.5vw, 196px)) !important;
+  grid-template-rows: repeat(2, clamp(240px, 33vh, 286px)) !important;
   justify-content: center !important;
   align-content: center !important;
-  gap: clamp(16px, 2.1vh, 24px) clamp(20px, 1.45vw, 28px) !important;
+  gap: clamp(18px, 2.4vh, 26px) clamp(18px, 1.35vw, 28px) !important;
   padding: 0 !important;
   overflow: hidden !important;
 }
