@@ -15,8 +15,21 @@ const enemyHpText = document.getElementById("enemyHpText");
 
 const gameOptionsBtn = document.getElementById("gameOptionsBtn");
 const gameOptionsMenu = document.getElementById("gameOptionsMenu");
+const optionResumeBtn = document.getElementById("optionResumeBtn");
 const optionStageSelectBtn = document.getElementById("optionStageSelectBtn");
 const optionRestartBtn = document.getElementById("optionRestartBtn");
+const stageClearRewardOverlay = document.getElementById("stageClearRewardOverlay");
+const stageClearRewardCloseBtn = document.getElementById("stageClearRewardCloseBtn");
+const stageClearTreasureBtn = document.getElementById("stageClearTreasureBtn");
+const stageClearRewardAdBtn = document.getElementById("stageClearRewardAdBtn");
+const stageClearRewardMultiplierIndicator = document.getElementById("stageClearRewardMultiplierIndicator");
+const stageClearRewardLobbyBtn = document.getElementById("stageClearRewardLobbyBtn");
+const stageClearRewardRetryBtn = document.getElementById("stageClearRewardRetryBtn");
+const stageClearRewardNextBtn = document.getElementById("stageClearRewardNextBtn");
+const stageDefeatOverlay = document.getElementById("stageDefeatOverlay");
+const stageDefeatLobbyBtn = document.getElementById("stageDefeatLobbyBtn");
+const stageDefeatRetryBtn = document.getElementById("stageDefeatRetryBtn");
+const stageDefeatUpgradeBtn = document.getElementById("stageDefeatUpgradeBtn");
 const movementJoystick = document.getElementById("movementJoystick");
 const startBtn = document.getElementById("startBtn");
 const restartBtn = document.getElementById("restartBtn");
@@ -82,20 +95,27 @@ const chapter1Btn = document.getElementById("chapter1Btn");
 const chapterBackBtn = document.getElementById("chapterBackBtn");
 const stageSelectNotice = document.getElementById("stageSelectNotice");
 const stageCards = document.querySelectorAll(".stage-card");
+const stageDetailPanel = document.getElementById("stageDetailPanel");
+const stageDetailCloseBtn = document.getElementById("stageDetailCloseBtn");
+const stageDetailStartBtn = document.getElementById("stageDetailStartBtn");
 
 const GROUND_Y = 300;
 const COMBAT_LINE_Y = GROUND_Y - 42;
 const PLAYER_BASE_X = 40;
+const PLAYER_BASE_ATTACK_X = PLAYER_BASE_X + 130;
+const PLAYER_BASE_ATTACK_HIT_X = PLAYER_BASE_ATTACK_X - 4;
 const ENEMY_BASE_X = 900;
 const MAX_WAVE = 3;
 const MAX_SUMMONED_UNITS = 8;
 const HERO_MIN_X = PLAYER_BASE_X + 72;
 const HERO_MAX_X = ENEMY_BASE_X - 74;
 const HERO_RESPAWN_SECONDS = 4;
-const RUNESTONE_GAUGE_MAX = 150;
-const ZEUS_MANA_MAX = 50;
+const RUNESTONE_GAUGE_MAX = 400;
+const ZEUS_MANA_MAX = 100;
 const ZEUS_MANA_COST = 50;
+const BASIC_ATTACK_MANA_COST = 5;
 const ZEUS_MANA_REGEN_PER_SECOND = 10;
+const RUNESTONE_REGEN_PER_SECOND = ZEUS_MANA_REGEN_PER_SECOND;
 
 const gameWallet = {
   diamond: 0,
@@ -123,7 +143,9 @@ const ASSET_PATHS = {
   saintessSprite: "assets/animations/saintess/saintess_spritesheet_aligned.png",
   thiefSprite: "assets/animations/thief/female_thief_spritesheet.png",
   heroSprite: "assets/animations/hero/zeus_hero_spritesheet_latest_transparent_aligned.png",
+  poseidonHeroSprite: "assets/animations/poseidon/poseidon_sprites.png",
   lobbyHeroIdle: "assets/animations/hero/zeus_lobby_idle_hd.png",
+  poseidonLobbyIdle: "assets/animations/hero/poseidon_lobby_idle_hd.png",
   zeusStormCloudSprite: "assets/effects/zeus_storm_cloud_spritesheet.png",
   zeusStormLightningSprite: "assets/effects/zeus_storm_lightning_spritesheet.png",
   stage1EnemySprite: "assets/animations/enemy/stage1_goblin_spritesheet.png",
@@ -174,6 +196,15 @@ loadGameImage(
   [ASSET_PATHS.heroSprite, "assets/animations/hero/zeus_hero_spritesheet_latest.png", "zeus_hero_spritesheet_latest.png"],
   (ready) => { heroSpriteReady = ready; },
   "Hero Zeus sprite"
+);
+
+const poseidonHeroSprite = new Image();
+let poseidonHeroSpriteReady = false;
+loadGameImage(
+  poseidonHeroSprite,
+  [ASSET_PATHS.poseidonHeroSprite],
+  (ready) => { poseidonHeroSpriteReady = ready; },
+  "Hero Poseidon sprite"
 );
 
 const lobbyHeroImage = new Image();

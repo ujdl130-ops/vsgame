@@ -13,6 +13,16 @@ function normalizePlayerData(savedData = {}) {
   PLAYER_ESSENCE_KEYS.forEach((key) => {
     essences[key] = Math.max(0, Number(savedData.essences?.[key]) || 0);
   });
+
+  const stageMissionStars = {};
+  const savedStageMissionStars = savedData.stageMissionStars && typeof savedData.stageMissionStars === "object"
+    ? savedData.stageMissionStars
+    : {};
+  Object.entries(savedStageMissionStars).forEach(([stageNumber, missions]) => {
+    if (!missions || typeof missions !== "object") return;
+    stageMissionStars[stageNumber] = { ...missions };
+  });
+
   return {
     ...savedData,
     unlockedStage: Math.min(3, Math.max(1, Number(savedData.unlockedStage) || 1)),
@@ -25,6 +35,7 @@ function normalizePlayerData(savedData = {}) {
     essences,
     ownedGods: savedData.ownedGods && typeof savedData.ownedGods === "object" ? { ...savedData.ownedGods } : {},
     entitlements: savedData.entitlements && typeof savedData.entitlements === "object" ? { ...savedData.entitlements } : {},
+    stageMissionStars,
   };
 }
 
@@ -54,6 +65,7 @@ let lastTime = 0;
 let animationId = null;
 let keys = {};
 let heroMoveInput = 0;
+let selectedHeroId = "zeus";
 let gameOptionsWasRunning = false;
 let recruitDoorState = {
   active: false,
@@ -62,6 +74,10 @@ let recruitDoorState = {
   hasThreeStar: false,
   opened: false,
 };
+
+function setSelectedHeroId(heroId) {
+  selectedHeroId = heroId || "zeus";
+}
 
 function createInitialState() {
   const stageConfig = getStageConfig(selectedStage);
@@ -78,7 +94,6 @@ function createInitialState() {
     messageTimer: 0,
     wave: 1,
     runestone: clampRunestone(stageConfig.startRunestone),
-    runestoneTimer: 0,
     zeusMana: 0,
     zeusManaMax: ZEUS_MANA_MAX,
     playerBaseHp: 100,
@@ -89,11 +104,19 @@ function createInitialState() {
     spawnedInWave: 0,
     waveBreakTimer: 0,
     growth: playerProgress.growth || {},
-    hero: createMainHero(),
+    selectedHeroId,
+    hero: createMainHero(selectedHeroId),
     zeusSkillEffect: null,
+    poseidonSkillEffect: null,
     particles: [],
     projectiles: [],
     units: [],
     enemies: [],
+    stageMissionRun: {
+      guardSummons: 0,
+      archerSummons: 0,
+      bossDefeated: false,
+      championDied: false,
+    },
   };
 }
