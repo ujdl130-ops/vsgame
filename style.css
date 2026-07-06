@@ -371,6 +371,171 @@ body.game-started:not(.in-lobby):not(.in-stage-select):not(.in-shop):not(.in-rec
   outline-offset: 2px;
 }
 
+.stage-clear-reward-bonus-area {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+}
+
+.stage-clear-reward-interactive {
+  position: absolute;
+  box-sizing: border-box;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  appearance: none;
+  cursor: pointer;
+  pointer-events: auto;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.stage-clear-reward-interactive:focus-visible {
+  outline: 2px solid rgba(255, 238, 163, 0.95);
+  outline-offset: 4px;
+}
+
+.stage-clear-treasure-btn {
+  left: 13.2%;
+  top: 42.3%;
+  width: 28.2%;
+  height: 30.8%;
+  transform-origin: center bottom;
+  animation: rewardTreasureIdle 2.6s ease-in-out infinite;
+}
+
+.stage-clear-treasure-img {
+  position: absolute;
+  left: 50%;
+  bottom: -6%;
+  width: 90%;
+  height: 112%;
+  object-fit: contain;
+  transform: translateX(-50%);
+  transform-origin: center bottom;
+  pointer-events: none;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-user-drag: none;
+  filter: drop-shadow(0 10px 10px rgba(94, 54, 14, 0.35));
+}
+
+.stage-clear-treasure-open {
+  opacity: 0;
+  transform: translateX(-50%) translateY(6%) scale(0.84);
+  filter:
+    drop-shadow(0 10px 10px rgba(94, 54, 14, 0.35))
+    drop-shadow(0 0 20px rgba(255, 222, 92, 0));
+}
+
+.stage-clear-treasure-btn.is-open {
+  animation: none;
+}
+
+.stage-clear-treasure-btn.is-open .stage-clear-treasure-closed {
+  opacity: 0;
+  transform: translateX(-50%) translateY(8%) scale(0.9);
+  transition: opacity 0.12s ease-out, transform 0.12s ease-out;
+}
+
+.stage-clear-treasure-btn.is-open .stage-clear-treasure-open {
+  opacity: 1;
+  transform: translateX(-50%) translateY(-4%) scale(1.08);
+  filter:
+    drop-shadow(0 10px 10px rgba(94, 54, 14, 0.35))
+    drop-shadow(0 0 22px rgba(255, 218, 80, 0.72));
+  animation: rewardTreasureOpenPop 0.48s cubic-bezier(.17, .84, .36, 1.24) both;
+}
+
+.stage-clear-reward-ad-btn {
+  left: 54.8%;
+  top: 45.2%;
+  width: 28.8%;
+  height: 21.5%;
+  color: #fff4c8;
+  transform-origin: center;
+}
+
+.stage-clear-ad-panel {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: fill;
+  pointer-events: none;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-user-drag: none;
+  filter: drop-shadow(0 8px 9px rgba(77, 44, 15, 0.34));
+}
+
+.stage-clear-ad-copy {
+  position: absolute;
+  left: 24%;
+  right: 22%;
+  top: 50%;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(1px, 0.25vw, 4px);
+  transform: translateY(-50%);
+  color: #fff4c8;
+  line-height: 1;
+  text-align: center;
+  text-shadow:
+    0 3px 0 #221004,
+    0 0 8px rgba(6, 32, 78, 0.9);
+  pointer-events: none;
+}
+
+.stage-clear-ad-copy strong {
+  font-size: clamp(10px, 2.45vw, 31px);
+  font-weight: 1000;
+  letter-spacing: 0;
+}
+
+.stage-clear-ad-copy small {
+  color: #c9f2ff;
+  font-size: clamp(7px, 1.18vw, 17px);
+  font-weight: 900;
+  letter-spacing: 0;
+}
+
+.stage-clear-ad-badge {
+  position: absolute;
+  right: 7.2%;
+  top: 48%;
+  z-index: 1;
+  min-width: 18%;
+  transform: translateY(-50%) rotate(-5deg);
+  color: #fff8d1;
+  font-size: clamp(12px, 2.85vw, 37px);
+  font-weight: 1000;
+  line-height: 1;
+  text-align: center;
+  text-shadow:
+    0 3px 0 #5a1b09,
+    0 0 9px rgba(255, 236, 119, 0.82);
+  pointer-events: none;
+}
+
+.stage-clear-reward-ad-btn:hover,
+.stage-clear-treasure-btn:hover {
+  transform: translateY(-2px);
+}
+
+.stage-clear-reward-ad-btn:active,
+.stage-clear-treasure-btn:active {
+  transform: translateY(2px) scale(0.98);
+}
+
+.stage-clear-reward-ad-btn.is-preview {
+  animation: rewardAdPreview 0.72s ease-out both;
+}
+
 .stage-clear-reward-actions {
   position: absolute;
   left: 22%;
@@ -454,6 +619,45 @@ body.game-started:not(.in-lobby):not(.in-stage-select):not(.in-shop):not(.in-rec
   to {
     opacity: 1;
     transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes rewardTreasureIdle {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-3px);
+  }
+}
+
+@keyframes rewardTreasureOpenPop {
+  0% {
+    opacity: 0;
+    transform: translateX(-50%) translateY(8%) scale(0.76);
+  }
+  54% {
+    opacity: 1;
+    transform: translateX(-50%) translateY(-8%) scale(1.16);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(-50%) translateY(-4%) scale(1.08);
+  }
+}
+
+@keyframes rewardAdPreview {
+  0% {
+    transform: scale(1);
+    filter: brightness(1);
+  }
+  42% {
+    transform: scale(1.045);
+    filter: brightness(1.18);
+  }
+  100% {
+    transform: scale(1);
+    filter: brightness(1);
   }
 }
 

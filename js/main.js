@@ -149,10 +149,10 @@ window.addEventListener("keydown", (event) => {
   }
 
   if (isStageClearRewardVisible()) {
-    const rewardAction = event.target && typeof event.target.closest === "function"
-      ? event.target.closest(".stage-clear-reward-action")
+    const rewardInteractive = event.target && typeof event.target.closest === "function"
+      ? event.target.closest(".stage-clear-reward-action, .stage-clear-reward-interactive")
       : null;
-    if (rewardAction && (event.code === "Enter" || event.code === "Space")) return;
+    if (rewardInteractive && (event.code === "Enter" || event.code === "Space")) return;
     if (event.code === "Escape" || event.code === "Enter" || event.code === "Space") {
       event.preventDefault();
       hideStageClearRewardUi();
@@ -259,6 +259,8 @@ if (optionResumeBtn) optionResumeBtn.addEventListener("click", handleOptionResum
 if (optionStageSelectBtn) optionStageSelectBtn.addEventListener("click", handleOptionStageSelect);
 if (optionRestartBtn) optionRestartBtn.addEventListener("click", handleOptionRestart);
 if (stageClearRewardCloseBtn) stageClearRewardCloseBtn.addEventListener("click", hideStageClearRewardUi);
+if (stageClearTreasureBtn) stageClearTreasureBtn.addEventListener("click", handleStageClearTreasureOpen);
+if (stageClearRewardAdBtn) stageClearRewardAdBtn.addEventListener("click", handleStageClearRewardAdPreview);
 if (stageClearRewardLobbyBtn) stageClearRewardLobbyBtn.addEventListener("click", handleStageClearRewardLobby);
 if (stageClearRewardRetryBtn) stageClearRewardRetryBtn.addEventListener("click", handleStageClearRewardRetry);
 if (stageClearRewardNextBtn) stageClearRewardNextBtn.addEventListener("click", handleStageClearRewardNext);

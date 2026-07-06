@@ -176,10 +176,38 @@ function updateStageClearRewardActions() {
   stageClearRewardNextBtn.setAttribute("aria-disabled", canGoNext ? "false" : "true");
 }
 
+function resetStageClearRewardEffects() {
+  if (stageClearTreasureBtn) {
+    stageClearTreasureBtn.classList.remove("is-open");
+    stageClearTreasureBtn.setAttribute("aria-label", "보물상자 열기");
+  }
+  if (stageClearRewardAdBtn) {
+    stageClearRewardAdBtn.classList.remove("is-preview");
+  }
+}
+
+function handleStageClearTreasureOpen() {
+  if (!stageClearTreasureBtn || stageClearTreasureBtn.classList.contains("is-open")) return;
+  stageClearTreasureBtn.classList.add("is-open");
+  stageClearTreasureBtn.setAttribute("aria-label", "보물상자 열림");
+}
+
+function handleStageClearRewardAdPreview() {
+  if (!stageClearRewardAdBtn) return;
+  stageClearRewardAdBtn.classList.remove("is-preview");
+  void stageClearRewardAdBtn.offsetWidth;
+  stageClearRewardAdBtn.classList.add("is-preview");
+  clearTimeout(handleStageClearRewardAdPreview.timer);
+  handleStageClearRewardAdPreview.timer = setTimeout(() => {
+    if (stageClearRewardAdBtn) stageClearRewardAdBtn.classList.remove("is-preview");
+  }, 720);
+}
+
 function showStageClearRewardUi() {
   if (!stageClearRewardOverlay) return;
   closeGameOptionsMenu(false);
   updateStageClearRewardActions();
+  resetStageClearRewardEffects();
   stageClearRewardOverlay.classList.remove("is-hidden");
 }
 
