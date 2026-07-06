@@ -11946,10 +11946,13 @@ body:not(.game-started) .game-wrap {
 }
 
 .stage-screen .stage-ui-btn:focus-visible,
-.stage-screen .chapter-card:focus-visible,
-.stage-screen .stage-card:focus-visible {
+.stage-screen .chapter-card:focus-visible {
   outline: 3px solid rgba(255, 231, 155, 0.9);
   outline-offset: 2px;
+}
+
+.stage-screen .stage-card:focus-visible {
+  outline: none;
 }
 
 .stage-screen .chapter-panel,
