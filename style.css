@@ -13877,9 +13877,75 @@ body:not(.game-started) .game-wrap {
   filter: drop-shadow(0 18px 22px rgba(0, 0, 0, 0.38));
 }
 
+.prebattle-formation-arrow {
+  position: absolute;
+  top: 51.5%;
+  z-index: 3;
+  width: clamp(34px, 4.2vw, 76px);
+  height: clamp(54px, 6.2vw, 112px);
+  transform: translateY(-50%);
+  pointer-events: none;
+  filter:
+    drop-shadow(0 0 8px rgba(66, 190, 255, 0.34))
+    drop-shadow(0 8px 10px rgba(0, 0, 0, 0.32));
+}
+
+.prebattle-formation-arrow::before,
+.prebattle-formation-arrow::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 58%;
+  height: 58%;
+  border-style: solid;
+  border-color: #f6d071;
+  border-width: 0 0 clamp(4px, 0.45vw, 8px) clamp(4px, 0.45vw, 8px);
+  transform-origin: center;
+}
+
+.prebattle-formation-arrow::after {
+  width: 34%;
+  height: 34%;
+  border-color: #48c9ff;
+  opacity: 0.82;
+}
+
+.prebattle-formation-arrow-left {
+  left: 34%;
+}
+
+.prebattle-formation-arrow-left::before {
+  transform: translate(-35%, -50%) rotate(45deg);
+}
+
+.prebattle-formation-arrow-left::after {
+  transform: translate(-22%, -50%) rotate(45deg);
+}
+
+.prebattle-formation-arrow-right {
+  right: 34%;
+}
+
+.prebattle-formation-arrow-right::before {
+  transform: translate(-65%, -50%) rotate(-135deg);
+}
+
+.prebattle-formation-arrow-right::after {
+  transform: translate(-78%, -50%) rotate(-135deg);
+}
+
 @media (max-width: 820px) {
   .prebattle-formation-board {
     width: 100vw;
+  }
+
+  .prebattle-formation-arrow-left {
+    left: 32.5%;
+  }
+
+  .prebattle-formation-arrow-right {
+    right: 32.5%;
   }
 }
 
