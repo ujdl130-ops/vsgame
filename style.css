@@ -13862,6 +13862,21 @@ body:not(.game-started) .game-wrap {
   filter: drop-shadow(0 24px 34px rgba(0, 0, 0, 0.4));
 }
 
+.prebattle-formation-hero-card {
+  position: absolute;
+  left: 50%;
+  top: 51.5%;
+  z-index: 2;
+  width: auto;
+  height: 56%;
+  max-width: 26%;
+  object-fit: contain;
+  transform: translate(-50%, -50%);
+  user-select: none;
+  -webkit-user-drag: none;
+  filter: drop-shadow(0 18px 22px rgba(0, 0, 0, 0.38));
+}
+
 @media (max-width: 820px) {
   .prebattle-formation-board {
     width: 100vw;
