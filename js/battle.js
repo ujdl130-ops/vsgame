@@ -46,6 +46,10 @@ function startEnemyDeath(enemy) {
   enemy.deathAnimDuration = enemy.deathAnimDuration || 0.55;
   enemy.deathAnimTimer = enemy.deathAnimDuration;
 
+  if (enemy.isBoss && typeof recordStageMissionBossDefeat === "function") {
+    recordStageMissionBossDefeat();
+  }
+
   if (!enemy.deathRewarded) {
     addRunestone(18);
     enemy.deathRewarded = true;

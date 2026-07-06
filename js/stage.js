@@ -81,6 +81,11 @@ const STAGE_DETAIL_CONFIGS = {
     alt: "Stage 2 detail info",
     missionIds: ["clear", "archer3", "noChampionDeath"],
   },
+  3: {
+    image: "assets/ui/stage3 info UI.png",
+    alt: "Stage 3 detail info",
+    missionIds: ["clear", "bossDefeat", "noChampionDeath"],
+  },
 };
 
 function getStageDetailConfig(stageNumber) {
@@ -130,6 +135,11 @@ function recordStageMissionChampionDeath() {
   gameState.stageMissionRun.championDied = true;
 }
 
+function recordStageMissionBossDefeat() {
+  if (!gameState || Number(gameState.stage) !== 3 || !gameState.stageMissionRun) return;
+  gameState.stageMissionRun.bossDefeated = true;
+}
+
 function completeStageMissions(stageNumber) {
   const detailConfig = getStageDetailConfig(stageNumber);
   if (!detailConfig) return;
@@ -149,6 +159,9 @@ function completeStageMissions(stageNumber) {
   }
   if (detailConfig.missionIds.includes("archer3") && (Number(run.archerSummons) || 0) >= 3) {
     progress.archer3 = true;
+  }
+  if (detailConfig.missionIds.includes("bossDefeat") && run.bossDefeated) {
+    progress.bossDefeat = true;
   }
   if (detailConfig.missionIds.includes("noChampionDeath") && !run.championDied) {
     progress.noChampionDeath = true;
