@@ -11062,10 +11062,10 @@ body:not(.game-started) .game-wrap {
 }
 
 .stage-detail-close-btn {
-  right: 7.5%;
-  top: 6.8%;
-  width: 10%;
-  height: 6%;
+  right: 10.9%;
+  top: 6.15%;
+  width: 9.1%;
+  height: 4.5%;
 }
 
 .stage-detail-start-btn {
@@ -11125,9 +11125,12 @@ body:not(.game-started) .game-wrap {
   filter: drop-shadow(0 5px 3px rgba(0, 0, 0, 0.48));
 }
 
-.stage-detail-close-btn:hover,
 .stage-detail-start-btn:hover {
   background: rgba(255, 229, 153, 0.06);
+}
+
+.stage-detail-close-btn:hover {
+  background: transparent;
 }
 
 .stage-detail-close-btn:focus-visible,
