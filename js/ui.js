@@ -375,6 +375,9 @@ function refreshCommandButtonMarkup() {
   const hero = gameState && gameState.hero;
   const zeusEffectActive = Boolean(gameState && gameState.zeusSkillEffect && gameState.zeusSkillEffect.active);
   const zeusMana = Math.floor(gameState && gameState.zeusMana || 0);
+  const zeusSkillDamage = typeof getZeusThunderstormDamage === "function"
+    ? getZeusThunderstormDamage(hero)
+    : 0;
   renderRoundCommand(
     skillBtn,
     hero && hero.dead ? `부활 ${Math.ceil(hero.respawnTimer)}` : "SPACE",
@@ -387,7 +390,7 @@ function refreshCommandButtonMarkup() {
     "천벌",
     zeusEffectActive
       ? "천벌 발동 중입니다."
-      : `마나 ${zeusMana}/${ZEUS_MANA_COST} · 50마나를 소모해 적에게 피해를 주고 2초간 마비시킵니다.`
+      : `마나 ${zeusMana}/${ZEUS_MANA_COST} · ${zeusSkillDamage} 피해를 주고 2초간 마비시킵니다.`
   );
 }
 

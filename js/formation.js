@@ -1,12 +1,15 @@
 // Formation screen interactions.
 
+const FORMATION_MAX_LEVEL = typeof MAX_GROWTH_LEVEL === "number" ? MAX_GROWTH_LEVEL : 50;
+const FORMATION_MAX_STAR = typeof MAX_TRANSCENDENCE_STAR === "number" ? MAX_TRANSCENDENCE_STAR : 5;
+
 const FORMATION_BASE_UNITS = [
   {
     id: "saintess",
     name: "성녀",
     image: "assets/maps/formation/saint.png",
     baseLevel: 4,
-    maxLevel: 30,
+    maxLevel: FORMATION_MAX_LEVEL,
     attack: 80,
     hp: 680,
     defense: 48,
@@ -17,7 +20,7 @@ const FORMATION_BASE_UNITS = [
     name: "궁수",
     image: "assets/maps/formation/archer.png",
     baseLevel: 2,
-    maxLevel: 30,
+    maxLevel: FORMATION_MAX_LEVEL,
     attack: 115,
     hp: 520,
     defense: 34,
@@ -28,7 +31,7 @@ const FORMATION_BASE_UNITS = [
     name: "도적",
     image: "assets/maps/formation/fighter.png",
     baseLevel: 5,
-    maxLevel: 30,
+    maxLevel: FORMATION_MAX_LEVEL,
     attack: 135,
     hp: 560,
     defense: 38,
@@ -39,19 +42,12 @@ const FORMATION_BASE_UNITS = [
     name: "마법사",
     image: "assets/maps/formation/magic.png",
     baseLevel: 3,
-    maxLevel: 30,
+    maxLevel: FORMATION_MAX_LEVEL,
     attack: 150,
     hp: 480,
     defense: 30,
     rarity: "normal",
   },
-];
-
-const FORMATION_LEVEL_COSTS = [
-  { level: 1, normal: 0 },
-  { level: 10, normal: 1970 },
-  { level: 20, normal: 12010 },
-  { level: 30, normal: 38050 },
 ];
 
 const FORMATION_ROSTER_UNITS = Array.from({ length: 12 }, (_, index) => {
@@ -104,34 +100,65 @@ function getFormationSlotsForCurrentPage() {
 }
 
 function getNormalCumulativeLevelCost(level) {
-  const targetLevel = Math.min(Math.max(Number(level) || 1, 1), 30);
-  for (let i = 1; i < FORMATION_LEVEL_COSTS.length; i++) {
-    const previous = FORMATION_LEVEL_COSTS[i - 1];
-    const next = FORMATION_LEVEL_COSTS[i];
-    if (targetLevel <= next.level) {
-      const rangeLevel = next.level - previous.level;
-      const rangeCost = next.normal - previous.normal;
-      const progress = (targetLevel - previous.level) / rangeLevel;
-      return Math.ceil(previous.normal + rangeCost * progress);
-    }
+  if (typeof getCumulativeLevelUpGold === "function") {
+    return getCumulativeLevelUpGold("guard", level);
   }
-  return FORMATION_LEVEL_COSTS[FORMATION_LEVEL_COSTS.length - 1].normal;
+  return 0;
 }
 
 function getFormationCumulativeLevelCost(unit, level) {
+  const growthType = unit && unit.rarity === "hero" ? "hero" : "guard";
+  if (typeof getCumulativeLevelUpGold === "function") {
+    return getCumulativeLevelUpGold(growthType, level);
+  }
+
   const normalCost = getNormalCumulativeLevelCost(level);
-  return unit.rarity === "hero" ? Math.ceil(normalCost * 1.25) : normalCost;
+  return unit && unit.rarity === "hero" ? Math.ceil(normalCost * 1.25) : normalCost;
 }
 
 function getFormationLevelUpCost(unit) {
   if (!unit || unit.level >= unit.maxLevel) return 0;
+  const growthType = unit.rarity === "hero" ? "hero" : "guard";
+
+  if (typeof getLevelUpGoldCost === "function") {
+    return getLevelUpGoldCost(growthType, unit.level, unit.level + 1, {
+      level: unit.level,
+      star: unit.star,
+    });
+  }
+
   return getFormationCumulativeLevelCost(unit, unit.level + 1) - getFormationCumulativeLevelCost(unit, unit.level);
 }
 
 function getFormationTranscendCost(unit) {
-  if (!unit || unit.star >= 3) return null;
+  if (!unit || unit.star >= FORMATION_MAX_STAR) return null;
   if (unit.rarity === "hero") return 40;
-  return unit.star === 1 ? 20 : 30;
+  if (unit.star === 1) return 20;
+  if (unit.star === 2) return 30;
+  if (unit.star === 3) return 50;
+  if (unit.star === 4) return 80;
+  return null;
+}
+
+function getFormationLevelRequirement(unit) {
+  if (!unit || unit.level >= unit.maxLevel) return null;
+  if (typeof getRequiredTranscendenceStarForLevel !== "function") return null;
+
+  const nextLevel = unit.level + 1;
+  const requiredStar = getRequiredTranscendenceStarForLevel(nextLevel);
+  return unit.star >= requiredStar ? null : requiredStar;
+}
+
+function getFormationLevelUpLockLabel(unit) {
+  if (!unit) return "선택 필요";
+  if (unit.level >= unit.maxLevel) return "MAX";
+
+  const requiredStar = getFormationLevelRequirement(unit);
+  if (requiredStar) return `${requiredStar}초월 필요`;
+
+  const cost = getFormationLevelUpCost(unit);
+  if (cost === null) return "조건 미충족";
+  return "";
 }
 
 function showFormationMessage(message, tone = "info") {
@@ -350,8 +377,9 @@ function renderFormationSelectedInfo() {
   if (defense) defense.textContent = unit.defense;
   if (levelBtn) {
     const cost = levelBtn.querySelector("span");
-    if (cost) cost.textContent = unit.level >= unit.maxLevel ? "MAX" : nextCost.toLocaleString("ko-KR");
-    levelBtn.disabled = unit.level >= unit.maxLevel;
+    const lockLabel = getFormationLevelUpLockLabel(unit);
+    if (cost) cost.textContent = lockLabel || nextCost.toLocaleString("ko-KR");
+    levelBtn.disabled = Boolean(lockLabel);
   }
 }
 
@@ -492,12 +520,18 @@ function removeFormationSlot(index) {
 
 function levelUpFormationUnit() {
   const unit = getFormationUnit(formationState.selectedUnitId);
-  if (unit.level >= unit.maxLevel) {
-    showFormationMessage("이미 최대 레벨입니다.", "warning");
+  const lockLabel = getFormationLevelUpLockLabel(unit);
+  if (lockLabel) {
+    showFormationMessage(lockLabel === "MAX" ? "이미 최대 레벨입니다." : `레벨업 조건: ${lockLabel}`, "warning");
     return;
   }
 
   const cost = getFormationLevelUpCost(unit);
+  if (cost === null) {
+    showFormationMessage("현재 조건에서는 레벨업할 수 없습니다.", "warning");
+    return;
+  }
+
   if (gameWallet.gold < cost) {
     showFormationMessage(`골드가 부족합니다. 레벨업에는 ${cost.toLocaleString("ko-KR")}골드가 필요합니다.`, "warning");
     return;

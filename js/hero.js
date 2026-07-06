@@ -50,7 +50,8 @@ const ZEUS_THUNDERSTORM_SKILL = {
   lightningDuration: 0.72,
   clusterRadius: 150,
   framePadX: 28,
-  damage: 45,
+  baseDamage: 15,
+  attackDamageMultiplier: 0.9,
   paralysisDuration: 2,
   lightningColumnRadius: 20,
   lightningHitColumns: [
@@ -65,6 +66,15 @@ const ZEUS_THUNDERSTORM_SKILL = {
   ],
   fallbackX: ENEMY_BASE_X - 120,
 };
+
+
+function getZeusThunderstormDamage(hero = gameState && gameState.hero) {
+  const heroDamage = hero && typeof hero.damage === "number" ? hero.damage : 0;
+  return Math.max(1, Math.round(
+    ZEUS_THUNDERSTORM_SKILL.baseDamage
+    + heroDamage * ZEUS_THUNDERSTORM_SKILL.attackDamageMultiplier
+  ));
+}
 
 
 function createMainHero() {
@@ -150,6 +160,7 @@ function castZeusThunderstorm() {
     timer: 0,
     duration: ZEUS_THUNDERSTORM_SKILL.duration,
     x: findZeusThunderstormTargetX(),
+    damage: getZeusThunderstormDamage(hero),
     hitEnemies: new Set(),
   };
   gameState.message = `${ZEUS_THUNDERSTORM_SKILL.name}!`;
