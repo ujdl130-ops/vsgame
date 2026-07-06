@@ -156,7 +156,6 @@ window.addEventListener("keydown", (event) => {
     if (rewardInteractive && (event.code === "Enter" || event.code === "Space")) return;
     if (event.code === "Escape" || event.code === "Enter" || event.code === "Space") {
       event.preventDefault();
-      hideStageClearRewardUi();
     }
     return;
   }
@@ -271,7 +270,6 @@ if (gameOptionsBtn) gameOptionsBtn.addEventListener("click", toggleGameOptionsMe
 if (optionResumeBtn) optionResumeBtn.addEventListener("click", handleOptionResume);
 if (optionStageSelectBtn) optionStageSelectBtn.addEventListener("click", handleOptionStageSelect);
 if (optionRestartBtn) optionRestartBtn.addEventListener("click", handleOptionRestart);
-if (stageClearRewardCloseBtn) stageClearRewardCloseBtn.addEventListener("click", hideStageClearRewardUi);
 if (stageClearTreasureBtn) stageClearTreasureBtn.addEventListener("click", handleStageClearTreasureOpen);
 if (stageClearRewardAdBtn) stageClearRewardAdBtn.addEventListener("click", handleStageClearRewardAdPreview);
 if (stageClearRewardLobbyBtn) stageClearRewardLobbyBtn.addEventListener("click", handleStageClearRewardLobby);
@@ -279,11 +277,6 @@ if (stageClearRewardRetryBtn) stageClearRewardRetryBtn.addEventListener("click",
 if (stageClearRewardNextBtn) stageClearRewardNextBtn.addEventListener("click", handleStageClearRewardNext);
 if (stageDefeatLobbyBtn) stageDefeatLobbyBtn.addEventListener("click", handleStageDefeatLobby);
 if (stageDefeatRetryBtn) stageDefeatRetryBtn.addEventListener("click", handleStageDefeatRetry);
-if (stageClearRewardOverlay) {
-  stageClearRewardOverlay.addEventListener("click", (event) => {
-    if (event.target === stageClearRewardOverlay) hideStageClearRewardUi();
-  });
-}
 bindMovementJoystick(movementJoystick);
 titleStartBtn.addEventListener("click", showLobby);
 if (lobbyBattleBtn) lobbyBattleBtn.addEventListener("click", showStageSelect);

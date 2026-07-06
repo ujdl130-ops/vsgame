@@ -354,16 +354,7 @@ body.game-started:not(.in-lobby):not(.in-stage-select):not(.in-shop):not(.in-rec
 }
 
 .stage-clear-reward-close {
-  position: absolute;
-  left: 77.4%;
-  top: 10.3%;
-  width: 6.8%;
-  height: 12.4%;
-  padding: 0;
-  border: 0;
-  border-radius: 999px;
-  background: transparent;
-  cursor: pointer;
+  display: none;
 }
 
 .stage-clear-reward-close:focus-visible {
@@ -452,10 +443,10 @@ body.game-started:not(.in-lobby):not(.in-stage-select):not(.in-shop):not(.in-rec
 
 .stage-clear-gold-result {
   position: absolute;
-  left: 17.4%;
-  top: 18.6%;
+  left: 30.2%;
+  top: 24.2%;
   z-index: 1;
-  width: 10.8%;
+  width: 9.4%;
   aspect-ratio: 1;
   object-fit: contain;
   opacity: 0;
