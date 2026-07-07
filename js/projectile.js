@@ -6,6 +6,9 @@ const PROJECTILE_DEFAULT_MAX_LIFE = 3.2;
 const KARON_SWORD_WAVE_GATE_X = PLAYER_BASE_ATTACK_X;
 const KARON_SWORD_WAVE_GATE_DAMAGE_SCALE = 0.55;
 const KARON_SWORD_WAVE_HIT_COLOR = "#ff2d74";
+let karonSwordWaveTransparentCanvas = null;
+let karonSwordWaveTransparentSource = null;
+let karonSwordWaveTransparencyFailed = false;
 
 function getEnemyProjectileHitPoint(enemy) {
   if (!enemy) return { x: 0, y: 0 };
@@ -372,25 +375,69 @@ function isKaronSwordWaveProjectileImageReady() {
   );
 }
 
+function getKaronSwordWaveTransparentSource() {
+  if (!isKaronSwordWaveProjectileImageReady()) return null;
+  if (karonSwordWaveTransparentSource === karonSwordWaveProjectileImage && karonSwordWaveTransparentCanvas) {
+    return karonSwordWaveTransparentCanvas;
+  }
+  if (karonSwordWaveTransparencyFailed) return karonSwordWaveProjectileImage;
+
+  const sourceWidth = karonSwordWaveProjectileImage.naturalWidth || karonSwordWaveProjectileImage.width;
+  const sourceHeight = karonSwordWaveProjectileImage.naturalHeight || karonSwordWaveProjectileImage.height;
+  if (!sourceWidth || !sourceHeight) return karonSwordWaveProjectileImage;
+
+  try {
+    const maskCanvas = document.createElement("canvas");
+    maskCanvas.width = sourceWidth;
+    maskCanvas.height = sourceHeight;
+    const maskCtx = maskCanvas.getContext("2d");
+    maskCtx.drawImage(karonSwordWaveProjectileImage, 0, 0);
+
+    const imageData = maskCtx.getImageData(0, 0, sourceWidth, sourceHeight);
+    const pixels = imageData.data;
+    for (let index = 0; index < pixels.length; index += 4) {
+      const red = pixels[index];
+      const green = pixels[index + 1];
+      const blue = pixels[index + 2];
+      const maxChannel = Math.max(red, green, blue);
+      const mostlyBlack = maxChannel < 34 && red < 42 && green < 34 && blue < 42;
+
+      if (mostlyBlack) {
+        pixels[index + 3] = 0;
+      }
+    }
+
+    maskCtx.putImageData(imageData, 0, 0);
+    karonSwordWaveTransparentCanvas = maskCanvas;
+    karonSwordWaveTransparentSource = karonSwordWaveProjectileImage;
+    return karonSwordWaveTransparentCanvas;
+  } catch (error) {
+    karonSwordWaveTransparencyFailed = true;
+    return karonSwordWaveProjectileImage;
+  }
+}
+
 function drawKaronSwordWaveImage(projectile) {
   const life = projectile.life || 0;
   const maxLife = projectile.maxLife || 1.5;
   const pulse = Math.sin(life * 32) * 0.04;
   const width = 132 * (1 + pulse);
   const height = 124 * (1 - pulse * 0.5);
-  const sourceWidth = karonSwordWaveProjectileImage.naturalWidth || karonSwordWaveProjectileImage.width;
-  const sourceHeight = karonSwordWaveProjectileImage.naturalHeight || karonSwordWaveProjectileImage.height;
+  const swordWaveSource = getKaronSwordWaveTransparentSource() || karonSwordWaveProjectileImage;
+  const sourceWidth = swordWaveSource.width || karonSwordWaveProjectileImage.naturalWidth || karonSwordWaveProjectileImage.width;
+  const sourceHeight = swordWaveSource.height || karonSwordWaveProjectileImage.naturalHeight || karonSwordWaveProjectileImage.height;
   const sourceCropHeight = Math.max(1, sourceHeight - 8);
   const direction = projectile.vx < 0 ? -1 : 1;
 
   ctx.save();
   ctx.translate(projectile.x, projectile.y - 8);
   ctx.globalAlpha = Math.max(0.22, 1 - life / maxLife * 0.24);
+  ctx.globalCompositeOperation = swordWaveSource === karonSwordWaveProjectileImage ? "screen" : "lighter";
   ctx.shadowColor = "rgba(255, 31, 112, 0.95)";
   ctx.shadowBlur = 18;
   ctx.scale(direction, 1);
   ctx.drawImage(
-    karonSwordWaveProjectileImage,
+    swordWaveSource,
     0,
     0,
     sourceWidth,
