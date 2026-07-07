@@ -3,7 +3,6 @@
 const canvas = document.getElementById("gameCanvas");
 const ctx = canvas.getContext("2d");
 
-const waveText = document.getElementById("waveText");
 const unitCountText = document.getElementById("unitCountText");
 const commandUnitText = document.getElementById("commandUnitText");
 const runestoneGaugeFill = document.getElementById("runestoneGaugeFill");

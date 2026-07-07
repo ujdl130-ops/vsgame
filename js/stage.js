@@ -336,13 +336,13 @@ function updateWave(dt) {
   if (gameState.waveBreakTimer > 0) {
     gameState.waveBreakTimer -= dt;
     const remain = Math.ceil(gameState.waveBreakTimer);
-    gameState.message = `다음 웨이브까지 ${remain}`;
+    gameState.message = `다음 적 증원까지 ${remain}`;
     if (gameState.waveBreakTimer <= 0) {
       gameState.wave = Math.min(gameState.wave + 1, gameState.maxWave);
       gameState.enemySpawnTimer = 0;
       gameState.spawnedInWave = 0;
       gameState.enemiesToSpawn = gameState.baseEnemiesToSpawn + gameState.wave * 3;
-      gameState.message = `Wave ${gameState.wave} 시작!`;
+      gameState.message = "적 증원이 몰려옵니다!";
       gameState.messageTimer = 1.1;
     }
     return;

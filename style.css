@@ -175,7 +175,6 @@ body.game-started:not(.in-lobby):not(.in-stage-select):not(.in-shop):not(.in-rec
   height: 540px;
 }
 
-.battle-wave-badge,
 .battle-unit-badge {
   position: absolute;
   top: 14px;
@@ -191,17 +190,9 @@ body.game-started:not(.in-lobby):not(.in-stage-select):not(.in-shop):not(.in-rec
   background: transparent;
   box-shadow: none;
   pointer-events: none;
-}
-
-.battle-wave-badge {
   left: 16px;
 }
 
-.battle-unit-badge {
-  left: 134px;
-}
-
-.battle-wave-badge span,
 .battle-unit-badge span {
   display: block;
   margin-bottom: 0;
@@ -213,7 +204,6 @@ body.game-started:not(.in-lobby):not(.in-stage-select):not(.in-shop):not(.in-rec
   text-shadow: 2px 2px 0 #000;
 }
 
-.battle-wave-badge strong,
 .battle-unit-badge strong {
   display: block;
   color: #fff0a7;
@@ -2332,26 +2322,16 @@ body.game-started:not(.in-lobby):not(.in-stage-select):not(.in-shop):not(.in-rec
 }
 
 @media (max-width: 720px) {
-  .battle-wave-badge,
   .battle-unit-badge {
     top: 10px;
     gap: 6px;
-  }
-
-  .battle-wave-badge {
     left: 10px;
   }
 
-  .battle-unit-badge {
-    left: 112px;
-  }
-
-  .battle-wave-badge span,
   .battle-unit-badge span {
     font-size: 10px;
   }
 
-  .battle-wave-badge strong,
   .battle-unit-badge strong {
     font-size: 11px;
   }
