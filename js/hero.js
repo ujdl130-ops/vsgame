@@ -316,11 +316,6 @@ function isEnemyInHeroAttackDirection(hero, enemy, direction, range = hero && he
   return distance >= -20 && distance <= attackRange;
 }
 
-function getHeroEnemyDistanceInDirection(hero, enemy, direction) {
-  if (!hero || !enemy) return Infinity;
-  return direction < 0 ? hero.x - enemy.x : enemy.x - hero.x;
-}
-
 function findNearestHeroEnemyInDirection(hero, direction = getHeroAttackDirection(hero)) {
   if (!hero || !gameState || !Array.isArray(gameState.enemies)) return null;
 
@@ -328,7 +323,7 @@ function findNearestHeroEnemyInDirection(hero, direction = getHeroAttackDirectio
   let bestDistance = Infinity;
   for (const enemy of gameState.enemies) {
     if (!isCombatAlive(enemy)) continue;
-    const distance = getHeroEnemyDistanceInDirection(hero, enemy, direction);
+    const distance = direction < 0 ? hero.x - enemy.x : enemy.x - hero.x;
     if (distance >= -20 && distance < bestDistance) {
       enemyInDirection = enemy;
       bestDistance = distance;
@@ -341,16 +336,6 @@ function findHeroAttackTarget(hero, direction = getHeroAttackDirection(hero)) {
   const nearest = findNearestHeroEnemyInDirection(hero, direction);
   if (!nearest || nearest.distance > hero.range) return null;
   return nearest.enemy;
-}
-
-function hasLivingBattleEnemies() {
-  return Boolean(gameState && Array.isArray(gameState.enemies) && gameState.enemies.some(isCombatAlive));
-}
-
-function showHeroOutOfRangeMessage() {
-  if (!gameState) return;
-  gameState.message = "사거리 밖입니다.";
-  gameState.messageTimer = 0.8;
 }
 
 function fireHeroStraightProjectile(hero, direction, origin) {
@@ -366,6 +351,17 @@ function fireHeroStraightProjectile(hero, direction, origin) {
     targetY: origin.y,
     color: hero.projectileColor || "#9fe8ff",
   });
+}
+
+function spawnHeroMissIndicator(hero, direction, origin, nearestEnemyInDirection) {
+  if (typeof spawnMiss !== "function") return;
+  if (nearestEnemyInDirection && nearestEnemyInDirection.enemy) {
+    const hitPoint = getEnemyProjectileHitPoint(nearestEnemyInDirection.enemy);
+    spawnMiss(hitPoint.x, hitPoint.y - 16);
+    return;
+  }
+
+  spawnMiss(origin.x + 96 * direction, origin.y - 18);
 }
 
 function fireHeroArrow(hero) {
@@ -389,15 +385,12 @@ function fireHeroArrow(hero) {
       target: shotTarget,
       color: hero.projectileColor || "#9fe8ff",
     });
-  } else if (nearestEnemyInDirection && nearestEnemyInDirection.distance > hero.range) {
-    showHeroOutOfRangeMessage();
   } else if (direction > 0 && ENEMY_BASE_X - hero.x <= hero.range + 25) {
     gameState.enemyBaseHp -= hero.damage * 0.65;
     spawnHit(ENEMY_BASE_X - 38, GROUND_Y - 78, hero.projectileColor || "#9fe8ff");
-  } else if (hasLivingBattleEnemies()) {
-    fireHeroStraightProjectile(hero, direction, origin);
   } else {
-    showHeroOutOfRangeMessage();
+    fireHeroStraightProjectile(hero, direction, origin);
+    spawnHeroMissIndicator(hero, direction, origin, nearestEnemyInDirection);
   }
 
   hero.pendingHeroShot = false;
@@ -417,19 +410,6 @@ function heroAttack() {
   }
 
   const attackDirection = getHeroAttackDirection(hero);
-  const nearestEnemyInDirection = findNearestHeroEnemyInDirection(hero, attackDirection);
-  const enemyBaseInRange = attackDirection > 0 && ENEMY_BASE_X - hero.x <= hero.range + 25;
-  if (nearestEnemyInDirection && nearestEnemyInDirection.distance > hero.range) {
-    showHeroOutOfRangeMessage();
-    updateButtons();
-    return;
-  }
-  if (!nearestEnemyInDirection && !enemyBaseInRange && !hasLivingBattleEnemies()) {
-    showHeroOutOfRangeMessage();
-    updateButtons();
-    return;
-  }
-
   gameState.zeusMana = Math.max(0, (gameState.zeusMana || 0) - BASIC_ATTACK_MANA_COST);
   updateHud();
 
