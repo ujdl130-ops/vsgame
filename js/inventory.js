@@ -53,7 +53,7 @@ function getInventoryDisplayItems(tab = inventoryState.activeTab) {
     category: "item",
     icon: item.icon || "",
   }));
-  const items = [...essenceItems, ...resourceItems, ...customItems];
+  const items = [...essenceItems, ...resourceItems, ...customItems].filter((item) => item.count > 0);
   return tab === "all" ? items : items.filter((item) => item.category === tab);
 }
 

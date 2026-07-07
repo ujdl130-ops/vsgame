@@ -15713,63 +15713,67 @@ body:not(.game-started) .game-wrap {
 }
 
 .formation-screen .formation-wallet-wide {
-  display: none !important;
-  position: absolute !important;
-  left: clamp(88px, 16%, 210px) !important;
-  right: auto !important;
-  top: auto !important;
-  bottom: 78px !important;
-  z-index: 6 !important;
-  width: min(300px, 36vw) !important;
-  grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
-  gap: 4px !important;
-  padding: 4px 5px !important;
-  border: 1px solid rgba(207, 158, 80, 0.72) !important;
-  background: rgba(22, 18, 15, 0.76) !important;
-  box-shadow:
-    inset 0 0 0 1px rgba(255, 226, 156, 0.12),
-    0 5px 12px rgba(0, 0, 0, 0.32) !important;
-  transform: translateX(-50%) !important;
-}
-
-.formation-screen .formation-wallet-wide .formation-currency {
-  min-width: 0 !important;
   display: grid !important;
-  grid-template-columns: 18px minmax(0, 1fr) !important;
-  grid-template-rows: auto auto !important;
-  column-gap: 3px !important;
-  align-items: center !important;
-  padding: 2px 1px !important;
+  position: fixed !important;
+  left: 112px !important;
+  right: auto !important;
+  top: 30px !important;
+  bottom: auto !important;
+  z-index: 13 !important;
+  width: auto !important;
+  grid-template-columns: repeat(2, minmax(122px, auto)) !important;
+  gap: 8px !important;
+  padding: 0 !important;
   border: 0 !important;
   background: transparent !important;
   box-shadow: none !important;
-  text-align: left !important;
+  transform: none !important;
+  pointer-events: none !important;
+}
+
+.formation-screen .formation-wallet-wide .formation-currency {
+  min-width: 122px !important;
+  height: 48px !important;
+  display: grid !important;
+  grid-template-columns: 34px minmax(74px, auto) !important;
+  grid-template-rows: 1fr !important;
+  column-gap: 0 !important;
+  align-items: center !important;
+  padding: 5px 13px 5px 7px !important;
+  border: 1px solid rgba(221, 230, 247, 0.65) !important;
+  border-radius: 5px !important;
+  color: #fff !important;
+  background: linear-gradient(180deg, rgba(25, 35, 54, 0.9), rgba(5, 10, 19, 0.92)) !important;
+  box-shadow: 0 5px 14px rgba(0, 0, 0, 0.3), inset 0 1px rgba(255, 255, 255, 0.1) !important;
+  text-align: right !important;
+}
+
+.formation-screen .formation-wallet-wide .formation-currency.ticket,
+.formation-screen .formation-wallet-wide .formation-currency.essence,
+.formation-screen .formation-wallet-wide .formation-currency.soldier {
+  display: none !important;
 }
 
 .formation-screen .formation-wallet-wide .formation-currency img {
-  grid-row: 1 / 3 !important;
-  width: 18px !important;
-  height: 18px !important;
+  grid-row: auto !important;
+  width: 30px !important;
+  height: 30px !important;
   object-fit: contain !important;
+  filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.5)) !important;
 }
 
 .formation-screen .formation-wallet-wide .formation-currency span {
-  display: block !important;
-  margin: 0 !important;
-  color: rgba(245, 225, 190, 0.76) !important;
-  font-size: 8px !important;
-  font-weight: 800 !important;
-  line-height: 1 !important;
-  letter-spacing: 0 !important;
-  white-space: nowrap !important;
+  display: none !important;
 }
 
 .formation-screen .formation-wallet-wide .formation-currency strong {
-  color: #ffd76d !important;
-  font-size: 11px !important;
+  color: #fff !important;
+  font-size: 15px !important;
   font-weight: 1000 !important;
   line-height: 1 !important;
-  text-shadow: 0 1px 0 rgba(0, 0, 0, 0.78) !important;
+  letter-spacing: 0.02em !important;
+  text-align: right !important;
+  text-shadow: 0 2px 3px #000 !important;
   white-space: nowrap !important;
 }
 
@@ -16011,7 +16015,7 @@ body:not(.game-started) .game-wrap {
   z-index: 8 !important;
   width: 310px !important;
   display: grid !important;
-  gap: 6px !important;
+  gap: 8px !important;
   transform: translateX(-50%) !important;
 }
 
@@ -16024,8 +16028,10 @@ body:not(.game-started) .game-wrap {
   width: 310px !important;
   min-height: 54px !important;
   display: flex !important;
+  flex-direction: column !important;
   align-items: center !important;
   justify-content: center !important;
+  gap: 4px !important;
   padding: 0 18px !important;
   border: 1px solid rgba(231, 181, 94, 0.92) !important;
   background:
@@ -16044,6 +16050,30 @@ body:not(.game-started) .game-wrap {
     inset 0 -10px 16px rgba(0, 0, 0, 0.28),
     0 7px 15px rgba(0, 0, 0, 0.36) !important;
   transform: none !important;
+}
+
+.formation-screen .formation-growth-actions .formation-level-btn > span {
+  position: relative !important;
+  z-index: 1 !important;
+  display: block !important;
+  background: transparent !important;
+  text-shadow: 0 2px 0 rgba(0, 0, 0, 0.78) !important;
+  white-space: normal !important;
+  word-break: keep-all !important;
+}
+
+.formation-screen .formation-growth-actions .formation-level-btn > .formation-level-btn-label {
+  color: inherit !important;
+  font-size: 18px !important;
+  font-weight: 1000 !important;
+  line-height: 1 !important;
+}
+
+.formation-screen .formation-growth-actions .formation-level-btn > .formation-level-btn-meta {
+  color: rgba(255, 240, 207, 0.82) !important;
+  font-size: 12px !important;
+  font-weight: 900 !important;
+  line-height: 1.2 !important;
 }
 
 .formation-screen .formation-growth-actions .formation-level-btn::before {
@@ -16620,6 +16650,10 @@ body:not(.game-started) .game-wrap {
   text-shadow: 0 2px 0 rgba(0, 0, 0, 0.82) !important;
 }
 
+.inventory-screen .inventory-board-head > span {
+  display: none !important;
+}
+
 .inventory-screen .inventory-board-head h1 {
   color: #f6dfa8 !important;
   font-size: 40px !important;
@@ -16630,7 +16664,7 @@ body:not(.game-started) .game-wrap {
 
 .inventory-screen .inventory-tabs {
   position: fixed !important;
-  left: 200px !important;
+  left: 50px !important;
   top: 280px !important;
   z-index: 4 !important;
   width: 220px !important;
@@ -16681,8 +16715,8 @@ body:not(.game-started) .game-wrap {
 
 .inventory-screen .inventory-slot-grid {
   position: fixed !important;
-  left: 432px !important;
-  top: 198px !important;
+  left: 402px !important;
+  top: 178px !important;
   z-index: 3 !important;
   width: 1160px !important;
   height: 594px !important;
@@ -16695,14 +16729,25 @@ body:not(.game-started) .game-wrap {
 }
 
 .inventory-screen .inventory-slot {
-  border: 1px solid rgba(226, 181, 96, 0.34) !important;
-  background:
-    linear-gradient(180deg, rgba(25, 22, 20, 0.36), rgba(15, 14, 13, 0.44)),
-    radial-gradient(circle at 50% 22%, rgba(255, 231, 165, 0.05), transparent 38%) !important;
-  box-shadow:
-    inset 0 0 0 1px rgba(255, 232, 174, 0.06),
-    inset 0 0 16px rgba(0, 0, 0, 0.12) !important;
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
   color: #f4e6cb !important;
+}
+
+.inventory-screen .inventory-slot:nth-child(1),
+.inventory-screen .inventory-slot:nth-child(2) {
+  transform: translateX(22px) !important;
+}
+
+.inventory-screen .inventory-slot:nth-child(5),
+.inventory-screen .inventory-slot:nth-child(6) {
+  transform: translate(22px, -50px) !important;
+}
+
+.inventory-screen .inventory-slot:nth-child(7),
+.inventory-screen .inventory-slot:nth-child(8) {
+  transform: translateY(-50px) !important;
 }
 
 .inventory-screen .inventory-slot.has-item {
@@ -16711,7 +16756,7 @@ body:not(.game-started) .game-wrap {
 }
 
 .inventory-screen .inventory-slot > span {
-  color: rgba(246, 223, 168, 0.38) !important;
+  display: none !important;
 }
 
 .inventory-screen .inventory-slot.is-empty::after {
@@ -16720,13 +16765,12 @@ body:not(.game-started) .game-wrap {
 
 .inventory-screen .inventory-slot.has-item {
   background:
-    linear-gradient(180deg, rgba(30, 25, 20, 0.38), rgba(18, 16, 14, 0.48)),
-    radial-gradient(circle at 50% 18%, rgba(255, 220, 128, 0.08), transparent 36%) !important;
+    transparent !important;
 }
 
 .inventory-screen .inventory-slot.has-item img {
-  width: 88px !important;
-  height: 88px !important;
+  width: 132px !important;
+  height: 132px !important;
   margin-bottom: 4px !important;
 }
 
@@ -16737,7 +16781,7 @@ body:not(.game-started) .game-wrap {
 .inventory-screen .inventory-pager {
   position: fixed !important;
   left: 945px !important;
-  top: 828px !important;
+  top: 798px !important;
   z-index: 4 !important;
   display: flex !important;
   gap: 10px !important;
@@ -16746,9 +16790,10 @@ body:not(.game-started) .game-wrap {
 .inventory-screen .inventory-page-btn {
   width: 42px !important;
   height: 34px !important;
-  border: 1px solid rgba(226, 181, 96, 0.68) !important;
-  color: rgba(244, 230, 203, 0.8) !important;
-  background: rgba(26, 22, 18, 0.56) !important;
+  border: 0 !important;
+  color: rgba(244, 230, 203, 0.82) !important;
+  background: transparent !important;
+  box-shadow: none !important;
   font-size: 16px !important;
   font-weight: 1000 !important;
   text-shadow: 0 2px 0 rgba(0, 0, 0, 0.82) !important;
@@ -16756,16 +16801,22 @@ body:not(.game-started) .game-wrap {
 
 .inventory-screen .inventory-page-btn.is-active {
   color: #fff3c9 !important;
-  border-color: rgba(255, 224, 143, 0.9) !important;
-  background: rgba(91, 65, 29, 0.78) !important;
+  border: 0 !important;
+  background: transparent !important;
 }
 
 .inventory-screen .inventory-close-btn {
-  right: 300px !important;
+  left: 36px !important;
+  right: auto !important;
+  top: 112px !important;
+  min-width: 118px !important;
 }
 
 .inventory-screen .inventory-back-btn {
-  right: 130px !important;
+  left: 168px !important;
+  right: auto !important;
+  top: 112px !important;
+  min-width: 118px !important;
 }
 
 .inventory-screen .inventory-slot.has-item strong,

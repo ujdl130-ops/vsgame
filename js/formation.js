@@ -255,6 +255,11 @@ function getFormationHero(heroId = formationState.selectedHeroId) {
   return FORMATION_HEROES.find((hero) => hero.id === heroId) || FORMATION_HEROES[0];
 }
 
+function isFormationHeroUnlocked(heroId) {
+  const hero = getFormationHero(heroId);
+  return Boolean(hero.unlocked || playerProgress?.ownedGods?.[heroId]?.owned || playerProgress?.ownedGods?.[heroId]);
+}
+
 function getHeroGrowthMap() {
   if (!playerProgress.heroGrowth || typeof playerProgress.heroGrowth !== "object") {
     playerProgress.heroGrowth = {};
@@ -340,6 +345,18 @@ function formatFormationCostParts(parts) {
     .join(" / ") || "무료";
 }
 
+function formatFormationLevelButtonCost(action) {
+  if (!action || action.type !== "level") return "MAX";
+  return `골드 ${action.cost.toLocaleString("ko-KR")}`;
+}
+
+function formatFormationTranscendButtonCost(parts) {
+  if (!parts.some((part) => part.required > 0)) return "무료";
+  return parts
+    .map((part) => `${part.label} ${part.owned.toLocaleString("ko-KR")}/${part.required.toLocaleString("ko-KR")}`)
+    .join(" / ");
+}
+
 function getFormationHeroVisibleGrowthAction(heroId = formationState.selectedHeroId) {
   const levelAction = getFormationHeroLevelAction(heroId);
   if (levelAction) {
@@ -388,6 +405,63 @@ function getFormationUnitVisibleGrowthAction(unit = getFormationUnit(formationSt
       { label: "병사정수", amount: starAction.soldierCost },
     ]),
   };
+}
+
+function getFormationGrowthActionByType(target, actionType) {
+  if (target === "unit") {
+    const unit = getFormationUnit(formationState.selectedUnitId);
+    if (!unit) return { type: "max", label: "MAX", costLabel: "선택 필요" };
+    if (actionType === "level") {
+      const lockLabel = getFormationLevelUpLockLabel(unit);
+      if (lockLabel) return { type: "max", label: "레벨업", costLabel: lockLabel };
+      const cost = getFormationLevelUpCost(unit);
+      return {
+        type: "level",
+        cost,
+        nextLevel: unit.level + 1,
+        label: "레벨업",
+        costLabel: `골드 ${cost.toLocaleString("ko-KR")}`,
+      };
+    }
+    if (actionType === "star") {
+      const starAction = getFormationUnitTranscendAction(unit);
+      if (!starAction) return { type: "max", label: "초월", costLabel: "MAX" };
+      return {
+        ...starAction,
+        label: "초월",
+        costLabel: formatFormationCostParts([
+          { label: "공통정수", amount: starAction.commonCost },
+          { label: "병사정수", amount: starAction.soldierCost },
+        ]),
+      };
+    }
+    return getFormationUnitVisibleGrowthAction(unit);
+  }
+
+  const hero = getFormationHero();
+  if (actionType === "level") {
+    const levelAction = getFormationHeroLevelAction(hero.id);
+    if (!levelAction) return { type: "max", label: "레벨업", costLabel: "MAX" };
+    return {
+      ...levelAction,
+      label: "레벨업",
+      costLabel: `골드 ${levelAction.cost.toLocaleString("ko-KR")}`,
+    };
+  }
+  if (actionType === "star") {
+    const starAction = getFormationHeroTranscendAction(hero.id);
+    if (!starAction) return { type: "max", label: "초월", costLabel: "MAX" };
+    const heroEssenceMeta = getFormationHeroEssenceMeta(hero.id);
+    return {
+      ...starAction,
+      label: "초월",
+      costLabel: formatFormationCostParts([
+        { label: "공통정수", amount: starAction.commonCost },
+        { label: heroEssenceMeta.name, amount: starAction.essenceCost },
+      ]),
+    };
+  }
+  return getFormationHeroVisibleGrowthAction(hero.id);
 }
 
 function initializeFormationHeroGrowthDefaults() {
@@ -673,12 +747,14 @@ function renderFormationHeroDetail() {
   const heroEssenceMeta = getFormationHeroEssenceMeta(hero.id);
   const heroEssenceAmount = getFormationHeroEssenceAmount(hero.id);
   const goldAmount = getFormationGoldAmount();
-  const action = getFormationHeroVisibleGrowthAction(hero.id);
+  const isUnlocked = isFormationHeroUnlocked(hero.id);
+  const levelAction = getFormationGrowthActionByType("hero", "level");
+  const transcendAction = getFormationGrowthActionByType("hero", "star");
   const stats = getFormationHeroStats(hero.id);
-  const canGrow = hero.unlocked && (
-    (action.type === "level" && goldAmount >= action.cost) ||
-    (action.type === "star" && commonEssenceAmount >= action.commonCost && heroEssenceAmount >= action.essenceCost)
-  );
+  const canLevelUp = isUnlocked && levelAction.type === "level" && goldAmount >= levelAction.cost;
+  const canTranscend = isUnlocked && transcendAction.type === "star"
+    && commonEssenceAmount >= transcendAction.commonCost
+    && heroEssenceAmount >= transcendAction.essenceCost;
 
   return `
     <div class="formation-hero-detail">
@@ -1048,7 +1124,7 @@ function selectFormationUnit(unitId) {
 
 function selectFormationHero(heroId) {
   const hero = getFormationHero(heroId);
-  if (!hero.unlocked) {
+  if (!isFormationHeroUnlocked(hero.id)) {
     showFormationMessage(`${hero.name}은 아직 잠겨 있습니다.`, "warning");
     return;
   }
@@ -1099,12 +1175,16 @@ function removeFormationSlot(index) {
 }
 
 function levelUpFormationUnit() {
-  requestFormationGrowthConfirm("unit");
+  requestFormationGrowthConfirm("unit", "level");
 }
 
-function executeFormationUnitGrowth() {
+function transcendFormationUnit() {
+  requestFormationGrowthConfirm("unit", "star");
+}
+
+function executeFormationUnitGrowth(actionType = null) {
   const unit = getFormationUnit(formationState.selectedUnitId);
-  const action = getFormationUnitVisibleGrowthAction(unit);
+  const action = getFormationGrowthActionByType("unit", actionType);
   if (action.type === "max") {
     showFormationMessage(action.costLabel === "MAX" ? "이미 최대 성장 상태입니다." : `성장 조건: ${action.costLabel}`, "warning");
     return;
@@ -1159,13 +1239,11 @@ function executeFormationUnitGrowth() {
   renderFormationSlots();
 }
 
-function requestFormationGrowthConfirm(target) {
+function requestFormationGrowthConfirm(target, actionType = null) {
   const isUnit = target === "unit";
   const name = isUnit ? getFormationUnit(formationState.selectedUnitId).name : getFormationHero().name;
-  const action = isUnit
-    ? getFormationUnitVisibleGrowthAction(getFormationUnit(formationState.selectedUnitId))
-    : getFormationHeroVisibleGrowthAction(getFormationHero().id);
-  if (action.type === "max") return;
+  const action = getFormationGrowthActionByType(target, actionType);
+  if (!action || action.type === "max") return;
   formationState.pendingGrowthConfirm = {
     target,
     actionType: action.type,
@@ -1193,9 +1271,9 @@ function confirmFormationGrowthRequest() {
   if (!pending) return;
   formationState.pendingGrowthConfirm = null;
   if (pending.target === "unit") {
-    executeFormationUnitGrowth();
+    executeFormationUnitGrowth(pending.actionType);
   } else {
-    executeFormationHeroGrowth();
+    executeFormationHeroGrowth(pending.actionType);
   }
 }
 
@@ -1206,17 +1284,21 @@ function cancelFormationGrowthRequest() {
 }
 
 function levelUpFormationHero() {
-  requestFormationGrowthConfirm("hero");
+  requestFormationGrowthConfirm("hero", "level");
 }
 
-function executeFormationHeroGrowth() {
+function transcendFormationHero() {
+  requestFormationGrowthConfirm("hero", "star");
+}
+
+function executeFormationHeroGrowth(actionType = null) {
   const hero = getFormationHero();
-  const action = getFormationHeroVisibleGrowthAction(hero.id);
+  const action = getFormationGrowthActionByType("hero", actionType);
   const currentStar = getFormationHeroStar(hero.id);
   const currentLevel = getFormationHeroLevel(hero.id);
   const heroEssenceMeta = getFormationHeroEssenceMeta(hero.id);
 
-  if (!hero.unlocked) {
+  if (!isFormationHeroUnlocked(hero.id)) {
     showFormationMessage(`${hero.name}은 아직 잠겨 있습니다.`, "warning");
     return;
   }
@@ -1287,8 +1369,8 @@ function createFormationShellMarkup() {
     <button id="formationBackBtn" class="formation-ui-btn formation-back-btn" type="button">로비</button>
 
     <div class="formation-topbar formation-wallet-wide" aria-label="재화 정보">
-      <div class="formation-currency blue"><img src="assets/icons/diamond.png" alt=""><span>다이아몬드</span><strong data-wallet-value="diamond">0</strong></div>
       <div class="formation-currency gold"><img src="assets/icons/gold.png" alt=""><span>골드</span><strong data-wallet-value="gold">0</strong></div>
+      <div class="formation-currency blue"><img src="assets/icons/diamond.png" alt=""><span>다이아몬드</span><strong data-wallet-value="diamond">0</strong></div>
       <div class="formation-currency ticket"><img src="assets/icons/ticket.png" alt=""><span>신 모집권</span><strong data-wallet-value="summonTickets">0</strong></div>
       <div class="formation-currency essence"><img src="assets/icons/essence_all.png" alt=""><span>신의정수</span><strong data-wallet-value="commonEssence">0</strong></div>
       <div class="formation-currency soldier"><img src="assets/icons/essence_soldier.png" alt=""><span>병사정수</span><strong data-wallet-value="soldierFragments">0</strong></div>
@@ -1342,18 +1424,19 @@ function createFormationShellMarkup() {
 }
 
 function getFormationHeroOwnedCount() {
-  return FORMATION_HEROES.filter((hero) => hero.unlocked).length;
+  return FORMATION_HEROES.filter((hero) => isFormationHeroUnlocked(hero.id)).length;
 }
 
 function renderFormationHeroCard(hero, options = {}) {
+  const isUnlocked = isFormationHeroUnlocked(hero.id);
   const selectedClass = options.selected ? " is-selected" : "";
-  const lockedClass = hero.unlocked ? "" : " is-locked";
+  const lockedClass = isUnlocked ? "" : " is-locked";
   const star = getFormationHeroStar(hero.id);
   const level = getFormationHeroLevel(hero.id);
-  const lockMarkup = hero.unlocked ? "" : `<span class="formation-hero-lock" aria-hidden="true">🔒</span>`;
+  const lockMarkup = isUnlocked ? "" : `<span class="formation-hero-lock" aria-hidden="true">🔒</span>`;
 
   return `
-    <button class="formation-unit-card formation-hero-card${selectedClass}${lockedClass}" type="button" data-hero-id="${hero.id}" ${hero.unlocked ? "" : "disabled"} aria-label="${hero.name}">
+    <button class="formation-unit-card formation-hero-card${selectedClass}${lockedClass}" type="button" data-hero-id="${hero.id}" ${isUnlocked ? "" : "disabled"} aria-label="${hero.name}">
       <img src="${hero.image}" alt="${hero.name}">
       ${lockMarkup}
       <span class="formation-unit-name">${hero.name}</span>
@@ -1403,12 +1486,14 @@ function renderFormationHeroDetail() {
   const heroEssenceMeta = getFormationHeroEssenceMeta(hero.id);
   const heroEssenceAmount = getFormationHeroEssenceAmount(hero.id);
   const goldAmount = getFormationGoldAmount();
-  const action = getFormationHeroVisibleGrowthAction(hero.id);
   const stats = getFormationHeroStats(hero.id);
-  const canGrow = hero.unlocked && (
-    (action.type === "level" && goldAmount >= action.cost) ||
-    (action.type === "star" && commonEssenceAmount >= action.commonCost && heroEssenceAmount >= action.essenceCost)
-  );
+  const isUnlocked = isFormationHeroUnlocked(hero.id);
+  const levelAction = getFormationGrowthActionByType("hero", "level");
+  const transcendAction = getFormationGrowthActionByType("hero", "star");
+  const canLevelUp = isUnlocked && levelAction.type === "level" && goldAmount >= levelAction.cost;
+  const canTranscend = isUnlocked && transcendAction.type === "star"
+    && commonEssenceAmount >= transcendAction.commonCost
+    && heroEssenceAmount >= transcendAction.essenceCost;
 
   return `
     <div class="formation-hero-detail">
@@ -1441,10 +1526,17 @@ function renderFormationHeroDetail() {
           <div><dt>골드</dt><dd>${goldAmount.toLocaleString("ko-KR")}</dd></div>
         </dl>
         <div class="formation-growth-actions">
-          <button id="formationHeroLevelUpBtn" class="formation-level-btn formation-hero-level-btn${action.type === "star" ? " formation-transcend-btn" : ""}" type="button" ${canGrow ? "" : "disabled"}>
-            ${action.label}
+          <button id="formationHeroLevelUpBtn" class="formation-level-btn formation-hero-level-btn" type="button" ${canLevelUp ? "" : "disabled"}>
+            <span class="formation-level-btn-label">레벨업</span>
+            <span class="formation-level-btn-meta">(${formatFormationLevelButtonCost(levelAction)})</span>
           </button>
-          <p class="formation-growth-cost">${action.costLabel}</p>
+          <button id="formationHeroTranscendBtn" class="formation-level-btn formation-hero-level-btn formation-transcend-btn" type="button" ${canTranscend ? "" : "disabled"}>
+            <span class="formation-level-btn-label">초월</span>
+            <span class="formation-level-btn-meta">${formatFormationTranscendButtonCost([
+              { label: "공통정수", owned: commonEssenceAmount, required: transcendAction.commonCost || 0 },
+              { label: heroEssenceMeta.name, owned: heroEssenceAmount, required: transcendAction.essenceCost || 0 },
+            ])}</span>
+          </button>
         </div>
         ${renderFormationGrowthConfirm()}
       </div>
@@ -1459,14 +1551,15 @@ function renderFormationUnitDetail() {
   }
   const unit = getFormationUnit(formationState.selectedUnitId);
   const stats = getFormationUnitStats(unit);
-  const action = getFormationUnitVisibleGrowthAction(unit);
   const commonEssenceAmount = getFormationHeroFragmentAmount();
   const soldierEssenceAmount = getFormationUnitFragmentAmount();
   const goldAmount = getFormationGoldAmount();
-  const canGrow = (
-    (action.type === "level" && goldAmount >= action.cost) ||
-    (action.type === "star" && commonEssenceAmount >= action.commonCost && soldierEssenceAmount >= action.soldierCost)
-  );
+  const levelAction = getFormationGrowthActionByType("unit", "level");
+  const transcendAction = getFormationGrowthActionByType("unit", "star");
+  const canLevelUp = levelAction.type === "level" && goldAmount >= levelAction.cost;
+  const canTranscend = transcendAction.type === "star"
+    && commonEssenceAmount >= transcendAction.commonCost
+    && soldierEssenceAmount >= transcendAction.soldierCost;
 
   return `
     <div class="formation-hero-detail formation-unit-detail">
@@ -1500,10 +1593,17 @@ function renderFormationUnitDetail() {
           <div><dt>골드</dt><dd>${goldAmount.toLocaleString("ko-KR")}</dd></div>
         </dl>
         <div class="formation-growth-actions">
-          <button id="formationUnitLevelUpBtn" class="formation-level-btn formation-hero-level-btn${action.type === "star" ? " formation-transcend-btn" : ""}" type="button" ${canGrow ? "" : "disabled"}>
-            ${action.label}
+          <button id="formationUnitLevelUpBtn" class="formation-level-btn formation-hero-level-btn" type="button" ${canLevelUp ? "" : "disabled"}>
+            <span class="formation-level-btn-label">레벨업</span>
+            <span class="formation-level-btn-meta">(${formatFormationLevelButtonCost(levelAction)})</span>
           </button>
-          <p class="formation-growth-cost">${action.costLabel}</p>
+          <button id="formationUnitTranscendBtn" class="formation-level-btn formation-hero-level-btn formation-transcend-btn" type="button" ${canTranscend ? "" : "disabled"}>
+            <span class="formation-level-btn-label">초월</span>
+            <span class="formation-level-btn-meta">${formatFormationTranscendButtonCost([
+              { label: "공통정수", owned: commonEssenceAmount, required: transcendAction.commonCost || 0 },
+              { label: "병사정수", owned: soldierEssenceAmount, required: transcendAction.soldierCost || 0 },
+            ])}</span>
+          </button>
         </div>
         ${renderFormationGrowthConfirm()}
       </div>
@@ -1524,14 +1624,18 @@ function renderFormationSlots() {
 
   const detailCard = slotGrid.querySelector(".formation-hero-detail-card");
   const heroLevelUpBtn = document.getElementById("formationHeroLevelUpBtn");
+  const heroTranscendBtn = document.getElementById("formationHeroTranscendBtn");
   const unitLevelUpBtn = document.getElementById("formationUnitLevelUpBtn");
+  const unitTranscendBtn = document.getElementById("formationUnitTranscendBtn");
   const confirmBtn = document.getElementById("formationHeroGrowthConfirmBtn");
   const cancelBtn = document.getElementById("formationHeroGrowthCancelBtn");
   const growthProceedBtn = document.getElementById("formationGrowthProceedBtn");
   const growthDismissBtn = document.getElementById("formationGrowthDismissBtn");
   if (detailCard) detailCard.addEventListener("click", toggleFormationDetailFlip);
   if (heroLevelUpBtn) heroLevelUpBtn.addEventListener("click", levelUpFormationHero);
+  if (heroTranscendBtn) heroTranscendBtn.addEventListener("click", transcendFormationHero);
   if (unitLevelUpBtn) unitLevelUpBtn.addEventListener("click", levelUpFormationUnit);
+  if (unitTranscendBtn) unitTranscendBtn.addEventListener("click", transcendFormationUnit);
   if (confirmBtn) confirmBtn.addEventListener("click", confirmFormationHeroGrowth);
   if (cancelBtn) cancelBtn.addEventListener("click", cancelFormationHeroGrowth);
   if (growthProceedBtn) growthProceedBtn.addEventListener("click", confirmFormationGrowthRequest);
