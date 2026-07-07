@@ -17294,6 +17294,7 @@ body:not(.game-started) .game-wrap {
 }
 
 .shop-ui-btn,
+.recruit-ui-btn,
 .formation-ui-btn,
 .mission-ui-btn,
 .inventory-ui-btn,
@@ -17306,6 +17307,30 @@ body:not(.game-started) .game-wrap {
   font-family: "Malgun Gothic", sans-serif !important;
   font-weight: 900 !important;
   text-shadow: 0 1px 2px #000 !important;
+}
+
+.recruit-back-btn,
+.shop-back-btn,
+.formation-back-btn,
+.mission-back-btn,
+.inventory-back-btn,
+.stage-back-btn {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 92px !important;
+  height: 54px !important;
+  min-width: 92px !important;
+  min-height: 54px !important;
+  padding: 0 12px !important;
+  font-size: 14px !important;
+  line-height: 1 !important;
+  white-space: nowrap !important;
+}
+
+.recruit-close-btn,
+.shop-close-btn {
+  display: none !important;
 }
 
 .stage-screen .stage-ui-btn {
@@ -17324,4 +17349,47 @@ body:not(.game-started) .game-wrap {
 .inventory-close-btn {
   background: linear-gradient(180deg, rgba(79, 45, 57, 0.96), rgba(29, 15, 25, 0.98)) !important;
   box-shadow: inset 0 0 0 1px rgba(255,255,255,0.08), 0 5px 18px rgba(0,0,0,0.46) !important;
+}
+
+.mission-screen .mission-back-btn {
+  width: 92px !important;
+  height: 54px !important;
+  min-width: 92px !important;
+  min-height: 54px !important;
+  padding: 0 12px !important;
+  border: 1px solid rgba(255, 225, 146, 0.72) !important;
+  border-radius: 4px !important;
+  color: #fff6d9 !important;
+  background: linear-gradient(180deg, rgba(47, 39, 64, 0.96), rgba(14, 12, 24, 0.98)) !important;
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,0.08), 0 5px 18px rgba(0,0,0,0.46) !important;
+  font-size: 14px !important;
+  font-weight: 900 !important;
+  line-height: 1 !important;
+  text-shadow: 0 1px 2px #000 !important;
+}
+
+.shop-screen .shop-top-actions,
+.shop-screen .shop-wallet {
+  border: 0 !important;
+  outline: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.formation-screen .formation-wallet-wide {
+  left: auto !important;
+  right: max(34px, calc(34px + env(safe-area-inset-right))) !important;
+  top: 28px !important;
+}
+
+.formation-screen .formation-brand-panel {
+  left: calc(50% - 130px) !important;
+  top: 28px !important;
+  width: 260px !important;
+  transform: none !important;
+}
+
+.formation-screen .formation-brand-panel strong,
+.formation-screen .formation-brand-panel span {
+  text-align: center !important;
 }
