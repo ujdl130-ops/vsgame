@@ -5,6 +5,7 @@ const MAGE_FIREBALL_VERTICAL_RADIUS = 44;
 const PROJECTILE_DEFAULT_MAX_LIFE = 3.2;
 const KARON_SWORD_WAVE_GATE_X = PLAYER_BASE_ATTACK_X;
 const KARON_SWORD_WAVE_GATE_DAMAGE_SCALE = 0.55;
+const KARON_SWORD_WAVE_HIT_COLOR = "#ff2d74";
 
 function getEnemyProjectileHitPoint(enemy) {
   if (!enemy) return { x: 0, y: 0 };
@@ -192,7 +193,7 @@ function damageKaronSwordWaveSplash(projectile, impactX) {
 
   for (const target of targets) {
     target.hp -= projectile.damage;
-    spawnHit(target.x, target.y - Math.max(38, target.h * 0.65), "#79c8ff");
+    spawnHit(target.x, target.y - Math.max(38, target.h * 0.65), KARON_SWORD_WAVE_HIT_COLOR);
   }
 
   const gateHit = isKaronSwordWavePlayerGateInSplash(impactX, radius);
@@ -201,7 +202,7 @@ function damageKaronSwordWaveSplash(projectile, impactX) {
   }
 
   if (targets.length === 0 && !gateHit) {
-    spawnHit(impactX, projectile.y, "#79c8ff");
+    spawnHit(impactX, projectile.y, KARON_SWORD_WAVE_HIT_COLOR);
   }
 }
 
@@ -215,7 +216,7 @@ function hasKaronSwordWaveReachedPlayerGate(projectile) {
 
 function damageKaronSwordWavePlayerGate(projectile) {
   gameState.playerBaseHp -= projectile.damage * KARON_SWORD_WAVE_GATE_DAMAGE_SCALE;
-  spawnHit(PLAYER_BASE_ATTACK_HIT_X, GROUND_Y - 78, "#79c8ff");
+  spawnHit(PLAYER_BASE_ATTACK_HIT_X, GROUND_Y - 78, KARON_SWORD_WAVE_HIT_COLOR);
 }
 
 function fireArcherArrow(unit) {
@@ -362,45 +363,84 @@ function updateParticles(dt) {
   gameState.particles = gameState.particles.filter((p) => p.life > 0);
 }
 
+function isKaronSwordWaveProjectileImageReady() {
+  return (
+    typeof karonSwordWaveProjectileImage !== "undefined"
+    && typeof karonSwordWaveProjectileReady !== "undefined"
+    && karonSwordWaveProjectileImage
+    && karonSwordWaveProjectileReady
+  );
+}
+
+function drawKaronSwordWaveImage(projectile) {
+  const life = projectile.life || 0;
+  const maxLife = projectile.maxLife || 1.5;
+  const pulse = Math.sin(life * 32) * 0.04;
+  const width = 132 * (1 + pulse);
+  const height = 124 * (1 - pulse * 0.5);
+
+  ctx.save();
+  ctx.translate(projectile.x, projectile.y - 8);
+  ctx.globalAlpha = Math.max(0.22, 1 - life / maxLife * 0.24);
+  ctx.shadowColor = "rgba(255, 31, 112, 0.95)";
+  ctx.shadowBlur = 18;
+  ctx.scale(-1, 1);
+  ctx.drawImage(karonSwordWaveProjectileImage, -width / 2, -height / 2, width, height);
+  ctx.restore();
+}
+
+function drawKaronSwordWaveFallback(projectile) {
+  const pulse = Math.sin((projectile.life || 0) * 42) * 0.12;
+
+  ctx.save();
+  ctx.translate(projectile.x, projectile.y);
+  ctx.globalAlpha = Math.max(0.2, 1 - (projectile.life || 0) / (projectile.maxLife || 1.5) * 0.28);
+  ctx.shadowColor = "rgba(55, 156, 255, 0.95)";
+  ctx.shadowBlur = 16;
+
+  const slashGradient = ctx.createLinearGradient(-82, 0, 32, 0);
+  slashGradient.addColorStop(0, "rgba(5, 14, 45, 0)");
+  slashGradient.addColorStop(0.25, "rgba(12, 28, 82, 0.95)");
+  slashGradient.addColorStop(0.62, "rgba(24, 146, 255, 0.96)");
+  slashGradient.addColorStop(1, "rgba(250, 255, 255, 0)");
+
+  ctx.fillStyle = slashGradient;
+  ctx.beginPath();
+  ctx.moveTo(-88, -8);
+  ctx.quadraticCurveTo(-38, -25 - pulse * 18, 34, -2);
+  ctx.quadraticCurveTo(-36, 23 + pulse * 18, -88, 10);
+  ctx.closePath();
+  ctx.fill();
+
+  ctx.strokeStyle = "rgba(223, 247, 255, 0.88)";
+  ctx.lineWidth = 3;
+  ctx.beginPath();
+  ctx.moveTo(-72, 4);
+  ctx.quadraticCurveTo(-24, -18, 28, -2);
+  ctx.stroke();
+
+  ctx.strokeStyle = "rgba(4, 11, 28, 0.92)";
+  ctx.lineWidth = 5;
+  ctx.beginPath();
+  ctx.moveTo(-82, 10);
+  ctx.quadraticCurveTo(-26, 20, 24, 3);
+  ctx.stroke();
+  ctx.restore();
+}
+
+function drawKaronSwordWave(projectile) {
+  if (isKaronSwordWaveProjectileImageReady()) {
+    drawKaronSwordWaveImage(projectile);
+    return;
+  }
+
+  drawKaronSwordWaveFallback(projectile);
+}
+
 function drawProjectiles() {
   for (const projectile of gameState.projectiles) {
     if (projectile.type === "karonSwordWave") {
-      const pulse = Math.sin((projectile.life || 0) * 42) * 0.12;
-
-      ctx.save();
-      ctx.translate(projectile.x, projectile.y);
-      ctx.globalAlpha = Math.max(0.2, 1 - (projectile.life || 0) / (projectile.maxLife || 1.5) * 0.28);
-      ctx.shadowColor = "rgba(55, 156, 255, 0.95)";
-      ctx.shadowBlur = 16;
-
-      const slashGradient = ctx.createLinearGradient(-82, 0, 32, 0);
-      slashGradient.addColorStop(0, "rgba(5, 14, 45, 0)");
-      slashGradient.addColorStop(0.25, "rgba(12, 28, 82, 0.95)");
-      slashGradient.addColorStop(0.62, "rgba(24, 146, 255, 0.96)");
-      slashGradient.addColorStop(1, "rgba(250, 255, 255, 0)");
-
-      ctx.fillStyle = slashGradient;
-      ctx.beginPath();
-      ctx.moveTo(-88, -8);
-      ctx.quadraticCurveTo(-38, -25 - pulse * 18, 34, -2);
-      ctx.quadraticCurveTo(-36, 23 + pulse * 18, -88, 10);
-      ctx.closePath();
-      ctx.fill();
-
-      ctx.strokeStyle = "rgba(223, 247, 255, 0.88)";
-      ctx.lineWidth = 3;
-      ctx.beginPath();
-      ctx.moveTo(-72, 4);
-      ctx.quadraticCurveTo(-24, -18, 28, -2);
-      ctx.stroke();
-
-      ctx.strokeStyle = "rgba(4, 11, 28, 0.92)";
-      ctx.lineWidth = 5;
-      ctx.beginPath();
-      ctx.moveTo(-82, 10);
-      ctx.quadraticCurveTo(-26, 20, 24, 3);
-      ctx.stroke();
-      ctx.restore();
+      drawKaronSwordWave(projectile);
       continue;
     }
 
