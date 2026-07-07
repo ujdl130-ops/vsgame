@@ -30,7 +30,7 @@ const STAGE_CONFIGS = {
 const STAGE_CLEAR_REWARDS = {
   1: { gold: 10000 },
   2: { gold: 15000 },
-  3: { gold: 2000, diamonds: 50, commonEssence: 1 },
+  3: { gold: 30000 },
 };
 
 function getStageConfig(stageNumber) {

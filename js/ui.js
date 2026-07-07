@@ -185,6 +185,7 @@ function updateStageClearRewardActions() {
 const STAGE_CLEAR_TREASURE_REWARD_CONFIGS = {
   1: { gold: 10000 },
   2: { gold: 15000 },
+  3: { gold: 30000 },
 };
 const DEFAULT_STAGE_CLEAR_TREASURE_REWARD_CONFIG = STAGE_CLEAR_TREASURE_REWARD_CONFIGS[1];
 let stageClearTreasureReward = null;
