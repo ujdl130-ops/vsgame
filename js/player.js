@@ -66,6 +66,7 @@ let animationId = null;
 let keys = {};
 let heroMoveInput = 0;
 let selectedHeroId = "zeus";
+const PROTOTYPE_PLAYABLE_HERO_IDS = new Set(["zeus", "poseidon"]);
 let gameOptionsWasRunning = false;
 let recruitDoorState = {
   active: false,
@@ -75,8 +76,15 @@ let recruitDoorState = {
   opened: false,
 };
 
+function isPlayerHeroUnlocked(heroId) {
+  if (heroId === "zeus") return true;
+  if (!PROTOTYPE_PLAYABLE_HERO_IDS.has(heroId)) return false;
+  const ownedGod = playerProgress?.ownedGods?.[heroId];
+  return Boolean(ownedGod && (ownedGod.owned === true || ownedGod === true));
+}
+
 function setSelectedHeroId(heroId) {
-  selectedHeroId = heroId || "zeus";
+  selectedHeroId = isPlayerHeroUnlocked(heroId) ? heroId : "zeus";
 }
 
 function createInitialState() {

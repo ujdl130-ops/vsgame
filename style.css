@@ -16765,7 +16765,7 @@ body:not(.game-started) .game-wrap {
 
 .inventory-screen .inventory-slot-grid {
   position: fixed !important;
-  left: 417px !important;
+  left: 427px !important;
   top: 178px !important;
   z-index: 3 !important;
   width: 1160px !important;
@@ -16797,12 +16797,12 @@ body:not(.game-started) .game-wrap {
 
 .inventory-screen .inventory-slot:nth-child(5),
 .inventory-screen .inventory-slot:nth-child(6) {
-  transform: translate(22px, -30px) !important;
+  transform: translate(22px, -20px) !important;
 }
 
 .inventory-screen .inventory-slot:nth-child(7),
 .inventory-screen .inventory-slot:nth-child(8) {
-  transform: translate(15px, -30px) !important;
+  transform: translate(15px, -20px) !important;
 }
 
 .inventory-screen .inventory-slot.has-item {

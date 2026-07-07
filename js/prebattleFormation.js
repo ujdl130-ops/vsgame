@@ -23,7 +23,9 @@ const prebattleFormationState = {
 };
 
 function getPrebattleOwnedHeroes() {
-  return PREBATTLE_FORMATION_HEROES;
+  return PREBATTLE_FORMATION_HEROES.filter((hero) => (
+    typeof isPlayerHeroUnlocked === "function" ? isPlayerHeroUnlocked(hero.id) : hero.id === PREBATTLE_FORMATION_DEFAULT_HERO.id
+  ));
 }
 
 function getPrebattleFormationRoot() {

@@ -238,8 +238,9 @@ function getFormationHero(heroId = formationState.selectedHeroId) {
 }
 
 function isFormationHeroUnlocked(heroId) {
+  if (typeof isPlayerHeroUnlocked === "function") return isPlayerHeroUnlocked(heroId);
   const hero = getFormationHero(heroId);
-  return Boolean(hero.unlocked || playerProgress?.ownedGods?.[heroId]?.owned || playerProgress?.ownedGods?.[heroId]);
+  return Boolean(hero.unlocked);
 }
 
 function getHeroGrowthMap() {

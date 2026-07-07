@@ -8,6 +8,12 @@ const GACHA_SSR_VIDEO_SRC = "assets/ui/gacha 1.mp4";
 const GACHA_NORMAL_VIDEO_SRC = "assets/ui/gacha 2.mp4";
 let recruitBgmWasPlayingBeforeSummon = false;
 
+function getGodDescentHeroPool() {
+  if (typeof PROTOTYPE_PLAYABLE_HERO_IDS === "undefined") return GOD_HEROES;
+  const pool = GOD_HEROES.filter((hero) => PROTOTYPE_PLAYABLE_HERO_IDS.has(hero.id));
+  return pool.length ? pool : GOD_HEROES;
+}
+
 function isGodOwned(heroId) {
   const ownedGod = playerProgress.ownedGods?.[heroId];
   return Boolean(ownedGod && ownedGod.owned === true);
@@ -37,7 +43,8 @@ function summonGodDescentOnce(random = Math.random) {
     }];
   }
 
-  const hero = GOD_HEROES[Math.floor(random() * GOD_HEROES.length)];
+  const heroPool = getGodDescentHeroPool();
+  const hero = heroPool[Math.floor(random() * heroPool.length)];
   const isDuplicate = isGodOwned(hero.id);
   let convertedEssence = null;
   if (isDuplicate) {
