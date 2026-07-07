@@ -441,6 +441,14 @@ if (lobbyRecruitBtn) lobbyRecruitBtn.addEventListener("click", showRecruit);
 if (lobbyMissionBtn) lobbyMissionBtn.addEventListener("click", showMission);
 const lobbyMailboxBtn = document.getElementById("lobbyMailboxBtn");
 const lobbySettingsBtn = document.getElementById("lobbySettingsBtn");
+const lobbySettingsPanel = document.getElementById("lobbySettingsPanel");
+const lobbySettingsCloseBtn = document.getElementById("lobbySettingsCloseBtn");
+const lobbySettingsExitBtn = document.getElementById("lobbySettingsExitBtn");
+const lobbyVolumeControls = [
+  { key: "master", input: document.getElementById("masterVolumeRange"), value: document.getElementById("masterVolumeValue") },
+  { key: "bgm", input: document.getElementById("bgmVolumeRange"), value: document.getElementById("bgmVolumeValue") },
+  { key: "sfx", input: document.getElementById("sfxVolumeRange"), value: document.getElementById("sfxVolumeValue") },
+];
 
 function updateLobbyTopBar() {
   const wallet = typeof playerProgress !== "undefined" && playerProgress ? playerProgress : {};
@@ -455,8 +463,47 @@ function updateLobbyTopBar() {
   });
 }
 
+function updateLobbySettingsControls() {
+  const settings = window.GameAudio?.getAudioSettings?.() || { master: 1, bgm: 1, sfx: 1 };
+  lobbyVolumeControls.forEach((control) => {
+    if (!control.input || !control.value) return;
+    const percent = Math.round(Math.min(1, Math.max(0, Number(settings[control.key]) || 0)) * 100);
+    control.input.value = String(percent);
+    control.value.textContent = `${percent}%`;
+  });
+}
+
+function showLobbySettings() {
+  updateLobbySettingsControls();
+  if (lobbySettingsPanel) lobbySettingsPanel.classList.remove("is-hidden");
+}
+
+function hideLobbySettings() {
+  if (lobbySettingsPanel) lobbySettingsPanel.classList.add("is-hidden");
+}
+
 if (lobbyMailboxBtn) lobbyMailboxBtn.addEventListener("click", () => showLobbyMenuNotice("우편함"));
-if (lobbySettingsBtn) lobbySettingsBtn.addEventListener("click", () => showLobbyMenuNotice("환경설정"));
+if (lobbySettingsBtn) lobbySettingsBtn.addEventListener("click", showLobbySettings);
+lobbyVolumeControls.forEach((control) => {
+  if (!control.input) return;
+  control.input.addEventListener("input", () => {
+    const percent = Math.min(100, Math.max(0, Number(control.input.value) || 0));
+    if (control.value) control.value.textContent = `${Math.round(percent)}%`;
+    window.GameAudio?.setAudioSetting?.(control.key, percent / 100);
+  });
+});
+if (lobbySettingsCloseBtn) lobbySettingsCloseBtn.addEventListener("click", hideLobbySettings);
+if (lobbySettingsPanel) {
+  lobbySettingsPanel.addEventListener("click", (event) => {
+    if (event.target === lobbySettingsPanel) hideLobbySettings();
+  });
+}
+if (lobbySettingsExitBtn) {
+  lobbySettingsExitBtn.addEventListener("click", () => {
+    hideLobbySettings();
+    showTitle();
+  });
+}
 updateLobbyTopBar();
 if (missionBackBtn) missionBackBtn.addEventListener("click", showLobby);
 if (missionCloseBtn) missionCloseBtn.addEventListener("click", showLobby);

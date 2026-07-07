@@ -123,6 +123,38 @@
       <button id="lobbyMissionBtn" class="lobby-btn lobby-mission" type="button">미션</button>
     </div>
     <p id="lobbyMenuNotice" class="lobby-menu-notice" aria-live="polite"></p>
+
+    <div id="lobbySettingsPanel" class="lobby-settings-panel is-hidden" role="dialog" aria-modal="true" aria-labelledby="lobbySettingsTitle">
+      <div class="lobby-settings-card">
+        <header class="lobby-settings-head">
+          <div>
+            <p>OPTION</p>
+            <h2 id="lobbySettingsTitle">환경설정</h2>
+          </div>
+          <button id="lobbySettingsCloseBtn" class="lobby-settings-close" type="button" aria-label="환경설정 닫기">×</button>
+        </header>
+
+        <div class="lobby-settings-sliders">
+          <label class="lobby-volume-row" for="masterVolumeRange">
+            <span>전체볼륨</span>
+            <input id="masterVolumeRange" type="range" min="0" max="100" value="100">
+            <strong id="masterVolumeValue">100%</strong>
+          </label>
+          <label class="lobby-volume-row" for="bgmVolumeRange">
+            <span>배경음</span>
+            <input id="bgmVolumeRange" type="range" min="0" max="100" value="100">
+            <strong id="bgmVolumeValue">100%</strong>
+          </label>
+          <label class="lobby-volume-row" for="sfxVolumeRange">
+            <span>효과음</span>
+            <input id="sfxVolumeRange" type="range" min="0" max="100" value="100">
+            <strong id="sfxVolumeValue">100%</strong>
+          </label>
+        </div>
+
+        <button id="lobbySettingsExitBtn" class="lobby-settings-exit" type="button">게임종료</button>
+      </div>
+    </div>
   </section>
 
 

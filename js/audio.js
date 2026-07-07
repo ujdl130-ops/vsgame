@@ -36,9 +36,19 @@ const AUDIO_PATHS = {
 const audioState = {
   bgm: null,
   bgmKey: "",
+  bgmBaseVolume: 0.42,
   unlocked: false,
   sfxCooldowns: new Map(),
 };
+
+const AUDIO_SETTINGS_STORAGE_KEY = "pixelDefenseAudioSettings";
+const DEFAULT_AUDIO_SETTINGS = {
+  master: 1,
+  bgm: 1,
+  sfx: 1,
+};
+
+let audioSettings = loadAudioSettings();
 
 const SFX_DEFAULT_COOLDOWN = 80;
 const SFX_COOLDOWNS = {
@@ -51,6 +61,57 @@ const SFX_COOLDOWNS = {
   thiefAttack: 140,
   wolfAttack: 170,
 };
+
+function clampAudioVolume(value) {
+  return Math.min(1, Math.max(0, Number(value) || 0));
+}
+
+function loadAudioSettings() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(AUDIO_SETTINGS_STORAGE_KEY) || "{}");
+    return {
+      master: clampAudioVolume(saved.master ?? DEFAULT_AUDIO_SETTINGS.master),
+      bgm: clampAudioVolume(saved.bgm ?? DEFAULT_AUDIO_SETTINGS.bgm),
+      sfx: clampAudioVolume(saved.sfx ?? DEFAULT_AUDIO_SETTINGS.sfx),
+    };
+  } catch (error) {
+    return { ...DEFAULT_AUDIO_SETTINGS };
+  }
+}
+
+function saveAudioSettings() {
+  try {
+    localStorage.setItem(AUDIO_SETTINGS_STORAGE_KEY, JSON.stringify(audioSettings));
+  } catch (error) {}
+}
+
+function getEffectiveBgmVolume(baseVolume = audioState.bgmBaseVolume) {
+  return clampAudioVolume(baseVolume) * audioSettings.master * audioSettings.bgm;
+}
+
+function getEffectiveSfxVolume(baseVolume = 0.72) {
+  return clampAudioVolume(baseVolume) * audioSettings.master * audioSettings.sfx;
+}
+
+function applyAudioSettings() {
+  if (audioState.bgm) {
+    audioState.bgm.volume = getEffectiveBgmVolume();
+  }
+}
+
+function setAudioSetting(key, value) {
+  if (!Object.prototype.hasOwnProperty.call(DEFAULT_AUDIO_SETTINGS, key)) return;
+  audioSettings = {
+    ...audioSettings,
+    [key]: clampAudioVolume(value),
+  };
+  saveAudioSettings();
+  applyAudioSettings();
+}
+
+function getAudioSettings() {
+  return { ...audioSettings };
+}
 
 function createGameAudio(src, { loop = false, volume = 1 } = {}) {
   const audio = new Audio(src);
@@ -82,7 +143,8 @@ function playBgm(key, options = {}) {
   if (!src) return;
   if (audioState.bgmKey === key) {
     if (audioState.bgm && typeof options.volume === "number") {
-      audioState.bgm.volume = options.volume;
+      audioState.bgmBaseVolume = clampAudioVolume(options.volume);
+      audioState.bgm.volume = getEffectiveBgmVolume();
     }
     tryPlayBgm();
     return;
@@ -94,9 +156,10 @@ function playBgm(key, options = {}) {
   }
 
   audioState.bgmKey = key;
+  audioState.bgmBaseVolume = clampAudioVolume(options.volume ?? 0.42);
   audioState.bgm = createGameAudio(src, {
     loop: true,
-    volume: options.volume ?? 0.42,
+    volume: getEffectiveBgmVolume(),
   });
 
   tryPlayBgm();
@@ -135,7 +198,7 @@ function playSfx(key, options = {}) {
 
   const audio = createGameAudio(src, {
     loop: false,
-    volume: options.volume ?? 0.72,
+    volume: getEffectiveSfxVolume(options.volume ?? 0.72),
   });
   audio.play().catch(() => {});
 }
@@ -217,6 +280,8 @@ window.GameAudio = {
   resumeBgm,
   syncScreenBgm,
   playStageBgm,
+  getAudioSettings,
+  setAudioSetting,
   playUnitAttackSfx,
   playEnemyAttackSfx,
   playEnemyDeathSfx,
