@@ -12695,6 +12695,13 @@ body:not(.game-started) .game-wrap {
   text-shadow: 0 1px 0 rgba(255,255,255,0.75);
 }
 
+.formation-star-red {
+  color: #e4433d;
+  text-shadow:
+    0 1px 0 rgba(255, 232, 220, 0.76),
+    0 0 8px rgba(228, 67, 61, 0.38);
+}
+
 .formation-hero-detail-list {
   display: grid;
   gap: 10px;
@@ -16131,6 +16138,13 @@ body:not(.game-started) .game-wrap {
   text-shadow: 0 2px 0 rgba(0, 0, 0, 0.82) !important;
 }
 
+.formation-screen .formation-star-red {
+  color: #ff4d4d !important;
+  text-shadow:
+    0 2px 0 rgba(0, 0, 0, 0.82),
+    0 0 10px rgba(255, 77, 77, 0.58) !important;
+}
+
 .formation-screen .formation-hero-detail-card {
   position: fixed !important;
   left: 460.9px !important;
@@ -17409,18 +17423,77 @@ body:not(.game-started) .game-wrap {
 }
 
 .formation-screen .formation-growth-actions {
-  width: 360px !important;
-  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  width: 388px !important;
+  grid-template-columns: repeat(2, minmax(0, 190px)) !important;
   gap: 8px !important;
 }
 
 .formation-screen .formation-growth-actions .formation-level-btn {
-  width: 176px !important;
-  min-height: 54px !important;
-  padding: 0 10px !important;
-  font-size: 16px !important;
+  width: 190px !important;
+  min-height: 62px !important;
+  padding: 7px 12px !important;
+  gap: 5px !important;
+  font-size: 15px !important;
+  line-height: 1.05 !important;
 }
 
 .formation-screen .formation-growth-actions .formation-level-btn > span {
-  font-size: 11px !important;
+  font-size: 10px !important;
+}
+
+.formation-screen .formation-growth-actions .formation-btn-cost {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 3px !important;
+  max-width: 100% !important;
+  font-size: 10px !important;
+  line-height: 1 !important;
+  white-space: nowrap !important;
+}
+
+.formation-screen .formation-growth-actions .formation-btn-cost img {
+  width: 13px !important;
+  height: 13px !important;
+  object-fit: contain !important;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.62)) !important;
+}
+
+.formation-screen .formation-growth-actions .formation-btn-cost b,
+.formation-screen .formation-growth-actions .formation-btn-cost em {
+  color: rgba(255, 240, 207, 0.8) !important;
+  font-style: normal !important;
+  font-weight: 900 !important;
+}
+
+.formation-screen .formation-wallet-wide {
+  grid-template-columns: repeat(5, minmax(116px, auto)) !important;
+  grid-auto-rows: 48px !important;
+  align-items: center !important;
+  justify-items: end !important;
+}
+
+.formation-screen .formation-wallet-wide .formation-currency.essence,
+.formation-screen .formation-wallet-wide .formation-currency.soldier,
+.formation-screen .formation-wallet-wide .formation-currency.god-essence {
+  display: grid !important;
+}
+
+.formation-screen .formation-wallet-wide .formation-currency.ticket {
+  display: none !important;
+}
+
+.formation-screen .formation-wallet-wide .formation-currency {
+  min-width: 116px !important;
+  grid-template-columns: 30px minmax(62px, auto) !important;
+  padding: 5px 10px 5px 6px !important;
+}
+
+.formation-screen .formation-wallet-wide .formation-currency img {
+  width: 28px !important;
+  height: 28px !important;
+}
+
+.formation-screen .formation-wallet-wide .formation-currency strong {
+  font-size: 14px !important;
 }
