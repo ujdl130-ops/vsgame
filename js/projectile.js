@@ -395,16 +395,55 @@ function getKaronSwordWaveTransparentSource() {
 
     const imageData = maskCtx.getImageData(0, 0, sourceWidth, sourceHeight);
     const pixels = imageData.data;
-    for (let index = 0; index < pixels.length; index += 4) {
-      const red = pixels[index];
-      const green = pixels[index + 1];
-      const blue = pixels[index + 2];
-      const maxChannel = Math.max(red, green, blue);
-      const mostlyBlack = maxChannel < 34 && red < 42 && green < 34 && blue < 42;
+    const visitState = new Uint8Array(sourceWidth * sourceHeight);
+    const stack = [];
 
-      if (mostlyBlack) {
-        pixels[index + 3] = 0;
+    const isBackgroundPixel = (pixelIndex, x, y) => {
+      const red = pixels[pixelIndex];
+      const green = pixels[pixelIndex + 1];
+      const blue = pixels[pixelIndex + 2];
+      const alpha = pixels[pixelIndex + 3];
+      const maxChannel = Math.max(red, green, blue);
+      const minChannel = Math.min(red, green, blue);
+      const blackBackground = alpha === 0 || maxChannel < 30;
+      const bottomWhiteLine = y >= sourceHeight - 12 && minChannel > 220;
+      return blackBackground || bottomWhiteLine;
+    };
+
+    const queueBackgroundPixel = (x, y) => {
+      if (x < 0 || y < 0 || x >= sourceWidth || y >= sourceHeight) return;
+      const sourceIndex = y * sourceWidth + x;
+      if (visitState[sourceIndex]) return;
+      const pixelIndex = sourceIndex * 4;
+      if (!isBackgroundPixel(pixelIndex, x, y)) {
+        visitState[sourceIndex] = 2;
+        return;
       }
+      visitState[sourceIndex] = 1;
+      stack.push(sourceIndex);
+    };
+
+    for (let x = 0; x < sourceWidth; x += 1) {
+      queueBackgroundPixel(x, 0);
+      queueBackgroundPixel(x, sourceHeight - 1);
+    }
+    for (let y = 0; y < sourceHeight; y += 1) {
+      queueBackgroundPixel(0, y);
+      queueBackgroundPixel(sourceWidth - 1, y);
+    }
+
+    while (stack.length) {
+      const sourceIndex = stack.pop();
+      const x = sourceIndex % sourceWidth;
+      const y = Math.floor(sourceIndex / sourceWidth);
+      queueBackgroundPixel(x + 1, y);
+      queueBackgroundPixel(x - 1, y);
+      queueBackgroundPixel(x, y + 1);
+      queueBackgroundPixel(x, y - 1);
+    }
+
+    for (let sourceIndex = 0; sourceIndex < visitState.length; sourceIndex += 1) {
+      if (visitState[sourceIndex] === 1) pixels[sourceIndex * 4 + 3] = 0;
     }
 
     maskCtx.putImageData(imageData, 0, 0);
@@ -418,30 +457,22 @@ function getKaronSwordWaveTransparentSource() {
 }
 
 function drawKaronSwordWaveImage(projectile) {
-  const life = projectile.life || 0;
-  const maxLife = projectile.maxLife || 1.5;
-  const pulse = Math.sin(life * 32) * 0.04;
-  const width = 132 * (1 + pulse);
-  const height = 124 * (1 - pulse * 0.5);
+  const width = 132;
+  const height = 124;
   const swordWaveSource = getKaronSwordWaveTransparentSource() || karonSwordWaveProjectileImage;
   const sourceWidth = swordWaveSource.width || karonSwordWaveProjectileImage.naturalWidth || karonSwordWaveProjectileImage.width;
   const sourceHeight = swordWaveSource.height || karonSwordWaveProjectileImage.naturalHeight || karonSwordWaveProjectileImage.height;
-  const sourceCropHeight = Math.max(1, sourceHeight - 8);
   const direction = projectile.vx < 0 ? -1 : 1;
 
   ctx.save();
   ctx.translate(projectile.x, projectile.y - 8);
-  ctx.globalAlpha = Math.max(0.22, 1 - life / maxLife * 0.24);
-  ctx.globalCompositeOperation = swordWaveSource === karonSwordWaveProjectileImage ? "screen" : "lighter";
-  ctx.shadowColor = "rgba(255, 31, 112, 0.95)";
-  ctx.shadowBlur = 18;
   ctx.scale(direction, 1);
   ctx.drawImage(
     swordWaveSource,
     0,
     0,
     sourceWidth,
-    sourceCropHeight,
+    sourceHeight,
     -width / 2,
     -height / 2,
     width,
