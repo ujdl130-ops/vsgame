@@ -14425,9 +14425,9 @@ body:not(.game-started) .game-wrap {
   -webkit-user-drag: none;
 }
 
-.stage-detail-gold-reward {
+.stage-detail-gold-reward,
+.stage-detail-soldier-reward {
   position: absolute;
-  left: 8.9%;
   top: 52%;
   z-index: 1;
   width: 23%;
@@ -14441,9 +14441,27 @@ body:not(.game-started) .game-wrap {
     drop-shadow(0 0 12px rgba(245, 178, 41, 0.18));
 }
 
+.stage-detail-gold-reward {
+  left: 8.9%;
+}
+
+.stage-detail-soldier-reward {
+  left: 45.2%;
+  top: 51%;
+  width: 26.5%;
+  filter:
+    drop-shadow(0 8px 9px rgba(0, 0, 0, 0.62))
+    drop-shadow(0 0 12px rgba(101, 255, 79, 0.2));
+}
+
 .stage-detail-panel[data-stage="2"] .stage-detail-gold-reward,
 .stage-detail-panel[data-stage="3"] .stage-detail-gold-reward {
   top: 56%;
+}
+
+.stage-detail-panel[data-stage="2"] .stage-detail-soldier-reward,
+.stage-detail-panel[data-stage="3"] .stage-detail-soldier-reward {
+  top: 55%;
 }
 
 .stage-detail-close-btn,
