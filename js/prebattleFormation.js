@@ -1,29 +1,136 @@
 // Pre-battle hero selection screen. Kept separate from the lobby formation UI.
 
-const PREBATTLE_FORMATION_SLOT_COUNT = 10;
-const PREBATTLE_FORMATION_DEFAULT_HERO = {
-  id: "zeus",
-  name: "제우스",
-  level: 1,
-  image: "assets/animations/hero/zeus_lobby_idle_hd.png",
-};
-const PREBATTLE_FORMATION_HEROES = [
-  PREBATTLE_FORMATION_DEFAULT_HERO,
-  {
-    id: "poseidon",
-    name: "포세이돈",
-    level: 1,
-    image: "assets/animations/hero/poseidon_lobby_idle_hd.png",
-  },
+const PREBATTLE_HERO_CARDS = [
+  { id: "zeus", name: "제우스", image: "assets/maps/formation/zeus.png" },
+  { id: "poseidon", name: "포세이돈", image: "assets/maps/formation/poseidon.png" },
+  { id: "hades", name: "하데스", image: "assets/maps/formation/hades.png" },
+  { id: "ares", name: "아레스", image: "assets/maps/formation/ares.png" },
+  { id: "athena", name: "아테나", image: "assets/maps/formation/atena.png" },
+  { id: "heracles", name: "헤라클레스", image: "assets/maps/formation/hercules.png" },
 ];
 
-const prebattleFormationState = {
-  stageNumber: 1,
-  selectedHeroId: PREBATTLE_FORMATION_DEFAULT_HERO.id,
-};
+let prebattleFormationHeroIndex = 0;
+let prebattleFormationLastDirection = -1;
 
-function getPrebattleOwnedHeroes() {
-  return PREBATTLE_FORMATION_HEROES;
+function getPrebattleFormationHero(heroId) {
+  if (typeof FORMATION_HEROES === "undefined" || !Array.isArray(FORMATION_HEROES)) return null;
+  return FORMATION_HEROES.find((hero) => hero.id === heroId) || null;
+}
+
+function getPrebattleHeroCard(hero) {
+  const formationHero = getPrebattleFormationHero(hero.id);
+  if (!formationHero) return { ...hero, unlocked: true };
+  return {
+    ...hero,
+    name: formationHero.name || hero.name,
+    image: formationHero.image || hero.image,
+    unlocked: formationHero.unlocked !== false,
+  };
+}
+
+function isPrebattleHeroOwned(heroId) {
+  const formationHero = getPrebattleFormationHero(heroId);
+  return formationHero ? formationHero.unlocked !== false : true;
+}
+
+function getFirstOwnedPrebattleHeroIndex() {
+  const heroIndex = PREBATTLE_HERO_CARDS.findIndex((hero) => isPrebattleHeroOwned(hero.id));
+  return heroIndex >= 0 ? heroIndex : 0;
+}
+
+function getPrebattleHeroIndex(heroId = selectedHeroId) {
+  const heroIndex = PREBATTLE_HERO_CARDS.findIndex((hero) => hero.id === heroId);
+  if (heroIndex >= 0 && isPrebattleHeroOwned(PREBATTLE_HERO_CARDS[heroIndex].id)) return heroIndex;
+  return getFirstOwnedPrebattleHeroIndex();
+}
+
+function getPrebattleCardPosition(index) {
+  if (index === prebattleFormationHeroIndex) return "active";
+  if (PREBATTLE_HERO_CARDS.length === 2) {
+    return prebattleFormationLastDirection > 0 ? "next" : "previous";
+  }
+
+  const previousIndex = (prebattleFormationHeroIndex - 1 + PREBATTLE_HERO_CARDS.length) % PREBATTLE_HERO_CARDS.length;
+  const nextIndex = (prebattleFormationHeroIndex + 1) % PREBATTLE_HERO_CARDS.length;
+  if (index === previousIndex) return "previous";
+  if (index === nextIndex) return "next";
+  return "hidden";
+}
+
+function syncPrebattleSelectedHero(heroId) {
+  if (typeof setSelectedHeroId === "function") setSelectedHeroId(heroId);
+  if (typeof formationState !== "undefined" && formationState) {
+    formationState.selectedHeroId = heroId;
+    formationState.heroDetailFlipped = false;
+  }
+}
+
+function renderPrebattleHeroCards() {
+  return PREBATTLE_HERO_CARDS.map((baseHero, index) => {
+    const hero = getPrebattleHeroCard(baseHero);
+    const isLocked = !hero.unlocked;
+    const lockedClass = isLocked ? " is-locked" : "";
+    const heroLabel = isLocked ? `${hero.name} 잠김` : `${hero.name} 카드`;
+    const lockMarkup = isLocked ? `<span class="prebattle-formation-lock" aria-hidden="true"><span></span></span>` : "";
+
+    return `
+    <div
+      class="prebattle-formation-hero-card is-${getPrebattleCardPosition(index)}${lockedClass}"
+      data-prebattle-hero-id="${hero.id}"
+      data-locked="${isLocked ? "true" : "false"}"
+      aria-label="${heroLabel}"
+    >
+      <img
+        class="prebattle-formation-hero-card-image"
+        src="${hero.image}"
+        alt="${hero.name} 카드"
+        draggable="false"
+      >
+      ${lockMarkup}
+    </div>
+  `;
+  }).join("");
+}
+
+function updatePrebattleHeroCards() {
+  const root = getPrebattleFormationRoot();
+  const selectedHero = getPrebattleHeroCard(PREBATTLE_HERO_CARDS[prebattleFormationHeroIndex] || PREBATTLE_HERO_CARDS[0]);
+  const track = root.querySelector(".prebattle-formation-card-track");
+  if (!track || !selectedHero) return;
+
+  const selectedHeroOwned = isPrebattleHeroOwned(selectedHero.id);
+  const startButton = root.querySelector(".prebattle-formation-start-btn");
+
+  root.dataset.activeHero = selectedHero.id;
+  root.dataset.selectedHero = selectedHeroOwned ? selectedHero.id : "";
+  track.setAttribute("aria-label", selectedHeroOwned ? `${selectedHero.name} 선택됨` : `${selectedHero.name} 잠김`);
+  track.querySelectorAll(".prebattle-formation-hero-card").forEach((card, index) => {
+    const hero = PREBATTLE_HERO_CARDS[index];
+    const lockedClass = hero && !isPrebattleHeroOwned(hero.id) ? " is-locked" : "";
+    card.className = `prebattle-formation-hero-card is-${getPrebattleCardPosition(index)}${lockedClass}`;
+    card.dataset.locked = lockedClass ? "true" : "false";
+  });
+
+  if (startButton) {
+    startButton.disabled = !selectedHeroOwned;
+    startButton.setAttribute("aria-disabled", selectedHeroOwned ? "false" : "true");
+    startButton.title = selectedHeroOwned ? "" : "성장 탭에서 보유한 영웅만 출전할 수 있습니다.";
+  }
+}
+
+function movePrebattleHeroCard(direction) {
+  if (!PREBATTLE_HERO_CARDS.length) return;
+  const nextDirection = direction < 0 ? -1 : 1;
+  prebattleFormationLastDirection = nextDirection;
+  prebattleFormationHeroIndex = (
+    prebattleFormationHeroIndex + nextDirection + PREBATTLE_HERO_CARDS.length
+  ) % PREBATTLE_HERO_CARDS.length;
+
+  const selectedHero = PREBATTLE_HERO_CARDS[prebattleFormationHeroIndex];
+  if (selectedHero && isPrebattleHeroOwned(selectedHero.id)) {
+    syncPrebattleSelectedHero(selectedHero.id);
+  }
+  updatePrebattleHeroCards();
 }
 
 function getPrebattleFormationRoot() {
@@ -38,62 +145,41 @@ function getPrebattleFormationRoot() {
   return root;
 }
 
-function renderPrebattleFormationSlot(hero, index) {
-  if (!hero) {
-    return `
-      <button class="prebattle-formation-slot is-empty" type="button" aria-label="빈 영웅 슬롯 ${index + 1}" disabled></button>
-    `;
-  }
-
-  const selectedClass = hero.id === prebattleFormationState.selectedHeroId ? " is-selected" : "";
-  return `
-    <button class="prebattle-formation-slot is-filled${selectedClass}" type="button" data-hero-id="${hero.id}" aria-label="${hero.name} 선택">
-      <span class="prebattle-formation-portrait" style="background-image: url('${hero.image}');" aria-hidden="true"></span>
-      <span class="prebattle-formation-name">${hero.name}</span>
-      <span class="prebattle-formation-level">Lv.${hero.level}</span>
-    </button>
-  `;
-}
-
 function renderPrebattleFormation() {
   const root = getPrebattleFormationRoot();
-  const heroes = getPrebattleOwnedHeroes();
-  const slots = Array.from({ length: PREBATTLE_FORMATION_SLOT_COUNT }, (_, index) => heroes[index] || null);
+  prebattleFormationHeroIndex = getPrebattleHeroIndex();
+  const selectedHero = PREBATTLE_HERO_CARDS[prebattleFormationHeroIndex];
+  if (selectedHero && isPrebattleHeroOwned(selectedHero.id)) {
+    syncPrebattleSelectedHero(selectedHero.id);
+  }
 
   root.innerHTML = `
     <div class="prebattle-formation-board">
-      <button id="prebattleFormationBackBtn" class="prebattle-formation-back-btn" type="button" aria-label="뒤로가기"></button>
-      <div id="prebattleFormationSlotGrid" class="prebattle-formation-slot-grid" aria-label="보유 영웅">
-        ${slots.map((hero, index) => renderPrebattleFormationSlot(hero, index)).join("")}
+      <button class="prebattle-formation-back-btn" type="button" aria-label="뒤로가기">← 뒤로</button>
+      <button class="prebattle-formation-arrow-btn prebattle-formation-arrow-left" type="button" data-prebattle-direction="-1" aria-label="이전 영웅 보기">
+        <img class="prebattle-formation-arrow" src="assets/ui/arrow_right_redesign.png" alt="" aria-hidden="true" draggable="false">
+      </button>
+      <div class="prebattle-formation-card-track" aria-live="polite">
+        ${renderPrebattleHeroCards()}
       </div>
-      <div class="prebattle-formation-actions">
-        <p id="prebattleFormationNotice" class="prebattle-formation-notice" aria-live="polite">Stage ${prebattleFormationState.stageNumber} 출전 영웅을 선택하세요.</p>
-        <button id="prebattleFormationStartBtn" class="prebattle-formation-start-btn" type="button">전투 시작</button>
-      </div>
+      <button class="prebattle-formation-arrow-btn prebattle-formation-arrow-right" type="button" data-prebattle-direction="1" aria-label="다음 영웅 보기">
+        <img class="prebattle-formation-arrow" src="assets/ui/arrow_right_redesign.png" alt="" aria-hidden="true" draggable="false">
+      </button>
+      <button class="prebattle-formation-start-btn" type="button">전투 시작</button>
     </div>
   `;
 
-  root.querySelector("#prebattleFormationBackBtn")?.addEventListener("click", closePrebattleFormationToStage);
-  root.querySelector("#prebattleFormationStartBtn")?.addEventListener("click", confirmPrebattleFormation);
-  root.querySelectorAll(".prebattle-formation-slot.is-filled").forEach((slot) => {
-    slot.addEventListener("click", () => selectPrebattleHero(slot.dataset.heroId));
+  const backButton = root.querySelector(".prebattle-formation-back-btn");
+  const startButton = root.querySelector(".prebattle-formation-start-btn");
+  if (backButton) backButton.addEventListener("click", closePrebattleFormationToStage);
+  if (startButton) startButton.addEventListener("click", startPrebattleFormationBattle);
+  root.querySelectorAll(".prebattle-formation-arrow-btn").forEach((button) => {
+    button.addEventListener("click", () => movePrebattleHeroCard(Number(button.dataset.prebattleDirection) || 1));
   });
-}
-
-function selectPrebattleHero(heroId) {
-  const hero = getPrebattleOwnedHeroes().find((candidate) => candidate.id === heroId);
-  if (!hero) return;
-
-  prebattleFormationState.selectedHeroId = hero.id;
-  renderPrebattleFormation();
-  const notice = document.getElementById("prebattleFormationNotice");
-  if (notice) notice.textContent = `${hero.name} 선택 완료`;
+  updatePrebattleHeroCards();
 }
 
 function showPreBattleFormation(stageNumber) {
-  prebattleFormationState.stageNumber = Number(stageNumber) || 1;
-  prebattleFormationState.selectedHeroId = PREBATTLE_FORMATION_DEFAULT_HERO.id;
-
   closeGameOptionsMenu(false);
   if (titleScreen) titleScreen.classList.add("is-hidden");
   if (lobbyScreen) lobbyScreen.classList.add("is-hidden");
@@ -110,12 +196,14 @@ function showPreBattleFormation(stageNumber) {
 
   if (gameState) {
     gameState.running = false;
-    gameState.message = "출전 영웅을 선택하세요.";
+    gameState.message = "";
     updateButtons();
   }
 
+  const root = getPrebattleFormationRoot();
+  root.dataset.stage = String(Number(stageNumber) || selectedStage || 1);
   renderPrebattleFormation();
-  getPrebattleFormationRoot().classList.remove("is-hidden");
+  root.classList.remove("is-hidden");
 }
 
 function closePrebattleFormationToStage() {
@@ -126,12 +214,18 @@ function closePrebattleFormationToStage() {
   showChapterStages();
 }
 
-function confirmPrebattleFormation() {
+function startPrebattleFormationBattle() {
   const root = getPrebattleFormationRoot();
+  const stageNumber = Number(root.dataset.stage) || selectedStage || 1;
+  const selectedHero = PREBATTLE_HERO_CARDS[prebattleFormationHeroIndex] || PREBATTLE_HERO_CARDS[0];
+  if (!selectedHero || !isPrebattleHeroOwned(selectedHero.id)) {
+    updatePrebattleHeroCards();
+    return;
+  }
+  syncPrebattleSelectedHero(selectedHero.id);
   root.classList.add("is-hidden");
   document.body.classList.remove("in-prebattle-formation");
-  setSelectedHeroId(prebattleFormationState.selectedHeroId);
-  startGame(prebattleFormationState.stageNumber);
+  startGame(stageNumber);
 }
 
 window.addEventListener("keydown", (event) => {
@@ -142,11 +236,12 @@ window.addEventListener("keydown", (event) => {
     event.preventDefault();
     event.stopPropagation();
     closePrebattleFormationToStage();
+    return;
   }
 
-  if (event.code === "Enter" || event.code === "Space") {
+  if (event.code === "ArrowLeft" || event.code === "ArrowRight") {
     event.preventDefault();
     event.stopPropagation();
-    confirmPrebattleFormation();
+    movePrebattleHeroCard(event.code === "ArrowLeft" ? -1 : 1);
   }
 }, true);

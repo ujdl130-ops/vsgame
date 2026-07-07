@@ -17,7 +17,6 @@
       <p class="title-kicker">ARCADE LINE DEFENSE</p>
       <h1 class="pixel-logo" aria-label="픽셀디펜스">픽셀디펜스</h1>
       <p class="title-copy">병사를 소환해 몬스터 기지를 밀어붙이는 픽셀풍 횡스크롤 디펜스</p>
-
       <div class="title-preview" aria-hidden="true">
         <div class="mini-base player"></div>
         <div class="mini-unit"></div>
@@ -35,7 +34,64 @@
   <section id="lobbyScreen" class="lobby-screen is-hidden" aria-label="픽셀디펜스 로비 화면">
     <div class="lobby-scanline" aria-hidden="true"></div>
 
+    <nav class="lobby-top-tools" aria-label="로비 도구">
+      <button id="lobbyMailboxBtn" class="lobby-top-tool" type="button">
+        <span aria-hidden="true">✉</span>
+        <strong>우편함</strong>
+      </button>
+      <button id="lobbySettingsBtn" class="lobby-top-tool" type="button">
+        <span aria-hidden="true">⚙</span>
+        <strong>환경설정</strong>
+      </button>
+    </nav>
+
+    <aside class="lobby-wallet" aria-label="보유 재화">
+      <div class="lobby-wallet-item">
+        <img src="assets/icons/gold.png" alt="">
+        <strong id="lobbyGoldAmount">0</strong>
+      </div>
+      <div class="lobby-wallet-item">
+        <img src="assets/icons/diamond.png" alt="">
+        <strong id="lobbyDiamondAmount">0</strong>
+      </div>
+      <div class="lobby-wallet-item">
+        <img src="assets/icons/ticket.png" alt="">
+        <strong id="lobbyTicketAmount">0</strong>
+      </div>
+    </aside>
+
     <button id="lobbyExitBtn" class="lobby-btn lobby-exit" type="button">게임종료</button>
+
+    <button id="qaModeBtn" class="qa-mode-btn" type="button">QA 모드</button>
+
+    <!-- QA_MODE_START: delete this block with js/qa.js and the QA CSS block for release. -->
+    <section id="qaPanel" class="qa-panel is-hidden" aria-label="QA 모드 관리">
+      <header class="qa-panel-head">
+        <div>
+          <p>ADMIN</p>
+          <h2>QA 모드</h2>
+        </div>
+        <button id="qaPanelCloseBtn" type="button">닫기</button>
+      </header>
+      <div class="qa-toggle-row">
+        <strong>QA 기능</strong>
+        <button id="qaToggleBtn" type="button" aria-pressed="false">OFF</button>
+      </div>
+      <div class="qa-currency-grid" aria-label="재화 직접 입력">
+        <label><span>골드</span><input id="qaGoldInput" type="number" min="0" step="1"></label>
+        <label><span>다이아</span><input id="qaDiamondInput" type="number" min="0" step="1"></label>
+        <label><span>신 모집권</span><input id="qaTicketInput" type="number" min="0" step="1"></label>
+        <label><span>신의정수</span><input id="qaCommonEssenceInput" type="number" min="0" step="1"></label>
+        <label><span>병사정수</span><input id="qaSoldierEssenceInput" type="number" min="0" step="1"></label>
+      </div>
+      <div class="qa-action-row">
+        <button id="qaApplyCurrencyBtn" type="button">재화 적용</button>
+        <button id="qaClearStagesBtn" type="button">스테이지 전체 클리어</button>
+        <button id="qaOpenFormationBtn" type="button">성장 QA 확인</button>
+      </div>
+      <p id="qaPanelNotice" class="qa-panel-notice" aria-live="polite"></p>
+    </section>
+    <!-- QA_MODE_END -->
 
     <div class="lobby-stage" aria-hidden="true">
       <div class="lobby-sun"></div>
@@ -61,10 +117,10 @@
 
     <div class="lobby-menu-bar" aria-label="로비 주요 메뉴">
       <button id="lobbyShopBtn" class="lobby-btn lobby-shop" type="button">상점</button>
-      <button id="lobbyFormationBtn" class="lobby-btn lobby-formation" type="button">편성</button>
       <button id="lobbyRecruitBtn" class="lobby-btn lobby-recruit" type="button">모집</button>
-      <button id="lobbyMissionBtn" class="lobby-btn lobby-mission" type="button">미션</button>
       <button id="lobbyBattleBtn" class="lobby-btn lobby-battle" type="button">전투</button>
+      <button id="lobbyFormationBtn" class="lobby-btn lobby-formation" type="button">성장</button>
+      <button id="lobbyMissionBtn" class="lobby-btn lobby-mission" type="button">미션</button>
     </div>
     <p id="lobbyMenuNotice" class="lobby-menu-notice" aria-live="polite"></p>
   </section>
@@ -129,8 +185,8 @@
           </button>
         </div>
         <p id="recruitNotice" class="recruit-notice">
-          <strong>SSR 확률 3%</strong>
-          <span>중복 신 획득 시 해당 신의 정수로 변환됩니다.</span>
+          <strong>AWESOME 신 3%</strong>
+          <span>BASIC: 병사 정수 10개 · GOOD: 무작위 신의 정수 10개</span>
         </p>
       </div>
     </div>
@@ -247,22 +303,23 @@
   </section>
 
 
-  <section id="formationScreen" class="formation-screen is-hidden" aria-label="픽셀디펜스 편성 화면">
+  <section id="formationScreen" class="formation-screen is-hidden" aria-label="픽셀디펜스 성장 화면">
     <div class="formation-scanline" aria-hidden="true"></div>
 
     <button id="formationBackBtn" class="formation-ui-btn formation-back-btn" type="button">← 로비</button>
-    <button id="formationCloseBtn" class="formation-ui-btn formation-close-btn" type="button">인벤토리</button>
 
-    <div class="formation-topbar" aria-label="재화 정보">
-      <div class="formation-currency blue"><span>다이아</span><strong data-wallet-value="diamond">0</strong></div>
-      <div class="formation-currency gold"><span>골드</span><strong data-wallet-value="gold">8,520</strong></div>
-      <button class="formation-gear" type="button" aria-label="설정">⚙</button>
+    <div class="formation-topbar formation-wallet-wide" aria-label="재화 정보">
+      <div class="formation-currency blue"><img src="assets/icons/diamond.png" alt=""><span>다이아몬드</span><strong data-wallet-value="diamond">0</strong></div>
+      <div class="formation-currency gold"><img src="assets/icons/gold.png" alt=""><span>골드</span><strong data-wallet-value="gold">0</strong></div>
+      <div class="formation-currency ticket"><img src="assets/icons/ticket.png" alt=""><span>신 모집권</span><strong data-wallet-value="summonTickets">0</strong></div>
+      <div class="formation-currency essence"><img src="assets/icons/essence_all.png" alt=""><span>신의정수</span><strong data-wallet-value="commonEssence">0</strong></div>
+      <div class="formation-currency soldier"><img src="assets/icons/essence_soldier.png" alt=""><span>병사정수</span><strong data-wallet-value="soldierFragments">0</strong></div>
     </div>
 
     <div class="formation-shell">
-      <aside class="formation-sidebar" aria-label="편성 메뉴">
-        <div class="formation-sidebar-title">편성</div>
-        <button class="formation-side-btn is-active" type="button">편성</button>
+      <aside class="formation-sidebar" aria-label="성장 메뉴">
+        <div class="formation-sidebar-title">성장</div>
+        <button class="formation-side-btn is-active" type="button">성장</button>
         <button class="formation-side-btn is-disabled" type="button" disabled>컬렉션</button>
         <button class="formation-side-btn" type="button">모집</button>
         <button class="formation-side-btn" type="button">상점</button>
@@ -272,10 +329,10 @@
       <section class="formation-main-panel">
         <header class="formation-header-row">
           <div class="formation-title-box">
-            <p class="formation-kicker">FORMATION</p>
-            <h1 class="formation-logo">덱 편성</h1>
+            <p class="formation-kicker">GROWTH</p>
+            <h1 class="formation-logo">영웅 성장</h1>
           </div>
-          <div class="formation-category-tabs" role="tablist" aria-label="편성 카테고리">
+          <div class="formation-category-tabs" role="tablist" aria-label="성장 카테고리">
             <button class="formation-category-tab is-active" type="button" data-formation-tab="deck">덱</button>
             <button class="formation-category-tab" type="button" data-formation-tab="unit">유닛</button>
             <button class="formation-category-tab" type="button" data-formation-tab="tower">타워</button>
@@ -344,56 +401,71 @@
   <section id="inventoryScreen" class="inventory-screen is-hidden" aria-label="픽셀디펜스 인벤토리 화면">
     <div class="inventory-scanline" aria-hidden="true"></div>
     <button id="inventoryBackBtn" class="inventory-ui-btn inventory-back-btn" type="button">로비</button>
-    <button id="inventoryCloseBtn" class="inventory-ui-btn inventory-close-btn" type="button">편성</button>
+    <button id="inventoryCloseBtn" class="inventory-ui-btn inventory-close-btn" type="button">성장</button>
     <div id="inventoryRoot" class="inventory-root" aria-label="인벤토리 슬롯"></div>
   </section>
 
   <section id="stageScreen" class="stage-screen is-hidden" aria-label="픽셀디펜스 스테이지 선택 화면">
     <div class="stage-scanline" aria-hidden="true"></div>
 
-    <button id="stageBackBtn" class="stage-ui-btn stage-back-btn" type="button">← 로비</button>
+    <div class="stage-art-frame">
+      <button id="stageBackBtn" class="stage-ui-btn stage-back-btn" type="button">← 로비</button>
 
-    <div id="chapterPanel" class="chapter-panel is-hidden">
-      <button id="chapter1Btn" class="chapter-card" type="button">
-        <span class="chapter-tag">OPEN</span>
-        <strong>Chapter 1</strong>
-        <small>초원의 전초기지</small>
-        <span class="chapter-arrow">▶</span>
-      </button>
-    </div>
-
-    <div id="stagePanel" class="stage-panel is-hidden">
-      <div class="stage-map-tabs" aria-label="챕터 정보">
-        <span class="stage-part-tab">✓ 파트 1</span>
-        <span class="stage-chapter-tab">챕터 1</span>
-      </div>
-
-      <p id="stageSelectNotice" class="stage-map-notice">Stage 1부터 순서대로 클리어하면 다음 스테이지가 열립니다.</p>
-
-      <div class="stage-road" aria-hidden="true"></div>
-
-      <div class="stage-card-wrap">
-        <button class="stage-card" type="button" data-stage="1">
-          <span class="stage-number">1</span>
-          <strong>풀숲 입구</strong>
-          <small class="stage-status">도전 가능</small>
-          <span class="lock-icon">▶</span>
-        </button>
-
-        <button class="stage-card" type="button" data-stage="2">
-          <span class="stage-number">2</span>
-          <strong>몬스터 언덕</strong>
-          <small class="stage-status">잠김</small>
-          <span class="lock-icon">🔒</span>
-        </button>
-
-        <button class="stage-card" type="button" data-stage="3">
-          <span class="stage-number">3</span>
-          <strong>마왕의 전초기지</strong>
-          <small class="stage-status">잠김</small>
-          <span class="lock-icon">🔒</span>
+      <div id="chapterPanel" class="chapter-panel is-hidden">
+        <button id="chapter1Btn" class="chapter-card" type="button">
+          <span class="chapter-tag">OPEN</span>
+          <strong>Chapter 1</strong>
+          <small>초원의 전초기지</small>
+          <span class="chapter-arrow">▶</span>
         </button>
       </div>
+
+      <div id="stagePanel" class="stage-panel is-hidden">
+        <div class="stage-map-tabs" aria-label="챕터 정보">
+          <span class="stage-part-tab">✓ 파트 1</span>
+          <span class="stage-chapter-tab">챕터 1</span>
+        </div>
+
+        <p id="stageSelectNotice" class="stage-map-notice">Stage 1부터 순서대로 클리어하면 다음 스테이지가 열립니다.</p>
+
+        <div class="stage-road" aria-hidden="true"></div>
+
+        <div class="stage-card-wrap">
+          <button class="stage-card" type="button" data-stage="1">
+            <span class="stage-number">1</span>
+            <strong>풀숲 입구</strong>
+            <small class="stage-status">도전 가능</small>
+            <span class="lock-icon">▶</span>
+          </button>
+
+          <button class="stage-card" type="button" data-stage="2">
+            <span class="stage-number">2</span>
+            <strong>몬스터 언덕</strong>
+            <small class="stage-status">잠김</small>
+            <span class="lock-icon">🔒</span>
+          </button>
+
+          <button class="stage-card" type="button" data-stage="3">
+            <span class="stage-number">3</span>
+            <strong>마왕의 전초기지</strong>
+            <small class="stage-status">잠김</small>
+            <span class="lock-icon">🔒</span>
+          </button>
+        </div>
+      </div>
+
+      <aside id="stageDetailPanel" class="stage-detail-panel is-hidden" aria-label="작전 1-1 풀숲 입구 상세 정보">
+        <img class="stage-detail-bg" src="assets/ui/stage1 info UI.png" alt="작전 1-1 풀숲 입구 상세 정보" draggable="false">
+        <img class="stage-detail-gold-reward" src="assets/icons/gold.png" alt="골드 보상" draggable="false">
+        <img class="stage-detail-soldier-reward" src="assets/icons/essence_soldier.png" alt="일반 유닛 정수 보상" draggable="false">
+        <button id="stageDetailCloseBtn" class="stage-detail-close-btn" type="button" aria-label="작전 정보 닫기"></button>
+        <button id="stageDetailStartBtn" class="stage-detail-start-btn" type="button" aria-label="작전 시작"></button>
+        <div id="stageDetailStars" class="stage-detail-stars" aria-label="전투 미션 별">
+          <span class="stage-detail-star" data-mission-id="clear" aria-label="stage1 클리어">★</span>
+          <span class="stage-detail-star" data-mission-id="guard5" aria-label="기사 5명 이상 소환">★</span>
+          <span class="stage-detail-star" data-mission-id="noChampionDeath" aria-label="챔피언 사망 없음">★</span>
+        </div>
+      </aside>
     </div>
   </section>
 
@@ -411,7 +483,58 @@
       <button id="gameOptionsBtn" class="game-options-icon-btn" type="button" aria-label="게임 옵션" aria-expanded="false" aria-controls="gameOptionsMenu">
         <img src="assets/gameoption_UI_transparent.png" alt="">
       </button>
+      <div id="stageClearRewardOverlay" class="stage-clear-reward-overlay is-hidden" role="dialog" aria-modal="true" aria-label="Stage clear reward UI">
+        <div class="stage-clear-reward-window">
+          <img class="stage-clear-reward-ui" src="assets/ui/reward_clear_ui_transparent.png" alt="" draggable="false">
+          <button id="stageClearRewardCloseBtn" class="stage-clear-reward-close" type="button" aria-label="Close reward UI"></button>
+          <div class="stage-clear-reward-bonus-area" aria-label="Stage clear bonus rewards">
+            <button id="stageClearTreasureBtn" class="stage-clear-treasure-btn stage-clear-reward-interactive" type="button" aria-label="보물상자 열기">
+              <img class="stage-clear-treasure-img stage-clear-treasure-closed" src="assets/ui/stage_clear_treasure_closed.png" alt="" draggable="false">
+              <img class="stage-clear-treasure-img stage-clear-treasure-open" src="assets/ui/stage_clear_treasure_open.png" alt="" draggable="false">
+            </button>
+            <img class="stage-clear-gold-result" src="assets/icons/gold.png" alt="골드 보상" draggable="false">
+            <span id="stageClearGoldAmount" class="stage-clear-gold-amount" aria-hidden="true">10000G</span>
+            <img class="stage-clear-soldier-result" src="assets/icons/essence_soldier.png" alt="일반 유닛 정수 보상" draggable="false">
+            <span id="stageClearSoldierAmount" class="stage-clear-soldier-amount" aria-hidden="true">1개</span>
+            <button id="stageClearRewardAdBtn" class="stage-clear-reward-ad-btn stage-clear-reward-interactive" type="button" aria-label="광고 시청 보상 2배">
+              <img class="stage-clear-ad-panel" src="assets/ui/stage_clear_ad_double_panel.png" alt="" draggable="false">
+              <span class="stage-clear-ad-copy">
+                <strong>보상 2배</strong>
+                <small>광고 보기</small>
+              </span>
+              <span class="stage-clear-ad-badge" aria-hidden="true">x2</span>
+            </button>
+            <span id="stageClearRewardMultiplierIndicator" class="stage-clear-reward-multiplier" aria-hidden="true">x2</span>
+          </div>
+          <div class="stage-clear-reward-actions" aria-label="Stage clear actions">
+            <button id="stageClearRewardLobbyBtn" class="stage-clear-reward-action" type="button">로비</button>
+            <button id="stageClearRewardRetryBtn" class="stage-clear-reward-action" type="button">다시하기</button>
+            <button id="stageClearRewardNextBtn" class="stage-clear-reward-action" type="button">다음 스테이지</button>
+          </div>
+        </div>
+      </div>
+      <div id="stageDefeatOverlay" class="stage-defeat-overlay is-hidden" role="dialog" aria-modal="true" aria-label="스테이지 실패 UI">
+        <div class="stage-defeat-embers" aria-hidden="true">
+          <span></span><span></span><span></span><span></span><span></span>
+        </div>
+        <div class="stage-defeat-crest" aria-hidden="true">
+          <img src="assets/maps/stage1/player_castle_stage1.png" alt="" draggable="false">
+        </div>
+        <section class="stage-defeat-wrap" aria-label="패배 UI">
+          <div class="stage-defeat-title-ribbon">
+            <div class="stage-defeat-title-text">DEFEAT</div>
+            <div class="stage-defeat-ornament" aria-hidden="true"></div>
+          </div>
+          <p class="stage-defeat-copy">성이 함락되었습니다</p>
+          <div class="stage-defeat-actions" aria-label="스테이지 실패 행동">
+            <button id="stageDefeatLobbyBtn" class="stage-defeat-action stage-defeat-lobby" type="button">로비</button>
+            <button id="stageDefeatRetryBtn" class="stage-defeat-action stage-defeat-retry" type="button">재시작</button>
+            <button id="stageDefeatUpgradeBtn" class="stage-defeat-action stage-defeat-upgrade" type="button">성장</button>
+          </div>
+        </section>
+      </div>
       <div id="gameOptionsMenu" class="game-options-menu is-hidden" aria-label="게임 옵션 메뉴">
+        <button id="optionResumeBtn" type="button">게임 재개</button>
         <button id="optionStageSelectBtn" type="button">스테이지 선택</button>
         <button id="optionRestartBtn" type="button">재시작</button>
       </div>
@@ -420,12 +543,13 @@
         </div>
         <div class="battle-runestone-gauge" aria-label="룬스톤 게이지">
           <span id="runestoneGaugeFill" class="battle-runestone-fill" aria-hidden="true"></span>
-          <strong id="runestoneGaugeText">0/150</strong>
+          <strong id="runestoneGaugeText">0/400</strong>
         </div>
+        <img class="battle-runestone-icon" src="assets/ui/battle_runestone_icon_overlay.png" alt="" aria-hidden="true">
         <img class="battle-mana-icon" src="assets/MP_Icon_transparent.png" alt="" aria-hidden="true">
         <div class="battle-mana-placeholder" aria-label="Mana gauge">
           <span id="zeusManaFill" class="battle-mana-fill" aria-hidden="true"></span>
-          <strong id="zeusManaText">0/50</strong>
+          <strong id="zeusManaText">0/100</strong>
         </div>
         <div class="battle-command-bottom">
           <button id="summonGuardSlotBtn" class="battle-unit-slot-button battle-unit-slot-guard" type="button" aria-label="기사 소환" data-cost="50"></button>
@@ -438,7 +562,7 @@
           <img class="battle-unit-card-preview battle-unit-card-saint" src="assets/SaintUI.png" alt="" aria-hidden="true">
           <img class="battle-unit-card-preview battle-unit-card-thief" src="assets/ChatGPT Image 2026년 6월 30일 오전 12_48_30.png" alt="" aria-hidden="true">
           <div class="battle-action-icon-layer">
-            <button id="zeusSkillIconBtn" class="battle-action-icon-slot battle-action-icon-skill" type="button" aria-label="Zeus skill">
+            <button id="zeusSkillIconBtn" class="battle-action-icon-slot battle-action-icon-skill" type="button" aria-label="Hero skill">
               <img src="assets/SkillIcon_transparent.png" alt="">
             </button>
             <button id="basicAttackIconBtn" class="battle-action-icon-slot battle-action-icon-basic" type="button" aria-label="Basic attack">
@@ -467,6 +591,7 @@
   <script src="js/save.js"></script>
   <script src="js/stage.js"></script>
   <script src="js/player.js"></script>
+  <script src="js/poseidonSkillAnimation.js"></script>
   <script src="js/hero.js"></script>
   <script src="js/soldier.js"></script>
   <script src="js/currency.js"></script>
@@ -474,13 +599,15 @@
   <script src="js/unit.js"></script>
   <script src="js/enemy.js"></script>
   <script src="js/formation.js"></script>
+  <script src="js/prebattleFormation.js"></script>
   <script src="js/gacha.js"></script>
   <script src="js/shop.js"></script>
   <script src="js/mission.js"></script>
   <script src="js/inventory.js"></script>
-  <script src="js/audio.js"></script>
   <script src="js/ui.js"></script>
   <script src="js/battle.js"></script>
   <script src="js/main.js"></script>
+  <!-- QA_MODE_SCRIPT: remove for release. -->
+  <script src="js/qa.js"></script>
 </body>
 </html>
