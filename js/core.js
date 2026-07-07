@@ -152,6 +152,16 @@ function updateWalletDisplays() {
     if (!Object.prototype.hasOwnProperty.call(gameWallet, type)) return;
     element.textContent = gameWallet[type].toLocaleString("ko-KR");
   });
+  document.querySelectorAll("[data-essence-key]").forEach((element) => {
+    const key = element.dataset.essenceKey;
+    const amount = Math.max(0, Number(playerProgress?.essences?.[key]) || 0);
+    element.textContent = amount.toLocaleString("ko-KR");
+  });
+  document.querySelectorAll("[data-unit-essence-key]").forEach((element) => {
+    const key = element.dataset.unitEssenceKey;
+    const amount = Math.max(0, Number(playerProgress?.unitEssences?.[key]) || 0);
+    element.textContent = amount.toLocaleString("ko-KR");
+  });
 }
 
 const ASSET_PATHS = {
