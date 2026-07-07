@@ -182,7 +182,48 @@ function updateStageClearRewardActions() {
   stageClearRewardNextBtn.setAttribute("aria-disabled", canGoNext ? "false" : "true");
 }
 
+const STAGE_CLEAR_TREASURE_GOLD_REWARD = 10000;
+let stageClearTreasureReward = null;
+
+function rollStageClearTreasureSoldierReward(random = Math.random) {
+  const roll = random();
+  if (roll < 0.5) return 1;
+  if (roll < 0.85) return 2;
+  return 3;
+}
+
+function createStageClearTreasureReward() {
+  return {
+    gold: STAGE_CLEAR_TREASURE_GOLD_REWARD,
+    soldierFragments: rollStageClearTreasureSoldierReward(),
+  };
+}
+
+function updateStageClearTreasureRewardText(reward = stageClearTreasureReward) {
+  const goldAmount = document.getElementById("stageClearGoldAmount");
+  const soldierAmount = document.getElementById("stageClearSoldierAmount");
+  const visibleReward = reward || { gold: STAGE_CLEAR_TREASURE_GOLD_REWARD, soldierFragments: 1 };
+
+  if (goldAmount) {
+    goldAmount.textContent = `${Math.max(0, Number(visibleReward.gold) || 0)}G`;
+  }
+  if (soldierAmount) {
+    soldierAmount.textContent = `${Math.max(1, Number(visibleReward.soldierFragments) || 1)}개`;
+  }
+}
+
+function syncStageClearRewardWalletDisplays() {
+  if (typeof updateWalletDisplays === "function") updateWalletDisplays();
+  if (typeof updateLobbyTopBar === "function") updateLobbyTopBar();
+  if (window.ShopAPI?.updateShopWallet) window.ShopAPI.updateShopWallet();
+  if (typeof updateRecruitWallet === "function") updateRecruitWallet();
+  if (typeof renderInventoryScreen === "function") renderInventoryScreen();
+}
+
 function resetStageClearRewardEffects() {
+  stageClearTreasureReward = null;
+  updateStageClearTreasureRewardText();
+
   if (stageClearTreasureBtn) {
     stageClearTreasureBtn.classList.remove("is-open");
     stageClearTreasureBtn.setAttribute("aria-label", "보물상자 열기");
@@ -197,6 +238,12 @@ function resetStageClearRewardEffects() {
 
 function handleStageClearTreasureOpen() {
   if (!stageClearTreasureBtn || stageClearTreasureBtn.classList.contains("is-open")) return;
+  stageClearTreasureReward = createStageClearTreasureReward();
+  updateStageClearTreasureRewardText(stageClearTreasureReward);
+  if (typeof grantPlayerRewards === "function") {
+    grantPlayerRewards(stageClearTreasureReward);
+    syncStageClearRewardWalletDisplays();
+  }
   stageClearTreasureBtn.classList.add("is-open");
   stageClearTreasureBtn.setAttribute("aria-label", "보물상자 열림");
 }

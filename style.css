@@ -482,31 +482,47 @@ body.game-started:not(.in-lobby):not(.in-stage-select):not(.in-shop):not(.in-rec
     transform 0.28s cubic-bezier(.17, .84, .36, 1.18) 0.16s;
 }
 
-.stage-clear-gold-amount {
+.stage-clear-gold-amount,
+.stage-clear-soldier-amount {
   position: absolute;
-  left: 34.9%;
-  top: 39.8%;
   z-index: 1;
   min-width: 10%;
   opacity: 0;
   transform: translate(-50%, 12%) scale(0.84);
-  color: #fff6cf;
   font-size: clamp(13px, 2.05vw, 25px);
   font-weight: 1000;
   line-height: 1;
   text-align: center;
   letter-spacing: 0;
-  text-shadow:
-    0 2px 0 #744108,
-    0 0 8px rgba(255, 214, 79, 0.58),
-    0 0 14px rgba(129, 74, 10, 0.38);
-  -webkit-text-stroke: 1px rgba(107, 62, 8, 0.82);
   pointer-events: none;
   user-select: none;
   -webkit-user-select: none;
 }
 
-.stage-clear-treasure-btn.is-open ~ .stage-clear-gold-amount {
+.stage-clear-gold-amount {
+  left: 34.9%;
+  top: 39.8%;
+  color: #fff6cf;
+  text-shadow:
+    0 2px 0 #744108,
+    0 0 8px rgba(255, 214, 79, 0.58),
+    0 0 14px rgba(129, 74, 10, 0.38);
+  -webkit-text-stroke: 1px rgba(107, 62, 8, 0.82);
+}
+
+.stage-clear-soldier-amount {
+  left: 51.8%;
+  top: 39.8%;
+  color: #e9ffcf;
+  text-shadow:
+    0 2px 0 #215f12,
+    0 0 8px rgba(107, 255, 77, 0.58),
+    0 0 14px rgba(21, 91, 15, 0.38);
+  -webkit-text-stroke: 1px rgba(23, 86, 16, 0.82);
+}
+
+.stage-clear-treasure-btn.is-open ~ .stage-clear-gold-amount,
+.stage-clear-treasure-btn.is-open ~ .stage-clear-soldier-amount {
   opacity: 1;
   transform: translate(-50%, 0) scale(1);
   transition:

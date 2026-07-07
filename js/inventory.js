@@ -6,6 +6,7 @@ const inventoryState = {
 };
 
 const INVENTORY_CURRENCY_ITEMS = [
+  { key: "gold", name: "골드", description: "전투와 성장에 사용하는 기본 재화입니다.", rarity: "normal" },
   { key: "commonEssence", name: "신의정수", description: "신 성장에 사용하는 정수입니다.", rarity: "rare" },
   { key: "soldierFragments", name: "병사정수", description: "유닛 성장에 사용하는 정수입니다.", rarity: "rare" },
 ];
