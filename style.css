@@ -441,12 +441,10 @@ body.game-started:not(.in-lobby):not(.in-stage-select):not(.in-shop):not(.in-rec
   animation: rewardTreasureOpenPop 0.48s cubic-bezier(.17, .84, .36, 1.24) both;
 }
 
-.stage-clear-gold-result {
+.stage-clear-gold-result,
+.stage-clear-soldier-result {
   position: absolute;
-  left: 30.2%;
-  top: 24.2%;
   z-index: 1;
-  width: 9.4%;
   aspect-ratio: 1;
   object-fit: contain;
   opacity: 0;
@@ -460,7 +458,23 @@ body.game-started:not(.in-lobby):not(.in-stage-select):not(.in-shop):not(.in-rec
     drop-shadow(0 0 13px rgba(255, 203, 62, 0.26));
 }
 
-.stage-clear-treasure-btn.is-open ~ .stage-clear-gold-result {
+.stage-clear-gold-result {
+  left: 30.2%;
+  top: 24.2%;
+  width: 9.4%;
+}
+
+.stage-clear-soldier-result {
+  left: 45.9%;
+  top: 22.3%;
+  width: 11.8%;
+  filter:
+    drop-shadow(0 8px 8px rgba(42, 72, 22, 0.28))
+    drop-shadow(0 0 13px rgba(93, 255, 77, 0.24));
+}
+
+.stage-clear-treasure-btn.is-open ~ .stage-clear-gold-result,
+.stage-clear-treasure-btn.is-open ~ .stage-clear-soldier-result {
   opacity: 1;
   transform: translateY(0) scale(1);
   transition:
