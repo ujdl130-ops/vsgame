@@ -71,7 +71,18 @@
 
 
   <section id="recruitScreen" class="recruit-screen is-hidden" aria-label="신의 강림 화면">
+    <video class="recruit-bg-video" autoplay muted loop playsinline preload="auto" aria-hidden="true" tabindex="-1">
+      <source src="assets/ui/gacha bg.mp4" type="video/mp4">
+    </video>
     <div class="recruit-divine-overlay" aria-hidden="true"></div>
+    <div class="recruit-divine-copy" aria-hidden="true">
+      <div class="recruit-divine-title">
+        <span></span>
+        <strong>신의 강림</strong>
+        <span></span>
+      </div>
+      <p>올림포스의 신들이 당신의 강림을 기다리고 있습니다.</p>
+    </div>
 
     <button id="recruitBackBtn" class="recruit-ui-btn recruit-back-btn" type="button">← 로비</button>
     <div class="recruit-top-actions">
