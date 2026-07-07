@@ -175,6 +175,7 @@ function createMainHero(heroId = selectedHeroId) {
     animStateTime: 0,
     moving: false,
     face: 1,
+    attackDirection: 1,
     dead: false,
     respawnTimer: 0,
     lastHp: stats.hp,
@@ -295,31 +296,87 @@ function castHolySlash() {
   heroAttack();
 }
 
+function getHeroAttackDirection(hero) {
+  const moveDir = typeof heroMoveInput === "number" ? Math.max(-1, Math.min(1, heroMoveInput)) : 0;
+  if (moveDir !== 0) return moveDir < 0 ? -1 : 1;
+  return hero && hero.face < 0 ? -1 : 1;
+}
+
+function getHeroProjectileOrigin(hero, direction = getHeroAttackDirection(hero)) {
+  return {
+    x: hero.x + 28 * direction,
+    y: hero.y - 56,
+  };
+}
+
+function isEnemyInHeroAttackDirection(hero, enemy, direction, range = hero && hero.range) {
+  if (!hero || !enemy) return false;
+  const attackRange = Math.max(0, Number(range) || 0);
+  const distance = direction < 0 ? hero.x - enemy.x : enemy.x - hero.x;
+  return distance >= -20 && distance <= attackRange;
+}
+
+function findHeroAttackTarget(hero, direction = getHeroAttackDirection(hero)) {
+  if (!hero || !gameState || !Array.isArray(gameState.enemies)) return null;
+
+  let target = null;
+  let bestDistance = Infinity;
+  for (const enemy of gameState.enemies) {
+    if (!isCombatAlive(enemy)) continue;
+    const distance = direction < 0 ? hero.x - enemy.x : enemy.x - hero.x;
+    if (distance >= -20 && distance <= hero.range && distance < bestDistance) {
+      target = enemy;
+      bestDistance = distance;
+    }
+  }
+  return target;
+}
+
+function fireHeroStraightProjectile(hero, direction, origin) {
+  const canvasWidth = typeof canvas !== "undefined" && canvas ? canvas.width : 960;
+  gameState.projectiles.push({
+    type: hero.projectileType || "heroBolt",
+    x: origin.x,
+    y: origin.y,
+    speed: 620,
+    vx: 620 * direction,
+    damage: hero.damage,
+    targetX: direction < 0 ? -60 : canvasWidth + 60,
+    targetY: origin.y,
+    color: hero.projectileColor || "#9fe8ff",
+  });
+}
+
 function fireHeroArrow(hero) {
-  const shotTarget = isCombatAlive(hero.shotTarget)
+  const direction = hero.attackDirection < 0 ? -1 : 1;
+  const origin = getHeroProjectileOrigin(hero, direction);
+  const queuedTarget = isCombatAlive(hero.shotTarget)
+    && isEnemyInHeroAttackDirection(hero, hero.shotTarget, direction)
     ? hero.shotTarget
-    : findNearestEnemy(hero.x, hero.range);
+    : null;
+  const shotTarget = queuedTarget || findHeroAttackTarget(hero, direction);
 
   if (shotTarget) {
     gameState.projectiles.push({
       type: hero.projectileType || "heroBolt",
-      x: hero.x + 28,
-      y: hero.y - 56,
-      vx: 620,
+      x: origin.x,
+      y: origin.y,
+      speed: 620,
+      vx: 620 * direction,
       damage: hero.damage,
       target: shotTarget,
       color: hero.projectileColor || "#9fe8ff",
     });
-  } else if (ENEMY_BASE_X - hero.x <= hero.range + 25) {
+  } else if (direction > 0 && ENEMY_BASE_X - hero.x <= hero.range + 25) {
     gameState.enemyBaseHp -= hero.damage * 0.65;
     spawnHit(ENEMY_BASE_X - 38, GROUND_Y - 78, hero.projectileColor || "#9fe8ff");
   } else {
-    gameState.message = "사거리 안에 적이 없습니다.";
-    gameState.messageTimer = 0.8;
+    fireHeroStraightProjectile(hero, direction, origin);
   }
 
   hero.pendingHeroShot = false;
   hero.shotTarget = null;
+  hero.attackDirection = direction;
 }
 
 function heroAttack() {
@@ -336,12 +393,14 @@ function heroAttack() {
   gameState.zeusMana = Math.max(0, (gameState.zeusMana || 0) - BASIC_ATTACK_MANA_COST);
   updateHud();
 
-  hero.face = 1;
+  const attackDirection = getHeroAttackDirection(hero);
+  hero.face = attackDirection;
+  hero.attackDirection = attackDirection;
   hero.cooldown = hero.attackSpeed;
   hero.attackAnimDuration = 0.56;
   hero.attackAnimTimer = hero.attackAnimDuration;
   hero.pendingHeroShot = true;
-  hero.shotTarget = findNearestEnemy(hero.x, hero.range);
+  hero.shotTarget = findHeroAttackTarget(hero, attackDirection);
   updateButtons();
 }
 

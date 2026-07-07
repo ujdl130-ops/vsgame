@@ -343,7 +343,7 @@ function updateProjectiles(dt) {
       }
       projectile.dead = true;
     }
-    if (projectile.x > canvas.width + 50 || projectile.life > (projectile.maxLife || PROJECTILE_DEFAULT_MAX_LIFE)) projectile.dead = true;
+    if (projectile.x < -50 || projectile.x > canvas.width + 50 || projectile.life > (projectile.maxLife || PROJECTILE_DEFAULT_MAX_LIFE)) projectile.dead = true;
   }
   gameState.projectiles = gameState.projectiles.filter((p) => !p.dead);
 }
