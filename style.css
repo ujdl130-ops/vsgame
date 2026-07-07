@@ -14145,7 +14145,7 @@ body:not(.game-started) .game-wrap {
   position: absolute;
   top: 51.5%;
   z-index: 3;
-  --prebattle-arrow-scale: 0.86;
+  --prebattle-arrow-scale: 0.72;
   width: clamp(150px, 16vw, 240px);
   height: clamp(150px, 16vw, 240px);
   margin: 0;
