@@ -451,6 +451,7 @@ const lobbyMailboxCloseBtn = document.getElementById("lobbyMailboxCloseBtn");
 const lobbyMailboxList = document.getElementById("lobbyMailboxList");
 const lobbySettingsPanel = document.getElementById("lobbySettingsPanel");
 const lobbySettingsCloseBtn = document.getElementById("lobbySettingsCloseBtn");
+const lobbySettingsResetBtn = document.getElementById("lobbySettingsResetBtn");
 const lobbySettingsExitBtn = document.getElementById("lobbySettingsExitBtn");
 const lobbyVolumeControls = [
   { key: "master", input: document.getElementById("masterVolumeRange"), value: document.getElementById("masterVolumeValue") },
@@ -549,6 +550,20 @@ function hideLobbySettings() {
   if (lobbySettingsPanel) lobbySettingsPanel.classList.add("is-hidden");
 }
 
+function resetGameProgressFromSettings() {
+  const confirmed = window.confirm("진행 데이터를 초기화할까요? 볼륨 설정은 유지됩니다.");
+  if (!confirmed) return;
+  if (typeof resetProgressStorage === "function") resetProgressStorage();
+  playerProgress = normalizePlayerData(typeof createDefaultProgress === "function" ? createDefaultProgress() : {});
+  if (typeof claimedMissionRewards !== "undefined") claimedMissionRewards.clear();
+  selectedStage = 1;
+  if (typeof setSelectedHeroId === "function") setSelectedHeroId("zeus");
+  hideLobbySettings();
+  showTitle();
+  updateWalletDisplays();
+  updateLobbyTopBar();
+}
+
 if (lobbyMailboxBtn) lobbyMailboxBtn.addEventListener("click", showLobbyMailbox);
 if (lobbyMailboxCloseBtn) lobbyMailboxCloseBtn.addEventListener("click", hideLobbyMailbox);
 if (lobbyMailboxPanel) {
@@ -572,6 +587,7 @@ lobbyVolumeControls.forEach((control) => {
   });
 });
 if (lobbySettingsCloseBtn) lobbySettingsCloseBtn.addEventListener("click", hideLobbySettings);
+if (lobbySettingsResetBtn) lobbySettingsResetBtn.addEventListener("click", resetGameProgressFromSettings);
 if (lobbySettingsPanel) {
   lobbySettingsPanel.addEventListener("click", (event) => {
     if (event.target === lobbySettingsPanel) hideLobbySettings();

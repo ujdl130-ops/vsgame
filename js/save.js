@@ -401,11 +401,28 @@ function createDefaultProgress() {
 
 function loadProgress() {
   try {
-    localStorage.removeItem(STAGE_PROGRESS_KEY);
+    const saved = JSON.parse(localStorage.getItem(STAGE_PROGRESS_KEY));
+    if (!saved || typeof saved !== "object") throw new Error("No progress");
+    const unlockedStage = Math.min(3, Math.max(1, Number(saved.unlockedStage) || 1));
+    const clearedStages = Array.isArray(saved.clearedStages)
+      ? saved.clearedStages.map(Number).filter((stage) => stage >= 1 && stage <= 3)
+      : [];
+    const growth = saved.growth && typeof saved.growth === "object" ? saved.growth : {};
+    return { ...saved, unlockedStage, clearedStages, growth };
   } catch (error) {}
   return createDefaultProgress();
 }
 
 function saveProgress() {
-  // Progress is intentionally kept in memory so every fresh launch starts from zero.
+  try {
+    localStorage.setItem(STAGE_PROGRESS_KEY, JSON.stringify(playerProgress));
+  } catch (error) {
+    // 로컬 저장소 접근이 막혀도 현재 세션 진행은 유지합니다.
+  }
+}
+
+function resetProgressStorage() {
+  try {
+    localStorage.removeItem(STAGE_PROGRESS_KEY);
+  } catch (error) {}
 }

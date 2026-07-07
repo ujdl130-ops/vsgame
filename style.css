@@ -11344,7 +11344,14 @@ body:not(.game-started) .game-wrap {
   accent-color: #e7b85d;
 }
 
-.lobby-settings-exit {
+.lobby-settings-actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.lobby-settings-exit,
+.lobby-settings-reset {
   width: 100%;
   height: 52px;
   border: 1px solid rgba(255, 197, 104, 0.8);
@@ -11360,7 +11367,13 @@ body:not(.game-started) .game-wrap {
     0 10px 24px rgba(0, 0, 0, 0.32);
 }
 
+.lobby-settings-reset {
+  background:
+    linear-gradient(180deg, rgba(62, 75, 92, 0.94), rgba(23, 29, 40, 0.96));
+}
+
 .lobby-settings-exit:hover,
+.lobby-settings-reset:hover,
 .lobby-settings-close:hover {
   filter: brightness(1.12);
 }
