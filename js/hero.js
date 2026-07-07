@@ -107,6 +107,8 @@ const ZEUS_THUNDERSTORM_SKILL = {
   attackDamageMultiplier: 0.9,
   paralysisDuration: 2,
   lightningColumnRadius: 20,
+  stormBaseDrawY: -134,
+  stormIntroYOffset: 14,
   lightningHitColumns: [
     [0.24, 0.72],
     [0.42, 0.72],

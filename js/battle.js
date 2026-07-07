@@ -161,7 +161,8 @@ function getZeusStormRenderMetrics(effect, sprite) {
     drawW: frameW,
     drawH: frameH,
     drawX: Math.max(-40, Math.min(canvas.width - frameW + 40, effect.x - frameW / 2)),
-    drawY: -92 - (1 - cloudProgress) * 14,
+    drawY: (ZEUS_THUNDERSTORM_SKILL.stormBaseDrawY ?? -92)
+      - (1 - cloudProgress) * (ZEUS_THUNDERSTORM_SKILL.stormIntroYOffset ?? 14),
   };
 }
 
