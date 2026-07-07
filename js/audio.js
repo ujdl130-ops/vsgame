@@ -15,6 +15,7 @@ const AUDIO_PATHS = {
     click: "assets/sounds/sfx/click.MP3",
     eyeEnemyAttack: "assets/sounds/sfx/eyeenemyattack.MP3",
     gachaOpenFinish: "assets/sounds/sfx/gachaopenfinish.MP3",
+    get: "assets/sounds/sfx/get.MP3",
     godDeath: "assets/sounds/sfx/goddeath.MP3",
     knightAttack: "assets/sounds/sfx/knightattack.MP3",
     levelUp: "assets/sounds/sfx/levelup.MP3",
@@ -66,9 +67,26 @@ function unlockGameAudio() {
   }
 }
 
+function tryPlayBgm() {
+  if (!audioState.bgm) return;
+  const playPromise = audioState.bgm.play();
+  if (playPromise && typeof playPromise.then === "function") {
+    playPromise
+      .then(() => { audioState.unlocked = true; })
+      .catch(() => {});
+  }
+}
+
 function playBgm(key, options = {}) {
   const src = AUDIO_PATHS.bgm[key];
-  if (!src || audioState.bgmKey === key) return;
+  if (!src) return;
+  if (audioState.bgmKey === key) {
+    if (audioState.bgm && typeof options.volume === "number") {
+      audioState.bgm.volume = options.volume;
+    }
+    tryPlayBgm();
+    return;
+  }
 
   if (audioState.bgm) {
     audioState.bgm.pause();
@@ -81,9 +99,7 @@ function playBgm(key, options = {}) {
     volume: options.volume ?? 0.42,
   });
 
-  if (audioState.unlocked) {
-    audioState.bgm.play().catch(() => {});
-  }
+  tryPlayBgm();
 }
 
 function stopBgm() {
@@ -168,6 +184,10 @@ function playHeroSkillSfx(hero) {
   });
 }
 
+function playRewardGetSfx() {
+  playSfx("get", { cooldown: 220, volume: 0.82 });
+}
+
 function playStageBgm(stageNumber) {
   playBgm(`stage${Number(stageNumber) || 1}`, { volume: 0.45 });
 }
@@ -177,7 +197,7 @@ function syncScreenBgm() {
     playStageBgm(typeof selectedStage !== "undefined" ? selectedStage : 1);
     return;
   }
-  playBgm("basic");
+  playBgm("basic", { volume: 0.56 });
 }
 
 window.addEventListener("pointerdown", unlockGameAudio, { once: true, capture: true });
@@ -202,6 +222,7 @@ window.GameAudio = {
   playEnemyDeathSfx,
   playHeroBasicSfx,
   playHeroSkillSfx,
+  playRewardGetSfx,
 };
 
 syncScreenBgm();

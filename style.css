@@ -17229,3 +17229,99 @@ body:not(.game-started) .game-wrap {
 .lobby-screen .lobby-stage {
   display: none;
 }
+
+/* Shared UI polish: match wallet panels to lobby and navigation buttons to recruit. */
+.recruit-currency,
+.shop-wallet-currency,
+.formation-wallet-wide .formation-currency {
+  display: grid !important;
+  grid-template-columns: 34px minmax(74px, auto) !important;
+  grid-template-rows: 1fr !important;
+  align-items: center !important;
+  min-width: 122px !important;
+  height: 48px !important;
+  min-height: 48px !important;
+  padding: 5px 13px 5px 7px !important;
+  border: 1px solid rgba(221, 230, 247, 0.65) !important;
+  border-radius: 5px !important;
+  color: #fff !important;
+  background: linear-gradient(180deg, rgba(25, 35, 54, 0.9), rgba(5, 10, 19, 0.92)) !important;
+  box-shadow: 0 5px 14px rgba(0, 0, 0, 0.3), inset 0 1px rgba(255, 255, 255, 0.1) !important;
+}
+
+.recruit-currency img,
+.shop-wallet-currency img,
+.formation-wallet-wide .formation-currency img {
+  grid-row: auto !important;
+  width: 30px !important;
+  height: 30px !important;
+  object-fit: contain !important;
+  filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.5)) !important;
+}
+
+.recruit-currency span,
+.shop-wallet-currency span,
+.formation-wallet-wide .formation-currency span {
+  display: none !important;
+}
+
+.recruit-currency strong,
+.shop-wallet-currency strong,
+.formation-wallet-wide .formation-currency strong {
+  align-self: center !important;
+  overflow: hidden !important;
+  color: #fff !important;
+  font-family: "Malgun Gothic", sans-serif !important;
+  font-size: 15px !important;
+  font-weight: 1000 !important;
+  line-height: 1 !important;
+  letter-spacing: 0.02em !important;
+  text-align: right !important;
+  font-variant-numeric: tabular-nums !important;
+  text-overflow: ellipsis !important;
+  text-shadow: 0 2px 3px #000 !important;
+  white-space: nowrap !important;
+}
+
+.recruit-wallet {
+  width: auto !important;
+}
+
+.shop-wallet,
+.recruit-wallet,
+.formation-wallet-wide {
+  gap: 8px !important;
+}
+
+.shop-ui-btn,
+.formation-ui-btn,
+.mission-ui-btn,
+.inventory-ui-btn,
+.stage-ui-btn {
+  border: 1px solid rgba(255, 225, 146, 0.72) !important;
+  border-radius: 4px !important;
+  color: #fff6d9 !important;
+  background: linear-gradient(180deg, rgba(47, 39, 64, 0.96), rgba(14, 12, 24, 0.98)) !important;
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,0.08), 0 5px 18px rgba(0,0,0,0.46) !important;
+  font-family: "Malgun Gothic", sans-serif !important;
+  font-weight: 900 !important;
+  text-shadow: 0 1px 2px #000 !important;
+}
+
+.stage-screen .stage-ui-btn {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 0 10px !important;
+  color: #fff6d9 !important;
+  font-size: 14px !important;
+  appearance: button !important;
+}
+
+.shop-close-btn,
+.formation-close-btn,
+.mission-close-btn,
+.inventory-close-btn {
+  background: linear-gradient(180deg, rgba(79, 45, 57, 0.96), rgba(29, 15, 25, 0.98)) !important;
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,0.08), 0 5px 18px rgba(0,0,0,0.46) !important;
+}

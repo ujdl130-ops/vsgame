@@ -241,6 +241,7 @@ function grantStageClearTreasureReward(reward) {
     gold: Math.max(0, Number(reward.gold) || 0),
     soldierFragments: Math.max(0, Number(reward.soldierFragments) || 0),
   });
+  if (window.GameAudio) window.GameAudio.playRewardGetSfx();
   syncStageClearRewardWalletDisplays();
 }
 

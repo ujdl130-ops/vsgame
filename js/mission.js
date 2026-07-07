@@ -66,6 +66,7 @@ function claimMissionReward(reward) {
 function handleMissionRewardClick(button) {
   if (!button || button.disabled || button.dataset.claimed === "true") return;
   claimMissionReward(button.dataset.reward || "");
+  if (window.GameAudio) window.GameAudio.playRewardGetSfx();
   claimedMissionRewards.add(button.dataset.missionKey || "");
   renderMissionScreen();
 }
@@ -224,6 +225,7 @@ function handleMissionClaimAll() {
     claimMissionReward(mission.reward);
     claimedMissionRewards.add(missionKey);
   });
+  if (window.GameAudio) window.GameAudio.playRewardGetSfx();
   renderMissionScreen();
 }
 
