@@ -6,9 +6,6 @@ const PROJECTILE_DEFAULT_MAX_LIFE = 3.2;
 const KARON_SWORD_WAVE_GATE_X = PLAYER_BASE_ATTACK_X;
 const KARON_SWORD_WAVE_GATE_DAMAGE_SCALE = 0.55;
 const KARON_SWORD_WAVE_HIT_COLOR = "#ff2d74";
-let karonSwordWaveTransparentCanvas = null;
-let karonSwordWaveTransparentSource = null;
-let karonSwordWaveTransparencyFailed = false;
 
 function getEnemyProjectileHitPoint(enemy) {
   if (!enemy) return { x: 0, y: 0 };
@@ -375,100 +372,18 @@ function isKaronSwordWaveProjectileImageReady() {
   );
 }
 
-function getKaronSwordWaveTransparentSource() {
-  if (!isKaronSwordWaveProjectileImageReady()) return null;
-  if (karonSwordWaveTransparentSource === karonSwordWaveProjectileImage && karonSwordWaveTransparentCanvas) {
-    return karonSwordWaveTransparentCanvas;
-  }
-  if (karonSwordWaveTransparencyFailed) return karonSwordWaveProjectileImage;
-
-  const sourceWidth = karonSwordWaveProjectileImage.naturalWidth || karonSwordWaveProjectileImage.width;
-  const sourceHeight = karonSwordWaveProjectileImage.naturalHeight || karonSwordWaveProjectileImage.height;
-  if (!sourceWidth || !sourceHeight) return karonSwordWaveProjectileImage;
-
-  try {
-    const maskCanvas = document.createElement("canvas");
-    maskCanvas.width = sourceWidth;
-    maskCanvas.height = sourceHeight;
-    const maskCtx = maskCanvas.getContext("2d");
-    maskCtx.drawImage(karonSwordWaveProjectileImage, 0, 0);
-
-    const imageData = maskCtx.getImageData(0, 0, sourceWidth, sourceHeight);
-    const pixels = imageData.data;
-    const visitState = new Uint8Array(sourceWidth * sourceHeight);
-    const stack = [];
-
-    const isBackgroundPixel = (pixelIndex, x, y) => {
-      const red = pixels[pixelIndex];
-      const green = pixels[pixelIndex + 1];
-      const blue = pixels[pixelIndex + 2];
-      const alpha = pixels[pixelIndex + 3];
-      const maxChannel = Math.max(red, green, blue);
-      const minChannel = Math.min(red, green, blue);
-      const blackBackground = alpha === 0 || maxChannel < 30;
-      const bottomWhiteLine = y >= sourceHeight - 12 && minChannel > 220;
-      return blackBackground || bottomWhiteLine;
-    };
-
-    const queueBackgroundPixel = (x, y) => {
-      if (x < 0 || y < 0 || x >= sourceWidth || y >= sourceHeight) return;
-      const sourceIndex = y * sourceWidth + x;
-      if (visitState[sourceIndex]) return;
-      const pixelIndex = sourceIndex * 4;
-      if (!isBackgroundPixel(pixelIndex, x, y)) {
-        visitState[sourceIndex] = 2;
-        return;
-      }
-      visitState[sourceIndex] = 1;
-      stack.push(sourceIndex);
-    };
-
-    for (let x = 0; x < sourceWidth; x += 1) {
-      queueBackgroundPixel(x, 0);
-      queueBackgroundPixel(x, sourceHeight - 1);
-    }
-    for (let y = 0; y < sourceHeight; y += 1) {
-      queueBackgroundPixel(0, y);
-      queueBackgroundPixel(sourceWidth - 1, y);
-    }
-
-    while (stack.length) {
-      const sourceIndex = stack.pop();
-      const x = sourceIndex % sourceWidth;
-      const y = Math.floor(sourceIndex / sourceWidth);
-      queueBackgroundPixel(x + 1, y);
-      queueBackgroundPixel(x - 1, y);
-      queueBackgroundPixel(x, y + 1);
-      queueBackgroundPixel(x, y - 1);
-    }
-
-    for (let sourceIndex = 0; sourceIndex < visitState.length; sourceIndex += 1) {
-      if (visitState[sourceIndex] === 1) pixels[sourceIndex * 4 + 3] = 0;
-    }
-
-    maskCtx.putImageData(imageData, 0, 0);
-    karonSwordWaveTransparentCanvas = maskCanvas;
-    karonSwordWaveTransparentSource = karonSwordWaveProjectileImage;
-    return karonSwordWaveTransparentCanvas;
-  } catch (error) {
-    karonSwordWaveTransparencyFailed = true;
-    return karonSwordWaveProjectileImage;
-  }
-}
-
 function drawKaronSwordWaveImage(projectile) {
   const width = 132;
   const height = 124;
-  const swordWaveSource = getKaronSwordWaveTransparentSource() || karonSwordWaveProjectileImage;
-  const sourceWidth = swordWaveSource.width || karonSwordWaveProjectileImage.naturalWidth || karonSwordWaveProjectileImage.width;
-  const sourceHeight = swordWaveSource.height || karonSwordWaveProjectileImage.naturalHeight || karonSwordWaveProjectileImage.height;
+  const sourceWidth = karonSwordWaveProjectileImage.naturalWidth || karonSwordWaveProjectileImage.width;
+  const sourceHeight = karonSwordWaveProjectileImage.naturalHeight || karonSwordWaveProjectileImage.height;
   const direction = projectile.vx < 0 ? -1 : 1;
 
   ctx.save();
   ctx.translate(projectile.x, projectile.y - 8);
   ctx.scale(direction, 1);
   ctx.drawImage(
-    swordWaveSource,
+    karonSwordWaveProjectileImage,
     0,
     0,
     sourceWidth,
