@@ -316,20 +316,41 @@ function isEnemyInHeroAttackDirection(hero, enemy, direction, range = hero && he
   return distance >= -20 && distance <= attackRange;
 }
 
-function findHeroAttackTarget(hero, direction = getHeroAttackDirection(hero)) {
+function getHeroEnemyDistanceInDirection(hero, enemy, direction) {
+  if (!hero || !enemy) return Infinity;
+  return direction < 0 ? hero.x - enemy.x : enemy.x - hero.x;
+}
+
+function findNearestHeroEnemyInDirection(hero, direction = getHeroAttackDirection(hero)) {
   if (!hero || !gameState || !Array.isArray(gameState.enemies)) return null;
 
-  let target = null;
+  let enemyInDirection = null;
   let bestDistance = Infinity;
   for (const enemy of gameState.enemies) {
     if (!isCombatAlive(enemy)) continue;
-    const distance = direction < 0 ? hero.x - enemy.x : enemy.x - hero.x;
-    if (distance >= -20 && distance <= hero.range && distance < bestDistance) {
-      target = enemy;
+    const distance = getHeroEnemyDistanceInDirection(hero, enemy, direction);
+    if (distance >= -20 && distance < bestDistance) {
+      enemyInDirection = enemy;
       bestDistance = distance;
     }
   }
-  return target;
+  return enemyInDirection ? { enemy: enemyInDirection, distance: bestDistance } : null;
+}
+
+function findHeroAttackTarget(hero, direction = getHeroAttackDirection(hero)) {
+  const nearest = findNearestHeroEnemyInDirection(hero, direction);
+  if (!nearest || nearest.distance > hero.range) return null;
+  return nearest.enemy;
+}
+
+function hasLivingBattleEnemies() {
+  return Boolean(gameState && Array.isArray(gameState.enemies) && gameState.enemies.some(isCombatAlive));
+}
+
+function showHeroOutOfRangeMessage() {
+  if (!gameState) return;
+  gameState.message = "사거리 밖입니다.";
+  gameState.messageTimer = 0.8;
 }
 
 function fireHeroStraightProjectile(hero, direction, origin) {
@@ -355,6 +376,7 @@ function fireHeroArrow(hero) {
     ? hero.shotTarget
     : null;
   const shotTarget = queuedTarget || findHeroAttackTarget(hero, direction);
+  const nearestEnemyInDirection = shotTarget ? null : findNearestHeroEnemyInDirection(hero, direction);
 
   if (shotTarget) {
     gameState.projectiles.push({
@@ -367,11 +389,15 @@ function fireHeroArrow(hero) {
       target: shotTarget,
       color: hero.projectileColor || "#9fe8ff",
     });
+  } else if (nearestEnemyInDirection && nearestEnemyInDirection.distance > hero.range) {
+    showHeroOutOfRangeMessage();
   } else if (direction > 0 && ENEMY_BASE_X - hero.x <= hero.range + 25) {
     gameState.enemyBaseHp -= hero.damage * 0.65;
     spawnHit(ENEMY_BASE_X - 38, GROUND_Y - 78, hero.projectileColor || "#9fe8ff");
-  } else {
+  } else if (hasLivingBattleEnemies()) {
     fireHeroStraightProjectile(hero, direction, origin);
+  } else {
+    showHeroOutOfRangeMessage();
   }
 
   hero.pendingHeroShot = false;
@@ -390,10 +416,23 @@ function heroAttack() {
     return;
   }
 
+  const attackDirection = getHeroAttackDirection(hero);
+  const nearestEnemyInDirection = findNearestHeroEnemyInDirection(hero, attackDirection);
+  const enemyBaseInRange = attackDirection > 0 && ENEMY_BASE_X - hero.x <= hero.range + 25;
+  if (nearestEnemyInDirection && nearestEnemyInDirection.distance > hero.range) {
+    showHeroOutOfRangeMessage();
+    updateButtons();
+    return;
+  }
+  if (!nearestEnemyInDirection && !enemyBaseInRange && !hasLivingBattleEnemies()) {
+    showHeroOutOfRangeMessage();
+    updateButtons();
+    return;
+  }
+
   gameState.zeusMana = Math.max(0, (gameState.zeusMana || 0) - BASIC_ATTACK_MANA_COST);
   updateHud();
 
-  const attackDirection = getHeroAttackDirection(hero);
   hero.face = attackDirection;
   hero.attackDirection = attackDirection;
   hero.cooldown = hero.attackSpeed;
