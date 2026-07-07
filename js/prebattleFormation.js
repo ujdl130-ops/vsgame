@@ -3,6 +3,10 @@
 const PREBATTLE_HERO_CARDS = [
   { id: "zeus", name: "제우스", image: "assets/maps/formation/zeus.png" },
   { id: "poseidon", name: "포세이돈", image: "assets/maps/formation/poseidon.png" },
+  { id: "hades", name: "하데스", image: "assets/maps/formation/hades.png" },
+  { id: "ares", name: "아레스", image: "assets/maps/formation/ares.png" },
+  { id: "athena", name: "아테나", image: "assets/maps/formation/atena.png" },
+  { id: "heracles", name: "헤라클레스", image: "assets/maps/formation/hercules.png" },
 ];
 
 let prebattleFormationHeroIndex = 0;
