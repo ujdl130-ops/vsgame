@@ -124,6 +124,30 @@
     </div>
     <p id="lobbyMenuNotice" class="lobby-menu-notice" aria-live="polite"></p>
 
+    <div id="welcomeRewardPopup" class="welcome-reward-popup is-hidden" role="dialog" aria-modal="true" aria-labelledby="welcomeRewardTitle">
+      <div class="welcome-reward-card">
+        <p>WELCOME</p>
+        <h2 id="welcomeRewardTitle">환영 보상이 도착했습니다</h2>
+        <img src="assets/maps/formation/zeus.png" alt="제우스">
+        <strong>제우스</strong>
+        <span>첫 전투를 함께할 신을 우편함에서 수령하세요.</span>
+        <button id="welcomeRewardMailboxBtn" type="button">우편함으로 이동</button>
+      </div>
+    </div>
+
+    <div id="lobbyMailboxPanel" class="lobby-mailbox-panel is-hidden" role="dialog" aria-modal="true" aria-labelledby="lobbyMailboxTitle">
+      <div class="lobby-mailbox-card">
+        <header class="lobby-mailbox-head">
+          <div>
+            <p>MAIL</p>
+            <h2 id="lobbyMailboxTitle">우편함</h2>
+          </div>
+          <button id="lobbyMailboxCloseBtn" class="lobby-mailbox-close" type="button" aria-label="우편함 닫기">×</button>
+        </header>
+        <div id="lobbyMailboxList" class="lobby-mailbox-list"></div>
+      </div>
+    </div>
+
     <div id="lobbySettingsPanel" class="lobby-settings-panel is-hidden" role="dialog" aria-modal="true" aria-labelledby="lobbySettingsTitle">
       <div class="lobby-settings-card">
         <header class="lobby-settings-head">

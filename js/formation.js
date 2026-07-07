@@ -288,12 +288,16 @@ function addFormationOwnedUnit(baseId) {
 }
 
 function getFormationHero(heroId = formationState.selectedHeroId) {
-  return FORMATION_HEROES.find((hero) => hero.id === heroId) || FORMATION_HEROES[0];
+  const hero = FORMATION_HEROES.find((hero) => hero.id === heroId) || FORMATION_HEROES[0];
+  const unlocked = typeof isPlayerHeroUnlocked === "function"
+    ? isPlayerHeroUnlocked(hero.id)
+    : Boolean(hero.unlocked);
+  return { ...hero, unlocked };
 }
 
 function isFormationHeroUnlocked(heroId) {
   if (typeof isPlayerHeroUnlocked === "function") return isPlayerHeroUnlocked(heroId);
-  const hero = getFormationHero(heroId);
+  const hero = FORMATION_HEROES.find((hero) => hero.id === heroId) || FORMATION_HEROES[0];
   return Boolean(hero.unlocked);
 }
 
@@ -805,13 +809,14 @@ function renderFormationUnitCard(unit, options = {}) {
 
 function renderFormationHeroCard(hero, options = {}) {
   const selectedClass = options.selected ? " is-selected" : "";
-  const lockedClass = hero.unlocked ? "" : " is-locked";
+  const unlocked = isFormationHeroUnlocked(hero.id);
+  const lockedClass = unlocked ? "" : " is-locked";
   const star = getFormationHeroStar(hero.id);
   const level = getFormationHeroLevel(hero.id);
-  const lockMarkup = hero.unlocked ? "" : `<span class="formation-hero-lock" aria-hidden="true">🔒</span>`;
+  const lockMarkup = unlocked ? "" : `<span class="formation-hero-lock" aria-hidden="true">🔒</span>`;
 
   return `
-    <button class="formation-unit-card formation-hero-card${selectedClass}${lockedClass}" type="button" data-hero-id="${hero.id}" ${hero.unlocked ? "" : "disabled"} aria-label="${hero.name}">
+    <button class="formation-unit-card formation-hero-card${selectedClass}${lockedClass}" type="button" data-hero-id="${hero.id}" ${unlocked ? "" : "disabled"} aria-label="${hero.name}">
       <img src="${hero.image}" alt="${hero.name}">
       ${lockMarkup}
       <span class="formation-unit-name">${hero.name}</span>
@@ -1642,18 +1647,19 @@ function createFormationShellMarkup() {
 }
 
 function getFormationHeroOwnedCount() {
-  return FORMATION_HEROES.filter((hero) => hero.unlocked).length;
+  return FORMATION_HEROES.filter((hero) => isFormationHeroUnlocked(hero.id)).length;
 }
 
 function renderFormationHeroCard(hero, options = {}) {
   const selectedClass = options.selected ? " is-selected" : "";
-  const lockedClass = hero.unlocked ? "" : " is-locked";
+  const unlocked = isFormationHeroUnlocked(hero.id);
+  const lockedClass = unlocked ? "" : " is-locked";
   const star = getFormationHeroStar(hero.id);
   const level = getFormationHeroLevel(hero.id);
-  const lockMarkup = hero.unlocked ? "" : `<span class="formation-hero-lock" aria-hidden="true">🔒</span>`;
+  const lockMarkup = unlocked ? "" : `<span class="formation-hero-lock" aria-hidden="true">🔒</span>`;
 
   return `
-    <button class="formation-unit-card formation-hero-card${selectedClass}${lockedClass}" type="button" data-hero-id="${hero.id}" ${hero.unlocked ? "" : "disabled"} aria-label="${hero.name}">
+    <button class="formation-unit-card formation-hero-card${selectedClass}${lockedClass}" type="button" data-hero-id="${hero.id}" ${unlocked ? "" : "disabled"} aria-label="${hero.name}">
       <img src="${hero.image}" alt="${hero.name}">
       ${lockMarkup}
       <span class="formation-unit-name">${hero.name}</span>

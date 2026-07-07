@@ -65,7 +65,7 @@ window.addEventListener("keydown", (event) => {
   if (isTitleVisible()) {
     if (event.code === "Enter" || event.code === "Space") {
       event.preventDefault();
-      showLobby();
+      handleTitleStart();
     }
     return;
   }
@@ -280,7 +280,21 @@ if (stageDefeatLobbyBtn) stageDefeatLobbyBtn.addEventListener("click", handleSta
 if (stageDefeatRetryBtn) stageDefeatRetryBtn.addEventListener("click", handleStageDefeatRetry);
 bindMovementJoystick(movementJoystick);
 if (titleStartBtn) titleStartBtn.textContent = "TAP TO START";
-if (titleScreen) titleScreen.addEventListener("click", showLobby);
+function shouldShowWelcomeRewardPopup() {
+  const mail = playerProgress?.welcomeMail || {};
+  return !mail.introduced && !mail.claimed && !hasWelcomeZeusRewardClaimed();
+}
+
+function handleTitleStart() {
+  showLobby();
+  if (shouldShowWelcomeRewardPopup()) {
+    playerProgress.welcomeMail = { ...(playerProgress.welcomeMail || {}), introduced: true, claimed: false };
+    saveProgress();
+    window.setTimeout(() => showWelcomeRewardPopup(), 120);
+  }
+}
+
+if (titleScreen) titleScreen.addEventListener("click", handleTitleStart);
 
 (() => {
   const showcase = document.getElementById("lobbyGodShowcase");
@@ -441,6 +455,11 @@ if (lobbyRecruitBtn) lobbyRecruitBtn.addEventListener("click", showRecruit);
 if (lobbyMissionBtn) lobbyMissionBtn.addEventListener("click", showMission);
 const lobbyMailboxBtn = document.getElementById("lobbyMailboxBtn");
 const lobbySettingsBtn = document.getElementById("lobbySettingsBtn");
+const welcomeRewardPopup = document.getElementById("welcomeRewardPopup");
+const welcomeRewardMailboxBtn = document.getElementById("welcomeRewardMailboxBtn");
+const lobbyMailboxPanel = document.getElementById("lobbyMailboxPanel");
+const lobbyMailboxCloseBtn = document.getElementById("lobbyMailboxCloseBtn");
+const lobbyMailboxList = document.getElementById("lobbyMailboxList");
 const lobbySettingsPanel = document.getElementById("lobbySettingsPanel");
 const lobbySettingsCloseBtn = document.getElementById("lobbySettingsCloseBtn");
 const lobbySettingsExitBtn = document.getElementById("lobbySettingsExitBtn");
@@ -463,6 +482,65 @@ function updateLobbyTopBar() {
   });
 }
 
+function hasWelcomeZeusRewardClaimed() {
+  return Boolean(playerProgress?.welcomeMail?.claimed || playerProgress?.ownedGods?.zeus?.owned === true || playerProgress?.ownedGods?.zeus === true);
+}
+
+function renderLobbyMailbox() {
+  if (!lobbyMailboxList) return;
+  const claimed = hasWelcomeZeusRewardClaimed();
+  lobbyMailboxList.innerHTML = `
+    <article class="lobby-mail-item${claimed ? " is-claimed" : ""}">
+      <img src="assets/maps/formation/zeus.png" alt="제우스">
+      <div>
+        <strong>환영 보상</strong>
+        <span>제우스 영웅 1개</span>
+        <p>${claimed ? "이미 수령한 보상입니다." : "첫 전투를 시작하기 위한 신을 수령하세요."}</p>
+      </div>
+      <button id="welcomeZeusClaimBtn" type="button" ${claimed ? "disabled" : ""}>${claimed ? "수령완료" : "받기"}</button>
+    </article>
+  `;
+  const claimBtn = document.getElementById("welcomeZeusClaimBtn");
+  if (claimBtn && !claimed) claimBtn.addEventListener("click", claimWelcomeZeusReward);
+}
+
+function showLobbyMailbox() {
+  renderLobbyMailbox();
+  if (lobbyMailboxPanel) lobbyMailboxPanel.classList.remove("is-hidden");
+}
+
+function hideLobbyMailbox() {
+  if (lobbyMailboxPanel) lobbyMailboxPanel.classList.add("is-hidden");
+}
+
+function showWelcomeRewardPopup() {
+  if (welcomeRewardPopup) welcomeRewardPopup.classList.remove("is-hidden");
+}
+
+function hideWelcomeRewardPopup() {
+  if (welcomeRewardPopup) welcomeRewardPopup.classList.add("is-hidden");
+}
+
+function claimWelcomeZeusReward() {
+  if (hasWelcomeZeusRewardClaimed()) {
+    renderLobbyMailbox();
+    return;
+  }
+  if (window.PlayerAPI?.grantWelcomeZeusReward) {
+    window.PlayerAPI.grantWelcomeZeusReward();
+  } else {
+    playerProgress.ownedGods = playerProgress.ownedGods || {};
+    playerProgress.ownedGods.zeus = { id: "zeus", name: "제우스", owned: true };
+    playerProgress.welcomeMail = { ...(playerProgress.welcomeMail || {}), introduced: true, claimed: true };
+    saveProgress();
+  }
+  if (typeof setSelectedHeroId === "function") setSelectedHeroId("zeus");
+  if (typeof updateLobbyTopBar === "function") updateLobbyTopBar();
+  if (window.GameAudio) window.GameAudio.playRewardGetSfx();
+  renderLobbyMailbox();
+  showLobbyMenuNotice("제우스를 수령했습니다");
+}
+
 function updateLobbySettingsControls() {
   const settings = window.GameAudio?.getAudioSettings?.() || { master: 1, bgm: 1, sfx: 1 };
   lobbyVolumeControls.forEach((control) => {
@@ -482,7 +560,19 @@ function hideLobbySettings() {
   if (lobbySettingsPanel) lobbySettingsPanel.classList.add("is-hidden");
 }
 
-if (lobbyMailboxBtn) lobbyMailboxBtn.addEventListener("click", () => showLobbyMenuNotice("우편함"));
+if (lobbyMailboxBtn) lobbyMailboxBtn.addEventListener("click", showLobbyMailbox);
+if (lobbyMailboxCloseBtn) lobbyMailboxCloseBtn.addEventListener("click", hideLobbyMailbox);
+if (lobbyMailboxPanel) {
+  lobbyMailboxPanel.addEventListener("click", (event) => {
+    if (event.target === lobbyMailboxPanel) hideLobbyMailbox();
+  });
+}
+if (welcomeRewardMailboxBtn) {
+  welcomeRewardMailboxBtn.addEventListener("click", () => {
+    hideWelcomeRewardPopup();
+    showLobbyMailbox();
+  });
+}
 if (lobbySettingsBtn) lobbySettingsBtn.addEventListener("click", showLobbySettings);
 lobbyVolumeControls.forEach((control) => {
   if (!control.input) return;

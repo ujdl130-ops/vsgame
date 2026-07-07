@@ -34,6 +34,8 @@ function isInventoryVisible() {
 
 function showLobby() {
   hideStageDefeatUi();
+  if (typeof hideWelcomeRewardPopup === "function") hideWelcomeRewardPopup();
+  if (typeof hideLobbyMailbox === "function") hideLobbyMailbox();
   if (titleScreen) titleScreen.classList.add("is-hidden");
   if (lobbyScreen) lobbyScreen.classList.remove("is-hidden");
   if (stageScreen) stageScreen.classList.add("is-hidden");
@@ -135,6 +137,8 @@ function renderLobbyHero() {
 
 function showTitle() {
   resetGame();
+  if (typeof hideWelcomeRewardPopup === "function") hideWelcomeRewardPopup();
+  if (typeof hideLobbyMailbox === "function") hideLobbyMailbox();
   if (titleScreen) titleScreen.classList.remove("is-hidden");
   if (lobbyScreen) lobbyScreen.classList.add("is-hidden");
   if (stageScreen) stageScreen.classList.add("is-hidden");

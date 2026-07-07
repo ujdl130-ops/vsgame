@@ -11511,6 +11511,172 @@ body:not(.game-started) .game-wrap {
   filter: brightness(1.12);
 }
 
+.welcome-reward-popup,
+.lobby-mailbox-panel {
+  position: fixed;
+  inset: 0;
+  z-index: 62;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: rgba(3, 7, 14, 0.58);
+  backdrop-filter: blur(3px);
+}
+
+.welcome-reward-popup.is-hidden,
+.lobby-mailbox-panel.is-hidden {
+  display: none;
+}
+
+.welcome-reward-card,
+.lobby-mailbox-card {
+  width: min(520px, calc(100vw - 36px));
+  border: 1px solid rgba(237, 199, 116, 0.74);
+  border-radius: 7px;
+  color: #fff3d3;
+  background:
+    radial-gradient(circle at 50% 0%, rgba(255, 218, 117, 0.18), transparent 38%),
+    linear-gradient(135deg, rgba(64, 49, 31, 0.94), rgba(12, 17, 27, 0.97));
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 244, 207, 0.16),
+    0 24px 70px rgba(0, 0, 0, 0.58);
+}
+
+.welcome-reward-card {
+  display: grid;
+  justify-items: center;
+  gap: 10px;
+  padding: 24px 26px 26px;
+  text-align: center;
+}
+
+.welcome-reward-card p,
+.lobby-mailbox-head p {
+  margin: 0;
+  color: #e0a94d;
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 0.14em;
+}
+
+.welcome-reward-card h2,
+.lobby-mailbox-head h2 {
+  margin: 0;
+  color: #fff0bd;
+  font-size: 28px;
+  line-height: 1.1;
+  text-shadow: 0 2px 0 rgba(0, 0, 0, 0.75);
+}
+
+.welcome-reward-card img {
+  width: 150px;
+  height: 210px;
+  object-fit: contain;
+  filter: drop-shadow(0 12px 18px rgba(0, 0, 0, 0.52));
+}
+
+.welcome-reward-card strong {
+  color: #ffe19a;
+  font-size: 24px;
+  font-weight: 1000;
+  text-shadow: 0 2px 0 rgba(0, 0, 0, 0.76);
+}
+
+.welcome-reward-card span {
+  color: #ead9bb;
+  font-size: 15px;
+  font-weight: 800;
+  line-height: 1.45;
+}
+
+.welcome-reward-card button,
+.lobby-mail-item button {
+  min-width: 150px;
+  height: 46px;
+  border: 1px solid rgba(255, 197, 104, 0.82);
+  border-radius: 5px;
+  color: #fff4d0;
+  background: linear-gradient(180deg, rgba(109, 82, 39, 0.96), rgba(43, 31, 22, 0.98));
+  font-size: 15px;
+  font-weight: 1000;
+  text-shadow: 0 2px 0 rgba(0, 0, 0, 0.78);
+}
+
+.lobby-mailbox-card {
+  padding: 22px 24px 24px;
+}
+
+.lobby-mailbox-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 18px;
+}
+
+.lobby-mailbox-close {
+  width: 36px;
+  height: 36px;
+  border: 1px solid rgba(255, 226, 157, 0.64);
+  border-radius: 5px;
+  color: #fff3d3;
+  background: linear-gradient(180deg, rgba(70, 58, 44, 0.95), rgba(24, 20, 19, 0.95));
+  font-size: 24px;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.lobby-mailbox-list {
+  display: grid;
+  gap: 12px;
+}
+
+.lobby-mail-item {
+  display: grid;
+  grid-template-columns: 78px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 14px;
+  min-height: 112px;
+  padding: 12px;
+  border: 1px solid rgba(217, 184, 119, 0.34);
+  border-radius: 6px;
+  background: rgba(6, 10, 18, 0.44);
+}
+
+.lobby-mail-item img {
+  width: 72px;
+  height: 92px;
+  object-fit: contain;
+}
+
+.lobby-mail-item strong {
+  display: block;
+  color: #ffe19a;
+  font-size: 17px;
+  font-weight: 1000;
+}
+
+.lobby-mail-item span,
+.lobby-mail-item p {
+  display: block;
+  margin: 4px 0 0;
+  color: #ead9bb;
+  font-size: 13px;
+  font-weight: 800;
+  line-height: 1.35;
+}
+
+.lobby-mail-item.is-claimed {
+  opacity: 0.72;
+}
+
+.lobby-mail-item button:disabled {
+  cursor: default;
+  color: rgba(255, 244, 208, 0.62);
+  border-color: rgba(196, 169, 118, 0.36);
+  background: linear-gradient(180deg, rgba(64, 62, 58, 0.88), rgba(30, 31, 34, 0.92));
+}
+
 @media (max-width: 720px) {
   .lobby-top-tools {
     left: max(6px, env(safe-area-inset-left));

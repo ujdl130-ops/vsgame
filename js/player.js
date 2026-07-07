@@ -45,6 +45,12 @@ function normalizePlayerData(savedData = {}) {
     essences,
     unitEssences,
     ownedGods: savedData.ownedGods && typeof savedData.ownedGods === "object" ? { ...savedData.ownedGods } : {},
+    welcomeMail: savedData.welcomeMail && typeof savedData.welcomeMail === "object"
+      ? {
+        introduced: Boolean(savedData.welcomeMail.introduced),
+        claimed: Boolean(savedData.welcomeMail.claimed),
+      }
+      : { introduced: false, claimed: false },
     entitlements: savedData.entitlements && typeof savedData.entitlements === "object" ? { ...savedData.entitlements } : {},
     unitGrowth: savedData.unitGrowth && typeof savedData.unitGrowth === "object" ? { ...savedData.unitGrowth } : {},
     stageMissionStars,
@@ -75,7 +81,23 @@ function getPlayerData() {
   return playerProgress;
 }
 
-window.PlayerAPI = { getPlayerData, grantPlayerRewards, normalizePlayerData };
+function grantWelcomeZeusReward() {
+  playerProgress.ownedGods = playerProgress.ownedGods || {};
+  const hero = typeof getGodHeroById === "function" ? getGodHeroById("zeus") : null;
+  playerProgress.ownedGods.zeus = {
+    ...(hero || { id: "zeus", name: "제우스" }),
+    owned: true,
+  };
+  playerProgress.welcomeMail = {
+    ...(playerProgress.welcomeMail || {}),
+    introduced: true,
+    claimed: true,
+  };
+  saveProgress();
+  return playerProgress.ownedGods.zeus;
+}
+
+window.PlayerAPI = { getPlayerData, grantPlayerRewards, normalizePlayerData, grantWelcomeZeusReward };
 
 let gameState;
 let lastTime = 0;
@@ -94,7 +116,6 @@ let recruitDoorState = {
 };
 
 function isPlayerHeroUnlocked(heroId) {
-  if (heroId === "zeus") return true;
   if (!PROTOTYPE_PLAYABLE_HERO_IDS.has(heroId)) return false;
   const ownedGod = playerProgress?.ownedGods?.[heroId];
   return Boolean(ownedGod && (ownedGod.owned === true || ownedGod === true));
