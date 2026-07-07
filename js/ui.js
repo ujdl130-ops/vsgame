@@ -182,8 +182,17 @@ function updateStageClearRewardActions() {
   stageClearRewardNextBtn.setAttribute("aria-disabled", canGoNext ? "false" : "true");
 }
 
-const STAGE_CLEAR_TREASURE_GOLD_REWARD = 10000;
+const STAGE_CLEAR_TREASURE_REWARD_CONFIGS = {
+  1: { gold: 10000 },
+  2: { gold: 15000 },
+};
+const DEFAULT_STAGE_CLEAR_TREASURE_REWARD_CONFIG = STAGE_CLEAR_TREASURE_REWARD_CONFIGS[1];
 let stageClearTreasureReward = null;
+
+function getStageClearTreasureRewardConfig(stageNumber = selectedStage) {
+  const stage = Number(stageNumber) || 1;
+  return STAGE_CLEAR_TREASURE_REWARD_CONFIGS[stage] || DEFAULT_STAGE_CLEAR_TREASURE_REWARD_CONFIG;
+}
 
 function rollStageClearTreasureSoldierReward(random = Math.random) {
   const roll = random();
@@ -192,9 +201,10 @@ function rollStageClearTreasureSoldierReward(random = Math.random) {
   return 3;
 }
 
-function createStageClearTreasureReward() {
+function createStageClearTreasureReward(stageNumber = selectedStage) {
+  const rewardConfig = getStageClearTreasureRewardConfig(stageNumber);
   return {
-    gold: STAGE_CLEAR_TREASURE_GOLD_REWARD,
+    gold: rewardConfig.gold,
     soldierFragments: rollStageClearTreasureSoldierReward(),
   };
 }
@@ -202,7 +212,8 @@ function createStageClearTreasureReward() {
 function updateStageClearTreasureRewardText(reward = stageClearTreasureReward) {
   const goldAmount = document.getElementById("stageClearGoldAmount");
   const soldierAmount = document.getElementById("stageClearSoldierAmount");
-  const visibleReward = reward || { gold: STAGE_CLEAR_TREASURE_GOLD_REWARD, soldierFragments: 1 };
+  const rewardConfig = getStageClearTreasureRewardConfig();
+  const visibleReward = reward || { gold: rewardConfig.gold, soldierFragments: 1 };
 
   if (goldAmount) {
     goldAmount.textContent = `${Math.max(0, Number(visibleReward.gold) || 0)}G`;

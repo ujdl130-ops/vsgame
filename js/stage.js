@@ -28,8 +28,8 @@ const STAGE_CONFIGS = {
 };
 
 const STAGE_CLEAR_REWARDS = {
-  1: { gold: 500 },
-  2: { gold: 1000, soldierFragments: 20 },
+  1: { gold: 10000 },
+  2: { gold: 15000 },
   3: { gold: 2000, diamonds: 50, commonEssence: 1 },
 };
 
@@ -379,11 +379,12 @@ function completeStage(message) {
   gameState.message = `${message} · 스테이지 선택 버튼으로 다음 지역에 도전`;
   completeStageMissions(selectedStage);
   unlockStageProgress(selectedStage);
-  if (!alreadyCleared) {
+  const usesStageClearRewardUi = typeof showStageClearRewardUi === "function";
+  if (!alreadyCleared && !usesStageClearRewardUi) {
     grantPlayerRewards(STAGE_CLEAR_REWARDS[selectedStage] || {});
   }
   updateButtons();
-  if (typeof showStageClearRewardUi === "function") showStageClearRewardUi();
+  if (usesStageClearRewardUi) showStageClearRewardUi();
 }
 
 
