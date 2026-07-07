@@ -166,8 +166,7 @@ const ASSET_PATHS = {
   poseidonLobbyIdle: "assets/animations/hero/poseidon_lobby_idle_hd.png",
   zeusStormCloudSprite: "assets/effects/zeus_storm_cloud_spritesheet.png",
   zeusStormLightningSprite: "assets/effects/zeus_storm_lightning_spritesheet.png",
-  karonSwordWaveProjectile: "assets/effects/karon_sword_wave_projectile.png",
-  karonSwordWaveProjectileFallback: "assets/effects/karon_sword_wave_projectile.svg",
+  karonSwordWaveProjectile: "assets/animations/Boss_Karon/sword effect.png",
   stage1EnemySprite: "assets/animations/enemy/stage1_goblin_spritesheet.png",
   stage2EvileyeSprite: "assets/animations/enemy/stage2_flying_eye_spritesheet.png",
   karonHumanSprite: "assets/animations/Boss_Karon/karon_human_phase1_transparent.png",
@@ -344,7 +343,7 @@ const karonSwordWaveProjectileImage = new Image();
 let karonSwordWaveProjectileReady = false;
 loadGameImage(
   karonSwordWaveProjectileImage,
-  [ASSET_PATHS.karonSwordWaveProjectile, ASSET_PATHS.karonSwordWaveProjectileFallback],
+  [ASSET_PATHS.karonSwordWaveProjectile],
   (ready) => { karonSwordWaveProjectileReady = ready; },
   "Karon sword wave projectile"
 );

@@ -378,14 +378,28 @@ function drawKaronSwordWaveImage(projectile) {
   const pulse = Math.sin(life * 32) * 0.04;
   const width = 132 * (1 + pulse);
   const height = 124 * (1 - pulse * 0.5);
+  const sourceWidth = karonSwordWaveProjectileImage.naturalWidth || karonSwordWaveProjectileImage.width;
+  const sourceHeight = karonSwordWaveProjectileImage.naturalHeight || karonSwordWaveProjectileImage.height;
+  const sourceCropHeight = Math.max(1, sourceHeight - 8);
+  const direction = projectile.vx < 0 ? -1 : 1;
 
   ctx.save();
   ctx.translate(projectile.x, projectile.y - 8);
   ctx.globalAlpha = Math.max(0.22, 1 - life / maxLife * 0.24);
   ctx.shadowColor = "rgba(255, 31, 112, 0.95)";
   ctx.shadowBlur = 18;
-  ctx.scale(-1, 1);
-  ctx.drawImage(karonSwordWaveProjectileImage, -width / 2, -height / 2, width, height);
+  ctx.scale(direction, 1);
+  ctx.drawImage(
+    karonSwordWaveProjectileImage,
+    0,
+    0,
+    sourceWidth,
+    sourceCropHeight,
+    -width / 2,
+    -height / 2,
+    width,
+    height
+  );
   ctx.restore();
 }
 
