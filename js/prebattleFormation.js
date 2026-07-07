@@ -105,11 +105,14 @@ function renderPrebattleFormation() {
       <button class="prebattle-formation-arrow-btn prebattle-formation-arrow-right" type="button" data-prebattle-direction="1" aria-label="다음 영웅 보기">
         <img class="prebattle-formation-arrow" src="assets/ui/arrow_right_redesign.png" alt="" aria-hidden="true" draggable="false">
       </button>
+      <button class="prebattle-formation-start-btn" type="button">전투 시작</button>
     </div>
   `;
 
   const backButton = root.querySelector(".prebattle-formation-back-btn");
+  const startButton = root.querySelector(".prebattle-formation-start-btn");
   if (backButton) backButton.addEventListener("click", closePrebattleFormationToStage);
+  if (startButton) startButton.addEventListener("click", startPrebattleFormationBattle);
   root.querySelectorAll(".prebattle-formation-arrow-btn").forEach((button) => {
     button.addEventListener("click", () => movePrebattleHeroCard(Number(button.dataset.prebattleDirection) || 1));
   });
@@ -137,8 +140,10 @@ function showPreBattleFormation(stageNumber) {
     updateButtons();
   }
 
+  const root = getPrebattleFormationRoot();
+  root.dataset.stage = String(Number(stageNumber) || selectedStage || 1);
   renderPrebattleFormation();
-  getPrebattleFormationRoot().classList.remove("is-hidden");
+  root.classList.remove("is-hidden");
 }
 
 function closePrebattleFormationToStage() {
@@ -147,6 +152,16 @@ function closePrebattleFormationToStage() {
   document.body.classList.remove("in-prebattle-formation");
   showStageSelect();
   showChapterStages();
+}
+
+function startPrebattleFormationBattle() {
+  const root = getPrebattleFormationRoot();
+  const stageNumber = Number(root.dataset.stage) || selectedStage || 1;
+  const selectedHero = PREBATTLE_HERO_CARDS[prebattleFormationHeroIndex] || PREBATTLE_HERO_CARDS[0];
+  syncPrebattleSelectedHero(selectedHero.id);
+  root.classList.add("is-hidden");
+  document.body.classList.remove("in-prebattle-formation");
+  startGame(stageNumber);
 }
 
 window.addEventListener("keydown", (event) => {
