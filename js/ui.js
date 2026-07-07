@@ -189,6 +189,7 @@ const STAGE_CLEAR_TREASURE_REWARD_CONFIGS = {
 };
 const DEFAULT_STAGE_CLEAR_TREASURE_REWARD_CONFIG = STAGE_CLEAR_TREASURE_REWARD_CONFIGS[1];
 let stageClearTreasureReward = null;
+let stageClearTreasureAdClaimed = false;
 
 function getStageClearTreasureRewardConfig(stageNumber = selectedStage) {
   const stage = Number(stageNumber) || 1;
@@ -210,17 +211,18 @@ function createStageClearTreasureReward(stageNumber = selectedStage) {
   };
 }
 
-function updateStageClearTreasureRewardText(reward = stageClearTreasureReward) {
+function updateStageClearTreasureRewardText(reward = stageClearTreasureReward, multiplier = 1) {
   const goldAmount = document.getElementById("stageClearGoldAmount");
   const soldierAmount = document.getElementById("stageClearSoldierAmount");
   const rewardConfig = getStageClearTreasureRewardConfig();
   const visibleReward = reward || { gold: rewardConfig.gold, soldierFragments: 1 };
+  const rewardMultiplier = Math.max(1, Number(multiplier) || 1);
 
   if (goldAmount) {
-    goldAmount.textContent = `${Math.max(0, Number(visibleReward.gold) || 0)}G`;
+    goldAmount.textContent = `${Math.max(0, Number(visibleReward.gold) || 0) * rewardMultiplier}G`;
   }
   if (soldierAmount) {
-    soldierAmount.textContent = `${Math.max(1, Number(visibleReward.soldierFragments) || 1)}개`;
+    soldierAmount.textContent = `${Math.max(1, Number(visibleReward.soldierFragments) || 1) * rewardMultiplier}개`;
   }
 }
 
@@ -232,8 +234,18 @@ function syncStageClearRewardWalletDisplays() {
   if (typeof renderInventoryScreen === "function") renderInventoryScreen();
 }
 
+function grantStageClearTreasureReward(reward) {
+  if (!reward || typeof grantPlayerRewards !== "function") return;
+  grantPlayerRewards({
+    gold: Math.max(0, Number(reward.gold) || 0),
+    soldierFragments: Math.max(0, Number(reward.soldierFragments) || 0),
+  });
+  syncStageClearRewardWalletDisplays();
+}
+
 function resetStageClearRewardEffects() {
   stageClearTreasureReward = null;
+  stageClearTreasureAdClaimed = false;
   updateStageClearTreasureRewardText();
 
   if (stageClearTreasureBtn) {
@@ -242,6 +254,8 @@ function resetStageClearRewardEffects() {
   }
   if (stageClearRewardAdBtn) {
     stageClearRewardAdBtn.classList.remove("is-preview");
+    stageClearRewardAdBtn.setAttribute("aria-disabled", "false");
+    stageClearRewardAdBtn.setAttribute("aria-label", "광고 시청 보상 2배");
   }
   if (stageClearRewardMultiplierIndicator) {
     stageClearRewardMultiplierIndicator.classList.remove("is-show");
@@ -252,16 +266,23 @@ function handleStageClearTreasureOpen() {
   if (!stageClearTreasureBtn || stageClearTreasureBtn.classList.contains("is-open")) return;
   stageClearTreasureReward = createStageClearTreasureReward();
   updateStageClearTreasureRewardText(stageClearTreasureReward);
-  if (typeof grantPlayerRewards === "function") {
-    grantPlayerRewards(stageClearTreasureReward);
-    syncStageClearRewardWalletDisplays();
-  }
+  grantStageClearTreasureReward(stageClearTreasureReward);
   stageClearTreasureBtn.classList.add("is-open");
   stageClearTreasureBtn.setAttribute("aria-label", "보물상자 열림");
 }
 
 function handleStageClearRewardAdPreview() {
-  if (!stageClearRewardAdBtn) return;
+  if (!stageClearRewardAdBtn || stageClearTreasureAdClaimed) return;
+  if (!stageClearTreasureReward) {
+    handleStageClearTreasureOpen();
+  }
+  if (!stageClearTreasureReward) return;
+
+  stageClearTreasureAdClaimed = true;
+  grantStageClearTreasureReward(stageClearTreasureReward);
+  updateStageClearTreasureRewardText(stageClearTreasureReward, 2);
+  stageClearRewardAdBtn.setAttribute("aria-disabled", "true");
+  stageClearRewardAdBtn.setAttribute("aria-label", "광고 보상 수령 완료");
   stageClearRewardAdBtn.classList.remove("is-preview");
   if (stageClearRewardMultiplierIndicator) {
     stageClearRewardMultiplierIndicator.classList.remove("is-show");
