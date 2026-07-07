@@ -190,6 +190,7 @@ const STAGE_CLEAR_TREASURE_REWARD_CONFIGS = {
 const DEFAULT_STAGE_CLEAR_TREASURE_REWARD_CONFIG = STAGE_CLEAR_TREASURE_REWARD_CONFIGS[1];
 let stageClearTreasureReward = null;
 let stageClearTreasureAdClaimed = false;
+let stageClearRewardNoticeTimer = 0;
 
 function getStageClearTreasureRewardConfig(stageNumber = selectedStage) {
   const stage = Number(stageNumber) || 1;
@@ -243,9 +244,48 @@ function grantStageClearTreasureReward(reward) {
   syncStageClearRewardWalletDisplays();
 }
 
+function getStageClearRewardNoticeElement() {
+  return document.getElementById("stageClearRewardNotice");
+}
+
+function clearStageClearRewardNotice() {
+  const notice = getStageClearRewardNoticeElement();
+  clearTimeout(stageClearRewardNoticeTimer);
+  stageClearRewardNoticeTimer = 0;
+  if (!notice) return;
+  notice.classList.remove("is-show");
+  notice.textContent = "";
+}
+
+function showStageClearRewardNotice(message = "보상을 먼저 열어주세요") {
+  const notice = getStageClearRewardNoticeElement();
+  if (!notice) return;
+
+  notice.textContent = message;
+  notice.classList.remove("is-show");
+  void notice.offsetWidth;
+  notice.classList.add("is-show");
+
+  clearTimeout(stageClearRewardNoticeTimer);
+  stageClearRewardNoticeTimer = setTimeout(() => {
+    if (notice) notice.classList.remove("is-show");
+  }, 1400);
+}
+
+function isStageClearTreasureOpened() {
+  return Boolean(stageClearTreasureReward && stageClearTreasureBtn && stageClearTreasureBtn.classList.contains("is-open"));
+}
+
+function requireStageClearTreasureOpened() {
+  if (isStageClearTreasureOpened()) return true;
+  showStageClearRewardNotice();
+  return false;
+}
+
 function resetStageClearRewardEffects() {
   stageClearTreasureReward = null;
   stageClearTreasureAdClaimed = false;
+  clearStageClearRewardNotice();
   updateStageClearTreasureRewardText();
 
   if (stageClearTreasureBtn) {
@@ -264,6 +304,7 @@ function resetStageClearRewardEffects() {
 
 function handleStageClearTreasureOpen() {
   if (!stageClearTreasureBtn || stageClearTreasureBtn.classList.contains("is-open")) return;
+  clearStageClearRewardNotice();
   stageClearTreasureReward = createStageClearTreasureReward();
   updateStageClearTreasureRewardText(stageClearTreasureReward);
   grantStageClearTreasureReward(stageClearTreasureReward);
@@ -273,9 +314,7 @@ function handleStageClearTreasureOpen() {
 
 function handleStageClearRewardAdPreview() {
   if (!stageClearRewardAdBtn || stageClearTreasureAdClaimed) return;
-  if (!stageClearTreasureReward) {
-    handleStageClearTreasureOpen();
-  }
+  if (!requireStageClearTreasureOpened()) return;
   if (!stageClearTreasureReward) return;
 
   stageClearTreasureAdClaimed = true;
@@ -307,6 +346,7 @@ function showStageClearRewardUi() {
 
 function hideStageClearRewardUi() {
   if (!stageClearRewardOverlay) return;
+  clearStageClearRewardNotice();
   stageClearRewardOverlay.classList.add("is-hidden");
 }
 
@@ -323,16 +363,19 @@ function hideStageDefeatUi() {
 }
 
 function handleStageClearRewardLobby() {
+  if (!requireStageClearTreasureOpened()) return;
   hideStageClearRewardUi();
   showLobby();
 }
 
 function handleStageClearRewardRetry() {
+  if (!requireStageClearTreasureOpened()) return;
   hideStageClearRewardUi();
   restartGame();
 }
 
 function handleStageClearRewardNext() {
+  if (!requireStageClearTreasureOpened()) return;
   const nextStage = Number(selectedStage) + 1;
   if (!STAGE_CONFIGS[nextStage] || !isStageUnlocked(nextStage)) return;
   hideStageClearRewardUi();
