@@ -67,9 +67,7 @@ function handleMissionRewardClick(button) {
   if (!button || button.disabled || button.dataset.claimed === "true") return;
   claimMissionReward(button.dataset.reward || "");
   claimedMissionRewards.add(button.dataset.missionKey || "");
-  button.dataset.claimed = "true";
-  button.disabled = true;
-  button.textContent = "완료";
+  renderMissionScreen();
 }
 
 function renderMissionCard(mission, index, groupId) {
@@ -101,6 +99,10 @@ function renderMissionCard(mission, index, groupId) {
 }
 
 function renderMissionGroup(group) {
+  const visibleMissions = group.missions
+    .map((mission, index) => ({ mission, index, missionKey: `${group.id}-${index}` }))
+    .filter((entry) => !claimedMissionRewards.has(entry.missionKey));
+
   return `
     <section class="mission-section mission-section-${group.id}">
       <header class="mission-section-head">
@@ -108,10 +110,10 @@ function renderMissionGroup(group) {
           <p>${group.subtitle}</p>
           <h2>${group.title}</h2>
         </div>
-        <span>${group.missions.length}</span>
+        <span>${visibleMissions.length}</span>
       </header>
       <div class="mission-list">
-        ${group.missions.map((mission, index) => renderMissionCard(mission, index, group.id)).join("")}
+        ${visibleMissions.map(({ mission, index }) => renderMissionCard(mission, index, group.id)).join("")}
       </div>
     </section>
   `;

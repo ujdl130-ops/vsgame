@@ -91,24 +91,6 @@ const FORMATION_HERO_FRAGMENT_COST = 50;
 const FORMATION_HERO_MAX_STAR = 5;
 const FORMATION_HERO_BASE_STAR = 1;
 const FORMATION_HERO_GROWTH_VERSION = 2;
-const FORMATION_HERO_TRANSCEND_SPECIFIC_COST = {
-  1: 20,
-  2: 30,
-  3: 50,
-  4: 80,
-};
-const FORMATION_HERO_TRANSCEND_COMMON_COST = {
-  1: 0,
-  2: 0,
-  3: 50,
-  4: 50,
-};
-const FORMATION_UNIT_TRANSCEND_COMMON_COST = {
-  1: 0,
-  2: 0,
-  3: 10,
-  4: 20,
-};
 const FORMATION_HERO_ESSENCES = {
   zeus: { key: "lightningEssence", name: "제우스 정수" },
   poseidon: { key: "seaEssence", name: "포세이돈 정수" },
@@ -320,20 +302,26 @@ function getFormationHeroLevelAction(heroId = formationState.selectedHeroId) {
 function getFormationHeroTranscendAction(heroId = formationState.selectedHeroId) {
   const star = getFormationHeroStar(heroId);
   if (star >= FORMATION_HERO_MAX_STAR) return null;
+  const essenceCost = typeof getTranscendenceFragmentAmount === "function"
+    ? getTranscendenceFragmentAmount("hero", star, star + 1)
+    : FORMATION_HERO_FRAGMENT_COST;
+
   return {
     type: "star",
-    commonCost: FORMATION_HERO_TRANSCEND_COMMON_COST[star] || 0,
-    essenceCost: FORMATION_HERO_TRANSCEND_SPECIFIC_COST[star] || FORMATION_HERO_FRAGMENT_COST,
+    commonCost: 0,
+    essenceCost: Math.max(0, Number(essenceCost) || 0),
     nextStar: star + 1,
   };
 }
 
 function getFormationUnitTranscendAction(unit = getFormationUnit(formationState.selectedUnitId)) {
   if (!unit || unit.star >= FORMATION_MAX_STAR) return null;
+  const soldierCost = getFormationTranscendCost(unit) || 0;
+
   return {
     type: "star",
-    commonCost: FORMATION_UNIT_TRANSCEND_COMMON_COST[unit.star] || 0,
-    soldierCost: getFormationTranscendCost(unit) || 0,
+    commonCost: 0,
+    soldierCost,
     nextStar: unit.star + 1,
   };
 }
@@ -351,8 +339,9 @@ function formatFormationLevelButtonCost(action) {
 }
 
 function formatFormationTranscendButtonCost(parts) {
-  if (!parts.some((part) => part.required > 0)) return "무료";
-  return parts
+  const visibleParts = parts.filter((part) => part.required > 0);
+  if (!visibleParts.length) return "무료";
+  return visibleParts
     .map((part) => `${part.label} ${part.owned.toLocaleString("ko-KR")}/${part.required.toLocaleString("ko-KR")}`)
     .join(" / ");
 }
@@ -589,12 +578,9 @@ function getFormationLevelUpCost(unit) {
 
 function getFormationTranscendCost(unit) {
   if (!unit || unit.star >= FORMATION_MAX_STAR) return null;
-  if (unit.rarity === "hero") return 40;
-  if (unit.star === 1) return 20;
-  if (unit.star === 2) return 30;
-  if (unit.star === 3) return 50;
-  if (unit.star === 4) return 80;
-  return null;
+  const growthType = unit.rarity === "hero" ? "hero" : unit.baseId || unit.id || "guard";
+  if (typeof getTranscendenceFragmentAmount !== "function") return null;
+  return getTranscendenceFragmentAmount(growthType, unit.star, unit.star + 1);
 }
 
 function getFormationLevelRequirement(unit) {
