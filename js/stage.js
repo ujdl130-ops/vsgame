@@ -38,7 +38,6 @@ function getStageConfig(stageNumber) {
 }
 
 function isStageUnlocked(stageNumber) {
-  if (window.QAAPI?.isEnabled?.()) return true;
   return stageNumber <= playerProgress.unlockedStage;
 }
 
@@ -57,7 +56,7 @@ function updateStageUI() {
   stageCards.forEach((card) => {
     const stageNumber = Number(card.dataset.stage);
     const unlocked = isStageUnlocked(stageNumber);
-    const cleared = window.QAAPI?.isEnabled?.() || playerProgress.clearedStages.includes(stageNumber);
+    const cleared = playerProgress.clearedStages.includes(stageNumber);
     const status = card.querySelector(".stage-status");
     const lockIcon = card.querySelector(".lock-icon");
 

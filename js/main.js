@@ -359,13 +359,7 @@ if (titleScreen) titleScreen.addEventListener("click", handleTitleStart);
       ultimateName: "열두 시련", ultimateDescription: "시련을 이겨낸 영웅의 힘을 해방해 체력을 회복하고 적진으로 돌진한다.",
     },
   ];
-  let savedGod = "";
-  try {
-    savedGod = localStorage.getItem("pixelDefenseLobbyGod") || "";
-  } catch (error) {
-    savedGod = "";
-  }
-  let selectedIndex = Math.max(0, gods.findIndex((god) => god.id === savedGod));
+  let selectedIndex = 0;
 
   gods.forEach((god, index) => {
     const dot = document.createElement("button");
@@ -397,11 +391,6 @@ if (titleScreen) titleScreen.addEventListener("click", handleTitleStart);
       dot.classList.toggle("is-selected", isSelected);
       dot.setAttribute("aria-current", isSelected ? "true" : "false");
     });
-    try {
-      localStorage.setItem("pixelDefenseLobbyGod", god.id);
-    } catch (error) {
-      // The carousel still works when storage is unavailable.
-    }
   }
 
   function updateCodex(god) {

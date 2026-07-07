@@ -186,7 +186,6 @@ function showMissionNotice() {
   showMission();
 }
 
-// QA_MODE_SUPPORT: reward normalization and QA-completable mission cards.
 function claimMissionReward(reward) {
   const rewardText = String(reward || "");
   const amountMatch = rewardText.match(/(\d+)/);
@@ -230,8 +229,8 @@ function handleMissionClaimAll() {
 }
 
 function renderMissionCard(mission, index, groupId) {
-  const percent = window.QAAPI?.isEnabled?.() ? 100 : getMissionProgressPercent(mission);
-  const complete = window.QAAPI?.isEnabled?.() || mission.current >= mission.target;
+  const percent = getMissionProgressPercent(mission);
+  const complete = mission.current >= mission.target;
   const missionKey = `${groupId}-${index}`;
   const claimed = claimedMissionRewards.has(missionKey);
   return `
@@ -248,7 +247,7 @@ function renderMissionCard(mission, index, groupId) {
           <span style="width: ${percent}%"></span>
         </div>
         <button class="mission-reward-btn" type="button" data-reward="${mission.reward}" data-mission-key="${missionKey}" ${complete && !claimed ? "" : "disabled"}>${claimed ? "완료" : "받기"}</button>
-        <strong>${complete && window.QAAPI?.isEnabled?.() ? mission.target : mission.current} / ${mission.target}</strong>
+        <strong>${mission.current} / ${mission.target}</strong>
       </div>
       <div class="mission-card-foot">
         <span>${mission.reward}</span>

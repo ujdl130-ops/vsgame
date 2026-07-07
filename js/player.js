@@ -74,6 +74,10 @@ function grantPlayerRewards(rewards = {}) {
     }
   });
   saveProgress();
+  if (typeof updateWalletDisplays === "function") updateWalletDisplays();
+  if (typeof updateLobbyTopBar === "function") updateLobbyTopBar();
+  if (window.ShopAPI?.updateShopWallet) window.ShopAPI.updateShopWallet();
+  if (typeof updateRecruitWallet === "function") updateRecruitWallet();
   return playerProgress;
 }
 
@@ -97,7 +101,19 @@ function grantWelcomeZeusReward() {
   return playerProgress.ownedGods.zeus;
 }
 
-window.PlayerAPI = { getPlayerData, grantPlayerRewards, normalizePlayerData, grantWelcomeZeusReward };
+function unlockPlayerHero(heroId) {
+  if (!PROTOTYPE_PLAYABLE_HERO_IDS.has(heroId)) return null;
+  playerProgress.ownedGods = playerProgress.ownedGods || {};
+  const hero = typeof getGodHeroById === "function" ? getGodHeroById(heroId) : null;
+  playerProgress.ownedGods[heroId] = {
+    ...(hero || { id: heroId }),
+    owned: true,
+  };
+  saveProgress();
+  return playerProgress.ownedGods[heroId];
+}
+
+window.PlayerAPI = { getPlayerData, grantPlayerRewards, normalizePlayerData, grantWelcomeZeusReward, unlockPlayerHero };
 
 let gameState;
 let lastTime = 0;
