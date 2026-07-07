@@ -45,6 +45,12 @@ function normalizePlayerData(savedData = {}) {
     essences,
     unitEssences,
     ownedGods: savedData.ownedGods && typeof savedData.ownedGods === "object" ? { ...savedData.ownedGods } : {},
+    welcomeMail: savedData.welcomeMail && typeof savedData.welcomeMail === "object"
+      ? {
+        introduced: Boolean(savedData.welcomeMail.introduced),
+        claimed: Boolean(savedData.welcomeMail.claimed),
+      }
+      : { introduced: false, claimed: false },
     entitlements: savedData.entitlements && typeof savedData.entitlements === "object" ? { ...savedData.entitlements } : {},
     unitGrowth: savedData.unitGrowth && typeof savedData.unitGrowth === "object" ? { ...savedData.unitGrowth } : {},
     stageMissionStars,
@@ -68,6 +74,10 @@ function grantPlayerRewards(rewards = {}) {
     }
   });
   saveProgress();
+  if (typeof updateWalletDisplays === "function") updateWalletDisplays();
+  if (typeof updateLobbyTopBar === "function") updateLobbyTopBar();
+  if (window.ShopAPI?.updateShopWallet) window.ShopAPI.updateShopWallet();
+  if (typeof updateRecruitWallet === "function") updateRecruitWallet();
   return playerProgress;
 }
 
@@ -75,7 +85,35 @@ function getPlayerData() {
   return playerProgress;
 }
 
-window.PlayerAPI = { getPlayerData, grantPlayerRewards, normalizePlayerData };
+function grantWelcomeZeusReward() {
+  playerProgress.ownedGods = playerProgress.ownedGods || {};
+  const hero = typeof getGodHeroById === "function" ? getGodHeroById("zeus") : null;
+  playerProgress.ownedGods.zeus = {
+    ...(hero || { id: "zeus", name: "제우스" }),
+    owned: true,
+  };
+  playerProgress.welcomeMail = {
+    ...(playerProgress.welcomeMail || {}),
+    introduced: true,
+    claimed: true,
+  };
+  saveProgress();
+  return playerProgress.ownedGods.zeus;
+}
+
+function unlockPlayerHero(heroId) {
+  if (!PROTOTYPE_PLAYABLE_HERO_IDS.has(heroId)) return null;
+  playerProgress.ownedGods = playerProgress.ownedGods || {};
+  const hero = typeof getGodHeroById === "function" ? getGodHeroById(heroId) : null;
+  playerProgress.ownedGods[heroId] = {
+    ...(hero || { id: heroId }),
+    owned: true,
+  };
+  saveProgress();
+  return playerProgress.ownedGods[heroId];
+}
+
+window.PlayerAPI = { getPlayerData, grantPlayerRewards, normalizePlayerData, grantWelcomeZeusReward, unlockPlayerHero };
 
 let gameState;
 let lastTime = 0;
@@ -83,6 +121,7 @@ let animationId = null;
 let keys = {};
 let heroMoveInput = 0;
 let selectedHeroId = "zeus";
+const PROTOTYPE_PLAYABLE_HERO_IDS = new Set(["zeus", "poseidon"]);
 let gameOptionsWasRunning = false;
 let recruitDoorState = {
   active: false,
@@ -92,8 +131,14 @@ let recruitDoorState = {
   opened: false,
 };
 
+function isPlayerHeroUnlocked(heroId) {
+  if (!PROTOTYPE_PLAYABLE_HERO_IDS.has(heroId)) return false;
+  const ownedGod = playerProgress?.ownedGods?.[heroId];
+  return Boolean(ownedGod && (ownedGod.owned === true || ownedGod === true));
+}
+
 function setSelectedHeroId(heroId) {
-  selectedHeroId = heroId || "zeus";
+  selectedHeroId = isPlayerHeroUnlocked(heroId) ? heroId : "zeus";
 }
 
 function createInitialState() {

@@ -119,7 +119,7 @@ const RUNESTONE_REGEN_PER_SECOND = ZEUS_MANA_REGEN_PER_SECOND;
 
 const gameWallet = {
   diamond: 0,
-  gold: 8520,
+  gold: 0,
   summonTickets: 0,
   commonEssence: 0,
   soldierFragments: 0,
@@ -136,6 +136,9 @@ function addWalletCurrency(type, amount) {
     if (typeof saveProgress === "function") saveProgress();
   }
   updateWalletDisplays();
+  if (typeof updateLobbyTopBar === "function") updateLobbyTopBar();
+  if (window.ShopAPI?.updateShopWallet) window.ShopAPI.updateShopWallet();
+  if (typeof updateRecruitWallet === "function") updateRecruitWallet();
   if (typeof renderInventoryScreen === "function") renderInventoryScreen();
 }
 
@@ -151,6 +154,16 @@ function updateWalletDisplays() {
     const type = element.dataset.walletValue === "diamonds" ? "diamond" : element.dataset.walletValue;
     if (!Object.prototype.hasOwnProperty.call(gameWallet, type)) return;
     element.textContent = gameWallet[type].toLocaleString("ko-KR");
+  });
+  document.querySelectorAll("[data-essence-key]").forEach((element) => {
+    const key = element.dataset.essenceKey;
+    const amount = Math.max(0, Number(playerProgress?.essences?.[key]) || 0);
+    element.textContent = amount.toLocaleString("ko-KR");
+  });
+  document.querySelectorAll("[data-unit-essence-key]").forEach((element) => {
+    const key = element.dataset.unitEssenceKey;
+    const amount = Math.max(0, Number(playerProgress?.unitEssences?.[key]) || 0);
+    element.textContent = amount.toLocaleString("ko-KR");
   });
 }
 

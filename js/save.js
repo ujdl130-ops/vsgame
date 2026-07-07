@@ -391,6 +391,14 @@ function getGrownStats(type, baseStats, growthState = getStoredGrowthState(type)
   return stats;
 }
 
+function createDefaultProgress() {
+  return {
+    unlockedStage: 1,
+    clearedStages: [],
+    growth: {},
+  };
+}
+
 function loadProgress() {
   try {
     const saved = JSON.parse(localStorage.getItem(STAGE_PROGRESS_KEY));
@@ -401,15 +409,20 @@ function loadProgress() {
       : [];
     const growth = saved.growth && typeof saved.growth === "object" ? saved.growth : {};
     return { ...saved, unlockedStage, clearedStages, growth };
-  } catch (error) {
-    return { unlockedStage: 1, clearedStages: [], growth: {} };
-  }
+  } catch (error) {}
+  return createDefaultProgress();
 }
 
 function saveProgress() {
   try {
     localStorage.setItem(STAGE_PROGRESS_KEY, JSON.stringify(playerProgress));
   } catch (error) {
-    // 로컬 파일 실행 환경에서 저장소 접근이 막히더라도 게임 진행은 유지합니다.
+    // 로컬 저장소 접근이 막혀도 현재 세션 진행은 유지합니다.
   }
+}
+
+function resetProgressStorage() {
+  try {
+    localStorage.removeItem(STAGE_PROGRESS_KEY);
+  } catch (error) {}
 }

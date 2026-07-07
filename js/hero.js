@@ -235,6 +235,7 @@ function castZeusThunderstorm() {
   };
   gameState.message = `${ZEUS_THUNDERSTORM_SKILL.name}!`;
   gameState.messageTimer = 0.65;
+  if (window.GameAudio) window.GameAudio.playHeroSkillSfx(hero);
   updateButtons();
 }
 
@@ -274,6 +275,7 @@ function castPoseidonTsunami() {
 
   gameState.message = `${POSEIDON_TSUNAMI_SKILL.name}!`;
   gameState.messageTimer = 0.65;
+  if (window.GameAudio) window.GameAudio.playHeroSkillSfx(hero);
   updateButtons();
 }
 
@@ -342,6 +344,7 @@ function heroAttack() {
   hero.attackAnimTimer = hero.attackAnimDuration;
   hero.pendingHeroShot = true;
   hero.shotTarget = findNearestEnemy(hero.x, hero.range);
+  if (window.GameAudio) window.GameAudio.playHeroBasicSfx(hero);
   updateButtons();
 }
 
@@ -384,6 +387,7 @@ function updateHero(dt) {
       hero.hurtAnimTimer = 0;
       hero.animState = "death";
       hero.animStateTime = 0;
+      if (window.GameAudio) window.GameAudio.playSfx("godDeath", { cooldown: 1000, volume: 0.82 });
       gameState.message = `메인 영웅이 쓰러졌습니다. ${HERO_RESPAWN_SECONDS}초 후 부활`;
       gameState.messageTimer = 1.2;
     }

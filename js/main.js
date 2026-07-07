@@ -43,6 +43,7 @@ function startGame(stageNumber = selectedStage) {
   gameState.messageTimer = 1.2;
   updateHud();
   updateButtons();
+  if (window.GameAudio) window.GameAudio.playStageBgm(selectedStage);
 }
 
 function restartGame() {
@@ -64,7 +65,7 @@ window.addEventListener("keydown", (event) => {
   if (isTitleVisible()) {
     if (event.code === "Enter" || event.code === "Space") {
       event.preventDefault();
-      showLobby();
+      handleTitleStart();
     }
     return;
   }
@@ -279,7 +280,21 @@ if (stageDefeatLobbyBtn) stageDefeatLobbyBtn.addEventListener("click", handleSta
 if (stageDefeatRetryBtn) stageDefeatRetryBtn.addEventListener("click", handleStageDefeatRetry);
 bindMovementJoystick(movementJoystick);
 if (titleStartBtn) titleStartBtn.textContent = "TAP TO START";
-if (titleScreen) titleScreen.addEventListener("click", showLobby);
+function shouldShowWelcomeRewardPopup() {
+  const mail = playerProgress?.welcomeMail || {};
+  return !mail.introduced && !mail.claimed && !hasWelcomeZeusRewardClaimed();
+}
+
+function handleTitleStart() {
+  showLobby();
+  if (shouldShowWelcomeRewardPopup()) {
+    playerProgress.welcomeMail = { ...(playerProgress.welcomeMail || {}), introduced: true, claimed: false };
+    saveProgress();
+    window.setTimeout(() => showWelcomeRewardPopup(), 120);
+  }
+}
+
+if (titleScreen) titleScreen.addEventListener("click", handleTitleStart);
 
 (() => {
   const showcase = document.getElementById("lobbyGodShowcase");
@@ -344,13 +359,7 @@ if (titleScreen) titleScreen.addEventListener("click", showLobby);
       ultimateName: "열두 시련", ultimateDescription: "시련을 이겨낸 영웅의 힘을 해방해 체력을 회복하고 적진으로 돌진한다.",
     },
   ];
-  let savedGod = "";
-  try {
-    savedGod = localStorage.getItem("pixelDefenseLobbyGod") || "";
-  } catch (error) {
-    savedGod = "";
-  }
-  let selectedIndex = Math.max(0, gods.findIndex((god) => god.id === savedGod));
+  let selectedIndex = 0;
 
   gods.forEach((god, index) => {
     const dot = document.createElement("button");
@@ -382,11 +391,6 @@ if (titleScreen) titleScreen.addEventListener("click", showLobby);
       dot.classList.toggle("is-selected", isSelected);
       dot.setAttribute("aria-current", isSelected ? "true" : "false");
     });
-    try {
-      localStorage.setItem("pixelDefenseLobbyGod", god.id);
-    } catch (error) {
-      // The carousel still works when storage is unavailable.
-    }
   }
 
   function updateCodex(god) {
@@ -440,6 +444,20 @@ if (lobbyRecruitBtn) lobbyRecruitBtn.addEventListener("click", showRecruit);
 if (lobbyMissionBtn) lobbyMissionBtn.addEventListener("click", showMission);
 const lobbyMailboxBtn = document.getElementById("lobbyMailboxBtn");
 const lobbySettingsBtn = document.getElementById("lobbySettingsBtn");
+const welcomeRewardPopup = document.getElementById("welcomeRewardPopup");
+const welcomeRewardMailboxBtn = document.getElementById("welcomeRewardMailboxBtn");
+const lobbyMailboxPanel = document.getElementById("lobbyMailboxPanel");
+const lobbyMailboxCloseBtn = document.getElementById("lobbyMailboxCloseBtn");
+const lobbyMailboxList = document.getElementById("lobbyMailboxList");
+const lobbySettingsPanel = document.getElementById("lobbySettingsPanel");
+const lobbySettingsCloseBtn = document.getElementById("lobbySettingsCloseBtn");
+const lobbySettingsResetBtn = document.getElementById("lobbySettingsResetBtn");
+const lobbySettingsExitBtn = document.getElementById("lobbySettingsExitBtn");
+const lobbyVolumeControls = [
+  { key: "master", input: document.getElementById("masterVolumeRange"), value: document.getElementById("masterVolumeValue") },
+  { key: "bgm", input: document.getElementById("bgmVolumeRange"), value: document.getElementById("bgmVolumeValue") },
+  { key: "sfx", input: document.getElementById("sfxVolumeRange"), value: document.getElementById("sfxVolumeValue") },
+];
 
 function updateLobbyTopBar() {
   const wallet = typeof playerProgress !== "undefined" && playerProgress ? playerProgress : {};
@@ -454,8 +472,133 @@ function updateLobbyTopBar() {
   });
 }
 
-if (lobbyMailboxBtn) lobbyMailboxBtn.addEventListener("click", () => showLobbyMenuNotice("우편함"));
-if (lobbySettingsBtn) lobbySettingsBtn.addEventListener("click", () => showLobbyMenuNotice("환경설정"));
+function hasWelcomeZeusRewardClaimed() {
+  return Boolean(playerProgress?.welcomeMail?.claimed || playerProgress?.ownedGods?.zeus?.owned === true || playerProgress?.ownedGods?.zeus === true);
+}
+
+function renderLobbyMailbox() {
+  if (!lobbyMailboxList) return;
+  const claimed = hasWelcomeZeusRewardClaimed();
+  lobbyMailboxList.innerHTML = `
+    <article class="lobby-mail-item${claimed ? " is-claimed" : ""}">
+      <img src="assets/maps/formation/zeus.png" alt="제우스">
+      <div>
+        <strong>환영 보상</strong>
+        <span>제우스 영웅 1개</span>
+        <p>${claimed ? "이미 수령한 보상입니다." : "첫 전투를 시작하기 위한 신을 수령하세요."}</p>
+      </div>
+      <button id="welcomeZeusClaimBtn" type="button" ${claimed ? "disabled" : ""}>${claimed ? "수령완료" : "받기"}</button>
+    </article>
+  `;
+  const claimBtn = document.getElementById("welcomeZeusClaimBtn");
+  if (claimBtn && !claimed) claimBtn.addEventListener("click", claimWelcomeZeusReward);
+}
+
+function showLobbyMailbox() {
+  renderLobbyMailbox();
+  if (lobbyMailboxPanel) lobbyMailboxPanel.classList.remove("is-hidden");
+}
+
+function hideLobbyMailbox() {
+  if (lobbyMailboxPanel) lobbyMailboxPanel.classList.add("is-hidden");
+}
+
+function showWelcomeRewardPopup() {
+  if (welcomeRewardPopup) welcomeRewardPopup.classList.remove("is-hidden");
+}
+
+function hideWelcomeRewardPopup() {
+  if (welcomeRewardPopup) welcomeRewardPopup.classList.add("is-hidden");
+}
+
+function claimWelcomeZeusReward() {
+  if (hasWelcomeZeusRewardClaimed()) {
+    renderLobbyMailbox();
+    return;
+  }
+  if (window.PlayerAPI?.grantWelcomeZeusReward) {
+    window.PlayerAPI.grantWelcomeZeusReward();
+  } else {
+    playerProgress.ownedGods = playerProgress.ownedGods || {};
+    playerProgress.ownedGods.zeus = { id: "zeus", name: "제우스", owned: true };
+    playerProgress.welcomeMail = { ...(playerProgress.welcomeMail || {}), introduced: true, claimed: true };
+    saveProgress();
+  }
+  if (typeof setSelectedHeroId === "function") setSelectedHeroId("zeus");
+  if (typeof updateLobbyTopBar === "function") updateLobbyTopBar();
+  if (window.GameAudio) window.GameAudio.playRewardGetSfx();
+  renderLobbyMailbox();
+  showLobbyMenuNotice("제우스를 수령했습니다");
+}
+
+function updateLobbySettingsControls() {
+  const settings = window.GameAudio?.getAudioSettings?.() || { master: 1, bgm: 1, sfx: 1 };
+  lobbyVolumeControls.forEach((control) => {
+    if (!control.input || !control.value) return;
+    const percent = Math.round(Math.min(1, Math.max(0, Number(settings[control.key]) || 0)) * 100);
+    control.input.value = String(percent);
+    control.value.textContent = `${percent}%`;
+  });
+}
+
+function showLobbySettings() {
+  updateLobbySettingsControls();
+  if (lobbySettingsPanel) lobbySettingsPanel.classList.remove("is-hidden");
+}
+
+function hideLobbySettings() {
+  if (lobbySettingsPanel) lobbySettingsPanel.classList.add("is-hidden");
+}
+
+function resetGameProgressFromSettings() {
+  const confirmed = window.confirm("진행 데이터를 초기화할까요? 볼륨 설정은 유지됩니다.");
+  if (!confirmed) return;
+  if (typeof resetProgressStorage === "function") resetProgressStorage();
+  playerProgress = normalizePlayerData(typeof createDefaultProgress === "function" ? createDefaultProgress() : {});
+  if (typeof claimedMissionRewards !== "undefined") claimedMissionRewards.clear();
+  selectedStage = 1;
+  if (typeof setSelectedHeroId === "function") setSelectedHeroId("zeus");
+  hideLobbySettings();
+  showTitle();
+  updateWalletDisplays();
+  updateLobbyTopBar();
+}
+
+if (lobbyMailboxBtn) lobbyMailboxBtn.addEventListener("click", showLobbyMailbox);
+if (lobbyMailboxCloseBtn) lobbyMailboxCloseBtn.addEventListener("click", hideLobbyMailbox);
+if (lobbyMailboxPanel) {
+  lobbyMailboxPanel.addEventListener("click", (event) => {
+    if (event.target === lobbyMailboxPanel) hideLobbyMailbox();
+  });
+}
+if (welcomeRewardMailboxBtn) {
+  welcomeRewardMailboxBtn.addEventListener("click", () => {
+    hideWelcomeRewardPopup();
+    showLobbyMailbox();
+  });
+}
+if (lobbySettingsBtn) lobbySettingsBtn.addEventListener("click", showLobbySettings);
+lobbyVolumeControls.forEach((control) => {
+  if (!control.input) return;
+  control.input.addEventListener("input", () => {
+    const percent = Math.min(100, Math.max(0, Number(control.input.value) || 0));
+    if (control.value) control.value.textContent = `${Math.round(percent)}%`;
+    window.GameAudio?.setAudioSetting?.(control.key, percent / 100);
+  });
+});
+if (lobbySettingsCloseBtn) lobbySettingsCloseBtn.addEventListener("click", hideLobbySettings);
+if (lobbySettingsResetBtn) lobbySettingsResetBtn.addEventListener("click", resetGameProgressFromSettings);
+if (lobbySettingsPanel) {
+  lobbySettingsPanel.addEventListener("click", (event) => {
+    if (event.target === lobbySettingsPanel) hideLobbySettings();
+  });
+}
+if (lobbySettingsExitBtn) {
+  lobbySettingsExitBtn.addEventListener("click", () => {
+    hideLobbySettings();
+    showTitle();
+  });
+}
 updateLobbyTopBar();
 if (missionBackBtn) missionBackBtn.addEventListener("click", showLobby);
 if (missionCloseBtn) missionCloseBtn.addEventListener("click", showLobby);

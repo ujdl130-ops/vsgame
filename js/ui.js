@@ -34,6 +34,8 @@ function isInventoryVisible() {
 
 function showLobby() {
   hideStageDefeatUi();
+  if (typeof hideWelcomeRewardPopup === "function") hideWelcomeRewardPopup();
+  if (typeof hideLobbyMailbox === "function") hideLobbyMailbox();
   if (titleScreen) titleScreen.classList.add("is-hidden");
   if (lobbyScreen) lobbyScreen.classList.remove("is-hidden");
   if (stageScreen) stageScreen.classList.add("is-hidden");
@@ -45,6 +47,7 @@ function showLobby() {
   hideRecruitDoorScene(true);
   document.body.classList.remove("game-started", "in-stage-select", "in-shop", "in-recruit", "in-formation", "in-mission", "in-inventory");
   document.body.classList.add("in-lobby");
+  if (window.GameAudio) window.GameAudio.syncScreenBgm();
   if (typeof updateLobbyTopBar === "function") updateLobbyTopBar();
   if (gameState) {
     gameState.running = false;
@@ -134,6 +137,8 @@ function renderLobbyHero() {
 
 function showTitle() {
   resetGame();
+  if (typeof hideWelcomeRewardPopup === "function") hideWelcomeRewardPopup();
+  if (typeof hideLobbyMailbox === "function") hideLobbyMailbox();
   if (titleScreen) titleScreen.classList.remove("is-hidden");
   if (lobbyScreen) lobbyScreen.classList.add("is-hidden");
   if (stageScreen) stageScreen.classList.add("is-hidden");
@@ -240,6 +245,7 @@ function grantStageClearTreasureReward(reward) {
     gold: Math.max(0, Number(reward.gold) || 0),
     soldierFragments: Math.max(0, Number(reward.soldierFragments) || 0),
   });
+  if (window.GameAudio) window.GameAudio.playRewardGetSfx();
   syncStageClearRewardWalletDisplays();
 }
 

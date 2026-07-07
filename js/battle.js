@@ -61,6 +61,7 @@ function startEnemyDeath(enemy) {
   enemy.playerGateHitPending = false;
   enemy.deathAnimDuration = enemy.deathAnimDuration || 0.55;
   enemy.deathAnimTimer = enemy.deathAnimDuration;
+  if (window.GameAudio) window.GameAudio.playEnemyDeathSfx(enemy);
 
   if (enemy.isBoss && typeof recordStageMissionBossDefeat === "function") {
     recordStageMissionBossDefeat();

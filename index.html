@@ -62,37 +62,6 @@
 
     <button id="lobbyExitBtn" class="lobby-btn lobby-exit" type="button">게임종료</button>
 
-    <button id="qaModeBtn" class="qa-mode-btn" type="button">QA 모드</button>
-
-    <!-- QA_MODE_START: delete this block with js/qa.js and the QA CSS block for release. -->
-    <section id="qaPanel" class="qa-panel is-hidden" aria-label="QA 모드 관리">
-      <header class="qa-panel-head">
-        <div>
-          <p>ADMIN</p>
-          <h2>QA 모드</h2>
-        </div>
-        <button id="qaPanelCloseBtn" type="button">닫기</button>
-      </header>
-      <div class="qa-toggle-row">
-        <strong>QA 기능</strong>
-        <button id="qaToggleBtn" type="button" aria-pressed="false">OFF</button>
-      </div>
-      <div class="qa-currency-grid" aria-label="재화 직접 입력">
-        <label><span>골드</span><input id="qaGoldInput" type="number" min="0" step="1"></label>
-        <label><span>다이아</span><input id="qaDiamondInput" type="number" min="0" step="1"></label>
-        <label><span>신 모집권</span><input id="qaTicketInput" type="number" min="0" step="1"></label>
-        <label><span>신의정수</span><input id="qaCommonEssenceInput" type="number" min="0" step="1"></label>
-        <label><span>병사정수</span><input id="qaSoldierEssenceInput" type="number" min="0" step="1"></label>
-      </div>
-      <div class="qa-action-row">
-        <button id="qaApplyCurrencyBtn" type="button">재화 적용</button>
-        <button id="qaClearStagesBtn" type="button">스테이지 전체 클리어</button>
-        <button id="qaOpenFormationBtn" type="button">성장 QA 확인</button>
-      </div>
-      <p id="qaPanelNotice" class="qa-panel-notice" aria-live="polite"></p>
-    </section>
-    <!-- QA_MODE_END -->
-
     <div class="lobby-stage" aria-hidden="true">
       <div class="lobby-sun"></div>
       <div class="lobby-cloud cloud-a"></div>
@@ -123,6 +92,65 @@
       <button id="lobbyMissionBtn" class="lobby-btn lobby-mission" type="button">미션</button>
     </div>
     <p id="lobbyMenuNotice" class="lobby-menu-notice" aria-live="polite"></p>
+
+    <div id="welcomeRewardPopup" class="welcome-reward-popup is-hidden" role="dialog" aria-modal="true" aria-labelledby="welcomeRewardTitle">
+      <div class="welcome-reward-card">
+        <p>WELCOME</p>
+        <h2 id="welcomeRewardTitle">환영 보상이 도착했습니다</h2>
+        <img src="assets/maps/formation/zeus.png" alt="제우스">
+        <strong>제우스</strong>
+        <span>첫 전투를 함께할 신을 우편함에서 수령하세요.</span>
+        <button id="welcomeRewardMailboxBtn" type="button">우편함으로 이동</button>
+      </div>
+    </div>
+
+    <div id="lobbyMailboxPanel" class="lobby-mailbox-panel is-hidden" role="dialog" aria-modal="true" aria-labelledby="lobbyMailboxTitle">
+      <div class="lobby-mailbox-card">
+        <header class="lobby-mailbox-head">
+          <div>
+            <p>MAIL</p>
+            <h2 id="lobbyMailboxTitle">우편함</h2>
+          </div>
+          <button id="lobbyMailboxCloseBtn" class="lobby-mailbox-close" type="button" aria-label="우편함 닫기">×</button>
+        </header>
+        <div id="lobbyMailboxList" class="lobby-mailbox-list"></div>
+      </div>
+    </div>
+
+    <div id="lobbySettingsPanel" class="lobby-settings-panel is-hidden" role="dialog" aria-modal="true" aria-labelledby="lobbySettingsTitle">
+      <div class="lobby-settings-card">
+        <header class="lobby-settings-head">
+          <div>
+            <p>OPTION</p>
+            <h2 id="lobbySettingsTitle">환경설정</h2>
+          </div>
+          <button id="lobbySettingsCloseBtn" class="lobby-settings-close" type="button" aria-label="환경설정 닫기">×</button>
+        </header>
+
+        <div class="lobby-settings-sliders">
+          <label class="lobby-volume-row" for="masterVolumeRange">
+            <span>전체볼륨</span>
+            <input id="masterVolumeRange" type="range" min="0" max="100" value="100">
+            <strong id="masterVolumeValue">100%</strong>
+          </label>
+          <label class="lobby-volume-row" for="bgmVolumeRange">
+            <span>배경음</span>
+            <input id="bgmVolumeRange" type="range" min="0" max="100" value="100">
+            <strong id="bgmVolumeValue">100%</strong>
+          </label>
+          <label class="lobby-volume-row" for="sfxVolumeRange">
+            <span>효과음</span>
+            <input id="sfxVolumeRange" type="range" min="0" max="100" value="100">
+            <strong id="sfxVolumeValue">100%</strong>
+          </label>
+        </div>
+
+        <div class="lobby-settings-actions">
+          <button id="lobbySettingsResetBtn" class="lobby-settings-reset" type="button">진행 초기화</button>
+          <button id="lobbySettingsExitBtn" class="lobby-settings-exit" type="button">게임종료</button>
+        </div>
+      </div>
+    </div>
   </section>
 
 
@@ -155,7 +183,7 @@
         </div>
         <div class="recruit-currency">
           <img src="assets/icons/ticket.png" alt="">
-          <span>신 모집권</span>
+          <span>강림권</span>
           <strong id="recruitTicketAmount">0</strong>
         </div>
         <div class="recruit-currency">
@@ -185,8 +213,8 @@
           </button>
         </div>
         <p id="recruitNotice" class="recruit-notice">
-          <strong>AWESOME 신 3%</strong>
-          <span>BASIC: 병사 정수 10개 · GOOD: 무작위 신의 정수 10개</span>
+          <strong>신 확률 3%</strong>
+          <span>병사정수 70% · 신의정수 27% · 신 3%</span>
         </p>
       </div>
     </div>
@@ -194,7 +222,7 @@
     <div id="recruitTicketPopup" class="recruit-ticket-popup is-hidden" role="dialog" aria-modal="true" aria-labelledby="recruitTicketPopupTitle">
       <div class="recruit-ticket-popup-window">
         <h2 id="recruitTicketPopupTitle">재화가 부족합니다</h2>
-        <p>신 모집권 또는 다이아를 상점에서 확인하시겠습니까?</p>
+        <p>강림권 또는 다이아를 상점에서 확인하시겠습니까?</p>
         <div class="recruit-ticket-popup-actions">
           <button id="recruitTicketPopupCloseBtn" class="recruit-ticket-popup-btn is-close" type="button">닫기</button>
           <button id="recruitTicketPopupShopBtn" class="recruit-ticket-popup-btn is-shop" type="button">상점으로 이동</button>
@@ -257,7 +285,7 @@
         </div>
         <div class="shop-wallet-currency">
           <img src="assets/icons/ticket.png" alt="">
-          <span>신 모집권</span>
+          <span>강림권</span>
           <strong id="shopTicketAmount">0</strong>
         </div>
         <div class="shop-wallet-currency">
@@ -311,7 +339,7 @@
     <div class="formation-topbar formation-wallet-wide" aria-label="재화 정보">
       <div class="formation-currency blue"><img src="assets/icons/diamond.png" alt=""><span>다이아몬드</span><strong data-wallet-value="diamond">0</strong></div>
       <div class="formation-currency gold"><img src="assets/icons/gold.png" alt=""><span>골드</span><strong data-wallet-value="gold">0</strong></div>
-      <div class="formation-currency ticket"><img src="assets/icons/ticket.png" alt=""><span>신 모집권</span><strong data-wallet-value="summonTickets">0</strong></div>
+      <div class="formation-currency ticket"><img src="assets/icons/ticket.png" alt=""><span>강림권</span><strong data-wallet-value="summonTickets">0</strong></div>
       <div class="formation-currency essence"><img src="assets/icons/essence_all.png" alt=""><span>신의정수</span><strong data-wallet-value="commonEssence">0</strong></div>
       <div class="formation-currency soldier"><img src="assets/icons/essence_soldier.png" alt=""><span>병사정수</span><strong data-wallet-value="soldierFragments">0</strong></div>
     </div>
@@ -591,6 +619,7 @@
   <script src="js/save.js"></script>
   <script src="js/stage.js"></script>
   <script src="js/player.js"></script>
+  <script src="js/audio.js"></script>
   <script src="js/poseidonSkillAnimation.js"></script>
   <script src="js/hero.js"></script>
   <script src="js/soldier.js"></script>
@@ -607,7 +636,5 @@
   <script src="js/ui.js"></script>
   <script src="js/battle.js"></script>
   <script src="js/main.js"></script>
-  <!-- QA_MODE_SCRIPT: remove for release. -->
-  <script src="js/qa.js"></script>
 </body>
 </html>

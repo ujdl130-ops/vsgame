@@ -8,6 +8,12 @@ const GACHA_SSR_VIDEO_SRC = "assets/ui/gacha 1.mp4";
 const GACHA_NORMAL_VIDEO_SRC = "assets/ui/gacha 2.mp4";
 let recruitBgmWasPlayingBeforeSummon = false;
 
+function getGodDescentHeroPool() {
+  if (typeof PROTOTYPE_PLAYABLE_HERO_IDS === "undefined") return GOD_HEROES;
+  const pool = GOD_HEROES.filter((hero) => PROTOTYPE_PLAYABLE_HERO_IDS.has(hero.id));
+  return pool.length ? pool : GOD_HEROES;
+}
+
 function isGodOwned(heroId) {
   const ownedGod = playerProgress.ownedGods?.[heroId];
   return Boolean(ownedGod && ownedGod.owned === true);
@@ -27,7 +33,8 @@ function summonGodDescentOnce(random = Math.random) {
   }
 
   if (roll >= GOD_DESCENT_SSR_RATE) {
-    const essenceHero = GOD_HEROES[Math.floor(random() * GOD_HEROES.length)];
+    const essenceHeroPool = getGodDescentHeroPool();
+    const essenceHero = essenceHeroPool[Math.floor(random() * essenceHeroPool.length)];
     grantPlayerRewards({ essences: { [essenceHero.essenceKey]: GACHA_ESSENCE_AMOUNT } });
     return [{
       rarity: "GOOD", type: "good", hero: null,
@@ -37,7 +44,8 @@ function summonGodDescentOnce(random = Math.random) {
     }];
   }
 
-  const hero = GOD_HEROES[Math.floor(random() * GOD_HEROES.length)];
+  const heroPool = getGodDescentHeroPool();
+  const hero = heroPool[Math.floor(random() * heroPool.length)];
   const isDuplicate = isGodOwned(hero.id);
   let convertedEssence = null;
   if (isDuplicate) {
@@ -63,12 +71,20 @@ function renderGachaResult(results, container = null) {
   container.replaceChildren(...list.map((result) => {
     const item = document.createElement("div");
     item.className = `gacha-result gacha-result-${result.type}`;
+    const label = getGachaResultTypeLabel(result);
     item.textContent = result.isDuplicate && result.convertedEssence
-      ? `${result.rarity} ${result.rewardName} → ${result.convertedEssence.name} ${result.convertedEssence.amount}개`
-      : `${result.rarity} ${result.rewardName}${result.type === "awesome" ? "" : ` ${result.rewardAmount}개`}`;
+      ? `신 ${result.rewardName} -> ${result.convertedEssence.name} ${result.convertedEssence.amount}개`
+      : `${label} ${result.rewardName}${result.type === "awesome" ? "" : ` ${result.rewardAmount}개`}`;
     return item;
   }));
   return list;
+}
+
+function getGachaResultTypeLabel(result) {
+  if (!result) return "";
+  if (result.type === "awesome") return "신";
+  if (result.type === "good") return "신의정수";
+  return "병사정수";
 }
 
 function openGachaScreen() {
@@ -86,6 +102,7 @@ function showRecruit() {
   if (inventoryScreen) inventoryScreen.classList.add("is-hidden");
   document.body.classList.remove("game-started", "in-lobby", "in-stage-select", "in-shop", "in-formation", "in-mission", "in-inventory");
   document.body.classList.add("in-recruit");
+  if (window.GameAudio) window.GameAudio.syncScreenBgm();
 
   if (gameState) {
     gameState.running = false;
@@ -97,7 +114,7 @@ function showRecruit() {
   bindRecruitTicketPopup();
 
   if (recruitNotice) {
-    recruitNotice.innerHTML = "<strong>AWESOME 신 3%</strong><span>BASIC: 병사 정수 10개 · GOOD: 무작위 신의 정수 10개</span>";
+    recruitNotice.innerHTML = "<strong>신 확률 3%</strong><span>병사정수 70% · 신의정수 27% · 신 3%</span>";
   }
 }
 
@@ -293,6 +310,10 @@ function resetRecruitSummonVideo() {
 }
 
 function pauseRecruitBgmForSummon() {
+  if (window.GameAudio) {
+    recruitBgmWasPlayingBeforeSummon = window.GameAudio.pauseBgm();
+    return;
+  }
   if (typeof recruitBgm === "undefined") return;
 
   recruitBgmWasPlayingBeforeSummon = !recruitBgm.paused;
@@ -300,6 +321,13 @@ function pauseRecruitBgmForSummon() {
 }
 
 function resumeRecruitBgmAfterSummon() {
+  if (window.GameAudio) {
+    if (recruitBgmWasPlayingBeforeSummon && document.body.classList.contains("in-recruit")) {
+      window.GameAudio.resumeBgm();
+    }
+    recruitBgmWasPlayingBeforeSummon = false;
+    return;
+  }
   if (typeof recruitBgm === "undefined" || !recruitBgmWasPlayingBeforeSummon) return;
   if (!document.body.classList.contains("in-recruit")) return;
 
@@ -310,6 +338,7 @@ function resumeRecruitBgmAfterSummon() {
 function showRecruitAnimationResults() {
   if (!recruitDoorScene || recruitDoorScene.classList.contains("is-hidden")) return;
   recruitDoorScene.classList.add("is-results-visible");
+  if (window.GameAudio) window.GameAudio.playSfx("gachaOpenFinish", { cooldown: 600, volume: 0.86 });
   resumeRecruitBgmAfterSummon();
 }
 
@@ -384,13 +413,15 @@ function renderRecruitResultCards(results) {
 
     const name = document.createElement("span");
     name.className = "gacha-card-name";
-    name.textContent = result.rewardName;
+    name.textContent = result.type === "awesome"
+      ? result.rewardName
+      : getGachaResultTypeLabel(result);
 
     card.append(icon, name);
     const detail = document.createElement("small");
     detail.textContent = result.isDuplicate && result.convertedEssence
       ? `중복 변환: ${result.convertedEssence.name} ${result.convertedEssence.amount}개`
-      : result.type === "awesome" ? "신 획득" : `${result.rewardAmount}개 획득`;
+      : result.type === "awesome" ? "신 획득" : `${result.rewardName} ${result.rewardAmount}개`;
     card.appendChild(detail);
     return card;
   }));
@@ -441,7 +472,7 @@ function hideRecruitDoorScene(silent = false) {
   recruitDoorState.opened = false;
   recruitDoorState.tapCount = 0;
   if (!silent && recruitNotice) {
-    recruitNotice.innerHTML = "<strong>AWESOME 신 3%</strong><span>BASIC: 병사 정수 10개 · GOOD: 무작위 신의 정수 10개</span>";
+    recruitNotice.innerHTML = "<strong>신 확률 3%</strong><span>병사정수 70% · 신의정수 27% · 신 3%</span>";
   }
 }
 
