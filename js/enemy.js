@@ -197,6 +197,7 @@ function startEnemyPlayerBaseAttack(enemy, attackDuration) {
   enemy.laserTarget = null;
   enemy.laserHitPending = false;
   enemy.moving = false;
+  if (window.GameAudio) window.GameAudio.playEnemyAttackSfx(enemy);
 }
 
 function advanceEnemyTowardPlayerBase(enemy, dt, attackDuration) {
@@ -384,6 +385,7 @@ function startKaronTransformation(enemy) {
 
   gameState.message = "카론 변신!";
   gameState.messageTimer = 1.2;
+  if (window.GameAudio) window.GameAudio.playSfx("wolfChange", { cooldown: 1000, volume: 0.9 });
   return true;
 }
 
@@ -463,6 +465,7 @@ function startKaronPlayerGateAttack(enemy, attackDuration) {
   enemy.clawTarget = null;
   enemy.clawHitPending = false;
   enemy.moving = false;
+  if (window.GameAudio) window.GameAudio.playEnemyAttackSfx(enemy);
 }
 
 function updateKaronEnemy(enemy, dt) {
@@ -508,6 +511,7 @@ function updateKaronEnemy(enemy, dt) {
     if (enemy.cooldown <= 0 && enemy.attackAnimTimer <= 0) {
       enemy.cooldown = enemy.attackSpeed;
       enemy.attackAnimTimer = attackDuration;
+      if (window.GameAudio) window.GameAudio.playEnemyAttackSfx(enemy);
       if (werewolf) {
         enemy.clawTarget = target;
         enemy.clawHitPending = true;
@@ -696,6 +700,7 @@ function updateEnemies(dt) {
           enemy.attackAnimTimer = attackDuration;
           enemy.laserTarget = target;
           enemy.laserHitPending = true;
+          if (window.GameAudio) window.GameAudio.playEnemyAttackSfx(enemy);
         }
       } else {
         advanceEnemyTowardPlayerBase(enemy, dt, attackDuration);
@@ -716,6 +721,7 @@ function updateEnemies(dt) {
       if (enemy.cooldown <= 0) {
         enemy.cooldown = enemy.attackSpeed;
         enemy.attackAnimTimer = attackDuration;
+        if (window.GameAudio) window.GameAudio.playEnemyAttackSfx(enemy);
         damageCombatant(target, enemy.damage);
 
         // 피격 시스템은 메인 영웅에게만 적용합니다.

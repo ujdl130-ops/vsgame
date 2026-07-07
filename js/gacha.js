@@ -93,6 +93,7 @@ function showRecruit() {
   if (inventoryScreen) inventoryScreen.classList.add("is-hidden");
   document.body.classList.remove("game-started", "in-lobby", "in-stage-select", "in-shop", "in-formation", "in-mission", "in-inventory");
   document.body.classList.add("in-recruit");
+  if (window.GameAudio) window.GameAudio.syncScreenBgm();
 
   if (gameState) {
     gameState.running = false;
@@ -300,6 +301,10 @@ function resetRecruitSummonVideo() {
 }
 
 function pauseRecruitBgmForSummon() {
+  if (window.GameAudio) {
+    recruitBgmWasPlayingBeforeSummon = window.GameAudio.pauseBgm();
+    return;
+  }
   if (typeof recruitBgm === "undefined") return;
 
   recruitBgmWasPlayingBeforeSummon = !recruitBgm.paused;
@@ -307,6 +312,13 @@ function pauseRecruitBgmForSummon() {
 }
 
 function resumeRecruitBgmAfterSummon() {
+  if (window.GameAudio) {
+    if (recruitBgmWasPlayingBeforeSummon && document.body.classList.contains("in-recruit")) {
+      window.GameAudio.resumeBgm();
+    }
+    recruitBgmWasPlayingBeforeSummon = false;
+    return;
+  }
   if (typeof recruitBgm === "undefined" || !recruitBgmWasPlayingBeforeSummon) return;
   if (!document.body.classList.contains("in-recruit")) return;
 
@@ -317,6 +329,7 @@ function resumeRecruitBgmAfterSummon() {
 function showRecruitAnimationResults() {
   if (!recruitDoorScene || recruitDoorScene.classList.contains("is-hidden")) return;
   recruitDoorScene.classList.add("is-results-visible");
+  if (window.GameAudio) window.GameAudio.playSfx("gachaOpenFinish", { cooldown: 600, volume: 0.86 });
   resumeRecruitBgmAfterSummon();
 }
 

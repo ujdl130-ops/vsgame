@@ -43,6 +43,7 @@ function startGame(stageNumber = selectedStage) {
   gameState.messageTimer = 1.2;
   updateHud();
   updateButtons();
+  if (window.GameAudio) window.GameAudio.playStageBgm(selectedStage);
 }
 
 function restartGame() {

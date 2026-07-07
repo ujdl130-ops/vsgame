@@ -578,6 +578,7 @@ function showShop() {
     "in-inventory"
   );
   document.body.classList.add("in-shop");
+  if (window.GameAudio) window.GameAudio.syncScreenBgm();
 
   if (gameState) {
     gameState.running = false;
@@ -1014,6 +1015,7 @@ function confirmShopPurchase() {
   if (shopNotice) {
     shopNotice.textContent = `${selectedShopItemName || "상품"} 구매 완료!`;
   }
+  if (window.GameAudio) window.GameAudio.playSfx("buySuccess", { cooldown: 250, volume: 0.8 });
   closeShopPurchasePopup();
 }
 

@@ -170,6 +170,7 @@ function showMission() {
 
   document.body.classList.remove("game-started", "in-lobby", "in-stage-select", "in-shop", "in-recruit", "in-formation", "in-inventory");
   document.body.classList.add("in-mission");
+  if (window.GameAudio) window.GameAudio.syncScreenBgm();
 
   if (gameState) {
     gameState.running = false;

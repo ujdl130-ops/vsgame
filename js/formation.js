@@ -1205,6 +1205,7 @@ function levelUpFormationUnit() {
     unit.star = action.nextStar;
     saveFormationUnitGrowth(unit);
     updateWalletDisplays();
+    if (window.GameAudio) window.GameAudio.playSfx("starLevelUp", { cooldown: 350, volume: 0.82 });
     showFormationMessage(`${unit.name}이(가) ${action.nextStar}성이 되었습니다.`);
     renderFormationRoster();
     renderFormationSelectedInfo();
@@ -1236,6 +1237,7 @@ function levelUpFormationUnit() {
   saveFormationUnitGrowth(unit);
 
   updateWalletDisplays();
+  if (window.GameAudio) window.GameAudio.playSfx("levelUp", { cooldown: 250, volume: 0.8 });
   showFormationMessage(`${unit.name}이(가) Lv.${unit.level}이 되었습니다.`);
   renderFormationRoster();
   renderFormationSelectedInfo();
@@ -1308,6 +1310,7 @@ function confirmFormationHeroGrowth() {
     setFormationHeroGrowth(hero.id, { star: currentStar, level: action.nextLevel });
     formationState.pendingHeroGrowthAction = null;
     updateWalletDisplays();
+    if (window.GameAudio) window.GameAudio.playSfx("levelUp", { cooldown: 250, volume: 0.8 });
     showFormationMessage(`${hero.name}이(가) Lv.${action.nextLevel}이 되었습니다.`);
     renderFormationSlots();
     renderFormationRoster();
@@ -1337,6 +1340,7 @@ function confirmFormationHeroGrowth() {
   setFormationHeroGrowth(hero.id, { star: action.nextStar, level: currentLevel });
   formationState.pendingHeroGrowthAction = null;
   updateWalletDisplays();
+  if (window.GameAudio) window.GameAudio.playSfx("starLevelUp", { cooldown: 350, volume: 0.82 });
   showFormationMessage(`${hero.name}이(가) ${action.nextStar}성이 되었습니다. Lv.${getFormationHeroLevelCap(hero.id, action.nextStar)}까지 성장할 수 있습니다.`);
   renderFormationSlots();
   renderFormationRoster();
@@ -1730,6 +1734,7 @@ function showFormation() {
   hideRecruitDoorScene(true);
   document.body.classList.remove("game-started", "in-lobby", "in-stage-select", "in-shop", "in-recruit", "in-formation", "in-mission", "in-inventory");
   document.body.classList.add("in-formation");
+  if (window.GameAudio) window.GameAudio.syncScreenBgm();
 
   if (gameState) {
     gameState.running = false;

@@ -311,6 +311,7 @@ function showStageSelect() {
 
   document.body.classList.remove("game-started", "in-lobby", "in-shop", "in-recruit", "in-formation", "in-mission", "in-inventory");
   document.body.classList.add("in-stage-select");
+  if (window.GameAudio) window.GameAudio.syncScreenBgm();
 
   if (gameState) {
     gameState.running = false;
@@ -376,6 +377,7 @@ function completeStage(message) {
   const alreadyCleared = playerProgress.clearedStages.includes(selectedStage);
   gameState.clear = true;
   gameState.running = false;
+  if (window.GameAudio) window.GameAudio.playSfx("stageClear", { cooldown: 1000, volume: 0.9 });
   gameState.message = `${message} · 스테이지 선택 버튼으로 다음 지역에 도전`;
   completeStageMissions(selectedStage);
   unlockStageProgress(selectedStage);
