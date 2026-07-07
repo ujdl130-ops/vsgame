@@ -82,6 +82,7 @@ function setSelectedHeroId(heroId) {
 
 function createInitialState() {
   const stageConfig = getStageConfig(selectedStage);
+  const playerBaseHp = stageConfig.playerBaseHp || 100;
 
   return {
     running: false,
@@ -97,7 +98,8 @@ function createInitialState() {
     runestone: clampRunestone(stageConfig.startRunestone),
     zeusMana: 0,
     zeusManaMax: ZEUS_MANA_MAX,
-    playerBaseHp: 100,
+    playerBaseHp,
+    playerBaseMaxHp: playerBaseHp,
     enemyBaseHp: stageConfig.enemyBaseHp,
     enemyBaseMaxHp: stageConfig.enemyBaseHp,
     enemySpawnTimer: 0,

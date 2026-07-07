@@ -514,7 +514,14 @@ function draw() {
 
   const playerBaseUi = getBaseRenderConfig(true);
   const enemyBaseUi = getBaseRenderConfig(false);
-  drawHealthBar(playerBaseUi.hpX, playerBaseUi.hpY, playerBaseUi.hpW, gameState.playerBaseHp, 100, "#79ff7a");
+  drawHealthBar(
+    playerBaseUi.hpX,
+    playerBaseUi.hpY,
+    playerBaseUi.hpW,
+    gameState.playerBaseHp,
+    gameState.playerBaseMaxHp || 100,
+    "#79ff7a"
+  );
   drawHealthBar(enemyBaseUi.hpX, enemyBaseUi.hpY, enemyBaseUi.hpW, gameState.enemyBaseHp, gameState.enemyBaseMaxHp, "#ff6868");
 
   const drawList = [
