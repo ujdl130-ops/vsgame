@@ -139,7 +139,9 @@ function getZeusThunderstormDamage(hero = gameState && gameState.hero) {
 
 function createMainHero(heroId = selectedHeroId) {
   const definition = getHeroDefinition(heroId);
-  const stats = getGrownStats("hero", { hp: definition.baseHp, damage: definition.baseDamage });
+  const stats = typeof getFormationHeroBattleStats === "function"
+    ? getFormationHeroBattleStats(definition.id)
+    : getGrownStats("hero", { hp: definition.baseHp, damage: definition.baseDamage });
   return {
     type: "hero",
     heroId: definition.id,
@@ -154,9 +156,9 @@ function createMainHero(heroId = selectedHeroId) {
     maxHp: stats.hp,
     speed: definition.speed,
     damage: stats.damage,
-    range: definition.range,
+    range: stats.range || definition.range,
     cooldown: 0,
-    attackSpeed: definition.attackSpeed,
+    attackSpeed: stats.attackSpeed || definition.attackSpeed,
     projectileType: definition.projectileType,
     projectileColor: definition.projectileColor,
     attackAnimTimer: 0,

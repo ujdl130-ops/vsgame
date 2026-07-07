@@ -8,6 +8,22 @@ function canDamageCombatant(entity) {
   return Boolean(isCombatAlive(entity) && !entity.transforming);
 }
 
+function getDefenseMitigatedDamage(target, rawDamage) {
+  const damage = Math.max(0, Number(rawDamage) || 0);
+  const defense = Math.max(0, Number(target && target.defense) || 0);
+  if (damage <= 0 || defense <= 0) return damage;
+
+  const reduction = defense / (defense + 100);
+  return Math.max(1, Math.round(damage * (1 - reduction)));
+}
+
+function damageCombatant(target, rawDamage) {
+  if (!target) return 0;
+  const damage = getDefenseMitigatedDamage(target, rawDamage);
+  target.hp -= damage;
+  return damage;
+}
+
 function startUnitDeath(unit) {
   if (!unit || unit.dead) return;
   unit.dead = true;

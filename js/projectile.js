@@ -192,7 +192,7 @@ function damageKaronSwordWaveSplash(projectile, impactX) {
   const targets = getKaronSwordWaveSplashTargets(impactX, radius);
 
   for (const target of targets) {
-    target.hp -= projectile.damage;
+    damageCombatant(target, projectile.damage);
     spawnHit(target.x, target.y - Math.max(38, target.h * 0.65), KARON_SWORD_WAVE_HIT_COLOR);
   }
 
@@ -338,7 +338,7 @@ function updateProjectiles(dt) {
     const impact = moveProjectileTowardImpact(projectile, dt);
     if (projectile.reachedImpact) {
       if (isCombatAlive(projectile.target) && canDamageCombatant(projectile.target)) {
-        projectile.target.hp -= projectile.damage;
+        damageCombatant(projectile.target, projectile.damage);
         spawnHit(impact.x, impact.y, projectile.color || "#f2fdff");
       }
       projectile.dead = true;
