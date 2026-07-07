@@ -27,7 +27,7 @@ const INVENTORY_ESSENCE_ITEMS = [
 const INVENTORY_RESOURCE_ITEMS = [
   { key: "gold", name: "골드", icon: "assets/icons/gold.png", source: "progress" },
   { key: "diamonds", name: "다이아몬드", icon: "assets/icons/diamond.png", source: "progress" },
-  { key: "summonTickets", name: "뽑기권", icon: "assets/icons/ticket.png", source: "progress" },
+  { key: "summonTickets", name: "강림권", icon: "assets/icons/ticket.png", source: "progress" },
 ];
 
 function getInventoryItemAmount(item) {
