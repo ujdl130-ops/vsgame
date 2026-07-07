@@ -1521,9 +1521,6 @@ function renderFormationHeroDetail() {
           <div><dt>기본스킬</dt><dd>${hero.skillType || "전투 중 기본 스킬을 사용합니다."}</dd></div>
           <div><dt>현재 성급</dt><dd>${star}성 / ${FORMATION_HERO_MAX_STAR}성</dd></div>
           <div><dt>현재 레벨</dt><dd>Lv.${level} / ${levelCap}</dd></div>
-          <div><dt>공통정수</dt><dd>${commonEssenceAmount.toLocaleString("ko-KR")}</dd></div>
-          <div><dt>${heroEssenceMeta.name}</dt><dd>${heroEssenceAmount.toLocaleString("ko-KR")}</dd></div>
-          <div><dt>골드</dt><dd>${goldAmount.toLocaleString("ko-KR")}</dd></div>
         </dl>
         <div class="formation-growth-actions">
           <button id="formationHeroLevelUpBtn" class="formation-level-btn formation-hero-level-btn" type="button" ${canLevelUp ? "" : "disabled"}>
@@ -1588,9 +1585,6 @@ function renderFormationUnitDetail() {
           <div><dt>스킬</dt><dd>${unit.ability || "전투에서 아군 진형을 보조합니다."}</dd></div>
           <div><dt>현재 성급</dt><dd>${unit.star}성 / ${FORMATION_MAX_STAR}성</dd></div>
           <div><dt>현재 레벨</dt><dd>Lv.${unit.level} / ${unit.maxLevel}</dd></div>
-          <div><dt>공통정수</dt><dd>${commonEssenceAmount.toLocaleString("ko-KR")}</dd></div>
-          <div><dt>병사정수</dt><dd>${soldierEssenceAmount.toLocaleString("ko-KR")}</dd></div>
-          <div><dt>골드</dt><dd>${goldAmount.toLocaleString("ko-KR")}</dd></div>
         </dl>
         <div class="formation-growth-actions">
           <button id="formationUnitLevelUpBtn" class="formation-level-btn formation-hero-level-btn" type="button" ${canLevelUp ? "" : "disabled"}>
