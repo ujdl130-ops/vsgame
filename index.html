@@ -87,7 +87,7 @@
       <div class="qa-action-row">
         <button id="qaApplyCurrencyBtn" type="button">재화 적용</button>
         <button id="qaClearStagesBtn" type="button">스테이지 전체 클리어</button>
-        <button id="qaOpenFormationBtn" type="button">강화 QA 확인</button>
+        <button id="qaOpenFormationBtn" type="button">성장 QA 확인</button>
       </div>
       <p id="qaPanelNotice" class="qa-panel-notice" aria-live="polite"></p>
     </section>
@@ -303,11 +303,10 @@
   </section>
 
 
-  <section id="formationScreen" class="formation-screen is-hidden" aria-label="픽셀디펜스 강화 화면">
+  <section id="formationScreen" class="formation-screen is-hidden" aria-label="픽셀디펜스 성장 화면">
     <div class="formation-scanline" aria-hidden="true"></div>
 
     <button id="formationBackBtn" class="formation-ui-btn formation-back-btn" type="button">← 로비</button>
-    <button id="formationCloseBtn" class="formation-ui-btn formation-close-btn" type="button">인벤토리</button>
 
     <div class="formation-topbar formation-wallet-wide" aria-label="재화 정보">
       <div class="formation-currency blue"><img src="assets/icons/diamond.png" alt=""><span>다이아몬드</span><strong data-wallet-value="diamond">0</strong></div>
@@ -318,9 +317,9 @@
     </div>
 
     <div class="formation-shell">
-      <aside class="formation-sidebar" aria-label="강화 메뉴">
-        <div class="formation-sidebar-title">강화</div>
-        <button class="formation-side-btn is-active" type="button">강화</button>
+      <aside class="formation-sidebar" aria-label="성장 메뉴">
+        <div class="formation-sidebar-title">성장</div>
+        <button class="formation-side-btn is-active" type="button">성장</button>
         <button class="formation-side-btn is-disabled" type="button" disabled>컬렉션</button>
         <button class="formation-side-btn" type="button">모집</button>
         <button class="formation-side-btn" type="button">상점</button>
@@ -330,10 +329,10 @@
       <section class="formation-main-panel">
         <header class="formation-header-row">
           <div class="formation-title-box">
-            <p class="formation-kicker">ENHANCE</p>
-            <h1 class="formation-logo">영웅 강화</h1>
+            <p class="formation-kicker">GROWTH</p>
+            <h1 class="formation-logo">영웅 성장</h1>
           </div>
-          <div class="formation-category-tabs" role="tablist" aria-label="강화 카테고리">
+          <div class="formation-category-tabs" role="tablist" aria-label="성장 카테고리">
             <button class="formation-category-tab is-active" type="button" data-formation-tab="deck">덱</button>
             <button class="formation-category-tab" type="button" data-formation-tab="unit">유닛</button>
             <button class="formation-category-tab" type="button" data-formation-tab="tower">타워</button>
@@ -402,7 +401,7 @@
   <section id="inventoryScreen" class="inventory-screen is-hidden" aria-label="픽셀디펜스 인벤토리 화면">
     <div class="inventory-scanline" aria-hidden="true"></div>
     <button id="inventoryBackBtn" class="inventory-ui-btn inventory-back-btn" type="button">로비</button>
-    <button id="inventoryCloseBtn" class="inventory-ui-btn inventory-close-btn" type="button">강화</button>
+    <button id="inventoryCloseBtn" class="inventory-ui-btn inventory-close-btn" type="button">성장</button>
     <div id="inventoryRoot" class="inventory-root" aria-label="인벤토리 슬롯"></div>
   </section>
 
@@ -530,7 +529,7 @@
           <div class="stage-defeat-actions" aria-label="스테이지 실패 행동">
             <button id="stageDefeatLobbyBtn" class="stage-defeat-action stage-defeat-lobby" type="button">로비</button>
             <button id="stageDefeatRetryBtn" class="stage-defeat-action stage-defeat-retry" type="button">재시작</button>
-            <button id="stageDefeatUpgradeBtn" class="stage-defeat-action stage-defeat-upgrade" type="button">강화</button>
+            <button id="stageDefeatUpgradeBtn" class="stage-defeat-action stage-defeat-upgrade" type="button">성장</button>
           </div>
         </section>
       </div>
