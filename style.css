@@ -16970,3 +16970,12 @@ body:not(.game-started) .game-wrap {
     min-height: 22px !important;
   }
 }
+
+/* Static lobby artwork: keep the navigation UI and remove the old animated scene. */
+.lobby-screen {
+  background: #080b16 url("assets/lobby_bg.png") center / cover no-repeat;
+}
+
+.lobby-screen .lobby-stage {
+  display: none;
+}
