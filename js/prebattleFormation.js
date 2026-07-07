@@ -12,9 +12,36 @@ const PREBATTLE_HERO_CARDS = [
 let prebattleFormationHeroIndex = 0;
 let prebattleFormationLastDirection = -1;
 
+function getPrebattleFormationHero(heroId) {
+  if (typeof FORMATION_HEROES === "undefined" || !Array.isArray(FORMATION_HEROES)) return null;
+  return FORMATION_HEROES.find((hero) => hero.id === heroId) || null;
+}
+
+function getPrebattleHeroCard(hero) {
+  const formationHero = getPrebattleFormationHero(hero.id);
+  if (!formationHero) return { ...hero, unlocked: true };
+  return {
+    ...hero,
+    name: formationHero.name || hero.name,
+    image: formationHero.image || hero.image,
+    unlocked: formationHero.unlocked !== false,
+  };
+}
+
+function isPrebattleHeroOwned(heroId) {
+  const formationHero = getPrebattleFormationHero(heroId);
+  return formationHero ? formationHero.unlocked !== false : true;
+}
+
+function getFirstOwnedPrebattleHeroIndex() {
+  const heroIndex = PREBATTLE_HERO_CARDS.findIndex((hero) => isPrebattleHeroOwned(hero.id));
+  return heroIndex >= 0 ? heroIndex : 0;
+}
+
 function getPrebattleHeroIndex(heroId = selectedHeroId) {
   const heroIndex = PREBATTLE_HERO_CARDS.findIndex((hero) => hero.id === heroId);
-  return heroIndex >= 0 ? heroIndex : 0;
+  if (heroIndex >= 0 && isPrebattleHeroOwned(PREBATTLE_HERO_CARDS[heroIndex].id)) return heroIndex;
+  return getFirstOwnedPrebattleHeroIndex();
 }
 
 function getPrebattleCardPosition(index) {
@@ -39,28 +66,56 @@ function syncPrebattleSelectedHero(heroId) {
 }
 
 function renderPrebattleHeroCards() {
-  return PREBATTLE_HERO_CARDS.map((hero, index) => `
-    <img
-      class="prebattle-formation-hero-card is-${getPrebattleCardPosition(index)}"
-      src="${hero.image}"
-      alt="${hero.name} 카드"
+  return PREBATTLE_HERO_CARDS.map((baseHero, index) => {
+    const hero = getPrebattleHeroCard(baseHero);
+    const isLocked = !hero.unlocked;
+    const lockedClass = isLocked ? " is-locked" : "";
+    const heroLabel = isLocked ? `${hero.name} 잠김` : `${hero.name} 카드`;
+    const lockMarkup = isLocked ? `<span class="prebattle-formation-lock" aria-hidden="true"><span></span></span>` : "";
+
+    return `
+    <div
+      class="prebattle-formation-hero-card is-${getPrebattleCardPosition(index)}${lockedClass}"
       data-prebattle-hero-id="${hero.id}"
-      draggable="false"
+      data-locked="${isLocked ? "true" : "false"}"
+      aria-label="${heroLabel}"
     >
-  `).join("");
+      <img
+        class="prebattle-formation-hero-card-image"
+        src="${hero.image}"
+        alt="${hero.name} 카드"
+        draggable="false"
+      >
+      ${lockMarkup}
+    </div>
+  `;
+  }).join("");
 }
 
 function updatePrebattleHeroCards() {
   const root = getPrebattleFormationRoot();
-  const selectedHero = PREBATTLE_HERO_CARDS[prebattleFormationHeroIndex] || PREBATTLE_HERO_CARDS[0];
+  const selectedHero = getPrebattleHeroCard(PREBATTLE_HERO_CARDS[prebattleFormationHeroIndex] || PREBATTLE_HERO_CARDS[0]);
   const track = root.querySelector(".prebattle-formation-card-track");
   if (!track || !selectedHero) return;
 
-  root.dataset.selectedHero = selectedHero.id;
-  track.setAttribute("aria-label", `${selectedHero.name} 선택됨`);
+  const selectedHeroOwned = isPrebattleHeroOwned(selectedHero.id);
+  const startButton = root.querySelector(".prebattle-formation-start-btn");
+
+  root.dataset.activeHero = selectedHero.id;
+  root.dataset.selectedHero = selectedHeroOwned ? selectedHero.id : "";
+  track.setAttribute("aria-label", selectedHeroOwned ? `${selectedHero.name} 선택됨` : `${selectedHero.name} 잠김`);
   track.querySelectorAll(".prebattle-formation-hero-card").forEach((card, index) => {
-    card.className = `prebattle-formation-hero-card is-${getPrebattleCardPosition(index)}`;
+    const hero = PREBATTLE_HERO_CARDS[index];
+    const lockedClass = hero && !isPrebattleHeroOwned(hero.id) ? " is-locked" : "";
+    card.className = `prebattle-formation-hero-card is-${getPrebattleCardPosition(index)}${lockedClass}`;
+    card.dataset.locked = lockedClass ? "true" : "false";
   });
+
+  if (startButton) {
+    startButton.disabled = !selectedHeroOwned;
+    startButton.setAttribute("aria-disabled", selectedHeroOwned ? "false" : "true");
+    startButton.title = selectedHeroOwned ? "" : "성장 탭에서 보유한 영웅만 출전할 수 있습니다.";
+  }
 }
 
 function movePrebattleHeroCard(direction) {
@@ -72,7 +127,9 @@ function movePrebattleHeroCard(direction) {
   ) % PREBATTLE_HERO_CARDS.length;
 
   const selectedHero = PREBATTLE_HERO_CARDS[prebattleFormationHeroIndex];
-  syncPrebattleSelectedHero(selectedHero.id);
+  if (selectedHero && isPrebattleHeroOwned(selectedHero.id)) {
+    syncPrebattleSelectedHero(selectedHero.id);
+  }
   updatePrebattleHeroCards();
 }
 
@@ -91,7 +148,10 @@ function getPrebattleFormationRoot() {
 function renderPrebattleFormation() {
   const root = getPrebattleFormationRoot();
   prebattleFormationHeroIndex = getPrebattleHeroIndex();
-  syncPrebattleSelectedHero(PREBATTLE_HERO_CARDS[prebattleFormationHeroIndex].id);
+  const selectedHero = PREBATTLE_HERO_CARDS[prebattleFormationHeroIndex];
+  if (selectedHero && isPrebattleHeroOwned(selectedHero.id)) {
+    syncPrebattleSelectedHero(selectedHero.id);
+  }
 
   root.innerHTML = `
     <div class="prebattle-formation-board">
@@ -158,6 +218,10 @@ function startPrebattleFormationBattle() {
   const root = getPrebattleFormationRoot();
   const stageNumber = Number(root.dataset.stage) || selectedStage || 1;
   const selectedHero = PREBATTLE_HERO_CARDS[prebattleFormationHeroIndex] || PREBATTLE_HERO_CARDS[0];
+  if (!selectedHero || !isPrebattleHeroOwned(selectedHero.id)) {
+    updatePrebattleHeroCards();
+    return;
+  }
   syncPrebattleSelectedHero(selectedHero.id);
   root.classList.add("is-hidden");
   document.body.classList.remove("in-prebattle-formation");
