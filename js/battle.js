@@ -8,6 +8,22 @@ function canDamageCombatant(entity) {
   return Boolean(isCombatAlive(entity) && !entity.transforming);
 }
 
+function getDefenseMitigatedDamage(target, rawDamage) {
+  const damage = Math.max(0, Number(rawDamage) || 0);
+  const defense = Math.max(0, Number(target && target.defense) || 0);
+  if (damage <= 0 || defense <= 0) return damage;
+
+  const reduction = defense / (defense + 100);
+  return Math.max(1, Math.round(damage * (1 - reduction)));
+}
+
+function damageCombatant(target, rawDamage) {
+  if (!target) return 0;
+  const damage = getDefenseMitigatedDamage(target, rawDamage);
+  target.hp -= damage;
+  return damage;
+}
+
 function startUnitDeath(unit) {
   if (!unit || unit.dead) return;
   unit.dead = true;
@@ -145,7 +161,8 @@ function getZeusStormRenderMetrics(effect, sprite) {
     drawW: frameW,
     drawH: frameH,
     drawX: Math.max(-40, Math.min(canvas.width - frameW + 40, effect.x - frameW / 2)),
-    drawY: -92 - (1 - cloudProgress) * 14,
+    drawY: (ZEUS_THUNDERSTORM_SKILL.stormBaseDrawY ?? -92)
+      - (1 - cloudProgress) * (ZEUS_THUNDERSTORM_SKILL.stormIntroYOffset ?? 14),
   };
 }
 
@@ -498,7 +515,14 @@ function draw() {
 
   const playerBaseUi = getBaseRenderConfig(true);
   const enemyBaseUi = getBaseRenderConfig(false);
-  drawHealthBar(playerBaseUi.hpX, playerBaseUi.hpY, playerBaseUi.hpW, gameState.playerBaseHp, 100, "#79ff7a");
+  drawHealthBar(
+    playerBaseUi.hpX,
+    playerBaseUi.hpY,
+    playerBaseUi.hpW,
+    gameState.playerBaseHp,
+    gameState.playerBaseMaxHp || 100,
+    "#79ff7a"
+  );
   drawHealthBar(enemyBaseUi.hpX, enemyBaseUi.hpY, enemyBaseUi.hpW, gameState.enemyBaseHp, gameState.enemyBaseMaxHp, "#ff6868");
 
   const drawList = [

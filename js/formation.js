@@ -191,6 +191,57 @@ function getFormationUnit(unitId) {
   );
 }
 
+function serializeFormationUnitGrowth(unit) {
+  return {
+    level: unit.level,
+    star: unit.star,
+    attack: unit.attack,
+    hp: unit.hp,
+    defense: unit.defense,
+  };
+}
+
+function getFormationUnitGrowthMap() {
+  if (!playerProgress) return {};
+  if (!playerProgress.unitGrowth || typeof playerProgress.unitGrowth !== "object") {
+    playerProgress.unitGrowth = {};
+  }
+  return playerProgress.unitGrowth;
+}
+
+function applyStoredFormationUnitGrowth(unit) {
+  if (!unit || !playerProgress) return false;
+  const growth = getFormationUnitGrowthMap()[unit.instanceId];
+  if (!growth || typeof growth !== "object") return false;
+
+  unit.level = Math.min(unit.maxLevel, Math.max(1, Number(growth.level) || unit.level));
+  unit.star = Math.min(FORMATION_MAX_STAR, Math.max(1, Number(growth.star) || unit.star || 1));
+  unit.attack = Math.max(1, Number(growth.attack) || unit.attack);
+  unit.hp = Math.max(1, Number(growth.hp) || unit.hp);
+  unit.defense = Math.max(0, Number(growth.defense) || unit.defense || 0);
+  return true;
+}
+
+function setFormationUnitGrowth(unit) {
+  if (!unit || !playerProgress) return;
+  getFormationUnitGrowthMap()[unit.instanceId] = serializeFormationUnitGrowth(unit);
+  saveProgress();
+}
+
+function initializeFormationUnitGrowthDefaults() {
+  if (!playerProgress) return;
+  const growthMap = getFormationUnitGrowthMap();
+  let changed = false;
+
+  FORMATION_ROSTER_UNITS.forEach((unit) => {
+    if (applyStoredFormationUnitGrowth(unit)) return;
+    growthMap[unit.instanceId] = serializeFormationUnitGrowth(unit);
+    changed = true;
+  });
+
+  if (changed) saveProgress();
+}
+
 function getFormationSlotsForCurrentPage() {
   return formationState.pages[formationState.activeType][formationState.activePage];
 }
@@ -200,6 +251,7 @@ function ensureFormationOwnedUnits() {
     return FORMATION_ROSTER_UNITS.slice(0, FORMATION_OWNED_UNIT_LIMIT);
   }
   if (!playerProgress) return FORMATION_ROSTER_UNITS.slice(0, FORMATION_OWNED_UNIT_LIMIT);
+  initializeFormationUnitGrowthDefaults();
   if (!Array.isArray(playerProgress.ownedUnits) || !playerProgress.ownedUnits.length) {
     playerProgress.ownedUnits = FORMATION_ROSTER_UNITS.slice(0, FORMATION_BASE_UNITS.length).map((unit) => unit.instanceId);
     saveProgress();
@@ -265,7 +317,7 @@ function setFormationHeroGrowth(heroId, growth = {}) {
   const nextLevel = Math.min(getFormationHeroLevelCap(heroId, nextStar), Math.max(1, Number(growth.level) || getFormationHeroLevel(heroId)));
   getHeroGrowthMap()[heroId] = { star: nextStar, level: nextLevel };
 
-  if (heroId === "zeus") {
+  if (heroId === "zeus" || heroId === selectedHeroId) {
     playerProgress.growth = playerProgress.growth || {};
     playerProgress.growth.hero = { level: nextLevel, star: nextStar };
     if (gameState) gameState.growth = playerProgress.growth;
@@ -518,17 +570,43 @@ function getFormationHeroGrowthActionKey(heroId, action) {
   return `${heroId}:${action.type}:${action.nextLevel || action.nextStar || 0}`;
 }
 
-function getFormationHeroStats(heroId = formationState.selectedHeroId) {
-  const star = getFormationHeroStar(heroId);
-  const level = getFormationHeroLevel(heroId);
-  const stats = getGrownStats("hero", { hp: 180, damage: 34 }, { level, star });
+function getFormationHeroBaseBattleStats(heroId = formationState.selectedHeroId) {
+  if (typeof getHeroDefinition === "function") {
+    const definition = getHeroDefinition(heroId);
+    return {
+      hp: definition.baseHp,
+      damage: definition.baseDamage,
+      range: definition.range,
+      attackSpeed: definition.attackSpeed,
+    };
+  }
 
   return {
-    hp: stats.hp,
-    damage: stats.damage,
+    hp: 180,
+    damage: 34,
     range: 275,
     attackSpeed: 0.48,
   };
+}
+
+function getFormationHeroBattleStats(heroId = formationState.selectedHeroId) {
+  const star = getFormationHeroStar(heroId);
+  const level = getFormationHeroLevel(heroId);
+  const baseStats = getFormationHeroBaseBattleStats(heroId);
+  const stats = getGrownStats("hero", { hp: baseStats.hp, damage: baseStats.damage }, { level, star });
+
+  return {
+    level,
+    star,
+    hp: stats.hp,
+    damage: stats.damage,
+    range: baseStats.range,
+    attackSpeed: baseStats.attackSpeed,
+  };
+}
+
+function getFormationHeroStats(heroId = formationState.selectedHeroId) {
+  return getFormationHeroBattleStats(heroId);
 }
 
 function getFormationUnitFragmentAmount() {
@@ -988,6 +1066,7 @@ function renderFormationScreen() {
     formationScreen.dataset.rendered = "true";
     bindFormationScreenEvents();
   }
+  initializeFormationUnitGrowthDefaults();
   initializeFormationHeroGrowthDefaults();
   renderFormationTabs();
   renderFormationSlots();
@@ -1211,12 +1290,12 @@ function executeFormationUnitGrowth(actionType = null) {
   if (playerProgress) {
     playerProgress.gold = Math.max(0, Number(playerProgress.gold) || 0);
     playerProgress.gold = Math.max(0, playerProgress.gold - action.cost);
-    saveProgress();
   }
   unit.level += 1;
   unit.attack += 12;
   unit.hp += 70;
   unit.defense += 6;
+  setFormationUnitGrowth(unit);
 
   updateWalletDisplays();
   showFormationMessage(`${unit.name}이(가) Lv.${unit.level}이 되었습니다.`);
@@ -1762,10 +1841,13 @@ function showFormationNotice() {
 window.FormationAPI = {
   addOwnedUnit: addFormationOwnedUnit,
   getOwnedUnits: ensureFormationOwnedUnits,
+  getBattleStats: getFormationBattleStats,
+  getHeroBattleStats: getFormationHeroBattleStats,
   ownedUnitLimit: FORMATION_OWNED_UNIT_LIMIT,
 };
 
 function getBestFormationBattleUnit(baseId) {
+  initializeFormationUnitGrowthDefaults();
   const placedIds = Object.values(formationState.pages.deck)
     .flat()
     .filter(Boolean);
@@ -1780,28 +1862,48 @@ function getBestFormationBattleUnit(baseId) {
   return candidates.sort((a, b) => b.level - a.level || b.attack - a.attack)[0] || null;
 }
 
-function applyFormationBattleStats(baseId, battleUnit) {
+function getFormationBattleStats(baseId) {
   const formationUnit = getBestFormationBattleUnit(baseId);
-  if (!formationUnit) return battleUnit;
+  if (!formationUnit) return null;
 
-  const levelBonus = Math.max(0, formationUnit.level - 1);
-  const multiplier = 1 + levelBonus * 0.08;
-  const nextUnit = {
-    ...battleUnit,
+  const stats = getFormationUnitStats(formationUnit);
+  return {
+    ...stats,
+    level: formationUnit.level,
+    star: formationUnit.star,
+    name: formationUnit.name,
     formationUnitId: formationUnit.instanceId,
     formationLevel: formationUnit.level,
+    healAmount: baseId === "saintess" ? stats.damage : undefined,
+  };
+}
+
+function applyFormationBattleStats(baseId, battleUnit) {
+  const stats = getFormationBattleStats(baseId);
+  if (!stats) return battleUnit;
+
+  const nextUnit = {
+    ...battleUnit,
+    name: stats.name || battleUnit.name,
+    level: stats.level,
+    star: stats.star,
+    formationUnitId: stats.formationUnitId,
+    formationLevel: stats.formationLevel,
+    defense: stats.defense,
   };
 
   if (typeof nextUnit.maxHp === "number") {
-    nextUnit.maxHp = Math.max(1, Math.round(nextUnit.maxHp * multiplier));
+    nextUnit.maxHp = stats.hp;
     nextUnit.hp = nextUnit.maxHp;
   }
   if (typeof nextUnit.damage === "number") {
-    nextUnit.damage = Math.max(0, Math.round(nextUnit.damage * multiplier));
+    nextUnit.damage = stats.damage;
   }
   if (typeof nextUnit.healAmount === "number") {
-    nextUnit.healAmount = Math.max(1, Math.round(nextUnit.healAmount * multiplier));
+    nextUnit.healAmount = stats.healAmount || stats.damage;
   }
+  if (typeof nextUnit.range === "number") nextUnit.range = stats.range;
+  if (typeof nextUnit.attackSpeed === "number") nextUnit.attackSpeed = stats.attackSpeed;
 
   return nextUnit;
 }

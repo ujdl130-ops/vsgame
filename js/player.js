@@ -35,6 +35,7 @@ function normalizePlayerData(savedData = {}) {
     essences,
     ownedGods: savedData.ownedGods && typeof savedData.ownedGods === "object" ? { ...savedData.ownedGods } : {},
     entitlements: savedData.entitlements && typeof savedData.entitlements === "object" ? { ...savedData.entitlements } : {},
+    unitGrowth: savedData.unitGrowth && typeof savedData.unitGrowth === "object" ? { ...savedData.unitGrowth } : {},
     stageMissionStars,
   };
 }
@@ -81,6 +82,7 @@ function setSelectedHeroId(heroId) {
 
 function createInitialState() {
   const stageConfig = getStageConfig(selectedStage);
+  const playerBaseHp = stageConfig.playerBaseHp || 100;
 
   return {
     running: false,
@@ -96,7 +98,8 @@ function createInitialState() {
     runestone: clampRunestone(stageConfig.startRunestone),
     zeusMana: 0,
     zeusManaMax: ZEUS_MANA_MAX,
-    playerBaseHp: 100,
+    playerBaseHp,
+    playerBaseMaxHp: playerBaseHp,
     enemyBaseHp: stageConfig.enemyBaseHp,
     enemyBaseMaxHp: stageConfig.enemyBaseHp,
     enemySpawnTimer: 0,

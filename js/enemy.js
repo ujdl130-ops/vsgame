@@ -430,7 +430,7 @@ function damageKaronClawTarget(enemy) {
     : findNearestAlly(enemy.x, enemy.range + 18);
 
   if (target) {
-    target.hp -= enemy.damage;
+    damageCombatant(target, enemy.damage);
     spawnHit(target.x, target.y - Math.max(38, target.h * 0.65), "#ff3b79");
   }
 
@@ -680,7 +680,7 @@ function updateEnemies(dt) {
           : findNearestAlly(enemy.x, enemy.range + 20);
 
         if (laserTarget) {
-          laserTarget.hp -= enemy.damage;
+          damageCombatant(laserTarget, enemy.damage);
           spawnHit(laserTarget.x, laserTarget.y - 44, "#c56dff");
         }
 
@@ -716,7 +716,7 @@ function updateEnemies(dt) {
       if (enemy.cooldown <= 0) {
         enemy.cooldown = enemy.attackSpeed;
         enemy.attackAnimTimer = attackDuration;
-        target.hp -= enemy.damage;
+        damageCombatant(target, enemy.damage);
 
         // 피격 시스템은 메인 영웅에게만 적용합니다.
         if (target.type === "hero") {
