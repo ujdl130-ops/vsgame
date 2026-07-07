@@ -16743,6 +16743,11 @@ body:not(.game-started) .game-wrap {
   transform: translateX(22px) !important;
 }
 
+.inventory-screen .inventory-slot:nth-child(3),
+.inventory-screen .inventory-slot:nth-child(4) {
+  transform: translateX(15px) !important;
+}
+
 .inventory-screen .inventory-slot:nth-child(5),
 .inventory-screen .inventory-slot:nth-child(6) {
   transform: translate(22px, -30px) !important;
@@ -16750,7 +16755,7 @@ body:not(.game-started) .game-wrap {
 
 .inventory-screen .inventory-slot:nth-child(7),
 .inventory-screen .inventory-slot:nth-child(8) {
-  transform: translateY(-30px) !important;
+  transform: translate(15px, -30px) !important;
 }
 
 .inventory-screen .inventory-slot.has-item {
