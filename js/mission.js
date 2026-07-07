@@ -39,6 +39,7 @@ const MISSION_GROUPS = [
 ];
 
 const claimedMissionRewards = new Set();
+let claimableCount = 0;
 
 function getMissionProgressPercent(mission) {
   if (!mission || !mission.target) return 0;
@@ -118,6 +119,7 @@ function renderMissionGroup(group) {
 
 function renderMissionScreen() {
   if (!missionRoot) return;
+  claimableCount = getClaimableMissionEntries().length;
   missionRoot.innerHTML = `
     <aside class="mission-brand-panel" aria-label="미션 로고">
       <div class="mission-brand-emblem" aria-hidden="true">✦</div>
@@ -126,17 +128,31 @@ function renderMissionScreen() {
     </aside>
     <main class="mission-board">
       <header class="mission-board-head">
-        <p>TEMPLE QUEST</p>
-        <h1>미션</h1>
+        <div>
+          <p>TEMPLE QUEST</p>
+          <h1>미션</h1>
+        </div>
       </header>
       <div class="mission-columns">
         ${MISSION_GROUPS.map(renderMissionGroup).join("")}
       </div>
     </main>
   `;
-  missionRoot.querySelectorAll(".mission-card-foot button").forEach((button) => {
+  const missionHead = missionRoot.querySelector(".mission-board-head");
+  if (missionHead) {
+    const claimAllButton = document.createElement("button");
+    claimAllButton.id = "missionClaimAllBtn";
+    claimAllButton.className = "mission-claim-all-btn";
+    claimAllButton.type = "button";
+    claimAllButton.textContent = "모두받기";
+    claimAllButton.disabled = claimableCount <= 0;
+    missionHead.appendChild(claimAllButton);
+  }
+  missionRoot.querySelectorAll(".mission-reward-btn").forEach((button) => {
     button.addEventListener("click", () => handleMissionRewardClick(button));
   });
+  const claimAllBtn = missionRoot.querySelector(".mission-board > .mission-board-head .mission-claim-all-btn");
+  if (claimAllBtn) claimAllBtn.addEventListener("click", handleMissionClaimAll);
 }
 
 function showMission() {
@@ -190,6 +206,24 @@ function claimMissionReward(reward) {
   }
 }
 
+function getClaimableMissionEntries() {
+  return MISSION_GROUPS.flatMap((group) => group.missions.map((mission, index) => {
+    const missionKey = `${group.id}-${index}`;
+    const complete = mission.current >= mission.target;
+    return { mission, missionKey, complete };
+  })).filter((entry) => entry.complete && !claimedMissionRewards.has(entry.missionKey));
+}
+
+function handleMissionClaimAll() {
+  const claimable = getClaimableMissionEntries();
+  if (!claimable.length) return;
+  claimable.forEach(({ mission, missionKey }) => {
+    claimMissionReward(mission.reward);
+    claimedMissionRewards.add(missionKey);
+  });
+  renderMissionScreen();
+}
+
 function renderMissionCard(mission, index, groupId) {
   const percent = window.QAAPI?.isEnabled?.() ? 100 : getMissionProgressPercent(mission);
   const complete = window.QAAPI?.isEnabled?.() || mission.current >= mission.target;
@@ -208,6 +242,7 @@ function renderMissionCard(mission, index, groupId) {
         <div class="mission-progress-track" aria-hidden="true">
           <span style="width: ${percent}%"></span>
         </div>
+        <button class="mission-reward-btn" type="button" data-reward="${mission.reward}" data-mission-key="${missionKey}" ${complete && !claimed ? "" : "disabled"}>${claimed ? "완료" : "받기"}</button>
         <strong>${complete && window.QAAPI?.isEnabled?.() ? mission.target : mission.current} / ${mission.target}</strong>
       </div>
       <div class="mission-card-foot">

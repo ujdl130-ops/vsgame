@@ -14494,10 +14494,37 @@ body:not(.game-started) .game-wrap {
   font-weight: 900;
 }
 
+.inventory-tabs {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  gap: 10px;
+  padding: 14px 0 2px;
+}
+
+.inventory-tab {
+  min-width: 92px;
+  height: 38px;
+  border: 1px solid rgba(181, 139, 72, 0.58);
+  color: #6f4b25;
+  background:
+    linear-gradient(180deg, rgba(255, 249, 235, 0.82), rgba(230, 210, 175, 0.48));
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.52);
+  font-size: 15px;
+  font-weight: 1000;
+}
+
+.inventory-tab.is-active {
+  color: #3b2415;
+  border-color: rgba(196, 142, 52, 0.88);
+  background:
+    linear-gradient(180deg, rgba(255, 224, 143, 0.88), rgba(195, 142, 56, 0.72));
+}
+
 .inventory-slot-grid {
   position: relative;
   z-index: 1;
-  height: calc(100% - 78px);
+  height: calc(100% - 132px);
   display: grid;
   grid-template-columns: repeat(6, minmax(0, 1fr));
   grid-auto-rows: minmax(92px, 1fr);
@@ -14533,22 +14560,31 @@ body:not(.game-started) .game-wrap {
 .inventory-slot.has-item {
   display: flex;
   flex-direction: column;
+  align-items: center;
   justify-content: center;
-  gap: 6px;
-  padding: 22px 14px 12px;
+  gap: 5px;
+  padding: 18px 12px 12px;
   background:
     linear-gradient(135deg, rgba(255,248,232,0.82), rgba(239,221,184,0.46));
 }
 
+.inventory-slot.has-item img {
+  width: 42px;
+  height: 42px;
+  object-fit: contain;
+  filter: drop-shadow(0 3px 5px rgba(74, 47, 20, 0.28));
+}
+
 .inventory-slot.has-item strong {
   color: #3b2415;
-  font-size: 17px;
+  font-size: 15px;
   line-height: 1.2;
+  text-align: center;
 }
 
 .inventory-slot.has-item em {
   color: #9c7040;
-  font-size: 20px;
+  font-size: 17px;
   font-style: normal;
   font-weight: 900;
 }
@@ -15438,7 +15474,34 @@ body:not(.game-started) .game-wrap {
   transform: none !important;
 }
 
-.formation-screen .formation-roster-panel::before,
+.formation-screen .formation-roster-panel::before {
+  content: attr(data-roster-title) !important;
+  position: absolute !important;
+  left: 50% !important;
+  top: -88px !important;
+  z-index: 1000 !important;
+  display: block !important;
+  width: max-content !important;
+  height: auto !important;
+  min-height: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  outline: 0 !important;
+  transform: translateX(-50%) !important;
+  color: #f6dfa8 !important;
+  font-size: clamp(27px, 1.8vw, 35px) !important;
+  font-weight: 1000 !important;
+  line-height: 1 !important;
+  letter-spacing: 0 !important;
+  white-space: nowrap !important;
+  pointer-events: none !important;
+  text-shadow:
+    0 2px 0 rgba(0, 0, 0, 0.85),
+    0 0 10px rgba(255, 226, 167, 0.55) !important;
+}
+
 .formation-screen .formation-roster-panel::after {
   display: none !important;
 }
@@ -15574,71 +15637,1155 @@ body:not(.game-started) .game-wrap {
    - 다른 팀원 화면 영향 방지를 위해 formation-screen + is-hero-roster 범위로 한정
    - 아래 --hero-roster-* 변수만 조절하면 위치/간격을 손쉽게 미세조정 가능 */
 .formation-screen {
-  --hero-roster-gap-x: clamp(4px, 0.5vw, 8px);
-  --hero-roster-gap-y: clamp(4px, 0.7vh, 8px);
-  --hero-roster-pad-x: 10px;
-  --hero-roster-pad-top: 56px;
-  --hero-roster-pad-bottom: 78px;
+  --hero-roster-gap-x: 4px;
+  --hero-roster-gap-y: 6px;
+  --hero-roster-pad-x: 0px;
+  --hero-roster-pad-top: 0px;
+  --hero-roster-pad-bottom: 0px;
+  --hero-roster-left: 1204px;
+  --hero-roster-top: 144px;
+  --hero-roster-width: 663.5px;
+  --hero-roster-height: 635.2px;
+  --hero-detail-left: 441.9px;
+  --hero-detail-top: 273.2px;
+  --hero-detail-width: 324px;
+  --hero-detail-height: 468.8px;
+  --hero-detail-card-width: 286px;
+  --hero-detail-card-height: 414px;
+  --hero-detail-image-width: 276px;
+  --formation-info-left: 782px;
+  --formation-info-top: 286px;
+  --formation-info-width: 340px;
+  --formation-action-left: 595px;
+  --formation-action-top: 690px;
 }
 
 .formation-screen .formation-roster-panel {
   position: fixed !important;
-  left: 56.8vw !important;
-  right: 2.8vw !important;
-  top: 4.4vh !important;
-  width: auto !important;
-  height: 76vh !important;
+  left: var(--hero-roster-left) !important;
+  right: auto !important;
+  top: var(--hero-roster-top) !important;
+  width: var(--hero-roster-width) !important;
+  height: var(--hero-roster-height) !important;
   min-height: 0 !important;
   padding: var(--hero-roster-pad-top) var(--hero-roster-pad-x) var(--hero-roster-pad-bottom) !important;
   border: 0 !important;
   background: transparent !important;
   box-shadow: none !important;
-  overflow: hidden !important;
+  overflow: visible !important;
   transform: none !important;
 }
 
-.formation-screen .formation-roster-panel::before,
+.formation-screen .formation-roster-panel::before {
+  content: attr(data-roster-title) !important;
+  position: absolute !important;
+  left: 50% !important;
+  top: -88px !important;
+  z-index: 1000 !important;
+  display: block !important;
+  width: max-content !important;
+  height: auto !important;
+  min-height: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  outline: 0 !important;
+  transform: translateX(-50%) !important;
+  color: #f6dfa8 !important;
+  font-size: clamp(27px, 1.8vw, 35px) !important;
+  font-weight: 1000 !important;
+  line-height: 1 !important;
+  letter-spacing: 0 !important;
+  white-space: nowrap !important;
+  pointer-events: none !important;
+  text-shadow:
+    0 2px 0 rgba(0, 0, 0, 0.85),
+    0 0 10px rgba(255, 226, 167, 0.55) !important;
+}
+
 .formation-screen .formation-roster-panel::after {
   display: none !important;
 }
 
 .formation-screen .formation-roster-head {
+  display: none !important;
+}
+
+.formation-screen .formation-wallet-wide {
+  display: none !important;
   position: absolute !important;
-  left: 0 !important;
-  right: 0 !important;
-  top: 20px !important;
-  z-index: 8 !important;
-  width: 100% !important;
-  height: 42px !important;
-  min-height: 42px !important;
+  left: clamp(88px, 16%, 210px) !important;
+  right: auto !important;
+  top: auto !important;
+  bottom: 78px !important;
+  z-index: 6 !important;
+  width: min(300px, 36vw) !important;
+  grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
+  gap: 4px !important;
+  padding: 4px 5px !important;
+  border: 1px solid rgba(207, 158, 80, 0.72) !important;
+  background: rgba(22, 18, 15, 0.76) !important;
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 226, 156, 0.12),
+    0 5px 12px rgba(0, 0, 0, 0.32) !important;
+  transform: translateX(-50%) !important;
+}
+
+.formation-screen .formation-wallet-wide .formation-currency {
+  min-width: 0 !important;
+  display: grid !important;
+  grid-template-columns: 18px minmax(0, 1fr) !important;
+  grid-template-rows: auto auto !important;
+  column-gap: 3px !important;
+  align-items: center !important;
+  padding: 2px 1px !important;
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  text-align: left !important;
+}
+
+.formation-screen .formation-wallet-wide .formation-currency img {
+  grid-row: 1 / 3 !important;
+  width: 18px !important;
+  height: 18px !important;
+  object-fit: contain !important;
+}
+
+.formation-screen .formation-wallet-wide .formation-currency span {
+  display: block !important;
+  margin: 0 !important;
+  color: rgba(245, 225, 190, 0.76) !important;
+  font-size: 8px !important;
+  font-weight: 800 !important;
+  line-height: 1 !important;
+  letter-spacing: 0 !important;
+  white-space: nowrap !important;
+}
+
+.formation-screen .formation-wallet-wide .formation-currency strong {
+  color: #ffd76d !important;
+  font-size: 11px !important;
+  font-weight: 1000 !important;
+  line-height: 1 !important;
+  text-shadow: 0 1px 0 rgba(0, 0, 0, 0.78) !important;
+  white-space: nowrap !important;
+}
+
+.formation-screen .formation-hero-detail-card,
+.formation-screen .formation-hero-detail-card:hover,
+.formation-screen .formation-hero-detail-card:active {
+  transform: none !important;
+  filter: none !important;
+  box-shadow: none !important;
+}
+
+.formation-screen .formation-hero-detail-card.is-flipping {
+  animation: none !important;
+}
+
+.formation-screen .formation-level-btn,
+.formation-screen .formation-level-btn:hover,
+.formation-screen .formation-level-btn:active {
+  transform: translateX(-50%) !important;
+}
+
+.formation-screen .formation-hero-detail::before,
+.formation-screen .formation-hero-detail::after {
+  display: none !important;
+}
+
+.formation-screen .formation-hero-detail-top {
+  position: fixed !important;
+  left: 465.9px !important;
+  top: calc(var(--hero-detail-top) - 72px) !important;
+  z-index: 7 !important;
+  width: var(--hero-detail-image-width) !important;
+  height: 66px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  gap: 4px !important;
   margin: 0 !important;
   padding: 0 !important;
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  border: 0 !important;
+  text-align: center !important;
   transform: none !important;
+  overflow: visible !important;
   pointer-events: none !important;
 }
 
+.formation-screen .formation-hero-detail-top::before {
+  content: "" !important;
+  position: absolute !important;
+  left: 50% !important;
+  top: -9px !important;
+  z-index: 2 !important;
+  display: block !important;
+  width: 112% !important;
+  height: 2px !important;
+  margin: 0 !important;
+  background: linear-gradient(90deg, transparent 0%, rgba(255, 217, 128, 0.18) 11%, rgba(255, 229, 151, 0.84) 50%, rgba(255, 217, 128, 0.18) 89%, transparent 100%) !important;
+  box-shadow:
+    0 1px 0 rgba(0, 0, 0, 0.48),
+    0 0 6px rgba(255, 213, 110, 0.28) !important;
+  opacity: 1 !important;
+  transform: translateX(-50%) !important;
+}
+
+.formation-screen .formation-hero-detail-top::after {
+  content: "" !important;
+  position: absolute !important;
+  left: 50% !important;
+  bottom: -9px !important;
+  z-index: 2 !important;
+  display: block !important;
+  width: 112% !important;
+  height: 2px !important;
+  margin: 0 !important;
+  background: linear-gradient(90deg, transparent 0%, rgba(255, 217, 128, 0.18) 11%, rgba(255, 229, 151, 0.84) 50%, rgba(255, 217, 128, 0.18) 89%, transparent 100%) !important;
+  box-shadow:
+    0 1px 0 rgba(0, 0, 0, 0.48),
+    0 0 6px rgba(255, 213, 110, 0.28) !important;
+  opacity: 1 !important;
+  transform: translateX(-50%) !important;
+}
+
+.formation-screen .formation-hero-detail-top .formation-kicker {
+  display: none !important;
+}
+
+.formation-screen .formation-hero-detail-top h2 {
+  margin: 0 !important;
+  color: #f6dfa8 !important;
+  font-size: 36px !important;
+  font-weight: 1000 !important;
+  line-height: 1.05 !important;
+  letter-spacing: 0 !important;
+  text-shadow:
+    0 2px 0 rgba(0, 0, 0, 0.82),
+    0 0 8px rgba(255, 226, 167, 0.42) !important;
+}
+
+.formation-screen .formation-hero-stars {
+  margin: 0 !important;
+  color: #ffd76d !important;
+  font-size: 27px !important;
+  line-height: 1 !important;
+  letter-spacing: 1px !important;
+  text-shadow: 0 2px 0 rgba(0, 0, 0, 0.82) !important;
+}
+
+.formation-screen .formation-hero-detail-card {
+  position: fixed !important;
+  left: 460.9px !important;
+  top: var(--hero-detail-top) !important;
+  z-index: 6 !important;
+  width: var(--hero-detail-card-width) !important;
+  height: var(--hero-detail-card-height) !important;
+  max-width: none !important;
+  max-height: none !important;
+  aspect-ratio: auto !important;
+  justify-self: auto !important;
+  align-self: auto !important;
+  overflow: visible !important;
+}
+
+.formation-screen .formation-hero-flip-inner,
+.formation-screen .formation-hero-flip-face,
+.formation-screen .formation-hero-flip-front img {
+  width: 100% !important;
+  height: 100% !important;
+  max-width: none !important;
+  max-height: none !important;
+}
+
+.formation-screen .formation-hero-flip-front img {
+  object-fit: contain !important;
+}
+
+.formation-screen .formation-hero-detail-list {
+  position: fixed !important;
+  left: var(--formation-info-left) !important;
+  top: var(--formation-info-top) !important;
+  z-index: 7 !important;
+  width: var(--formation-info-width) !important;
+  max-height: 360px !important;
+  display: grid !important;
+  gap: 18px !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  overflow: visible !important;
+  color: #ead9bb !important;
+  text-shadow: 0 2px 0 rgba(20, 13, 9, 0.86) !important;
+  pointer-events: none !important;
+}
+
+.formation-screen .formation-hero-detail-list div {
+  display: grid !important;
+  grid-template-columns: 92px minmax(0, 1fr) !important;
+  gap: 12px !important;
+  padding: 0 0 14px !important;
+  border-bottom: 1px solid rgba(220, 174, 92, 0.34) !important;
+}
+
+.formation-screen .formation-hero-detail-list dt {
+  color: #ffd276 !important;
+  font-size: 15px !important;
+  font-weight: 1000 !important;
+  line-height: 1.35 !important;
+  letter-spacing: 0 !important;
+  white-space: nowrap !important;
+}
+
+.formation-screen .formation-hero-detail-list dd {
+  min-width: 0 !important;
+  margin: 0 !important;
+  color: #f4e6cb !important;
+  font-size: 14px !important;
+  font-weight: 900 !important;
+  line-height: 1.45 !important;
+  overflow-wrap: anywhere !important;
+  word-break: keep-all !important;
+}
+
+.formation-screen .formation-unit-detail-card {
+  left: 450.9px !important;
+  width: 306px !important;
+  height: 442px !important;
+}
+
+.formation-screen .formation-unit-detail-card .formation-hero-flip-inner,
+.formation-screen .formation-unit-detail-card .formation-hero-flip-face {
+  position: absolute !important;
+  inset: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  transform-origin: 50% 50% !important;
+}
+
+.formation-screen .formation-unit-detail-card .formation-hero-flip-front img,
+.formation-screen .formation-unit-detail-card .formation-hero-flip-back {
+  width: 100% !important;
+  height: 100% !important;
+  background-position: center !important;
+  background-size: 100% 100% !important;
+}
+
+.formation-screen .formation-unit-detail-card .formation-hero-flip-front,
+.formation-screen .formation-unit-detail-card .formation-hero-flip-back {
+  left: 0 !important;
+  top: 0 !important;
+  right: auto !important;
+  bottom: auto !important;
+}
+
+.formation-screen .formation-unit-detail-card .formation-hero-back-stats {
+  left: 21% !important;
+  right: 21% !important;
+  top: 25% !important;
+  bottom: 15% !important;
+  gap: 7px !important;
+}
+
+.formation-screen .formation-unit-detail-card .formation-hero-flip-back strong {
+  font-size: 25px !important;
+}
+
+.formation-screen .formation-unit-detail-card .formation-hero-flip-back em {
+  margin-bottom: 6px !important;
+  font-size: 12px !important;
+}
+
+.formation-screen .formation-unit-detail-card .formation-hero-flip-back span {
+  padding: 6px 0 !important;
+  gap: 10px !important;
+  font-size: 14px !important;
+}
+
+.formation-screen .formation-growth-actions {
+  position: fixed !important;
+  left: var(--formation-action-left) !important;
+  top: var(--formation-action-top) !important;
+  z-index: 8 !important;
+  width: 310px !important;
+  display: grid !important;
+  gap: 6px !important;
+  transform: translateX(-50%) !important;
+}
+
+.formation-screen .formation-growth-actions .formation-level-btn {
+  position: relative !important;
+  left: auto !important;
+  right: auto !important;
+  top: auto !important;
+  bottom: auto !important;
+  width: 310px !important;
+  min-height: 54px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 0 18px !important;
+  border: 1px solid rgba(231, 181, 94, 0.92) !important;
+  background:
+    linear-gradient(90deg, rgba(255, 231, 162, 0.06), transparent 18%, transparent 82%, rgba(255, 231, 162, 0.05)),
+    radial-gradient(circle at 18% 22%, rgba(255, 232, 168, 0.14), transparent 30%),
+    linear-gradient(180deg, rgba(43, 45, 44, 0.97), rgba(20, 25, 29, 0.97)) !important;
+  color: #fff0cf !important;
+  font-size: 18px !important;
+  font-weight: 1000 !important;
+  line-height: 1 !important;
+  text-align: center !important;
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 232, 174, 0.2),
+    inset 0 0 0 4px rgba(111, 75, 34, 0.2),
+    inset 0 12px 18px rgba(255, 239, 184, 0.06),
+    inset 0 -10px 16px rgba(0, 0, 0, 0.28),
+    0 7px 15px rgba(0, 0, 0, 0.36) !important;
+  transform: none !important;
+}
+
+.formation-screen .formation-growth-actions .formation-level-btn::before {
+  content: "" !important;
+  position: absolute !important;
+  inset: 6px !important;
+  border: 1px solid rgba(255, 216, 126, 0.55) !important;
+  box-shadow:
+    inset 0 0 0 1px rgba(55, 36, 18, 0.55),
+    0 0 7px rgba(255, 211, 103, 0.16) !important;
+  pointer-events: none !important;
+}
+
+.formation-screen .formation-growth-actions .formation-level-btn::after {
+  content: "" !important;
+  position: absolute !important;
+  inset: 0 !important;
+  background:
+    linear-gradient(135deg, transparent 0 12px, rgba(255, 223, 142, 0.16) 12px 13px, transparent 13px),
+    linear-gradient(315deg, transparent 0 11px, rgba(0, 0, 0, 0.22) 11px 12px, transparent 12px),
+    radial-gradient(circle at 8% 18%, rgba(0, 0, 0, 0.18), transparent 12%),
+    radial-gradient(circle at 88% 74%, rgba(255, 226, 150, 0.08), transparent 14%) !important;
+  opacity: 0.9 !important;
+  pointer-events: none !important;
+}
+
+.formation-screen .formation-growth-cost {
+  width: 310px !important;
+  margin: 0 !important;
+  color: rgba(239, 223, 196, 0.82) !important;
+  font-size: 12px !important;
+  font-weight: 900 !important;
+  line-height: 1.25 !important;
+  letter-spacing: 0 !important;
+  text-align: center !important;
+  text-shadow: 0 2px 0 rgba(0, 0, 0, 0.78) !important;
+  white-space: normal !important;
+  word-break: keep-all !important;
+}
+
+.formation-screen .formation-growth-center-confirm {
+  position: fixed !important;
+  left: 50% !important;
+  top: 50% !important;
+  z-index: 40 !important;
+  width: 360px !important;
+  padding: 18px 20px 16px !important;
+  border: 1px solid rgba(226, 181, 96, 0.82) !important;
+  background:
+    linear-gradient(90deg, rgba(255, 232, 169, 0.08), transparent 20%, transparent 80%, rgba(255, 232, 169, 0.08)),
+    linear-gradient(180deg, rgba(38, 34, 31, 0.94), rgba(18, 18, 18, 0.94)) !important;
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 231, 167, 0.18),
+    inset 0 0 0 5px rgba(80, 55, 29, 0.18),
+    0 16px 34px rgba(0, 0, 0, 0.46) !important;
+  transform: translate(-50%, -50%) !important;
+  text-align: center !important;
+  pointer-events: auto !important;
+}
+
+.formation-screen .formation-growth-center-confirm p {
+  margin: 0 0 14px !important;
+  color: #fff0cf !important;
+  font-size: 18px !important;
+  font-weight: 1000 !important;
+  line-height: 1.35 !important;
+  text-shadow: 0 2px 0 rgba(0, 0, 0, 0.82) !important;
+}
+
+.formation-screen .formation-growth-center-confirm div {
+  display: flex !important;
+  justify-content: center !important;
+  gap: 10px !important;
+}
+
+.formation-screen .formation-growth-center-confirm button {
+  min-width: 92px !important;
+  height: 36px !important;
+  border: 1px solid rgba(226, 181, 96, 0.78) !important;
+  color: #fff0cf !important;
+  background: rgba(35, 38, 42, 0.96) !important;
+  font-size: 14px !important;
+  font-weight: 1000 !important;
+}
+
+.formation-screen .formation-growth-actions .formation-transcend-btn {
+  border-color: rgba(230, 188, 99, 0.95) !important;
+  background:
+    linear-gradient(90deg, rgba(167, 130, 57, 0.13), transparent 18%, transparent 82%, rgba(167, 130, 57, 0.12)),
+    radial-gradient(circle at 16% 20%, rgba(255, 231, 154, 0.18), transparent 32%),
+    linear-gradient(180deg, rgba(55, 45, 48, 0.97), rgba(29, 24, 34, 0.97)) !important;
+  color: #e7ecff !important;
+}
+
+.formation-screen .formation-growth-actions .formation-level-btn:disabled {
+  opacity: 0.46 !important;
+  cursor: not-allowed !important;
+  filter: grayscale(0.35) !important;
+}
+
+.formation-screen .formation-brand-panel {
+  display: block !important;
+  position: fixed !important;
+  left: 36px !important;
+  top: 34px !important;
+  z-index: 12 !important;
+  width: 220px !important;
+  height: auto !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  overflow: visible !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  pointer-events: none !important;
+}
+
+.formation-screen .formation-brand-emblem {
+  display: none !important;
+}
+
+.formation-screen .formation-brand-panel strong {
+  display: block !important;
+  color: #f6dfa8 !important;
+  font-size: 38px !important;
+  font-weight: 1000 !important;
+  line-height: 1 !important;
+  text-align: left !important;
+  text-shadow:
+    0 2px 0 rgba(0, 0, 0, 0.86),
+    0 0 10px rgba(255, 226, 167, 0.42) !important;
+}
+
+.formation-screen .formation-brand-panel span {
+  display: block !important;
+  margin-top: 6px !important;
+  color: #dca650 !important;
+  font-size: 15px !important;
+  font-weight: 900 !important;
+  line-height: 1 !important;
+  letter-spacing: 0.08em !important;
+  text-align: left !important;
+  text-shadow: 0 2px 0 rgba(0, 0, 0, 0.78) !important;
+}
+
+.formation-screen .formation-category-nav {
+  position: fixed !important;
+  left: 38px !important;
+  top: 204px !important;
+  z-index: 12 !important;
+  width: 220px !important;
+  display: grid !important;
+  gap: 10px !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  pointer-events: auto !important;
+}
+
+.formation-screen .formation-category-btn {
+  display: grid !important;
+  place-items: center !important;
+  position: relative !important;
+  width: 220px !important;
+  height: 94px !important;
+  min-height: 94px !important;
+  padding: 0 24px !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  color: transparent !important;
+  background: url("assets/maps/formation/bg_normal.png") center / 100% 100% no-repeat !important;
+  box-shadow: none !important;
+  font-size: 0 !important;
+  font-weight: 1000 !important;
+  line-height: 1 !important;
+  letter-spacing: 0 !important;
+  text-align: center !important;
+  text-shadow:
+    0 2px 0 rgba(0, 0, 0, 0.86),
+    0 0 8px rgba(0, 0, 0, 0.42) !important;
+  cursor: pointer !important;
+  pointer-events: auto !important;
+  transform: none !important;
+  filter: none !important;
+}
+
+.formation-screen .formation-category-btn,
+.formation-screen .formation-category-btn.is-active {
+  font-size: 0 !important;
+  font-weight: 1000 !important;
+  line-height: 1 !important;
+  text-align: center !important;
+  text-indent: 0 !important;
+}
+
+.formation-screen .formation-category-btn {
+  justify-content: center !important;
+  align-content: center !important;
+}
+
+.formation-screen .formation-category-btn::before {
+  content: none !important;
+  display: none !important;
+}
+
+.formation-screen .formation-category-btn::after {
+  position: absolute !important;
+  left: 50% !important;
+  top: 50% !important;
+  display: block !important;
+  width: 100% !important;
+  color: #f3dfbd !important;
+  font-size: 23px !important;
+  font-weight: 1000 !important;
+  line-height: 1 !important;
+  letter-spacing: 0 !important;
+  text-align: center !important;
+  text-indent: 0 !important;
+  text-shadow:
+    0 2px 0 rgba(0, 0, 0, 0.86),
+    0 0 8px rgba(0, 0, 0, 0.42) !important;
+  transform: translate(-50%, -50%) !important;
+  pointer-events: none !important;
+}
+
+.formation-screen .formation-category-btn[data-formation-category="hero"]::after {
+  content: "영웅" !important;
+}
+
+.formation-screen .formation-category-btn[data-formation-category="unit"]::after {
+  content: "유닛" !important;
+}
+
+.formation-screen .formation-category-btn[data-formation-category="inventory"]::after {
+  content: "인벤토리" !important;
+}
+
+.formation-screen .formation-category-btn.is-active {
+  color: transparent !important;
+  background-image: url("assets/maps/formation/bg_selected.png") !important;
+  box-shadow: none !important;
+}
+
+.formation-screen .formation-category-btn.is-active::after {
+  color: #fff3c9 !important;
+}
+
+body.in-formation .game-wrap,
+body.in-stage-select .game-wrap,
+body.in-shop .game-wrap,
+body.in-lobby .game-wrap,
+body.in-recruit .game-wrap,
+body:not(.game-started) .game-wrap {
+  filter: none !important;
+}
+
+.formation-screen,
+.formation-screen *,
+.mission-screen,
+.mission-screen * {
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+}
+
+/* Mission screen final background/content layout */
+.mission-screen {
+  background:
+    linear-gradient(180deg, rgba(0, 0, 0, 0.08), rgba(0, 0, 0, 0.22)),
+    url("assets/maps/formation/mission.png") center / cover no-repeat !important;
+}
+
+.mission-screen::before {
+  background: rgba(0, 0, 0, 0.08) !important;
+}
+
+.mission-screen .mission-brand-panel,
+.mission-screen .mission-brand-panel::after,
+.mission-screen .mission-brand-emblem,
+.mission-screen .mission-board::before,
+.mission-screen .mission-card-mark {
+  display: none !important;
+}
+
+.mission-screen .mission-board {
+  left: 297.2px !important;
+  top: 97.7px !important;
+  width: 1340.8px !important;
+  height: 702.8px !important;
+  max-width: none !important;
+  box-sizing: border-box !important;
+  padding: 26px 34px 28px !important;
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  overflow: hidden !important;
+}
+
+.mission-screen .mission-board-head {
+  display: flex !important;
+  align-items: flex-end !important;
+  justify-content: space-between !important;
+  gap: 18px !important;
+  padding-bottom: 16px !important;
+  border-bottom: 1px solid rgba(226, 181, 96, 0.34) !important;
+}
+
+.mission-screen .mission-board-head p {
+  color: rgba(246, 223, 168, 0.72) !important;
+  text-shadow: 0 2px 0 rgba(0, 0, 0, 0.82) !important;
+}
+
+.mission-screen .mission-board-head h1 {
+  color: #f6dfa8 !important;
+  font-size: 40px !important;
+  text-shadow:
+    0 2px 0 rgba(0, 0, 0, 0.86),
+    0 0 10px rgba(255, 226, 167, 0.42) !important;
+}
+
+.mission-screen .mission-claim-all-btn {
+  min-width: 92px !important;
+  padding: 7px 12px !important;
+  border: 1px solid rgba(255, 255, 255, 0.86) !important;
+  color: #fff0cf !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  font-size: 14px !important;
+  font-weight: 1000 !important;
+  line-height: 1 !important;
+  text-shadow: 0 2px 0 rgba(0, 0, 0, 0.82) !important;
+}
+
+.mission-screen .mission-claim-all-btn:disabled {
+  color: rgba(255, 240, 207, 0.46) !important;
+  border-color: rgba(255, 255, 255, 0.36) !important;
+}
+
+.mission-screen .mission-section-head .mission-claim-all-btn {
+  display: none !important;
+}
+
+.mission-screen .mission-back-btn {
+  left: 18px !important;
+  right: auto !important;
+  top: 18px !important;
+  min-width: 86px !important;
+  padding: 8px 14px !important;
+  border: 1px solid rgba(255, 255, 255, 0.72) !important;
+  color: #fff0cf !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  text-shadow: 0 2px 0 rgba(0, 0, 0, 0.82) !important;
+}
+
+.mission-screen .mission-close-btn {
+  display: none !important;
+}
+
+.mission-screen .mission-columns {
+  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  gap: 0 !important;
+  height: calc(100% - 83px) !important;
+  padding-top: 22px !important;
+  overflow: hidden !important;
+}
+
+.mission-screen .mission-section {
+  min-width: 0 !important;
+  min-height: 0 !important;
+  padding: 0 28px !important;
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  overflow: hidden !important;
+}
+
+.mission-screen .mission-section + .mission-section {
+  border-left: 1px solid rgba(226, 181, 96, 0.36) !important;
+}
+
+.mission-screen .mission-section-head {
+  padding-bottom: 12px !important;
+  border-bottom: 1px solid rgba(226, 181, 96, 0.2) !important;
+}
+
+.mission-screen .mission-section-head p,
+.mission-screen .mission-section-head > span {
+  color: rgba(246, 223, 168, 0.68) !important;
+  text-shadow: 0 2px 0 rgba(0, 0, 0, 0.78) !important;
+}
+
+.mission-screen .mission-section-head h2 {
+  color: #ffe2a6 !important;
+  text-shadow:
+    0 2px 0 rgba(0, 0, 0, 0.86),
+    0 0 8px rgba(255, 226, 167, 0.32) !important;
+}
+
+.mission-screen .mission-list {
+  padding-top: 14px !important;
+  gap: 12px !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+}
+
+.mission-screen .mission-card,
+.mission-screen .mission-card.is-complete {
+  padding: 0 0 13px !important;
+  border: 0 !important;
+  border-bottom: 1px solid rgba(226, 181, 96, 0.18) !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  min-width: 0 !important;
+}
+
+.mission-screen .mission-card-main {
+  display: block !important;
+  min-width: 0 !important;
+}
+
+.mission-screen .mission-card-main > div {
+  min-width: 0 !important;
+  width: 100% !important;
+}
+
+.mission-screen .mission-card h3 {
+  color: #fff0cf !important;
+  white-space: normal !important;
+  word-break: keep-all !important;
+  overflow-wrap: normal !important;
+  text-shadow: 0 2px 0 rgba(0, 0, 0, 0.82) !important;
+}
+
+.mission-screen .mission-card p,
+.mission-screen .mission-progress-row strong,
+.mission-screen .mission-card-foot span {
+  color: rgba(244, 230, 203, 0.86) !important;
+  white-space: normal !important;
+  word-break: keep-all !important;
+  overflow-wrap: normal !important;
+  text-shadow: 0 2px 0 rgba(0, 0, 0, 0.78) !important;
+}
+
+.mission-screen .mission-progress-track {
+  background: rgba(0, 0, 0, 0.34) !important;
+  box-shadow: inset 0 0 0 1px rgba(255, 226, 167, 0.12) !important;
+}
+
+.mission-screen .mission-progress-track span {
+  background: linear-gradient(90deg, #c9903c, #ffe09a) !important;
+}
+
+.mission-screen .mission-progress-row {
+  grid-template-columns: minmax(0, 1fr) auto auto !important;
+  gap: 8px !important;
+}
+
+.mission-screen .mission-reward-btn {
+  min-width: 64px !important;
+  padding: 5px 10px !important;
+  border: 1px solid rgba(255, 255, 255, 0.86) !important;
+  color: #fff0cf !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  font-size: 13px !important;
+  font-weight: 1000 !important;
+  line-height: 1 !important;
+  text-shadow: 0 2px 0 rgba(0, 0, 0, 0.82) !important;
+}
+
+.mission-screen .mission-reward-btn:disabled {
+  color: rgba(255, 240, 207, 0.46) !important;
+  border-color: rgba(255, 255, 255, 0.36) !important;
+  background: transparent !important;
+}
+
+.mission-screen .mission-card-foot button:not(.mission-reward-btn) {
+  display: none !important;
+}
+
+/* Inventory screen final background/content layout */
+.inventory-screen {
+  background:
+    linear-gradient(180deg, rgba(0, 0, 0, 0.08), rgba(0, 0, 0, 0.24)),
+    url("assets/maps/formation/inventory.png") center / cover no-repeat !important;
+  color: #f4e6cb !important;
+}
+
+.inventory-screen::before {
+  background: rgba(0, 0, 0, 0.08) !important;
+}
+
+.inventory-screen .inventory-brand-panel::after,
+.inventory-screen .inventory-brand-emblem,
+.inventory-screen .inventory-board::before {
+  display: none !important;
+}
+
+.inventory-screen .inventory-brand-panel {
+  display: block !important;
+  position: fixed !important;
+  left: 36px !important;
+  top: 34px !important;
+  z-index: 12 !important;
+  width: 260px !important;
+  height: auto !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  text-align: left !important;
+  pointer-events: none !important;
+}
+
+.inventory-screen .inventory-brand-panel strong {
+  display: block !important;
+  color: #f6dfa8 !important;
+  font-size: 38px !important;
+  font-weight: 1000 !important;
+  line-height: 1 !important;
+  text-align: left !important;
+  text-shadow:
+    0 2px 0 rgba(0, 0, 0, 0.86),
+    0 0 10px rgba(255, 226, 167, 0.42) !important;
+}
+
+.inventory-screen .inventory-brand-panel span {
+  display: block !important;
+  margin-top: 6px !important;
+  color: #dca650 !important;
+  font-size: 15px !important;
+  font-weight: 900 !important;
+  line-height: 1 !important;
+  letter-spacing: 0.08em !important;
+  text-align: left !important;
+  text-shadow: 0 2px 0 rgba(0, 0, 0, 0.78) !important;
+}
+
+.inventory-screen .inventory-board {
+  position: fixed !important;
+  left: 0 !important;
+  top: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  max-width: none !important;
+  box-sizing: border-box !important;
+  padding: 0 !important;
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.inventory-screen .inventory-board-head {
+  position: fixed !important;
+  left: 1200px !important;
+  top: 232px !important;
+  z-index: 4 !important;
+  width: 290px !important;
+  padding: 0 !important;
+  border-bottom: 0 !important;
+}
+
+.inventory-screen .inventory-board-head div {
+  display: none !important;
+}
+
+.inventory-screen .inventory-board-head p,
+.inventory-screen .inventory-board-head > span {
+  color: rgba(246, 223, 168, 0.72) !important;
+  text-shadow: 0 2px 0 rgba(0, 0, 0, 0.82) !important;
+}
+
+.inventory-screen .inventory-board-head h1 {
+  color: #f6dfa8 !important;
+  font-size: 40px !important;
+  text-shadow:
+    0 2px 0 rgba(0, 0, 0, 0.86),
+    0 0 10px rgba(255, 226, 167, 0.42) !important;
+}
+
+.inventory-screen .inventory-tabs {
+  position: fixed !important;
+  left: 200px !important;
+  top: 280px !important;
+  z-index: 4 !important;
+  width: 220px !important;
+  display: grid !important;
+  gap: 10px !important;
+  padding: 0 !important;
+}
+
+.inventory-screen .inventory-tab {
+  position: relative !important;
+  width: 220px !important;
+  height: 94px !important;
+  min-width: 0 !important;
+  border: 0 !important;
+  color: transparent !important;
+  background: url("assets/maps/formation/bg_normal.png") center / 100% 100% no-repeat !important;
+  box-shadow: none !important;
+  font-size: 0 !important;
+  font-weight: 1000 !important;
+  text-shadow: none !important;
+}
+
+.inventory-screen .inventory-tab::after {
+  content: attr(data-inventory-label) !important;
+  position: absolute !important;
+  left: 50% !important;
+  top: 50% !important;
+  width: 100% !important;
+  color: #f3dfbd !important;
+  font-size: 23px !important;
+  font-weight: 1000 !important;
+  line-height: 1 !important;
+  text-align: center !important;
+  text-shadow:
+    0 2px 0 rgba(0, 0, 0, 0.86),
+    0 0 8px rgba(0, 0, 0, 0.42) !important;
+  transform: translate(-50%, -50%) !important;
+  pointer-events: none !important;
+}
+
+.inventory-screen .inventory-tab.is-active {
+  background-image: url("assets/maps/formation/bg_selected.png") !important;
+}
+
+.inventory-screen .inventory-tab.is-active::after {
+  color: #fff3c9 !important;
+}
+
+.inventory-screen .inventory-slot-grid {
+  position: fixed !important;
+  left: 432px !important;
+  top: 198px !important;
+  z-index: 3 !important;
+  width: 1160px !important;
+  height: 594px !important;
+  grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+  grid-template-rows: repeat(2, minmax(0, 1fr)) !important;
+  grid-auto-rows: unset !important;
+  gap: 100px 74px !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+}
+
+.inventory-screen .inventory-slot {
+  border: 1px solid rgba(226, 181, 96, 0.34) !important;
+  background:
+    linear-gradient(180deg, rgba(25, 22, 20, 0.36), rgba(15, 14, 13, 0.44)),
+    radial-gradient(circle at 50% 22%, rgba(255, 231, 165, 0.05), transparent 38%) !important;
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 232, 174, 0.06),
+    inset 0 0 16px rgba(0, 0, 0, 0.12) !important;
+  color: #f4e6cb !important;
+}
+
+.inventory-screen .inventory-slot.has-item {
+  justify-content: flex-start !important;
+  padding-top: 58px !important;
+}
+
+.inventory-screen .inventory-slot > span {
+  color: rgba(246, 223, 168, 0.38) !important;
+}
+
+.inventory-screen .inventory-slot.is-empty::after {
+  color: rgba(246, 223, 168, 0.26) !important;
+}
+
+.inventory-screen .inventory-slot.has-item {
+  background:
+    linear-gradient(180deg, rgba(30, 25, 20, 0.38), rgba(18, 16, 14, 0.48)),
+    radial-gradient(circle at 50% 18%, rgba(255, 220, 128, 0.08), transparent 36%) !important;
+}
+
+.inventory-screen .inventory-slot.has-item img {
+  width: 88px !important;
+  height: 88px !important;
+  margin-bottom: 4px !important;
+}
+
+.inventory-screen .inventory-slot.has-item em {
+  font-size: 21px !important;
+}
+
+.inventory-screen .inventory-pager {
+  position: fixed !important;
+  left: 945px !important;
+  top: 828px !important;
+  z-index: 4 !important;
+  display: flex !important;
+  gap: 10px !important;
+}
+
+.inventory-screen .inventory-page-btn {
+  width: 42px !important;
+  height: 34px !important;
+  border: 1px solid rgba(226, 181, 96, 0.68) !important;
+  color: rgba(244, 230, 203, 0.8) !important;
+  background: rgba(26, 22, 18, 0.56) !important;
+  font-size: 16px !important;
+  font-weight: 1000 !important;
+  text-shadow: 0 2px 0 rgba(0, 0, 0, 0.82) !important;
+}
+
+.inventory-screen .inventory-page-btn.is-active {
+  color: #fff3c9 !important;
+  border-color: rgba(255, 224, 143, 0.9) !important;
+  background: rgba(91, 65, 29, 0.78) !important;
+}
+
+.inventory-screen .inventory-close-btn {
+  right: 300px !important;
+}
+
+.inventory-screen .inventory-back-btn {
+  right: 130px !important;
+}
+
+.inventory-screen .inventory-slot.has-item strong,
+.inventory-screen .inventory-slot.has-item em {
+  color: #fff0cf !important;
+  text-shadow: 0 2px 0 rgba(0, 0, 0, 0.82) !important;
+}
+
 .formation-screen .formation-roster-head strong {
-  color: #17120c !important;
+  color: #f6dfa8 !important;
   font-size: clamp(27px, 1.8vw, 35px) !important;
   line-height: 1 !important;
   letter-spacing: 0 !important;
   text-shadow:
-    0 1px 0 rgba(243, 215, 164, 0.9),
-    0 0 5px rgba(255, 226, 167, 0.34) !important;
+    0 2px 0 rgba(0, 0, 0, 0.85),
+    0 0 10px rgba(255, 226, 167, 0.55) !important;
 }
 
 .formation-screen .formation-roster-head span {
-  position: absolute !important;
-  right: 20.5% !important;
-  top: 50% !important;
-  color: #c4a173 !important;
-  font-size: 13px !important;
-  font-weight: 900 !important;
-  transform: translateY(-50%) !important;
+  display: none !important;
 }
 
 .formation-screen .formation-roster-grid.is-hero-roster {
@@ -15651,8 +16798,8 @@ body:not(.game-started) .game-wrap {
   grid-template-rows: repeat(2, minmax(0, 1fr)) !important;
   gap: var(--hero-roster-gap-y) var(--hero-roster-gap-x) !important;
   padding: 0 !important;
-  justify-content: stretch !important;
-  justify-items: stretch !important;
+  justify-content: center !important;
+  justify-items: center !important;
   align-content: stretch !important;
   align-items: stretch !important;
   overflow: hidden !important;
@@ -15677,6 +16824,10 @@ body:not(.game-started) .game-wrap {
   overflow: visible !important;
 }
 
+.formation-screen .formation-roster-grid.is-hero-roster .formation-unit-card:nth-child(n + 4) {
+  transform: translateY(-16px) !important;
+}
+
 .formation-screen .formation-roster-grid.is-hero-roster .formation-unit-card.is-selected {
   border: 0 !important;
   background: transparent !important;
@@ -15686,12 +16837,12 @@ body:not(.game-started) .game-wrap {
 
 .formation-screen .formation-roster-grid.is-hero-roster .formation-unit-card img {
   display: block !important;
-  width: auto !important;
-  height: calc(100% - 26px) !important;
+  width: 100% !important;
+  height: calc(100% - 22px) !important;
   max-width: 100% !important;
-  max-height: calc(100% - 26px) !important;
+  max-height: calc(100% - 22px) !important;
   object-fit: contain !important;
-  flex: 0 1 auto !important;
+  flex: 1 1 auto !important;
   filter: saturate(1.04) contrast(1.03) drop-shadow(0 6px 8px rgba(0, 0, 0, 0.48)) !important;
 }
 
@@ -15714,16 +16865,17 @@ body:not(.game-started) .game-wrap {
   align-items: center !important;
   justify-content: center !important;
   width: 100% !important;
-  height: 26px !important;
-  min-height: 26px !important;
-  margin: 0 !important;
+  height: 22px !important;
+  min-height: 22px !important;
+  margin: -14px 0 0 !important;
   padding: 2px 4px 0 !important;
   color: #fff0cf !important;
   background: transparent !important;
-  font-size: clamp(11px, 0.8vw, 14px) !important;
+  font-size: 14px !important;
   font-weight: 1000 !important;
   line-height: 1 !important;
   text-align: center !important;
+  transform: translateY(-2px) !important;
   text-shadow:
     0 2px 0 rgba(0, 0, 0, 0.92),
     0 0 6px rgba(0, 0, 0, 0.48) !important;
@@ -15739,8 +16891,8 @@ body:not(.game-started) .game-wrap {
 
 @media (max-height: 900px) {
   .formation-screen .formation-roster-panel {
-    top: 4.8vh !important;
-    height: 75vh !important;
+    top: var(--hero-roster-top) !important;
+    height: var(--hero-roster-height) !important;
     padding: var(--hero-roster-pad-top) var(--hero-roster-pad-x) var(--hero-roster-pad-bottom) !important;
   }
 
@@ -15750,12 +16902,12 @@ body:not(.game-started) .game-wrap {
   }
 
   .formation-screen .formation-roster-grid.is-hero-roster .formation-unit-card img {
-    height: calc(100% - 24px) !important;
-    max-height: calc(100% - 24px) !important;
+    height: calc(100% - 22px) !important;
+    max-height: calc(100% - 22px) !important;
   }
 
   .formation-screen .formation-roster-grid.is-hero-roster .formation-unit-name {
-    height: 24px !important;
-    min-height: 24px !important;
+    height: 22px !important;
+    min-height: 22px !important;
   }
 }
