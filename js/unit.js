@@ -5,6 +5,21 @@ const THIEF_RETREAT_DURATION = 0.45;
 const THIEF_RETREAT_SPEED = 190;
 const THIEF_RETREAT_MIN_X = PLAYER_BASE_X + 58;
 
+function getSummonFormationStats(baseId, fallbackBaseStats) {
+  if (typeof getFormationBattleStats === "function") {
+    const formationStats = getFormationBattleStats(baseId);
+    if (formationStats) return formationStats;
+  }
+
+  const grownStats = getGrownStats(baseId, fallbackBaseStats);
+  return {
+    ...grownStats,
+    damage: typeof grownStats.damage === "number" ? grownStats.damage : (fallbackBaseStats.damage || 0),
+    healAmount: typeof grownStats.healAmount === "number" ? grownStats.healAmount : fallbackBaseStats.healAmount,
+    defense: 0,
+  };
+}
+
 function summonGuard() {
   if (!hasSummonSlot()) {
     showSummonLimitMessage();
@@ -13,7 +28,7 @@ function summonGuard() {
     return;
   }
   if (!spendRunestone(50)) return;
-  const stats = getGrownStats("guard", { hp: 115, damage: 10 });
+  const stats = getSummonFormationStats("guard", { hp: 115, damage: 10 });
   gameState.units.push({
     type: "guard",
     name: "방패병",
@@ -25,11 +40,12 @@ function summonGuard() {
     h: 56,
     hp: stats.hp,
     maxHp: stats.hp,
+    defense: stats.defense || 0,
     speed: 48,
     damage: stats.damage,
-    range: 42,
+    range: stats.range || 42,
     cooldown: 0,
-    attackSpeed: 1.0,
+    attackSpeed: stats.attackSpeed || 1.0,
     animTime: 0,
     moving: false,
     attackAnimTimer: 0,
@@ -52,8 +68,8 @@ function summonArcher() {
     return;
   }
   if (!spendRunestone(75)) return;
-  const stats = getGrownStats("archer", { hp: 48, damage: 13 });
-  gameState.units.push(applyFormationBattleStats("archer", {
+  const stats = getSummonFormationStats("archer", { hp: 48, damage: 13 });
+  gameState.units.push({
     type: "archer",
     name: "궁수",
     level: stats.level,
@@ -64,11 +80,12 @@ function summonArcher() {
     h: 52,
     hp: stats.hp,
     maxHp: stats.hp,
+    defense: stats.defense || 0,
     speed: 42,
     damage: stats.damage,
-    range: 175,
+    range: stats.range || 175,
     cooldown: 0,
-    attackSpeed: 0.85,
+    attackSpeed: stats.attackSpeed || 0.85,
     animTime: 0,
     moving: false,
     attackAnimTimer: 0,
@@ -79,7 +96,7 @@ function summonArcher() {
     deathAnimTimer: 0,
     deathAnimDuration: 0.85,
     deathRewarded: false,
-  }));
+  });
   if (typeof recordStageMissionArcherSummon === "function") recordStageMissionArcherSummon();
 }
 
@@ -91,8 +108,8 @@ function summonMage() {
     return;
   }
   if (!spendRunestone(100)) return;
-  const stats = getGrownStats("mage", { hp: 42, damage: 15 });
-  gameState.units.push(applyFormationBattleStats("mage", {
+  const stats = getSummonFormationStats("mage", { hp: 42, damage: 15 });
+  gameState.units.push({
     type: "mage",
     name: "마법사",
     level: stats.level,
@@ -103,11 +120,12 @@ function summonMage() {
     h: 52,
     hp: stats.hp,
     maxHp: stats.hp,
+    defense: stats.defense || 0,
     speed: 38,
     damage: stats.damage,
-    range: 155,
+    range: stats.range || 155,
     cooldown: 0,
-    attackSpeed: 1.2,
+    attackSpeed: stats.attackSpeed || 1.2,
     animTime: 0,
     moving: false,
     attackAnimTimer: 0,
@@ -118,7 +136,7 @@ function summonMage() {
     deathAnimTimer: 0,
     deathAnimDuration: 0.85,
     deathRewarded: false,
-  }));
+  });
 }
 
 function summonSaintess() {
@@ -129,8 +147,8 @@ function summonSaintess() {
     return;
   }
   if (!spendRunestone(120)) return;
-  const stats = getGrownStats("saintess", { hp: 54, healAmount: 8 });
-  gameState.units.push(applyFormationBattleStats("saintess", {
+  const stats = getSummonFormationStats("saintess", { hp: 54, damage: 0, healAmount: 8 });
+  gameState.units.push({
     type: "saintess",
     name: "성녀",
     level: stats.level,
@@ -141,13 +159,14 @@ function summonSaintess() {
     h: 52,
     hp: stats.hp,
     maxHp: stats.hp,
+    defense: stats.defense || 0,
     speed: 36,
-    damage: 0,
-    range: 130,
+    damage: stats.damage || 0,
+    range: stats.range || 130,
     cooldown: 0,
-    attackSpeed: 1.2,
-    healRange: 130,
-    healAmount: stats.healAmount,
+    attackSpeed: stats.attackSpeed || 1.2,
+    healRange: stats.range || 130,
+    healAmount: stats.healAmount || stats.damage || 8,
     healInterval: 1.2,
     healCooldown: 0,
     animTime: 0,
@@ -159,7 +178,7 @@ function summonSaintess() {
     deathAnimTimer: 0,
     deathAnimDuration: 0.85,
     deathRewarded: false,
-  }));
+  });
 }
 
 function summonThief() {
@@ -170,8 +189,8 @@ function summonThief() {
     return;
   }
   if (!spendRunestone(90)) return;
-  const stats = getGrownStats("thief", { hp: 58, damage: 28 });
-  gameState.units.push(applyFormationBattleStats("thief", {
+  const stats = getSummonFormationStats("thief", { hp: 58, damage: 28 });
+  gameState.units.push({
     type: "thief",
     name: "도적",
     level: stats.level,
@@ -182,11 +201,12 @@ function summonThief() {
     h: 52,
     hp: stats.hp,
     maxHp: stats.hp,
+    defense: stats.defense || 0,
     speed: 72,
     damage: stats.damage,
-    range: 36,
+    range: stats.range || 36,
     cooldown: 0,
-    attackSpeed: 1.35,
+    attackSpeed: stats.attackSpeed || 1.35,
     animTime: 0,
     moving: false,
     attackAnimTimer: 0,
@@ -200,7 +220,7 @@ function summonThief() {
     deathAnimTimer: 0,
     deathAnimDuration: 0.78,
     deathRewarded: false,
-  }));
+  });
 }
 
 function startThiefRetreat(unit) {

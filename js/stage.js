@@ -5,6 +5,7 @@ const STAGE_CONFIGS = {
     title: "초원의 입구",
     maxWave: 3,
     startRunestone: 0,
+    playerBaseHp: 100,
     enemyBaseHp: 90,
     baseEnemiesToSpawn: 4,
   },
@@ -12,6 +13,7 @@ const STAGE_CONFIGS = {
     title: "모스 숲 언덕",
     maxWave: 3,
     startRunestone: 0,
+    playerBaseHp: 100,
     enemyBaseHp: 120,
     baseEnemiesToSpawn: 6,
   },
@@ -19,15 +21,16 @@ const STAGE_CONFIGS = {
     title: "마왕군 전초기지",
     maxWave: 3,
     startRunestone: 0,
+    playerBaseHp: 875,
     enemyBaseHp: 230,
     baseEnemiesToSpawn: 10,
   },
 };
 
 const STAGE_CLEAR_REWARDS = {
-  1: { gold: 500 },
-  2: { gold: 1000, soldierFragments: 20 },
-  3: { gold: 2000, diamonds: 50, commonEssence: 1 },
+  1: { gold: 10000 },
+  2: { gold: 15000 },
+  3: { gold: 30000 },
 };
 
 function getStageConfig(stageNumber) {
@@ -376,11 +379,12 @@ function completeStage(message) {
   gameState.message = `${message} · 스테이지 선택 버튼으로 다음 지역에 도전`;
   completeStageMissions(selectedStage);
   unlockStageProgress(selectedStage);
-  if (!alreadyCleared) {
+  const usesStageClearRewardUi = typeof showStageClearRewardUi === "function";
+  if (!alreadyCleared && !usesStageClearRewardUi) {
     grantPlayerRewards(STAGE_CLEAR_REWARDS[selectedStage] || {});
   }
   updateButtons();
-  if (typeof showStageClearRewardUi === "function") showStageClearRewardUi();
+  if (usesStageClearRewardUi) showStageClearRewardUi();
 }
 
 
