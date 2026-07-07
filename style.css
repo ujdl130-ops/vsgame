@@ -9598,8 +9598,12 @@ body:not(.game-started) .game-wrap {
 
   .shop-item-list[data-category="recommend"] {
     grid-template-columns: repeat(4, minmax(0, 1fr));
-    width: min(66vw, 1280px);
+    width: min(60vw, 1120px);
     margin-inline: auto;
+  }
+
+  .shop-item-list[data-category="recommend"] .shop-item-card {
+    max-height: min(54vh, 410px);
   }
 
   .shop-item-list[data-category="growth"] {
