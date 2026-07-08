@@ -38,6 +38,9 @@ function normalizePlayerData(savedData = {}) {
   const claimedMissionDailyDate = typeof savedData.claimedMissionDailyDate === "string"
     ? savedData.claimedMissionDailyDate
     : "";
+  const claimedMissionWeeklyWeek = typeof savedData.claimedMissionWeeklyWeek === "string"
+    ? savedData.claimedMissionWeeklyWeek
+    : "";
 
   return {
     ...savedData,
@@ -62,6 +65,7 @@ function normalizePlayerData(savedData = {}) {
     stageMissionStars,
     claimedMissionRewards,
     claimedMissionDailyDate,
+    claimedMissionWeeklyWeek,
   };
 }
 
