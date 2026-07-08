@@ -152,6 +152,11 @@ const KARON_WEREWOLF_SPRITE = {
   },
 };
 
+const KARON_RAGE_HP_STEP = 0.1;
+const KARON_RAGE_MAX_STACKS = 6;
+const KARON_RAGE_STACK_BONUS = 0.05;
+const KARON_GATE_TRIGGER_HP_RATIO = 0.5;
+
 const GOBLIN_STAGE_STATS = {
   1: { hp: 70, damage: 13 },
   2: { hp: 71, damage: 13 },
@@ -294,6 +299,8 @@ function shouldSpawnEvileye(wave) {
 function createKaronBoss(wave) {
   const phaseOneHp = 900 + wave * 150;
   const phaseTwoHp = 1850 + wave * 280;
+  const baseDamage = 44 + wave * 9;
+  const baseAttackSpeed = 1.35;
   return {
     type: "karon",
     name: "karon",
@@ -310,10 +317,14 @@ function createKaronBoss(wave) {
     hp: phaseOneHp,
     maxHp: phaseOneHp,
     speed: 24,
-    damage: 44 + wave * 9,
+    damage: baseDamage,
+    baseDamage,
     range: 295,
     cooldown: 0.35,
-    attackSpeed: 1.35,
+    attackSpeed: baseAttackSpeed,
+    baseAttackSpeed,
+    rageStacks: 0,
+    rageMultiplier: 1,
     animTime: 0,
     moving: false,
     attackAnimTimer: 0,
@@ -339,8 +350,62 @@ function shouldSpawnKaronBoss(wave) {
   return Number(gameState.stage) === 3 && wave === gameState.maxWave && gameState.spawnedInWave === 0;
 }
 
+function shouldTriggerKaronBossByEnemyGate() {
+  if (!gameState || gameState.karonBossSpawned || Number(gameState.stage) !== 3) return false;
+  const enemyBaseMaxHp = Math.max(1, Number(gameState.enemyBaseMaxHp) || 0);
+  return Math.max(0, Number(gameState.enemyBaseHp) || 0) <= enemyBaseMaxHp * KARON_GATE_TRIGGER_HP_RATIO;
+}
+
+function spawnKaronBoss(trigger = "wave") {
+  if (!gameState || gameState.karonBossSpawned || Number(gameState.stage) !== 3) return false;
+  const bossWave = Math.max(Number(gameState.wave) || 1, Number(gameState.maxWave) || 1);
+  gameState.karonBossSpawned = true;
+  gameState.karonBossTrigger = trigger;
+  gameState.enemies.push(createKaronBoss(bossWave));
+  return true;
+}
+
+function trySpawnKaronBossByEnemyGate() {
+  if (!shouldTriggerKaronBossByEnemyGate()) return false;
+  return spawnKaronBoss("gate");
+}
+
 function isKaronWerewolf(enemy) {
   return enemy && enemy.type === "karon" && enemy.bossPhase === "werewolf";
+}
+
+function getKaronRageStacks(enemy) {
+  if (!enemy || enemy.type !== "karon" || enemy.transforming || enemy.bossPhase === "transform") return 0;
+  const maxHp = Math.max(1, Number(enemy.maxHp) || 1);
+  const hp = Math.max(0, Number(enemy.hp) || 0);
+  const lostRatio = Math.max(0, 1 - hp / maxHp);
+  return Math.min(KARON_RAGE_MAX_STACKS, Math.floor((lostRatio + 1e-9) / KARON_RAGE_HP_STEP));
+}
+
+function setKaronBaseCombatStats(enemy, damage, attackSpeed) {
+  if (!enemy || enemy.type !== "karon") return;
+  enemy.baseDamage = Math.max(1, Math.round(Number(damage) || 1));
+  enemy.baseAttackSpeed = Math.max(0.1, Number(attackSpeed) || 1);
+  applyKaronRageStats(enemy);
+}
+
+function applyKaronRageStats(enemy) {
+  if (!enemy || enemy.type !== "karon") return;
+
+  const previousStacks = Math.max(0, Number(enemy.rageStacks) || 0);
+  const rageStacks = getKaronRageStacks(enemy);
+  const multiplier = 1 + rageStacks * KARON_RAGE_STACK_BONUS;
+  const baseDamage = Math.max(1, Math.round(Number(enemy.baseDamage ?? enemy.damage) || 1));
+  const baseAttackSpeed = Math.max(0.1, Number(enemy.baseAttackSpeed ?? enemy.attackSpeed) || 1);
+
+  enemy.rageStacks = rageStacks;
+  enemy.rageMultiplier = multiplier;
+  enemy.damage = Math.max(1, Math.round(baseDamage * multiplier));
+  enemy.attackSpeed = Math.max(0.1, baseAttackSpeed / multiplier);
+
+  if (rageStacks > previousStacks && typeof enemy.cooldown === "number") {
+    enemy.cooldown = Math.min(enemy.cooldown, enemy.attackSpeed);
+  }
 }
 
 function getKaronSpriteSpec(enemy) {
@@ -401,13 +466,12 @@ function finishKaronTransformation(enemy) {
   enemy.w = 88;
   enemy.h = 120;
   enemy.speed = 36;
-  enemy.damage = 120 + wave * 18;
   enemy.range = 92;
   enemy.cooldown = 0.35;
-  enemy.attackSpeed = 0.96;
   enemy.attackAnimTimer = 0;
   enemy.attackAnimDuration = 0.82;
   enemy.deathAnimDuration = 1.05;
+  setKaronBaseCombatStats(enemy, 120 + wave * 18, 0.96);
   enemy.swordWaveTarget = null;
   enemy.swordWavePending = false;
   enemy.clawTarget = null;
@@ -450,7 +514,7 @@ function getKaronPlayerGateDamageScale(werewolf) {
 
 function damageKaronPlayerGate(enemy, werewolf) {
   const damageScale = getKaronPlayerGateDamageScale(werewolf);
-  const attackInterval = enemy.attackSpeed || 1;
+  const attackInterval = enemy.baseAttackSpeed || enemy.attackSpeed || 1;
   gameState.playerBaseHp -= enemy.damage * damageScale * attackInterval;
   spawnHit(PLAYER_BASE_ATTACK_HIT_X, GROUND_Y - (werewolf ? 90 : 78), werewolf ? "#ff3b79" : "#ff6d4a");
   enemy.playerGateHitPending = false;
@@ -473,6 +537,8 @@ function updateKaronEnemy(enemy, dt) {
     updateKaronTransformation(enemy, dt);
     return;
   }
+
+  applyKaronRageStats(enemy);
 
   if (enemy.paralyzeTimer > 0) {
     enemy.animTime = Math.max(0, (enemy.animTime || 0) - dt);
@@ -614,9 +680,12 @@ function spawnEnemy() {
   }
 
   if (stage === 3) {
+    if (shouldTriggerKaronBossByEnemyGate()) {
+      spawnKaronBoss("gate");
+      return;
+    }
     if (shouldSpawnKaronBoss(wave)) {
-      gameState.karonBossSpawned = true;
-      gameState.enemies.push(createKaronBoss(wave));
+      spawnKaronBoss("wave");
       return;
     }
     gameState.enemies.push(createStageThreeMinion(wave));

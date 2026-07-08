@@ -333,6 +333,10 @@ function showChapterStages() {
 
 
 function updateWave(dt) {
+  if (typeof trySpawnKaronBossByEnemyGate === "function") {
+    trySpawnKaronBossByEnemyGate();
+  }
+
   if (gameState.waveBreakTimer > 0) {
     gameState.waveBreakTimer -= dt;
     const remain = Math.ceil(gameState.waveBreakTimer);
