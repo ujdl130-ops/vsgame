@@ -34,15 +34,35 @@ const MISSION_GROUPS = [
       { title: "소환 지휘관", detail: "누적 유닛 소환 횟수를 달성하세요.", current: 0, target: 700, reward: "영웅소환석 5" },
       { title: "전장의 개척자", detail: "누적 스테이지 클리어 횟수를 달성하세요.", current: 0, target: 100, reward: "골드 20000" },
       { title: "불굴의 도전자", detail: "누적 전투 도전 횟수를 달성하세요.", current: 0, target: 200, reward: "영웅소환석 10" },
-      { title: "Stage 1 별 3개 클리어", detail: "Stage 1의 스테이지 미션 3개를 모두 달성하세요.", current: 0, target: 3, reward: "강림권 5, 다이아 250", stageStarTarget: 1 },
-      { title: "Stage 2 별 3개 클리어", detail: "Stage 2의 스테이지 미션 3개를 모두 달성하세요.", current: 0, target: 3, reward: "강림권 5, 다이아 250", stageStarTarget: 2 },
-      { title: "Stage 3 별 3개 클리어", detail: "Stage 3의 스테이지 미션 3개를 모두 달성하세요.", current: 0, target: 3, reward: "강림권 10, 다이아 500", stageStarTarget: 3 },
+      { id: "stage1-three-star", title: "Stage 1 별 3개 클리어", detail: "Stage 1의 스테이지 미션 3개를 모두 달성하세요.", current: 0, target: 3, reward: "강림권 5, 다이아 250", stageStarTarget: 1 },
+      { id: "stage2-three-star", title: "Stage 2 별 3개 클리어", detail: "Stage 2의 스테이지 미션 3개를 모두 달성하세요.", current: 0, target: 3, reward: "강림권 5, 다이아 250", stageStarTarget: 2 },
+      { id: "stage3-three-star", title: "Stage 3 별 3개 클리어", detail: "Stage 3의 스테이지 미션 3개를 모두 달성하세요.", current: 0, target: 3, reward: "강림권 10, 다이아 500", stageStarTarget: 3 },
     ],
   },
 ];
 
-const claimedMissionRewards = new Set();
+const claimedMissionRewards = new Set(
+  typeof playerProgress !== "undefined" && Array.isArray(playerProgress.claimedMissionRewards)
+    ? playerProgress.claimedMissionRewards.map(String).filter(Boolean)
+    : []
+);
 let claimableCount = 0;
+
+function persistClaimedMissionRewards() {
+  if (typeof playerProgress === "undefined" || !playerProgress) return;
+  playerProgress.claimedMissionRewards = Array.from(claimedMissionRewards);
+  if (typeof saveProgress === "function") saveProgress();
+}
+
+function markMissionRewardClaimed(missionKey) {
+  if (!missionKey) return;
+  claimedMissionRewards.add(missionKey);
+  persistClaimedMissionRewards();
+}
+
+function getMissionKey(groupId, index, mission) {
+  return mission && mission.id ? `${groupId}-${mission.id}` : `${groupId}-${index}`;
+}
 
 function getMissionProgressPercent(mission) {
   if (!mission || !mission.target) return 0;
@@ -113,9 +133,10 @@ function claimMissionReward(reward) {
 
 function handleMissionRewardClick(button) {
   if (!button || button.disabled || button.dataset.claimed === "true") return;
+  if (claimedMissionRewards.has(button.dataset.missionKey || "")) return;
   claimMissionReward(button.dataset.reward || "");
   if (window.GameAudio) window.GameAudio.playRewardGetSfx();
-  claimedMissionRewards.add(button.dataset.missionKey || "");
+  markMissionRewardClaimed(button.dataset.missionKey || "");
   renderMissionScreen();
 }
 
@@ -123,7 +144,7 @@ function renderMissionCard(mission, index, groupId) {
   const percent = getMissionProgressPercent(mission);
   const current = getMissionCurrent(mission);
   const complete = current >= mission.target;
-  const missionKey = `${groupId}-${index}`;
+  const missionKey = getMissionKey(groupId, index, mission);
   const claimed = claimedMissionRewards.has(missionKey);
   return `
     <article class="mission-card ${complete ? "is-complete" : ""}">
@@ -150,7 +171,7 @@ function renderMissionCard(mission, index, groupId) {
 
 function renderMissionGroup(group) {
   const visibleMissions = group.missions
-    .map((mission, index) => ({ mission, index, missionKey: `${group.id}-${index}` }))
+    .map((mission, index) => ({ mission, index, missionKey: getMissionKey(group.id, index, mission) }))
     .filter((entry) => !claimedMissionRewards.has(entry.missionKey));
 
   return `
@@ -262,7 +283,7 @@ function claimMissionReward(reward) {
 
 function getClaimableMissionEntries() {
   return MISSION_GROUPS.flatMap((group) => group.missions.map((mission, index) => {
-    const missionKey = `${group.id}-${index}`;
+    const missionKey = getMissionKey(group.id, index, mission);
     const complete = getMissionCurrent(mission) >= mission.target;
     return { mission, missionKey, complete };
   })).filter((entry) => entry.complete && !claimedMissionRewards.has(entry.missionKey));
@@ -273,7 +294,7 @@ function handleMissionClaimAll() {
   if (!claimable.length) return;
   claimable.forEach(({ mission, missionKey }) => {
     claimMissionReward(mission.reward);
-    claimedMissionRewards.add(missionKey);
+    markMissionRewardClaimed(missionKey);
   });
   if (window.GameAudio) window.GameAudio.playRewardGetSfx();
   renderMissionScreen();
@@ -283,7 +304,7 @@ function renderMissionCard(mission, index, groupId) {
   const percent = getMissionProgressPercent(mission);
   const current = getMissionCurrent(mission);
   const complete = current >= mission.target;
-  const missionKey = `${groupId}-${index}`;
+  const missionKey = getMissionKey(groupId, index, mission);
   const claimed = claimedMissionRewards.has(missionKey);
   return `
     <article class="mission-card ${complete ? "is-complete" : ""}">

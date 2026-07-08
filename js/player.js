@@ -32,6 +32,9 @@ function normalizePlayerData(savedData = {}) {
     if (!missions || typeof missions !== "object") return;
     stageMissionStars[stageNumber] = { ...missions };
   });
+  const claimedMissionRewards = Array.isArray(savedData.claimedMissionRewards)
+    ? [...new Set(savedData.claimedMissionRewards.map(String).filter(Boolean))]
+    : [];
 
   return {
     ...savedData,
@@ -54,6 +57,7 @@ function normalizePlayerData(savedData = {}) {
     entitlements: savedData.entitlements && typeof savedData.entitlements === "object" ? { ...savedData.entitlements } : {},
     unitGrowth: savedData.unitGrowth && typeof savedData.unitGrowth === "object" ? { ...savedData.unitGrowth } : {},
     stageMissionStars,
+    claimedMissionRewards,
   };
 }
 
