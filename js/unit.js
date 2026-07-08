@@ -5,6 +5,34 @@ const THIEF_RETREAT_DURATION = 0.45;
 const THIEF_RETREAT_SPEED = 190;
 const THIEF_RETREAT_MIN_X = PLAYER_BASE_X + 58;
 
+function isRangedEnemyBaseAttacker(unit) {
+  return unit && (unit.type === "archer" || unit.type === "mage");
+}
+
+function canAttackEnemyBaseFromRange(unit) {
+  return isRangedEnemyBaseAttacker(unit)
+    && typeof isEnemyBaseInProjectileRange === "function"
+    && isEnemyBaseInProjectileRange(unit.x, unit.range);
+}
+
+function startRangedEnemyBaseAttack(unit) {
+  unit.cooldown = unit.attackSpeed;
+  if (window.GameAudio) window.GameAudio.playUnitAttackSfx(unit.type);
+
+  if (unit.type === "archer") {
+    unit.attackAnimDuration = 0.58;
+    unit.attackAnimTimer = unit.attackAnimDuration;
+    unit.pendingArrowShot = true;
+  } else if (unit.type === "mage") {
+    unit.attackAnimDuration = 0.72;
+    unit.attackAnimTimer = unit.attackAnimDuration;
+    unit.pendingMageShot = true;
+  }
+
+  unit.shotTarget = null;
+  unit.shotTargetBase = true;
+}
+
 function getSummonFormationStats(baseId, fallbackBaseStats) {
   if (typeof getFormationBattleStats === "function") {
     const formationStats = getFormationBattleStats(baseId);
@@ -370,11 +398,13 @@ function updateUnits(dt) {
           unit.attackAnimTimer = unit.attackAnimDuration;
           unit.pendingArrowShot = true;
           unit.shotTarget = target;
+          unit.shotTargetBase = false;
         } else if (unit.type === "mage") {
           unit.attackAnimDuration = 0.72;
           unit.attackAnimTimer = unit.attackAnimDuration;
           unit.pendingMageShot = true;
           unit.shotTarget = target;
+          unit.shotTargetBase = false;
         } else if (unit.type === "guard" || unit.type === "thief") {
           unit.attackAnimDuration = unit.type === "guard" ? 0.46 : THIEF_ATTACK_DURATION;
           unit.attackAnimTimer = unit.attackAnimDuration;
@@ -383,6 +413,10 @@ function updateUnits(dt) {
         } else if (canDamageCombatant(target)) {
           target.hp -= unit.damage;
         }
+      }
+    } else if (canAttackEnemyBaseFromRange(unit)) {
+      if (unit.cooldown <= 0) {
+        startRangedEnemyBaseAttack(unit);
       }
     } else {
       unit.x += unit.speed * dt;
