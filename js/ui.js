@@ -471,10 +471,16 @@ function updateBattleViewportScale() {
   const baseWidth = 960;
   const baseHeight = 540;
   const maxScale = 2;
-  const availableWidth = Math.max(1, window.innerWidth);
-  const availableHeight = Math.max(1, window.innerHeight);
-  const scale = Math.min(maxScale, availableWidth / baseWidth);
-  const frameHeight = Math.min(baseHeight, availableHeight / scale);
+  const viewport = window.visualViewport || null;
+  const availableWidth = Math.max(1, viewport?.width || window.innerWidth);
+  const availableHeight = Math.max(1, viewport?.height || window.innerHeight);
+  const isCompactLandscape = availableWidth > availableHeight && availableHeight <= baseHeight;
+  const scale = Math.min(
+    maxScale,
+    availableWidth / baseWidth,
+    isCompactLandscape ? availableHeight / baseHeight : maxScale
+  );
+  const frameHeight = isCompactLandscape ? baseHeight : Math.min(baseHeight, availableHeight / scale);
   const rootStyle = document.documentElement.style;
 
   rootStyle.setProperty("--battle-visual-scale", scale.toFixed(4));

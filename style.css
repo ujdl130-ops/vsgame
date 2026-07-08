@@ -18,9 +18,16 @@
   --battle-frame-height: 540px;
 }
 
+html {
+  width: 100%;
+  min-height: 100%;
+  background: #070914;
+}
+
 body {
   margin: 0;
   min-height: 100vh;
+  min-height: 100dvh;
   font-family: "Pretendard", "Noto Sans KR", Arial, sans-serif;
   background:
     radial-gradient(circle at 50% 0%, rgba(88, 65, 160, 0.7) 0%, transparent 34%),
@@ -30,6 +37,8 @@ body {
   justify-content: center;
   padding: 24px 12px;
   overflow-x: hidden;
+  touch-action: manipulation;
+  -webkit-text-size-adjust: 100%;
 }
 
 body::before {
@@ -149,6 +158,8 @@ canvas {
 
 body.game-started:not(.in-lobby):not(.in-stage-select):not(.in-shop):not(.in-recruit):not(.in-formation) {
   align-items: flex-start;
+  width: 100vw;
+  min-height: 100dvh;
   padding: 0;
   overflow: hidden;
 }
@@ -173,6 +184,17 @@ body.game-started:not(.in-lobby):not(.in-stage-select):not(.in-shop):not(.in-rec
 body.game-started:not(.in-lobby):not(.in-stage-select):not(.in-shop):not(.in-recruit):not(.in-formation) .battle-stage-frame canvas {
   width: 960px;
   height: 540px;
+}
+
+@media (orientation: landscape) and (max-height: 540px) {
+  body.game-started:not(.in-lobby):not(.in-stage-select):not(.in-shop):not(.in-recruit):not(.in-formation) {
+    height: 100vh;
+    height: 100dvh;
+  }
+
+  body.game-started:not(.in-lobby):not(.in-stage-select):not(.in-shop):not(.in-recruit):not(.in-formation) .game-wrap {
+    margin: auto;
+  }
 }
 
 .battle-unit-badge {
