@@ -6,6 +6,7 @@ const PROJECTILE_DEFAULT_MAX_LIFE = 3.2;
 const KARON_SWORD_WAVE_GATE_X = PLAYER_BASE_ATTACK_X;
 const KARON_SWORD_WAVE_GATE_DAMAGE_SCALE = 0.55;
 const KARON_SWORD_WAVE_HIT_COLOR = "#ff2d74";
+const KARON_SWORD_WAVE_SPLASH_TARGET_LIMIT = 3;
 
 function getEnemyBaseProjectileHitPoint() {
   return {
@@ -219,7 +220,10 @@ function getKaronSwordWaveSplashTargets(impactX, radius) {
     if (isCombatAlive(unit)) targets.push(unit);
   }
 
-  return targets.filter((target) => Math.abs(target.x - impactX) <= radius);
+  return targets
+    .filter((target) => Math.abs(target.x - impactX) <= radius)
+    .sort((a, b) => Math.abs(a.x - impactX) - Math.abs(b.x - impactX))
+    .slice(0, KARON_SWORD_WAVE_SPLASH_TARGET_LIMIT);
 }
 
 function damageKaronSwordWaveSplash(projectile, impactX) {
