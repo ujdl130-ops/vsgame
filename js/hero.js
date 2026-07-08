@@ -387,8 +387,13 @@ function fireHeroArrow(hero) {
       target: shotTarget,
       color: hero.projectileColor || "#9fe8ff",
     });
-  } else if (direction > 0 && ENEMY_BASE_X - hero.x <= hero.range + 25) {
-    damageEnemyBase(hero.damage * 0.65, ENEMY_BASE_X - 38, GROUND_Y - 78, hero.projectileColor || "#9fe8ff");
+  } else if (direction > 0 && ENEMY_BASE_ATTACK_HIT_X - hero.x <= hero.range + 25) {
+    damageEnemyBase(
+      hero.damage * 0.65,
+      ENEMY_BASE_ATTACK_HIT_X,
+      ENEMY_BASE_ATTACK_HIT_Y,
+      hero.projectileColor || "#9fe8ff"
+    );
   } else {
     fireHeroStraightProjectile(hero, direction, origin);
     spawnHeroMissIndicator(hero, direction, origin, nearestEnemyInDirection);

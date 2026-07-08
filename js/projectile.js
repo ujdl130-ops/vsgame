@@ -9,8 +9,8 @@ const KARON_SWORD_WAVE_HIT_COLOR = "#ff2d74";
 
 function getEnemyBaseProjectileHitPoint() {
   return {
-    x: ENEMY_BASE_X - 38,
-    y: GROUND_Y - 78,
+    x: ENEMY_BASE_ATTACK_HIT_X,
+    y: ENEMY_BASE_ATTACK_HIT_Y,
   };
 }
 
