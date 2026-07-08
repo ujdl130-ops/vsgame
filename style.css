@@ -8761,6 +8761,14 @@ body:not(.game-started) .game-wrap {
   pointer-events: none;
 }
 
+.shop-item-card.is-purchased[data-category="monthly"]::after {
+  content: "월정액 적용중";
+}
+
+.shop-item-card.is-purchased.is-monthly::after {
+  content: "월정액 적용중";
+}
+
 .shop-notice {
   width: min(66vw, 900px);
   margin: 0 auto;
@@ -9620,6 +9628,134 @@ body:not(.game-started) .game-wrap {
 
 .shop-purchase-confirm {
   background: linear-gradient(180deg, #fff1a6, #e8a034) !important;
+}
+
+.monthly-reward-popup {
+  position: fixed;
+  inset: 0;
+  z-index: 86;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: rgba(3, 7, 14, 0.58);
+  backdrop-filter: blur(3px);
+}
+
+.monthly-reward-popup.is-hidden {
+  display: none;
+}
+
+.monthly-reward-card {
+  width: min(390px, calc(100vw - 34px));
+  display: grid;
+  justify-items: center;
+  gap: 10px;
+  padding: 20px 20px 18px;
+  color: #fff3d3;
+  text-align: center;
+  border: 1px solid rgba(237, 199, 116, 0.78);
+  border-radius: 7px;
+  background:
+    radial-gradient(circle at 50% 0%, rgba(255, 218, 117, 0.2), transparent 42%),
+    linear-gradient(135deg, rgba(64, 49, 31, 0.95), rgba(12, 17, 27, 0.98));
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 244, 207, 0.16),
+    0 22px 58px rgba(0, 0, 0, 0.56);
+  animation: monthlyRewardPop 0.2s ease-out both;
+}
+
+.monthly-reward-card p {
+  margin: 0;
+  color: #e0a94d;
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 0.14em;
+}
+
+.monthly-reward-card h2 {
+  margin: 0;
+  color: #fff0bd;
+  font-size: clamp(21px, 5vw, 27px);
+  line-height: 1.12;
+  text-shadow: 0 2px 0 rgba(0, 0, 0, 0.75);
+}
+
+.monthly-reward-message {
+  max-width: 300px;
+  color: #ead9bb;
+  font-size: 14px;
+  font-weight: 800;
+  line-height: 1.38;
+}
+
+.monthly-reward-items {
+  width: 100%;
+  display: grid;
+  gap: 8px;
+  margin-top: 2px;
+}
+
+.monthly-reward-item {
+  display: grid;
+  grid-template-columns: 42px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  min-height: 52px;
+  padding: 8px 10px;
+  border: 1px solid rgba(217, 184, 119, 0.36);
+  border-radius: 6px;
+  background: rgba(6, 10, 18, 0.44);
+}
+
+.monthly-reward-item img {
+  width: 38px;
+  height: 38px;
+  object-fit: contain;
+  filter: drop-shadow(0 5px 8px rgba(0, 0, 0, 0.46));
+}
+
+.monthly-reward-item strong {
+  min-width: 0;
+  color: #ffe19a;
+  font-size: 15px;
+  font-weight: 1000;
+  text-align: left;
+}
+
+.monthly-reward-item span {
+  color: #fff5d6;
+  font-size: 16px;
+  font-weight: 1000;
+  white-space: nowrap;
+  text-shadow: 0 2px 0 rgba(0, 0, 0, 0.62);
+}
+
+.monthly-reward-close-btn {
+  min-width: 132px;
+  height: 42px;
+  margin-top: 2px;
+  border: 1px solid rgba(255, 197, 104, 0.82);
+  border-radius: 5px;
+  color: #fff4d0;
+  background: linear-gradient(180deg, rgba(109, 82, 39, 0.96), rgba(43, 31, 22, 0.98));
+  font-size: 15px;
+  font-weight: 1000;
+  text-shadow: 0 2px 0 rgba(0, 0, 0, 0.78);
+}
+
+.monthly-reward-close-btn:hover {
+  filter: brightness(1.12);
+}
+
+@keyframes monthlyRewardPop {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
 
 @media (max-width: 720px) {

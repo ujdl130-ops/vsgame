@@ -387,8 +387,24 @@ const SHOP_PURCHASE_RULES = {
     firstPurchaseBonus: { diamonds: 500 },
     firstPurchaseEntitlement: "packageLegacyFirstPurchaseBonus",
   },
-  "monthly-gods-contract": { rewards: { diamonds: 500 } },
-  "monthly-olympus-contract": { rewards: { diamonds: 3000 } },
+  "monthly-gods-contract": {
+    rewards: { diamonds: 500 },
+    monthlySubscription: {
+      key: "godsContract",
+      entitlement: "monthlySubscription",
+      durationDays: 30,
+      dailyRewards: { diamonds: 50, commonEssence: 1 },
+    },
+  },
+  "monthly-olympus-contract": {
+    rewards: { diamonds: 3000 },
+    monthlySubscription: {
+      key: "olympusContract",
+      entitlement: "monthlyOlympusSubscription",
+      durationDays: 30,
+      dailyRewards: { diamonds: 100, commonEssence: 3, gold: 10000 },
+    },
+  },
   "diamond-pouch": { rewards: { diamonds: 500 } },
   "diamond-box": { rewards: { diamonds: 1100 } },
   "diamond-vault": { rewards: { diamonds: 2300 } },
@@ -413,6 +429,21 @@ let selectedShopItem = null;
 let shopSessionBalances = null;
 const shopSessionDailyPurchases = {};
 const shopSessionFirstPurchaseBonuses = {};
+const monthlyRewardPopupState = {
+  queue: [],
+  current: null,
+  bound: false,
+};
+
+const MONTHLY_REWARD_DISPLAY_ITEMS = {
+  diamonds: { label: "다이아", icon: "assets/icons/diamond.png", unit: "개" },
+  commonEssence: { label: "신의 정수", icon: "assets/icons/essence_all.png", unit: "개" },
+  soldierFragments: { label: "병사 정수", icon: "assets/icons/essence_soldier.png", unit: "개" },
+  summonTickets: { label: "강림권", icon: "assets/icons/ticket.png", unit: "개" },
+  gold: { label: "골드", icon: "assets/icons/gold.png", unit: "G" },
+};
+
+const MONTHLY_REWARD_DISPLAY_ORDER = ["diamonds", "commonEssence", "gold", "summonTickets", "soldierFragments"];
 
 const SHOP_ASSET_PATHS = {
   categoryNormal: [
@@ -509,11 +540,297 @@ function setShopIcon(iconElement, category) {
   });
 }
 
+function getMonthlyRewardRuleIds() {
+  return Object.keys(SHOP_PURCHASE_RULES).filter((ruleId) => SHOP_PURCHASE_RULES[ruleId]?.monthlySubscription);
+}
+
+function getMonthlySubscriptionConfig(ruleId) {
+  return SHOP_PURCHASE_RULES[ruleId]?.monthlySubscription || null;
+}
+
+function ensureMonthlySubscriptionStore() {
+  if (!playerProgress) return {};
+  if (!playerProgress.monthlySubscriptions || typeof playerProgress.monthlySubscriptions !== "object") {
+    playerProgress.monthlySubscriptions = {};
+  }
+  return playerProgress.monthlySubscriptions;
+}
+
+function getMonthlySubscriptionState(ruleId) {
+  const config = getMonthlySubscriptionConfig(ruleId);
+  if (!config) return null;
+  return ensureMonthlySubscriptionStore()[config.key] || null;
+}
+
+function getDateFromLocalDateKey(dateKey) {
+  const parts = String(dateKey || "").split("-").map(Number);
+  if (parts.length !== 3 || parts.some((part) => !Number.isFinite(part))) return new Date();
+  return new Date(parts[0], parts[1] - 1, parts[2]);
+}
+
+function addDaysToLocalDateKey(dateKey, days) {
+  const date = getDateFromLocalDateKey(dateKey);
+  date.setDate(date.getDate() + Number(days || 0));
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
+function refreshMonthlySubscriptionState(ruleId, today = getLocalDateKey()) {
+  const config = getMonthlySubscriptionConfig(ruleId);
+  const state = getMonthlySubscriptionState(ruleId);
+  if (!config || !state) return null;
+
+  let changed = false;
+  const durationDays = Math.max(1, Number(config.durationDays) || 30);
+  state.claimedDays = Math.max(0, Number(state.claimedDays) || 0);
+
+  if (!state.startedDate) {
+    state.startedDate = today;
+    changed = true;
+  }
+  if (!state.endDate) {
+    state.endDate = addDaysToLocalDateKey(state.startedDate, durationDays - 1);
+    changed = true;
+  }
+  if (state.claimedDays >= durationDays || today > state.endDate) {
+    if (state.active !== false) {
+      state.active = false;
+      changed = true;
+    }
+  }
+
+  if (changed && typeof saveProgress === "function") saveProgress();
+  return state;
+}
+
+function isMonthlySubscriptionActive(ruleId, today = getLocalDateKey()) {
+  const config = getMonthlySubscriptionConfig(ruleId);
+  const state = refreshMonthlySubscriptionState(ruleId, today);
+  if (!config || !state) return false;
+  const durationDays = Math.max(1, Number(config.durationDays) || 30);
+  return Boolean(
+    state.active !== false
+    && state.claimedDays < durationDays
+    && today >= state.startedDate
+    && today <= state.endDate
+  );
+}
+
+function activateMonthlySubscription(ruleId) {
+  const config = getMonthlySubscriptionConfig(ruleId);
+  if (!config || !playerProgress) return null;
+
+  const today = getLocalDateKey();
+  const durationDays = Math.max(1, Number(config.durationDays) || 30);
+  const store = ensureMonthlySubscriptionStore();
+  const state = {
+    active: true,
+    startedDate: today,
+    endDate: addDaysToLocalDateKey(today, durationDays - 1),
+    lastClaimedDate: "",
+    claimedDays: 0,
+    purchasedAt: new Date().toISOString(),
+  };
+
+  store[config.key] = state;
+  if (config.entitlement) {
+    playerProgress.entitlements = playerProgress.entitlements || {};
+    playerProgress.entitlements[config.entitlement] = true;
+  }
+  saveProgress();
+  return state;
+}
+
+function getMonthlyRewardDisplayItems(rewards = {}) {
+  const keys = [
+    ...MONTHLY_REWARD_DISPLAY_ORDER,
+    ...Object.keys(rewards).filter((key) => !MONTHLY_REWARD_DISPLAY_ORDER.includes(key)),
+  ];
+
+  return keys
+    .map((key) => {
+      const amount = Math.max(0, Number(rewards[key]) || 0);
+      const display = MONTHLY_REWARD_DISPLAY_ITEMS[key];
+      if (!amount || !display) return null;
+      const formattedAmount = amount.toLocaleString("ko-KR");
+      return {
+        key,
+        label: display.label,
+        icon: display.icon,
+        amount: display.unit === "G" ? `${formattedAmount}G` : `${formattedAmount}${display.unit || "개"}`,
+      };
+    })
+    .filter(Boolean);
+}
+
+function bindMonthlyRewardPopup() {
+  const popup = document.getElementById("monthlyRewardPopup");
+  const closeBtn = document.getElementById("monthlyRewardCloseBtn");
+  if (!popup || monthlyRewardPopupState.bound) return;
+
+  monthlyRewardPopupState.bound = true;
+  if (closeBtn) closeBtn.addEventListener("click", closeMonthlyRewardPopup);
+  popup.addEventListener("click", (event) => {
+    if (event.target === popup) closeMonthlyRewardPopup();
+  });
+}
+
+function renderMonthlyRewardPopupItems(items = []) {
+  const wrap = document.getElementById("monthlyRewardItems");
+  if (!wrap) return;
+  wrap.innerHTML = "";
+
+  items.forEach((item) => {
+    const row = document.createElement("div");
+    row.className = "monthly-reward-item";
+
+    const icon = document.createElement("img");
+    icon.src = item.icon;
+    icon.alt = "";
+    icon.draggable = false;
+
+    const label = document.createElement("strong");
+    label.textContent = item.label;
+
+    const amount = document.createElement("span");
+    amount.textContent = item.amount;
+
+    row.append(icon, label, amount);
+    wrap.appendChild(row);
+  });
+}
+
+function showNextMonthlyRewardPopup() {
+  if (monthlyRewardPopupState.current) return;
+
+  const payload = monthlyRewardPopupState.queue.shift();
+  if (!payload) return;
+
+  const popup = document.getElementById("monthlyRewardPopup");
+  const kicker = document.getElementById("monthlyRewardKicker");
+  const title = document.getElementById("monthlyRewardTitle");
+  const message = document.getElementById("monthlyRewardMessage");
+  const closeBtn = document.getElementById("monthlyRewardCloseBtn");
+
+  if (!popup) {
+    if (typeof payload.onClose === "function") payload.onClose();
+    window.setTimeout(showNextMonthlyRewardPopup, 0);
+    return;
+  }
+
+  bindMonthlyRewardPopup();
+  monthlyRewardPopupState.current = payload;
+
+  if (kicker) kicker.textContent = payload.kicker || "MONTHLY";
+  if (title) title.textContent = payload.title || "월정액 보상 획득";
+  if (message) message.textContent = payload.message || "보상을 획득했습니다.";
+  renderMonthlyRewardPopupItems(payload.items || getMonthlyRewardDisplayItems(payload.rewards));
+
+  popup.classList.remove("is-hidden");
+  if (closeBtn) closeBtn.focus({ preventScroll: true });
+  if (window.GameAudio?.playRewardGetSfx) window.GameAudio.playRewardGetSfx();
+}
+
+function queueMonthlyRewardPopup(payload) {
+  if (!payload) return;
+  monthlyRewardPopupState.queue.push(payload);
+  showNextMonthlyRewardPopup();
+}
+
+function closeMonthlyRewardPopup() {
+  const popup = document.getElementById("monthlyRewardPopup");
+  const payload = monthlyRewardPopupState.current;
+  if (popup) popup.classList.add("is-hidden");
+  monthlyRewardPopupState.current = null;
+  if (payload && typeof payload.onClose === "function") payload.onClose();
+  window.setTimeout(showNextMonthlyRewardPopup, 80);
+}
+
+function isMonthlyRewardPopupVisible() {
+  const popup = document.getElementById("monthlyRewardPopup");
+  return Boolean(popup && !popup.classList.contains("is-hidden"));
+}
+
+function getMonthlyImmediateRewardTitle(rewards = {}) {
+  const diamonds = Math.max(0, Number(rewards.diamonds) || 0);
+  if (diamonds) return `다이아 ${diamonds.toLocaleString("ko-KR")}개 획득`;
+  return "즉시 보상 획득";
+}
+
+function getMonthlyImmediateRewardMessage(rewards = {}) {
+  const diamonds = Math.max(0, Number(rewards.diamonds) || 0);
+  if (diamonds) return `다이아 ${diamonds.toLocaleString("ko-KR")}개를 즉시 얻었습니다.`;
+  return "월정액 즉시 보상을 획득했습니다.";
+}
+
+function claimMonthlySubscriptionDailyReward(ruleId, options = {}) {
+  const config = getMonthlySubscriptionConfig(ruleId);
+  if (!config || !playerProgress) return null;
+
+  const today = getLocalDateKey();
+  const state = refreshMonthlySubscriptionState(ruleId, today);
+  const durationDays = Math.max(1, Number(config.durationDays) || 30);
+
+  if (!state || !isMonthlySubscriptionActive(ruleId, today)) return null;
+  if (state.lastClaimedDate === today) return null;
+  if (today < state.startedDate || today > state.endDate) return null;
+
+  const rewards = { ...(config.dailyRewards || {}) };
+  const hasReward = Object.values(rewards).some((amount) => Number(amount) > 0);
+  if (!hasReward) return null;
+
+  state.lastClaimedDate = today;
+  state.claimedDays = Math.min(durationDays, Math.max(0, Number(state.claimedDays) || 0) + 1);
+  if (state.claimedDays >= durationDays) state.active = false;
+  saveProgress();
+  grantPlayerRewards(rewards);
+
+  if (options.showPopup !== false) {
+    queueMonthlyRewardPopup({
+      kicker: "MONTHLY",
+      title: "월정액 보상 획득",
+      message: `${durationDays}일 월정액 접속 보상을 받았습니다.`,
+      rewards,
+    });
+  }
+
+  return { ruleId, rewards, state };
+}
+
+function claimAvailableMonthlySubscriptionDailyRewards(options = {}) {
+  return getMonthlyRewardRuleIds()
+    .map((ruleId) => claimMonthlySubscriptionDailyReward(ruleId, options))
+    .filter(Boolean);
+}
+
+function showMonthlySubscriptionPurchaseRewards(purchase = {}) {
+  const ruleId = purchase.ruleId;
+  const rewards = { ...(purchase.rewards || {}) };
+  const hasImmediateReward = Object.values(rewards).some((amount) => Number(amount) > 0);
+
+  if (!hasImmediateReward) {
+    claimMonthlySubscriptionDailyReward(ruleId, { showPopup: true, source: "purchase" });
+    return;
+  }
+
+  queueMonthlyRewardPopup({
+    kicker: "MONTHLY",
+    title: getMonthlyImmediateRewardTitle(rewards),
+    message: getMonthlyImmediateRewardMessage(rewards),
+    rewards,
+    onClose: () => {
+      claimMonthlySubscriptionDailyReward(ruleId, { showPopup: true, source: "purchase" });
+    },
+  });
+}
+
 const SHOP_ITEMS = [
   { id: "starter_package", name: "스타터 패키지", category: "package", priceLabel: "₩3,300", rewards: { gold: 10000, diamonds: 500, summonTickets: 10 } },
   { id: "god_growth_package", name: "신 성장 패키지", category: "package", priceLabel: "₩11,000", rewards: { gold: 30000, diamonds: 1000, summonTickets: 10, essences: { lightningEssence: 10, seaEssence: 10, soulEssence: 10, wisdomEssence: 10, warEssence: 10, strengthEssence: 10 } } },
   { id: "soldier_growth_package", name: "병사 성장 패키지", category: "package", priceLabel: "₩5,500", rewards: { gold: 20000, soldierFragments: 100 } },
-  { id: "monthly_subscription", name: "월정액", category: "subscription", priceLabel: "₩5,500", rewards: { diamonds: 300 }, entitlement: "monthlySubscription" },
+  { id: "monthly_subscription", name: "월정액", category: "subscription", priceLabel: "₩5,500", rewards: { diamonds: 500 }, entitlement: "monthlySubscription" },
   { id: "season_pass", name: "시즌패스", category: "pass", priceLabel: "₩11,000", rewards: { diamonds: 500, summonTickets: 10, soldierFragments: 50 }, entitlement: "seasonPass" },
   { id: "diamond_500", name: "다이아 500개", category: "diamond", priceLabel: "₩5,500", rewards: { diamonds: 500 } },
 ];
@@ -528,6 +845,16 @@ function getShopItems() {
 function purchaseShopItem(itemId) {
   const item = SHOP_ITEMS.find(({ id }) => id === itemId);
   if (!item) return { success: false, reason: "ITEM_NOT_FOUND", item: null };
+  if (item.id === "monthly_subscription") {
+    const ruleId = "monthly-gods-contract";
+    if (isMonthlySubscriptionActive(ruleId)) {
+      return { success: false, reason: "MONTHLY_ACTIVE", item: { ...item } };
+    }
+    grantPlayerRewards({ diamonds: 500 });
+    activateMonthlySubscription(ruleId);
+    showMonthlySubscriptionPurchaseRewards({ ruleId, rewards: { diamonds: 500 } });
+    return { success: true, item: { ...item }, rewards: { diamonds: 500 } };
+  }
   // Prototype only: payment approval is intentionally skipped.
   grantPlayerRewards(item.rewards);
   if (item.entitlement) {
@@ -757,6 +1084,9 @@ function renderShopUI() {
 
 function isShopItemPurchased(item) {
   const rule = item ? SHOP_PURCHASE_RULES[item.purchaseRuleId || item.id] : null;
+  if (rule?.monthlySubscription) {
+    return isMonthlySubscriptionActive(item.purchaseRuleId || item.id);
+  }
   return Boolean(
     rule?.daily
     && shopSessionDailyPurchases[item.id] === getLocalDateKey()
@@ -1017,6 +1347,9 @@ function confirmShopPurchase() {
   }
   if (window.GameAudio) window.GameAudio.playSfx("buySuccess", { cooldown: 250, volume: 0.8 });
   closeShopPurchasePopup();
+  if (result.monthlyPurchase) {
+    showMonthlySubscriptionPurchaseRewards(result.monthlyPurchase);
+  }
 }
 
 function executeCurrentShopPurchase() {
@@ -1028,6 +1361,9 @@ function executeCurrentShopPurchase() {
   const rule = SHOP_PURCHASE_RULES[ruleId];
   if (!rule) {
     return { success: false, message: "상품 보상은 준비 중입니다." };
+  }
+  if (rule.monthlySubscription && isMonthlySubscriptionActive(ruleId)) {
+    return { success: false, message: "이미 월정액 보상이 적용 중입니다." };
   }
 
   const today = getLocalDateKey();
@@ -1062,6 +1398,12 @@ function executeCurrentShopPurchase() {
   }
   grantPlayerRewards(rewards);
 
+  let monthlyPurchase = null;
+  if (rule.monthlySubscription) {
+    activateMonthlySubscription(ruleId);
+    monthlyPurchase = { ruleId, rewards: { ...rewards } };
+  }
+
   if (rule.daily) {
     shopSessionDailyPurchases[selectedShopItem.id] = today;
   }
@@ -1069,7 +1411,7 @@ function executeCurrentShopPurchase() {
     shopSessionFirstPurchaseBonuses[rule.firstPurchaseEntitlement] = true;
   }
 
-  return { success: true };
+  return { success: true, monthlyPurchase };
 }
 
 function applyShopSessionRewards(rewards) {
@@ -1125,4 +1467,6 @@ window.ShopAPI = {
   updateShopWallet,
   getSessionBalance: getShopSessionBalance,
   spendSessionCurrency: spendShopSessionCurrency,
+  claimMonthlyDailyRewards: claimAvailableMonthlySubscriptionDailyRewards,
+  isMonthlySubscriptionActive,
 };
