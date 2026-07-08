@@ -10,11 +10,22 @@ function canDamageCombatant(entity) {
 
 function getDefenseMitigatedDamage(target, rawDamage) {
   const damage = Math.max(0, Number(rawDamage) || 0);
-  const defense = Math.max(0, Number(target && target.defense) || 0);
-  if (damage <= 0 || defense <= 0) return damage;
+  if (damage <= 0) return 0;
 
-  const reduction = defense / (defense + 100);
-  return Math.max(1, Math.round(damage * (1 - reduction)));
+  const defense = Math.max(0, Number(target && target.defense) || 0);
+  const damageReduction = Math.min(0.95, Math.max(0, Number(target && target.damageReduction) || 0));
+  let finalDamage = damage;
+
+  if (defense > 0) {
+    const defenseReduction = defense / (defense + 100);
+    finalDamage *= 1 - defenseReduction;
+  }
+
+  if (damageReduction > 0) {
+    finalDamage *= 1 - damageReduction;
+  }
+
+  return Math.max(1, Math.round(finalDamage));
 }
 
 function damageCombatant(target, rawDamage) {

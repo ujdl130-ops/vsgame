@@ -108,6 +108,7 @@ function summonGuard() {
     hp: stats.hp,
     maxHp: stats.hp,
     defense: stats.defense || 0,
+    damageReduction: 0.15,
     speed: 48,
     damage: stats.damage,
     range: stats.range || 42,
