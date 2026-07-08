@@ -229,6 +229,9 @@ document.addEventListener("fullscreenchange", updateBattleViewportScale);
 document.addEventListener("webkitfullscreenchange", updateBattleViewportScale);
 updateBattleViewportScale();
 
+let lastGameFullscreenRequestAt = 0;
+const fullscreenRetryBtn = document.getElementById("fullscreenRetryBtn");
+
 function isGameStandaloneDisplay() {
   return Boolean(
     window.navigator.standalone
@@ -252,6 +255,13 @@ function isGameFullscreenActive() {
   );
 }
 
+function syncGameFullscreenUiState() {
+  document.documentElement.classList.toggle("is-game-fullscreen", isGameFullscreenActive());
+}
+
+document.addEventListener("fullscreenchange", syncGameFullscreenUiState);
+document.addEventListener("webkitfullscreenchange", syncGameFullscreenUiState);
+
 function lockGameLandscapeOrientation() {
   const lock = window.screen?.orientation?.lock;
   if (typeof lock !== "function") return;
@@ -266,12 +276,16 @@ function lockGameLandscapeOrientation() {
 }
 
 function requestGameFullscreen(force = false) {
+  syncGameFullscreenUiState();
   if (isGameFullscreenActive()) {
     lockGameLandscapeOrientation();
     updateBattleViewportScale();
     return;
   }
   if (!force && !isLikelyTouchGameDevice()) return;
+  const now = performance.now();
+  if (!force && now - lastGameFullscreenRequestAt < 3000) return;
+  lastGameFullscreenRequestAt = now;
 
   const root = document.documentElement;
   const requestFullscreen =
@@ -291,14 +305,20 @@ function requestGameFullscreen(force = false) {
       fullscreenRequest
         .then(() => {
           lockGameLandscapeOrientation();
+          syncGameFullscreenUiState();
           updateBattleViewportScale();
         })
-        .catch(() => updateBattleViewportScale());
+        .catch(() => {
+          syncGameFullscreenUiState();
+          updateBattleViewportScale();
+        });
     } else {
       lockGameLandscapeOrientation();
+      syncGameFullscreenUiState();
       updateBattleViewportScale();
     }
   } catch (error) {
+    syncGameFullscreenUiState();
     updateBattleViewportScale();
   }
 }
@@ -308,7 +328,15 @@ function requestGameFullscreenFromGesture(event) {
   requestGameFullscreen();
 }
 
-window.addEventListener("pointerdown", requestGameFullscreenFromGesture, { capture: true, once: true, passive: true });
+window.addEventListener("pointerdown", requestGameFullscreenFromGesture, { capture: true, passive: true });
+if (fullscreenRetryBtn) {
+  fullscreenRetryBtn.addEventListener("click", (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+    requestGameFullscreen(true);
+  });
+}
+syncGameFullscreenUiState();
 
 function bindUnitSlotButton(button, summonFn) {
   if (!button || typeof summonFn !== "function") return;
