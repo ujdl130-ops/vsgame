@@ -476,10 +476,23 @@ function getGameViewportSize() {
 
 function syncAppViewportSize() {
   const size = getGameViewportSize();
+  const forceLandscape = size.height > size.width;
+  const appWidth = forceLandscape ? size.height : size.width;
+  const appHeight = forceLandscape ? size.width : size.height;
+  const root = document.documentElement;
   const rootStyle = document.documentElement.style;
-  rootStyle.setProperty("--app-width", `${size.width}px`);
-  rootStyle.setProperty("--app-height", `${size.height}px`);
-  return size;
+  root.classList.toggle("is-forced-landscape", forceLandscape);
+  rootStyle.setProperty("--app-viewport-width", `${size.width}px`);
+  rootStyle.setProperty("--app-viewport-height", `${size.height}px`);
+  rootStyle.setProperty("--app-width", `${appWidth}px`);
+  rootStyle.setProperty("--app-height", `${appHeight}px`);
+  return {
+    width: appWidth,
+    height: appHeight,
+    viewportWidth: size.width,
+    viewportHeight: size.height,
+    forceLandscape,
+  };
 }
 
 function updateBattleViewportScale() {

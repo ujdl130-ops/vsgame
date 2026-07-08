@@ -255,9 +255,13 @@ function isGameFullscreenActive() {
 function lockGameLandscapeOrientation() {
   const lock = window.screen?.orientation?.lock;
   if (typeof lock !== "function") return;
-  const orientationLock = lock.call(window.screen.orientation, "landscape");
-  if (orientationLock && typeof orientationLock.catch === "function") {
-    orientationLock.catch(() => {});
+  try {
+    const orientationLock = lock.call(window.screen.orientation, "landscape");
+    if (orientationLock && typeof orientationLock.catch === "function") {
+      orientationLock.catch(() => {});
+    }
+  } catch (error) {
+    updateBattleViewportScale();
   }
 }
 

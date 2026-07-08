@@ -18,6 +18,8 @@
   --battle-frame-height: 540px;
   --app-width: 100vw;
   --app-height: 100dvh;
+  --app-viewport-width: 100vw;
+  --app-viewport-height: 100dvh;
 }
 
 html {
@@ -17862,4 +17864,36 @@ body:not(.game-started) {
   width: min(var(--app-width), calc(var(--app-height) * 16 / 9)) !important;
   max-width: var(--app-width) !important;
   max-height: var(--app-height) !important;
+}
+
+/* Force landscape composition when the browser stays in portrait. */
+:root.is-forced-landscape body {
+  width: var(--app-viewport-width) !important;
+  height: var(--app-viewport-height) !important;
+  min-height: var(--app-viewport-height) !important;
+}
+
+:root.is-forced-landscape .title-screen,
+:root.is-forced-landscape .lobby-screen,
+:root.is-forced-landscape .stage-screen,
+:root.is-forced-landscape .shop-screen,
+:root.is-forced-landscape .recruit-screen,
+:root.is-forced-landscape .formation-screen,
+:root.is-forced-landscape .mission-screen,
+:root.is-forced-landscape .inventory-screen,
+:root.is-forced-landscape .prebattle-formation-screen {
+  left: 0 !important;
+  top: 0 !important;
+  right: auto !important;
+  bottom: auto !important;
+  transform: rotate(90deg) translateY(-100%) !important;
+  transform-origin: top left !important;
+}
+
+:root.is-forced-landscape body.game-started:not(.in-lobby):not(.in-stage-select):not(.in-shop):not(.in-recruit):not(.in-formation):not(.in-mission):not(.in-inventory) .game-wrap {
+  position: fixed !important;
+  left: 0 !important;
+  top: 0 !important;
+  transform: rotate(90deg) translateY(-100%) !important;
+  transform-origin: top left !important;
 }
