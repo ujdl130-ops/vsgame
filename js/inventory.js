@@ -24,6 +24,14 @@ const INVENTORY_ESSENCE_ITEMS = [
   { key: "strengthEssence", name: "헤라클레스 정수", icon: "assets/icons/essence_hercules.png", source: "essences" },
 ];
 
+const INVENTORY_UNIT_ESSENCE_ITEMS = [
+  { key: "guardEssence", name: "방패병 정수", icon: "assets/icons/essence_soldier.png", source: "unitEssences" },
+  { key: "archerEssence", name: "궁수 정수", icon: "assets/icons/essence_soldier.png", source: "unitEssences" },
+  { key: "thiefEssence", name: "도적 정수", icon: "assets/icons/essence_soldier.png", source: "unitEssences" },
+  { key: "mageEssence", name: "마법사 정수", icon: "assets/icons/essence_soldier.png", source: "unitEssences" },
+  { key: "saintessEssence", name: "성녀 정수", icon: "assets/icons/essence_soldier.png", source: "unitEssences" },
+];
+
 const INVENTORY_RESOURCE_ITEMS = [
   { key: "gold", name: "골드", icon: "assets/icons/gold.png", source: "progress" },
   { key: "diamonds", name: "다이아몬드", icon: "assets/icons/diamond.png", source: "progress" },
@@ -32,11 +40,12 @@ const INVENTORY_RESOURCE_ITEMS = [
 
 function getInventoryItemAmount(item) {
   if (item.source === "essences") return Math.max(0, Number(playerProgress?.essences?.[item.key]) || 0);
+  if (item.source === "unitEssences") return Math.max(0, Number(playerProgress?.unitEssences?.[item.key]) || 0);
   return Math.max(0, Number(playerProgress?.[item.key]) || 0);
 }
 
 function getInventoryDisplayItems(tab = inventoryState.activeTab) {
-  const essenceItems = INVENTORY_ESSENCE_ITEMS.map((item) => ({
+  const essenceItems = [...INVENTORY_ESSENCE_ITEMS, ...INVENTORY_UNIT_ESSENCE_ITEMS].map((item) => ({
     ...item,
     count: getInventoryItemAmount(item),
     category: "essence",

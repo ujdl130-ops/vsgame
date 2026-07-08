@@ -86,6 +86,7 @@ function grantPlayerRewards(rewards = {}) {
   if (typeof updateLobbyTopBar === "function") updateLobbyTopBar();
   if (window.ShopAPI?.updateShopWallet) window.ShopAPI.updateShopWallet();
   if (typeof updateRecruitWallet === "function") updateRecruitWallet();
+  if (typeof renderInventoryScreen === "function") renderInventoryScreen();
   return playerProgress;
 }
 

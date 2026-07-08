@@ -273,6 +273,7 @@ if (optionStageSelectBtn) optionStageSelectBtn.addEventListener("click", handleO
 if (optionRestartBtn) optionRestartBtn.addEventListener("click", handleOptionRestart);
 if (stageClearTreasureBtn) stageClearTreasureBtn.addEventListener("click", handleStageClearTreasureOpen);
 if (stageClearRewardAdBtn) stageClearRewardAdBtn.addEventListener("click", handleStageClearRewardAdPreview);
+if (stageClearRewardCloseBtn) stageClearRewardCloseBtn.addEventListener("click", handleStageClearRewardClose);
 if (stageClearRewardLobbyBtn) stageClearRewardLobbyBtn.addEventListener("click", handleStageClearRewardLobby);
 if (stageClearRewardRetryBtn) stageClearRewardRetryBtn.addEventListener("click", handleStageClearRewardRetry);
 if (stageClearRewardNextBtn) stageClearRewardNextBtn.addEventListener("click", handleStageClearRewardNext);
