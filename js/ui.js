@@ -491,6 +491,7 @@ function syncAppViewportSize() {
   rootStyle.setProperty("--app-viewport-height", `${size.height}px`);
   rootStyle.setProperty("--app-width", `${appWidth}px`);
   rootStyle.setProperty("--app-height", `${appHeight}px`);
+  rootStyle.setProperty("--recruit-artboard-scale", Math.min(appWidth / 1920, appHeight / 900).toFixed(4));
   rootStyle.setProperty("--shop-artboard-scale", Math.min(appWidth / 1920, appHeight / 900).toFixed(4));
   rootStyle.setProperty("--formation-artboard-scale", Math.min(appWidth / 1920, appHeight / 900).toFixed(4));
   rootStyle.setProperty("--mission-artboard-scale", Math.min(appWidth / 1920, appHeight / 900).toFixed(4));
