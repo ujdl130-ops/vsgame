@@ -406,6 +406,11 @@ function handleStageDefeatRetry() {
   restartGame();
 }
 
+function handleStageDefeatUpgrade() {
+  hideStageDefeatUi();
+  showFormation();
+}
+
 function closeGameOptionsMenu(resumeGame = true) {
   if (!gameOptionsMenu) return;
 

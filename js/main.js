@@ -392,6 +392,7 @@ if (stageClearRewardRetryBtn) stageClearRewardRetryBtn.addEventListener("click",
 if (stageClearRewardNextBtn) stageClearRewardNextBtn.addEventListener("click", handleStageClearRewardNext);
 if (stageDefeatLobbyBtn) stageDefeatLobbyBtn.addEventListener("click", handleStageDefeatLobby);
 if (stageDefeatRetryBtn) stageDefeatRetryBtn.addEventListener("click", handleStageDefeatRetry);
+if (stageDefeatUpgradeBtn) stageDefeatUpgradeBtn.addEventListener("click", handleStageDefeatUpgrade);
 bindMovementJoystick(movementJoystick);
 if (titleStartBtn) titleStartBtn.textContent = "TAP TO START";
 function shouldShowWelcomeRewardPopup() {
