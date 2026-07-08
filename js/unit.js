@@ -19,10 +19,7 @@ function canMeleeAttackEnemyBase(unit) {
 
 function damageEnemyBaseWithMeleeUnit(unit) {
   const damage = Math.max(0, Number(unit.damage) || 0);
-  gameState.enemyBaseHp -= damage;
-  if (typeof spawnHit === "function") {
-    spawnHit(ENEMY_BASE_X - 38, GROUND_Y - 78, unit.type === "guard" ? "#ffe36a" : "#ffbd35");
-  }
+  damageEnemyBase(damage, ENEMY_BASE_X - 38, GROUND_Y - 78, unit.type === "guard" ? "#ffe36a" : "#ffbd35");
 }
 
 function startMeleeEnemyBaseAttack(unit) {
@@ -108,6 +105,7 @@ function summonGuard() {
     hp: stats.hp,
     maxHp: stats.hp,
     defense: stats.defense || 0,
+    damageReduction: 0.15,
     speed: 48,
     damage: stats.damage,
     range: stats.range || 42,

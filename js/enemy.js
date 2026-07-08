@@ -156,6 +156,8 @@ const KARON_RAGE_HP_STEP = 0.1;
 const KARON_RAGE_MAX_STACKS = 6;
 const KARON_RAGE_STACK_BONUS = 0.05;
 const KARON_GATE_TRIGGER_HP_RATIO = 0.5;
+const KARON_HERO_COUNTER_RELEASE_DISTANCE = 340;
+const KARON_BACK_ATTACK_MIN_DISTANCE = 14;
 
 const GOBLIN_STAGE_STATS = {
   1: { hp: 70, damage: 13 },
@@ -329,11 +331,13 @@ function createKaronBoss(wave) {
     moving: false,
     attackAnimTimer: 0,
     attackAnimDuration: 0.82,
+    face: -1,
     swordWaveTarget: null,
     swordWavePending: false,
     swordWaveSplashRadius: 76,
     clawTarget: null,
     clawHitPending: false,
+    karonCounterTarget: null,
     playerGateHitPending: false,
     transformAnimTimer: 0,
     transformAnimDuration: KARON_TRANSFORM_SPRITE.transformDuration,
@@ -362,6 +366,9 @@ function spawnKaronBoss(trigger = "wave") {
   gameState.karonBossSpawned = true;
   gameState.karonBossTrigger = trigger;
   gameState.enemies.push(createKaronBoss(bossWave));
+  if (typeof spawnStageThreeBossOpeningMinions === "function") {
+    spawnStageThreeBossOpeningMinions();
+  }
   return true;
 }
 
@@ -372,6 +379,74 @@ function trySpawnKaronBossByEnemyGate() {
 
 function isKaronWerewolf(enemy) {
   return enemy && enemy.type === "karon" && enemy.bossPhase === "werewolf";
+}
+
+function isKaronAtPlayerGate(enemy) {
+  if (!enemy || enemy.type !== "karon") return false;
+  const baseStopX = getKaronPlayerGateStopX(isKaronWerewolf(enemy));
+  return Boolean(enemy.playerGateHitPending || enemy.x <= baseStopX + 18);
+}
+
+function isHeroBehindKaron(enemy, hero = gameState && gameState.hero) {
+  if (!enemy || !hero) return false;
+  const face = enemy.face || -1;
+  return face < 0
+    ? hero.x > enemy.x + KARON_BACK_ATTACK_MIN_DISTANCE
+    : hero.x < enemy.x - KARON_BACK_ATTACK_MIN_DISTANCE;
+}
+
+function clearKaronCounterTarget(enemy) {
+  if (!enemy || enemy.type !== "karon") return;
+  enemy.karonCounterTarget = null;
+}
+
+function notifyKaronHitByHero(enemy) {
+  if (!enemy || enemy.type !== "karon" || enemy.dead || enemy.transforming) return;
+
+  const hero = gameState && gameState.hero;
+  if (!isCombatAlive(hero)) return;
+  if (!isKaronAtPlayerGate(enemy) || !isHeroBehindKaron(enemy, hero)) return;
+
+  enemy.karonCounterTarget = hero;
+  enemy.face = hero.x >= enemy.x ? 1 : -1;
+  enemy.playerGateHitPending = false;
+  enemy.swordWaveTarget = null;
+  enemy.swordWavePending = false;
+  enemy.clawTarget = null;
+  enemy.clawHitPending = false;
+  enemy.attackAnimTimer = 0;
+  enemy.cooldown = Math.min(enemy.cooldown || 0, 0.18);
+}
+
+function getKaronCounterTarget(enemy) {
+  if (!enemy || enemy.type !== "karon") return null;
+
+  const target = isCombatAlive(enemy.karonCounterTarget)
+    ? enemy.karonCounterTarget
+    : null;
+
+  if (!target) {
+    clearKaronCounterTarget(enemy);
+    return null;
+  }
+
+  if (Math.abs(target.x - enemy.x) > KARON_HERO_COUNTER_RELEASE_DISTANCE) {
+    clearKaronCounterTarget(enemy);
+    return null;
+  }
+
+  return target;
+}
+
+function getKaronTargetDirection(enemy, target) {
+  return target && target.x >= enemy.x ? 1 : -1;
+}
+
+function moveKaronTowardTarget(enemy, target, dt) {
+  const direction = getKaronTargetDirection(enemy, target);
+  enemy.face = direction;
+  enemy.x += direction * enemy.speed * dt;
+  enemy.moving = true;
 }
 
 function getKaronRageStacks(enemy) {
@@ -441,6 +516,7 @@ function startKaronTransformation(enemy) {
   enemy.swordWavePending = false;
   enemy.clawTarget = null;
   enemy.clawHitPending = false;
+  clearKaronCounterTarget(enemy);
   enemy.playerGateHitPending = false;
   enemy.paralyzeTimer = 0;
   enemy.transformAnimDuration = KARON_TRANSFORM_SPRITE.transformDuration;
@@ -476,6 +552,7 @@ function finishKaronTransformation(enemy) {
   enemy.swordWavePending = false;
   enemy.clawTarget = null;
   enemy.clawHitPending = false;
+  clearKaronCounterTarget(enemy);
   enemy.playerGateHitPending = false;
 }
 
@@ -523,6 +600,7 @@ function damageKaronPlayerGate(enemy, werewolf) {
 function startKaronPlayerGateAttack(enemy, attackDuration) {
   enemy.cooldown = enemy.attackSpeed;
   enemy.attackAnimTimer = attackDuration;
+  enemy.face = -1;
   enemy.playerGateHitPending = true;
   enemy.swordWaveTarget = null;
   enemy.swordWavePending = false;
@@ -570,11 +648,18 @@ function updateKaronEnemy(enemy, dt) {
     damageKaronPlayerGate(enemy, werewolf);
   }
 
-  const target = findNearestAlly(enemy.x, enemy.range);
+  const counterTarget = getKaronCounterTarget(enemy);
+  const target = counterTarget || findNearestAlly(enemy.x, enemy.range);
   const baseStopX = getKaronPlayerGateStopX(werewolf);
 
   if (target) {
-    if (enemy.cooldown <= 0 && enemy.attackAnimTimer <= 0) {
+    const distanceToTarget = Math.abs(target.x - enemy.x);
+    const targetInRange = counterTarget ? distanceToTarget <= enemy.range : true;
+    enemy.face = getKaronTargetDirection(enemy, target);
+
+    if (!targetInRange) {
+      moveKaronTowardTarget(enemy, target, dt);
+    } else if (enemy.cooldown <= 0 && enemy.attackAnimTimer <= 0) {
       enemy.cooldown = enemy.attackSpeed;
       enemy.attackAnimTimer = attackDuration;
       if (window.GameAudio) window.GameAudio.playEnemyAttackSfx(enemy);
@@ -589,10 +674,12 @@ function updateKaronEnemy(enemy, dt) {
   } else if (enemy.x <= baseStopX) {
     enemy.x = baseStopX;
     enemy.moving = false;
+    enemy.face = -1;
     if (enemy.cooldown <= 0 && enemy.attackAnimTimer <= 0) {
       startKaronPlayerGateAttack(enemy, attackDuration);
     }
   } else {
+    enemy.face = -1;
     enemy.x -= enemy.speed * dt;
     enemy.moving = true;
     if (enemy.x <= baseStopX) {
@@ -680,6 +767,9 @@ function spawnEnemy() {
   }
 
   if (stage === 3) {
+    if (gameState.karonBossSpawned) {
+      return;
+    }
     if (shouldTriggerKaronBossByEnemyGate()) {
       spawnKaronBoss("gate");
       return;
@@ -908,7 +998,7 @@ function drawKaronSprite(enemy) {
     ctx.globalAlpha = Math.max(0.18, 1 - progress * 0.55);
   }
 
-  ctx.scale(-1, 1);
+  ctx.scale((enemy.face || -1) < 0 ? -1 : 1, 1);
   ctx.imageSmoothingEnabled = true;
   ctx.drawImage(
     sprite,

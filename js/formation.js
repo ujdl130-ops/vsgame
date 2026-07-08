@@ -293,6 +293,56 @@ function getHeroGrowthMap() {
   if (!playerProgress.heroGrowth || typeof playerProgress.heroGrowth !== "object") {
     playerProgress.heroGrowth = {};
   }
+
+  let changed = false;
+  FORMATION_HEROES.forEach((hero) => {
+    const saved = playerProgress.heroGrowth[hero.id];
+    const legacyZeusGrowth = hero.id === "zeus" && playerProgress.growth && typeof playerProgress.growth.hero === "object"
+      ? playerProgress.growth.hero
+      : {};
+    const source = saved && typeof saved === "object"
+      ? { ...legacyZeusGrowth, ...saved }
+      : legacyZeusGrowth;
+    const starLevel = Math.min(
+      FORMATION_HERO_MAX_STAR,
+      Math.max(FORMATION_HERO_BASE_STAR, Number(source.starLevel ?? source.star) || FORMATION_HERO_BASE_STAR)
+    );
+    const level = Math.min(FORMATION_MAX_LEVEL, Math.max(1, Number(source.level) || 1));
+
+    if (
+      !saved
+      || typeof saved !== "object"
+      || Number(saved.level) !== level
+      || Number(saved.starLevel ?? saved.star) !== starLevel
+    ) {
+      playerProgress.heroGrowth[hero.id] = {
+        level,
+        starLevel,
+        starPiece: Math.max(0, Number(source.starPiece) || 0),
+        essence: Math.max(0, Number(source.essence) || 0),
+        star: starLevel,
+      };
+      changed = true;
+    }
+  });
+
+  const zeusGrowth = playerProgress.heroGrowth.zeus;
+  if (zeusGrowth) {
+    playerProgress.growth = playerProgress.growth || {};
+    const currentLegacy = playerProgress.growth.hero || {};
+    if (Number(currentLegacy.level) !== zeusGrowth.level || Number(currentLegacy.starLevel ?? currentLegacy.star) !== zeusGrowth.starLevel) {
+      playerProgress.growth.hero = {
+        level: zeusGrowth.level,
+        star: zeusGrowth.starLevel,
+        starLevel: zeusGrowth.starLevel,
+        starPiece: Math.max(0, Number(zeusGrowth.starPiece) || 0),
+      };
+      if (gameState) gameState.growth = playerProgress.growth;
+      changed = true;
+    }
+  }
+
+  if (changed) saveProgress();
   return playerProgress.heroGrowth;
 }
 

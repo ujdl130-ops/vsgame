@@ -86,6 +86,7 @@ function grantPlayerRewards(rewards = {}) {
   if (typeof updateLobbyTopBar === "function") updateLobbyTopBar();
   if (window.ShopAPI?.updateShopWallet) window.ShopAPI.updateShopWallet();
   if (typeof updateRecruitWallet === "function") updateRecruitWallet();
+  if (typeof renderInventoryScreen === "function") renderInventoryScreen();
   return playerProgress;
 }
 
@@ -174,6 +175,13 @@ function createInitialState() {
     enemySpawnTimer: 0,
     enemiesToSpawn: stageConfig.baseEnemiesToSpawn,
     spawnedInWave: 0,
+    karonBossSpawned: false,
+    karonBossTrigger: "",
+    stageThreeBossOpeningMinionsSpawned: false,
+    stageThreeBossReinforcementTimer: typeof STAGE3_BOSS_REINFORCEMENT_INTERVAL === "number"
+      ? STAGE3_BOSS_REINFORCEMENT_INTERVAL
+      : 6,
+    enemyGateShieldLastMessageAt: 0,
     waveBreakTimer: 0,
     growth: playerProgress.growth || {},
     selectedHeroId,

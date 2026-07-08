@@ -33,8 +33,165 @@ const STAGE_CLEAR_REWARDS = {
   3: { gold: 30000 },
 };
 
+const ENEMY_GATE_BOSS_SHIELD_MESSAGE = "알수없는힘에 막혔습니다";
+const STAGE3_BOSS_INITIAL_MINION_BURST_COUNT = 10;
+const STAGE3_BOSS_REINFORCEMENT_INTERVAL = 6;
+const STAGE3_BOSS_REINFORCEMENT_COUNT = 3;
+
 function getStageConfig(stageNumber) {
   return STAGE_CONFIGS[stageNumber] || STAGE_CONFIGS[1];
+}
+
+function isEntityAliveForStage(entity) {
+  return typeof isCombatAlive === "function"
+    ? isCombatAlive(entity)
+    : Boolean(entity && !entity.dead && entity.hp > 0);
+}
+
+function isStageBossEnemy(enemy) {
+  return Boolean(enemy && (enemy.isBoss || enemy.type === "karon"));
+}
+
+function isStageBossBlockingEnemyBase(enemy) {
+  if (!isStageBossEnemy(enemy)) return false;
+  if (enemy.type === "karon" && !enemy.dead && enemy.bossPhase !== "werewolf") return true;
+  return isEntityAliveForStage(enemy);
+}
+
+function getLivingStageBossEnemy() {
+  if (!gameState || !Array.isArray(gameState.enemies)) return null;
+  return gameState.enemies.find(isStageBossBlockingEnemyBase) || null;
+}
+
+function isEnemyBaseProtectedByBoss() {
+  return Boolean(Number(gameState && gameState.stage) === 3 && getLivingStageBossEnemy());
+}
+
+function showEnemyGateProtectedMessage() {
+  if (!gameState) return;
+
+  const now = typeof performance !== "undefined" ? performance.now() : Date.now();
+  const lastMessageAt = Number(gameState.enemyGateShieldLastMessageAt) || 0;
+  if (now - lastMessageAt < 450 && gameState.message === ENEMY_GATE_BOSS_SHIELD_MESSAGE) return;
+
+  gameState.enemyGateShieldLastMessageAt = now;
+  gameState.message = ENEMY_GATE_BOSS_SHIELD_MESSAGE;
+  gameState.messageTimer = 0.95;
+}
+
+function damageEnemyBase(rawDamage, hitX = ENEMY_BASE_X - 38, hitY = GROUND_Y - 78, color = "#f2fdff") {
+  if (!gameState || gameState.clear || gameState.gameOver) return 0;
+
+  if (isEnemyBaseProtectedByBoss()) {
+    showEnemyGateProtectedMessage();
+    if (typeof spawnHit === "function") spawnHit(hitX, hitY, "#9fe8ff");
+    return 0;
+  }
+
+  const damage = Math.max(0, Number(rawDamage) || 0);
+  if (damage <= 0) return 0;
+
+  gameState.enemyBaseHp -= damage;
+  if (typeof spawnHit === "function") spawnHit(hitX, hitY, color);
+
+  if (
+    Number(gameState.stage) === 3
+    && !gameState.karonBossSpawned
+    && typeof shouldTriggerKaronBossByEnemyGate === "function"
+    && shouldTriggerKaronBossByEnemyGate()
+    && typeof spawnKaronBoss === "function"
+    && spawnKaronBoss("gate")
+  ) {
+    gameState.enemyBaseHp = Math.max(1, Number(gameState.enemyBaseHp) || 0);
+  }
+
+  return damage;
+}
+
+function createStageThreeBossMinion(wave, index) {
+  if (typeof createStageThreeMinion !== "function") return null;
+
+  const minion = createStageThreeMinion(wave);
+  if (!minion) return null;
+
+  const column = index % 5;
+  const row = Math.floor(index / 5);
+  minion.x = ENEMY_BASE_X - 78 - column * 24 - row * 12;
+  minion.y = COMBAT_LINE_Y + ((index % 2) * 2 - 1) * Math.min(6, row * 2);
+  return minion;
+}
+
+function spawnStageThreeBossMinionGroup(count, options = {}) {
+  if (!gameState || Number(gameState.stage) !== 3 || !Array.isArray(gameState.enemies)) return 0;
+
+  const wave = Math.max(Number(gameState.wave) || 1, Number(gameState.maxWave) || 1);
+  const amount = Math.max(0, Math.floor(Number(count) || 0));
+  const originalSpawned = Math.max(0, Number(gameState.spawnedInWave) || 0);
+  let spawned = 0;
+
+  for (let i = 0; i < amount; i += 1) {
+    gameState.spawnedInWave = originalSpawned + i + 1;
+    const minion = createStageThreeBossMinion(wave, i);
+    if (!minion) continue;
+    gameState.enemies.push(minion);
+    spawned += 1;
+  }
+
+  gameState.spawnedInWave = Math.max(
+    Number(gameState.spawnedInWave) || 0,
+    Number(gameState.enemiesToSpawn) || 0
+  );
+
+  if (spawned > 0 && options.announce) {
+    gameState.message = "보스가 몬스터를 불러냈습니다!";
+    gameState.messageTimer = 1.15;
+  }
+
+  return spawned;
+}
+
+function spawnStageThreeBossOpeningMinions() {
+  if (!gameState || Number(gameState.stage) !== 3 || gameState.stageThreeBossOpeningMinionsSpawned) return 0;
+
+  gameState.stageThreeBossOpeningMinionsSpawned = true;
+  gameState.stageThreeBossReinforcementTimer = STAGE3_BOSS_REINFORCEMENT_INTERVAL;
+  return spawnStageThreeBossMinionGroup(STAGE3_BOSS_INITIAL_MINION_BURST_COUNT, { announce: true });
+}
+
+function updateStageThreeBossEncounter(dt) {
+  if (!gameState || Number(gameState.stage) !== 3 || !gameState.karonBossSpawned) return false;
+
+  const bossAlive = Boolean(getLivingStageBossEnemy());
+  const livingMinionCount = Array.isArray(gameState.enemies)
+    ? gameState.enemies.filter((enemy) => !isStageBossEnemy(enemy) && isEntityAliveForStage(enemy)).length
+    : 0;
+
+  if (!bossAlive) {
+    gameState.stageThreeBossReinforcementTimer = STAGE3_BOSS_REINFORCEMENT_INTERVAL;
+    if (!gameState.gateObjectiveAnnounced) {
+      gameState.gateObjectiveAnnounced = true;
+      gameState.message = "상대 게이트를 파괴해야 클리어됩니다!";
+      gameState.messageTimer = 1.4;
+    }
+    return true;
+  }
+
+  if (livingMinionCount > 0) {
+    gameState.stageThreeBossReinforcementTimer = STAGE3_BOSS_REINFORCEMENT_INTERVAL;
+    return true;
+  }
+
+  gameState.stageThreeBossReinforcementTimer = Math.max(
+    0,
+    (Number(gameState.stageThreeBossReinforcementTimer) || STAGE3_BOSS_REINFORCEMENT_INTERVAL) - dt
+  );
+
+  if (gameState.stageThreeBossReinforcementTimer <= 0) {
+    spawnStageThreeBossMinionGroup(STAGE3_BOSS_REINFORCEMENT_COUNT);
+    gameState.stageThreeBossReinforcementTimer = STAGE3_BOSS_REINFORCEMENT_INTERVAL;
+  }
+
+  return true;
 }
 
 function isStageUnlocked(stageNumber) {
@@ -335,6 +492,10 @@ function showChapterStages() {
 function updateWave(dt) {
   if (typeof trySpawnKaronBossByEnemyGate === "function") {
     trySpawnKaronBossByEnemyGate();
+  }
+
+  if (updateStageThreeBossEncounter(dt)) {
+    return;
   }
 
   if (gameState.waveBreakTimer > 0) {

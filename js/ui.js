@@ -374,6 +374,11 @@ function handleStageClearRewardLobby() {
   showLobby();
 }
 
+function handleStageClearRewardClose() {
+  if (!requireStageClearTreasureOpened()) return;
+  hideStageClearRewardUi();
+}
+
 function handleStageClearRewardRetry() {
   if (!requireStageClearTreasureOpened()) return;
   hideStageClearRewardUi();

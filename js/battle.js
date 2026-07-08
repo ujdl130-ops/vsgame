@@ -10,11 +10,22 @@ function canDamageCombatant(entity) {
 
 function getDefenseMitigatedDamage(target, rawDamage) {
   const damage = Math.max(0, Number(rawDamage) || 0);
-  const defense = Math.max(0, Number(target && target.defense) || 0);
-  if (damage <= 0 || defense <= 0) return damage;
+  if (damage <= 0) return 0;
 
-  const reduction = defense / (defense + 100);
-  return Math.max(1, Math.round(damage * (1 - reduction)));
+  const defense = Math.max(0, Number(target && target.defense) || 0);
+  const damageReduction = Math.min(0.95, Math.max(0, Number(target && target.damageReduction) || 0));
+  let finalDamage = damage;
+
+  if (defense > 0) {
+    const defenseReduction = defense / (defense + 100);
+    finalDamage *= 1 - defenseReduction;
+  }
+
+  if (damageReduction > 0) {
+    finalDamage *= 1 - damageReduction;
+  }
+
+  return Math.max(1, Math.round(finalDamage));
 }
 
 function damageCombatant(target, rawDamage) {
@@ -126,6 +137,11 @@ function checkEndConditions() {
   if (gameState.clear || gameState.gameOver) return;
 
   if (gameState.enemyBaseHp <= 0) {
+    if (typeof isEnemyBaseProtectedByBoss === "function" && isEnemyBaseProtectedByBoss()) {
+      gameState.enemyBaseHp = 1;
+      if (typeof showEnemyGateProtectedMessage === "function") showEnemyGateProtectedMessage();
+      return;
+    }
     completeStage(`STAGE ${selectedStage} CLEAR! 적 기지 파괴`);
     return;
   }
@@ -290,6 +306,7 @@ function applyZeusThunderstormDamage() {
     if (!isEnemyTouchedByZeusLightning(enemy, effect)) continue;
 
     enemy.hp -= thunderstormDamage;
+    if (typeof notifyKaronHitByHero === "function") notifyKaronHitByHero(enemy);
     enemy.paralyzeTimer = Math.max(
       enemy.paralyzeTimer || 0,
       ZEUS_THUNDERSTORM_SKILL.paralysisDuration
@@ -371,6 +388,7 @@ function applyPoseidonTsunamiDamage() {
       : POSEIDON_TSUNAMI_SKILL.knockbackDistance;
 
     enemy.hp -= damage;
+    if (typeof notifyKaronHitByHero === "function") notifyKaronHitByHero(enemy);
     enemy.x = Math.min(ENEMY_BASE_X - 34, enemy.x + knockbackDistance);
     enemy.moving = false;
     enemy.attackAnimTimer = 0;
