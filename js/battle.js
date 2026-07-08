@@ -306,6 +306,7 @@ function applyZeusThunderstormDamage() {
     if (!isEnemyTouchedByZeusLightning(enemy, effect)) continue;
 
     enemy.hp -= thunderstormDamage;
+    if (typeof notifyKaronHitByHero === "function") notifyKaronHitByHero(enemy);
     enemy.paralyzeTimer = Math.max(
       enemy.paralyzeTimer || 0,
       ZEUS_THUNDERSTORM_SKILL.paralysisDuration
@@ -387,6 +388,7 @@ function applyPoseidonTsunamiDamage() {
       : POSEIDON_TSUNAMI_SKILL.knockbackDistance;
 
     enemy.hp -= damage;
+    if (typeof notifyKaronHitByHero === "function") notifyKaronHitByHero(enemy);
     enemy.x = Math.min(ENEMY_BASE_X - 34, enemy.x + knockbackDistance);
     enemy.moving = false;
     enemy.attackAnimTimer = 0;

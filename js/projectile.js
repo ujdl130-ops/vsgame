@@ -196,12 +196,13 @@ function spawnKaronSwordWave(enemy) {
   const target = isCombatAlive(enemy.swordWaveTarget)
     ? enemy.swordWaveTarget
     : findNearestAlly(enemy.x, enemy.range + 40);
+  const direction = target && target.x >= enemy.x ? 1 : -1;
 
   gameState.projectiles.push({
     type: "karonSwordWave",
-    x: enemy.x - 48,
+    x: enemy.x + 48 * direction,
     y: enemy.y - 72,
-    vx: -500,
+    vx: 500 * direction,
     damage: enemy.damage,
     splashRadius: enemy.swordWaveSplashRadius || 72,
     target,
@@ -245,7 +246,7 @@ function isKaronSwordWavePlayerGateInSplash(impactX, radius) {
 }
 
 function hasKaronSwordWaveReachedPlayerGate(projectile) {
-  return projectile.x <= KARON_SWORD_WAVE_GATE_X;
+  return projectile.vx < 0 && projectile.x <= KARON_SWORD_WAVE_GATE_X;
 }
 
 function damageKaronSwordWavePlayerGate(projectile) {
@@ -388,7 +389,7 @@ function updateProjectiles(dt) {
         projectile.dead = true;
       }
 
-      if (projectile.x < -90 || projectile.life > projectile.maxLife) projectile.dead = true;
+      if (projectile.x < -90 || projectile.x > canvas.width + 90 || projectile.life > projectile.maxLife) projectile.dead = true;
       continue;
     }
 
@@ -412,6 +413,12 @@ function updateProjectiles(dt) {
         damageEnemyBaseWithProjectile(projectile, impact);
       } else if (isCombatAlive(projectile.target) && canDamageCombatant(projectile.target)) {
         damageCombatant(projectile.target, projectile.damage);
+        if (
+          (projectile.type === "heroBolt" || projectile.type === "poseidonBolt")
+          && typeof notifyKaronHitByHero === "function"
+        ) {
+          notifyKaronHitByHero(projectile.target);
+        }
         spawnHit(impact.x, impact.y, projectile.color || "#f2fdff");
       }
       projectile.dead = true;
