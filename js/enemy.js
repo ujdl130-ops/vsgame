@@ -362,6 +362,9 @@ function spawnKaronBoss(trigger = "wave") {
   gameState.karonBossSpawned = true;
   gameState.karonBossTrigger = trigger;
   gameState.enemies.push(createKaronBoss(bossWave));
+  if (typeof spawnStageThreeBossOpeningMinions === "function") {
+    spawnStageThreeBossOpeningMinions();
+  }
   return true;
 }
 
@@ -680,6 +683,9 @@ function spawnEnemy() {
   }
 
   if (stage === 3) {
+    if (gameState.karonBossSpawned) {
+      return;
+    }
     if (shouldTriggerKaronBossByEnemyGate()) {
       spawnKaronBoss("gate");
       return;

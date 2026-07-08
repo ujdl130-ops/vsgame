@@ -174,6 +174,13 @@ function createInitialState() {
     enemySpawnTimer: 0,
     enemiesToSpawn: stageConfig.baseEnemiesToSpawn,
     spawnedInWave: 0,
+    karonBossSpawned: false,
+    karonBossTrigger: "",
+    stageThreeBossOpeningMinionsSpawned: false,
+    stageThreeBossReinforcementTimer: typeof STAGE3_BOSS_REINFORCEMENT_INTERVAL === "number"
+      ? STAGE3_BOSS_REINFORCEMENT_INTERVAL
+      : 6,
+    enemyGateShieldLastMessageAt: 0,
     waveBreakTimer: 0,
     growth: playerProgress.growth || {},
     selectedHeroId,

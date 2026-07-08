@@ -21,8 +21,12 @@ function isEnemyBaseInProjectileRange(fromX, range, extraRange = 0) {
 }
 
 function damageEnemyBaseWithProjectile(projectile, impact) {
-  gameState.enemyBaseHp -= Math.max(0, Number(projectile.damage) || 0);
-  spawnHit(impact.x, impact.y, projectile.color || "#f2fdff");
+  damageEnemyBase(
+    Math.max(0, Number(projectile.damage) || 0),
+    impact.x,
+    impact.y,
+    projectile.color || "#f2fdff"
+  );
 }
 
 function getEnemyProjectileHitPoint(enemy) {

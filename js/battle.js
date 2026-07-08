@@ -137,6 +137,11 @@ function checkEndConditions() {
   if (gameState.clear || gameState.gameOver) return;
 
   if (gameState.enemyBaseHp <= 0) {
+    if (typeof isEnemyBaseProtectedByBoss === "function" && isEnemyBaseProtectedByBoss()) {
+      gameState.enemyBaseHp = 1;
+      if (typeof showEnemyGateProtectedMessage === "function") showEnemyGateProtectedMessage();
+      return;
+    }
     completeStage(`STAGE ${selectedStage} CLEAR! 적 기지 파괴`);
     return;
   }

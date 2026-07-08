@@ -388,8 +388,7 @@ function fireHeroArrow(hero) {
       color: hero.projectileColor || "#9fe8ff",
     });
   } else if (direction > 0 && ENEMY_BASE_X - hero.x <= hero.range + 25) {
-    gameState.enemyBaseHp -= hero.damage * 0.65;
-    spawnHit(ENEMY_BASE_X - 38, GROUND_Y - 78, hero.projectileColor || "#9fe8ff");
+    damageEnemyBase(hero.damage * 0.65, ENEMY_BASE_X - 38, GROUND_Y - 78, hero.projectileColor || "#9fe8ff");
   } else {
     fireHeroStraightProjectile(hero, direction, origin);
     spawnHeroMissIndicator(hero, direction, origin, nearestEnemyInDirection);
