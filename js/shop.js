@@ -391,6 +391,7 @@ const SHOP_PURCHASE_RULES = {
     rewards: { diamonds: 500 },
     monthlySubscription: {
       key: "godsContract",
+      displayName: "신들의 계약",
       entitlement: "monthlySubscription",
       durationDays: 30,
       dailyRewards: { diamonds: 50, commonEssence: 1 },
@@ -400,6 +401,7 @@ const SHOP_PURCHASE_RULES = {
     rewards: { diamonds: 3000 },
     monthlySubscription: {
       key: "olympusContract",
+      displayName: "올림포스의 계약",
       entitlement: "monthlyOlympusSubscription",
       durationDays: 30,
       dailyRewards: { diamonds: 100, commonEssence: 3, gold: 10000 },
@@ -753,16 +755,18 @@ function isMonthlyRewardPopupVisible() {
   return Boolean(popup && !popup.classList.contains("is-hidden"));
 }
 
-function getMonthlyImmediateRewardTitle(rewards = {}) {
+function getMonthlyImmediateRewardTitle(rewards = {}, config = null) {
   const diamonds = Math.max(0, Number(rewards.diamonds) || 0);
   if (diamonds) return `다이아 ${diamonds.toLocaleString("ko-KR")}개 획득`;
-  return "즉시 보상 획득";
+  return `${config?.displayName || "월정액"} 즉시 보상 획득`;
 }
 
-function getMonthlyImmediateRewardMessage(rewards = {}) {
+function getMonthlyImmediateRewardMessage(rewards = {}, config = null) {
   const diamonds = Math.max(0, Number(rewards.diamonds) || 0);
-  if (diamonds) return `다이아 ${diamonds.toLocaleString("ko-KR")}개를 즉시 얻었습니다.`;
-  return "월정액 즉시 보상을 획득했습니다.";
+  if (diamonds) {
+    return `${config?.displayName || "월정액"} 즉시 보상으로 다이아 ${diamonds.toLocaleString("ko-KR")}개를 얻었습니다.`;
+  }
+  return `${config?.displayName || "월정액"} 즉시 보상을 획득했습니다.`;
 }
 
 function claimMonthlySubscriptionDailyReward(ruleId, options = {}) {
@@ -790,7 +794,7 @@ function claimMonthlySubscriptionDailyReward(ruleId, options = {}) {
   if (options.showPopup !== false) {
     queueMonthlyRewardPopup({
       kicker: "MONTHLY",
-      title: "월정액 보상 획득",
+      title: `${config.displayName || "월정액"} 보상 획득`,
       message: `${durationDays}일 월정액 접속 보상을 받았습니다.`,
       rewards,
     });
@@ -807,6 +811,7 @@ function claimAvailableMonthlySubscriptionDailyRewards(options = {}) {
 
 function showMonthlySubscriptionPurchaseRewards(purchase = {}) {
   const ruleId = purchase.ruleId;
+  const config = getMonthlySubscriptionConfig(ruleId);
   const rewards = { ...(purchase.rewards || {}) };
   const hasImmediateReward = Object.values(rewards).some((amount) => Number(amount) > 0);
 
@@ -817,8 +822,8 @@ function showMonthlySubscriptionPurchaseRewards(purchase = {}) {
 
   queueMonthlyRewardPopup({
     kicker: "MONTHLY",
-    title: getMonthlyImmediateRewardTitle(rewards),
-    message: getMonthlyImmediateRewardMessage(rewards),
+    title: getMonthlyImmediateRewardTitle(rewards, config),
+    message: getMonthlyImmediateRewardMessage(rewards, config),
     rewards,
     onClose: () => {
       claimMonthlySubscriptionDailyReward(ruleId, { showPopup: true, source: "purchase" });
