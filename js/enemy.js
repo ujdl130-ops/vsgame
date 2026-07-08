@@ -300,7 +300,7 @@ function shouldSpawnEvileye(wave) {
 
 function createKaronBoss(wave) {
   const phaseOneHp = 900 + wave * 150;
-  const phaseTwoHp = 1850 + wave * 280;
+  const phaseTwoHp = 1400 + wave * 200;
   const baseDamage = 44 + wave * 9;
   const baseAttackSpeed = 1.35;
   return {
