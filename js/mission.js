@@ -34,6 +34,9 @@ const MISSION_GROUPS = [
       { title: "소환 지휘관", detail: "누적 유닛 소환 횟수를 달성하세요.", current: 0, target: 700, reward: "영웅소환석 5" },
       { title: "전장의 개척자", detail: "누적 스테이지 클리어 횟수를 달성하세요.", current: 0, target: 100, reward: "골드 20000" },
       { title: "불굴의 도전자", detail: "누적 전투 도전 횟수를 달성하세요.", current: 0, target: 200, reward: "영웅소환석 10" },
+      { title: "Stage 1 별 3개 클리어", detail: "Stage 1의 스테이지 미션 3개를 모두 달성하세요.", current: 0, target: 3, reward: "뽑기권 5, 다이아 250", stageStarTarget: 1 },
+      { title: "Stage 2 별 3개 클리어", detail: "Stage 2의 스테이지 미션 3개를 모두 달성하세요.", current: 0, target: 3, reward: "뽑기권 5, 다이아 250", stageStarTarget: 2 },
+      { title: "Stage 3 별 3개 클리어", detail: "Stage 3의 스테이지 미션 3개를 모두 달성하세요.", current: 0, target: 3, reward: "뽑기권 10, 다이아 500", stageStarTarget: 3 },
     ],
   },
 ];
@@ -43,10 +46,55 @@ let claimableCount = 0;
 
 function getMissionProgressPercent(mission) {
   if (!mission || !mission.target) return 0;
-  return Math.max(0, Math.min(100, Math.round((mission.current / mission.target) * 100)));
+  return Math.max(0, Math.min(100, Math.round((getMissionCurrent(mission) / mission.target) * 100)));
+}
+
+function getStageMissionStarCount(stageNumber) {
+  const detailConfig = typeof getStageDetailConfig === "function" ? getStageDetailConfig(stageNumber) : null;
+  const missionIds = detailConfig && Array.isArray(detailConfig.missionIds) ? detailConfig.missionIds : [];
+  const progress = typeof getStageMissionProgress === "function"
+    ? getStageMissionProgress(stageNumber)
+    : (playerProgress?.stageMissionStars?.[String(stageNumber)] || {});
+
+  return missionIds.reduce((count, missionId) => count + (progress[missionId] ? 1 : 0), 0);
+}
+
+function getMissionCurrent(mission) {
+  if (!mission) return 0;
+  if (mission.stageStarTarget) {
+    return Math.min(Number(mission.target) || 0, getStageMissionStarCount(mission.stageStarTarget));
+  }
+  return Math.max(0, Number(mission.current) || 0);
+}
+
+function getMissionRewardAmount(rewardText, keywordPattern) {
+  const match = String(rewardText || "").match(new RegExp(`${keywordPattern}[^0-9]*(\\d[\\d,]*)`));
+  return match ? Math.max(0, Number(match[1].replace(/,/g, "")) || 0) : 0;
+}
+
+function grantMissionRewardByText(reward) {
+  const rewardText = String(reward || "");
+  const rewards = {};
+  const gold = getMissionRewardAmount(rewardText, "(?:골드|怨⑤뱶)");
+  const diamonds = getMissionRewardAmount(rewardText, "(?:다이아|\\?ㅼ씠)");
+  const summonTickets = getMissionRewardAmount(rewardText, "(?:뽑기권|강림권|영웅소환석|모집|소환|\\?뚰솚)");
+  const commonEssence = getMissionRewardAmount(rewardText, "(?:신의정수)");
+  const soldierFragments = getMissionRewardAmount(rewardText, "(?:병사정수)");
+
+  if (gold) rewards.gold = gold;
+  if (diamonds) rewards.diamonds = diamonds;
+  if (summonTickets) rewards.summonTickets = summonTickets;
+  if (commonEssence) rewards.commonEssence = commonEssence;
+  if (soldierFragments) rewards.soldierFragments = soldierFragments;
+
+  if (!Object.keys(rewards).length) return false;
+  grantPlayerRewards(rewards);
+  return true;
 }
 
 function claimMissionReward(reward) {
+  if (grantMissionRewardByText(reward)) return;
+
   const amountMatch = String(reward).match(/(\d+)/);
   const amount = amountMatch ? Number(amountMatch[1]) : 1;
 
@@ -73,7 +121,8 @@ function handleMissionRewardClick(button) {
 
 function renderMissionCard(mission, index, groupId) {
   const percent = getMissionProgressPercent(mission);
-  const complete = mission.current >= mission.target;
+  const current = getMissionCurrent(mission);
+  const complete = current >= mission.target;
   const missionKey = `${groupId}-${index}`;
   const claimed = claimedMissionRewards.has(missionKey);
   return `
@@ -89,7 +138,7 @@ function renderMissionCard(mission, index, groupId) {
         <div class="mission-progress-track" aria-hidden="true">
           <span style="width: ${percent}%"></span>
         </div>
-        <strong>${mission.current} / ${mission.target}</strong>
+        <strong>${current} / ${mission.target}</strong>
       </div>
       <div class="mission-card-foot">
         <span>${mission.reward}</span>
@@ -187,6 +236,8 @@ function showMissionNotice() {
 }
 
 function claimMissionReward(reward) {
+  if (grantMissionRewardByText(reward)) return;
+
   const rewardText = String(reward || "");
   const amountMatch = rewardText.match(/(\d+)/);
   const amount = amountMatch ? Number(amountMatch[1]) : 1;
@@ -212,7 +263,7 @@ function claimMissionReward(reward) {
 function getClaimableMissionEntries() {
   return MISSION_GROUPS.flatMap((group) => group.missions.map((mission, index) => {
     const missionKey = `${group.id}-${index}`;
-    const complete = mission.current >= mission.target;
+    const complete = getMissionCurrent(mission) >= mission.target;
     return { mission, missionKey, complete };
   })).filter((entry) => entry.complete && !claimedMissionRewards.has(entry.missionKey));
 }
@@ -230,7 +281,8 @@ function handleMissionClaimAll() {
 
 function renderMissionCard(mission, index, groupId) {
   const percent = getMissionProgressPercent(mission);
-  const complete = mission.current >= mission.target;
+  const current = getMissionCurrent(mission);
+  const complete = current >= mission.target;
   const missionKey = `${groupId}-${index}`;
   const claimed = claimedMissionRewards.has(missionKey);
   return `
@@ -247,7 +299,7 @@ function renderMissionCard(mission, index, groupId) {
           <span style="width: ${percent}%"></span>
         </div>
         <button class="mission-reward-btn" type="button" data-reward="${mission.reward}" data-mission-key="${missionKey}" ${complete && !claimed ? "" : "disabled"}>${claimed ? "완료" : "받기"}</button>
-        <strong>${mission.current} / ${mission.target}</strong>
+        <strong>${current} / ${mission.target}</strong>
       </div>
       <div class="mission-card-foot">
         <span>${mission.reward}</span>
