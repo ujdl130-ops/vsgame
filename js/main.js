@@ -225,6 +225,86 @@ window.addEventListener("orientationchange", updateBattleViewportScale);
 if (window.visualViewport) {
   window.visualViewport.addEventListener("resize", updateBattleViewportScale);
 }
+document.addEventListener("fullscreenchange", updateBattleViewportScale);
+document.addEventListener("webkitfullscreenchange", updateBattleViewportScale);
+updateBattleViewportScale();
+
+function isGameStandaloneDisplay() {
+  return Boolean(
+    window.navigator.standalone
+    || window.matchMedia?.("(display-mode: fullscreen)")?.matches
+    || window.matchMedia?.("(display-mode: standalone)")?.matches
+  );
+}
+
+function isLikelyTouchGameDevice() {
+  const coarsePointer = window.matchMedia?.("(pointer: coarse)")?.matches;
+  const compactSide = Math.min(window.innerWidth || 0, window.innerHeight || 0);
+  return Boolean(coarsePointer || compactSide <= 540);
+}
+
+function isGameFullscreenActive() {
+  return Boolean(
+    document.fullscreenElement
+    || document.webkitFullscreenElement
+    || document.msFullscreenElement
+    || isGameStandaloneDisplay()
+  );
+}
+
+function lockGameLandscapeOrientation() {
+  const lock = window.screen?.orientation?.lock;
+  if (typeof lock !== "function") return;
+  const orientationLock = lock.call(window.screen.orientation, "landscape");
+  if (orientationLock && typeof orientationLock.catch === "function") {
+    orientationLock.catch(() => {});
+  }
+}
+
+function requestGameFullscreen(force = false) {
+  if (isGameFullscreenActive()) {
+    lockGameLandscapeOrientation();
+    updateBattleViewportScale();
+    return;
+  }
+  if (!force && !isLikelyTouchGameDevice()) return;
+
+  const root = document.documentElement;
+  const requestFullscreen =
+    root.requestFullscreen
+    || root.webkitRequestFullscreen
+    || root.msRequestFullscreen;
+
+  if (typeof requestFullscreen !== "function") {
+    lockGameLandscapeOrientation();
+    updateBattleViewportScale();
+    return;
+  }
+
+  try {
+    const fullscreenRequest = requestFullscreen.call(root, { navigationUI: "hide" });
+    if (fullscreenRequest && typeof fullscreenRequest.then === "function") {
+      fullscreenRequest
+        .then(() => {
+          lockGameLandscapeOrientation();
+          updateBattleViewportScale();
+        })
+        .catch(() => updateBattleViewportScale());
+    } else {
+      lockGameLandscapeOrientation();
+      updateBattleViewportScale();
+    }
+  } catch (error) {
+    updateBattleViewportScale();
+  }
+}
+
+function requestGameFullscreenFromGesture(event) {
+  if (event?.button !== undefined && event.button !== 0) return;
+  requestGameFullscreen();
+}
+
+window.addEventListener("pointerdown", requestGameFullscreenFromGesture, { capture: true, once: true, passive: true });
 
 function bindUnitSlotButton(button, summonFn) {
   if (!button || typeof summonFn !== "function") return;
@@ -298,6 +378,7 @@ function shouldShowWelcomeRewardPopup() {
 }
 
 function handleTitleStart() {
+  requestGameFullscreen(true);
   showLobby();
   if (shouldShowWelcomeRewardPopup()) {
     playerProgress.welcomeMail = { ...(playerProgress.welcomeMail || {}), introduced: true, claimed: false };

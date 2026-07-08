@@ -467,13 +467,26 @@ function handleOptionRestart() {
   restartGame();
 }
 
+function getGameViewportSize() {
+  const viewport = window.visualViewport || null;
+  const width = Math.max(1, viewport?.width || window.innerWidth || document.documentElement.clientWidth || 1);
+  const height = Math.max(1, viewport?.height || window.innerHeight || document.documentElement.clientHeight || 1);
+  return { width, height };
+}
+
+function syncAppViewportSize() {
+  const size = getGameViewportSize();
+  const rootStyle = document.documentElement.style;
+  rootStyle.setProperty("--app-width", `${size.width}px`);
+  rootStyle.setProperty("--app-height", `${size.height}px`);
+  return size;
+}
+
 function updateBattleViewportScale() {
   const baseWidth = 960;
   const baseHeight = 540;
   const maxScale = 2;
-  const viewport = window.visualViewport || null;
-  const availableWidth = Math.max(1, viewport?.width || window.innerWidth);
-  const availableHeight = Math.max(1, viewport?.height || window.innerHeight);
+  const { width: availableWidth, height: availableHeight } = syncAppViewportSize();
   const isCompactLandscape = availableWidth > availableHeight && availableHeight <= baseHeight;
   const scale = Math.min(
     maxScale,

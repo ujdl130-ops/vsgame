@@ -16,18 +16,23 @@
   --battle-visual-width: 1920px;
   --battle-visual-height: 1080px;
   --battle-frame-height: 540px;
+  --app-width: 100vw;
+  --app-height: 100dvh;
 }
 
 html {
   width: 100%;
+  height: 100%;
   min-height: 100%;
   background: #070914;
+  overflow: hidden;
 }
 
 body {
   margin: 0;
-  min-height: 100vh;
-  min-height: 100dvh;
+  width: 100%;
+  height: var(--app-height);
+  min-height: var(--app-height);
   font-family: "Pretendard", "Noto Sans KR", Arial, sans-serif;
   background:
     radial-gradient(circle at 50% 0%, rgba(88, 65, 160, 0.7) 0%, transparent 34%),
@@ -35,8 +40,9 @@ body {
   color: #fff;
   display: flex;
   justify-content: center;
-  padding: 24px 12px;
-  overflow-x: hidden;
+  padding: 0;
+  overflow: hidden;
+  overscroll-behavior: none;
   touch-action: manipulation;
   -webkit-text-size-adjust: 100%;
 }
@@ -17809,4 +17815,51 @@ body:not(.game-started) .game-wrap {
 
 .formation-screen .formation-wallet-wide .formation-currency strong {
   font-size: 14px !important;
+}
+
+/* Mobile fullscreen sizing: use the live visual viewport instead of browser 100vh. */
+body.in-lobby,
+body.in-stage-select,
+body.in-shop,
+body.in-recruit,
+body.in-formation,
+body.in-mission,
+body.in-inventory,
+body.in-prebattle-formation,
+body:not(.game-started) {
+  width: var(--app-width) !important;
+  height: var(--app-height) !important;
+  min-height: var(--app-height) !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+}
+
+.title-screen,
+.lobby-screen,
+.stage-screen,
+.shop-screen,
+.recruit-screen,
+.formation-screen,
+.mission-screen,
+.inventory-screen,
+.prebattle-formation-screen {
+  width: var(--app-width) !important;
+  height: var(--app-height) !important;
+  min-height: var(--app-height) !important;
+  max-height: var(--app-height) !important;
+}
+
+.lobby-stage,
+.formation-shell,
+.formation-main-panel,
+.inventory-screen .inventory-board {
+  height: var(--app-height) !important;
+  max-height: var(--app-height) !important;
+}
+
+.stage-art-frame,
+.prebattle-formation-board {
+  width: min(var(--app-width), calc(var(--app-height) * 16 / 9)) !important;
+  max-width: var(--app-width) !important;
+  max-height: var(--app-height) !important;
 }
