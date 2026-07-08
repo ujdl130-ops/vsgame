@@ -15,7 +15,6 @@
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <button id="fullscreenRetryBtn" class="fullscreen-retry-btn" type="button" aria-label="전체화면"></button>
   <section id="titleScreen" class="title-screen" aria-label="픽셀디펜스 타이틀 화면">
     <div class="pixel-stars" aria-hidden="true">
       <span></span><span></span><span></span><span></span><span></span>
@@ -649,7 +648,9 @@
   <script>
     if ("serviceWorker" in navigator) {
       window.addEventListener("load", () => {
-        navigator.serviceWorker.register("./sw.js").catch(() => {});
+        navigator.serviceWorker.register("./sw.js").then((registration) => {
+          registration.update();
+        }).catch(() => {});
       });
     }
   </script>

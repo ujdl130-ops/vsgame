@@ -225,12 +225,14 @@ window.addEventListener("orientationchange", updateBattleViewportScale);
 if (window.visualViewport) {
   window.visualViewport.addEventListener("resize", updateBattleViewportScale);
 }
-document.addEventListener("fullscreenchange", updateBattleViewportScale);
-document.addEventListener("webkitfullscreenchange", updateBattleViewportScale);
+document.addEventListener("fullscreenchange", refreshGameViewport);
+document.addEventListener("webkitfullscreenchange", refreshGameViewport);
 updateBattleViewportScale();
 
-let lastGameFullscreenRequestAt = 0;
-const fullscreenRetryBtn = document.getElementById("fullscreenRetryBtn");
+function refreshGameViewport() {
+  requestAnimationFrame(updateBattleViewportScale);
+  window.setTimeout(updateBattleViewportScale, 250);
+}
 
 function isGameStandaloneDisplay() {
   return Boolean(
@@ -238,12 +240,6 @@ function isGameStandaloneDisplay() {
     || window.matchMedia?.("(display-mode: fullscreen)")?.matches
     || window.matchMedia?.("(display-mode: standalone)")?.matches
   );
-}
-
-function isLikelyTouchGameDevice() {
-  const coarsePointer = window.matchMedia?.("(pointer: coarse)")?.matches;
-  const compactSide = Math.min(window.innerWidth || 0, window.innerHeight || 0);
-  return Boolean(coarsePointer || compactSide <= 540);
 }
 
 function isGameFullscreenActive() {
@@ -266,26 +262,25 @@ function lockGameLandscapeOrientation() {
   const lock = window.screen?.orientation?.lock;
   if (typeof lock !== "function") return;
   try {
-    const orientationLock = lock.call(window.screen.orientation, "landscape");
+    const orientationLock = lock.call(window.screen.orientation, "landscape-primary");
     if (orientationLock && typeof orientationLock.catch === "function") {
-      orientationLock.catch(() => {});
+      orientationLock.catch(() => {
+        const fallbackLock = lock.call(window.screen.orientation, "landscape");
+        if (fallbackLock && typeof fallbackLock.catch === "function") fallbackLock.catch(() => {});
+      });
     }
   } catch (error) {
-    updateBattleViewportScale();
+    refreshGameViewport();
   }
 }
 
-function requestGameFullscreen(force = false) {
+function requestGameFullscreen() {
   syncGameFullscreenUiState();
   if (isGameFullscreenActive()) {
     lockGameLandscapeOrientation();
-    updateBattleViewportScale();
+    refreshGameViewport();
     return;
   }
-  if (!force && !isLikelyTouchGameDevice()) return;
-  const now = performance.now();
-  if (!force && now - lastGameFullscreenRequestAt < 3000) return;
-  lastGameFullscreenRequestAt = now;
 
   const root = document.documentElement;
   const requestFullscreen =
@@ -295,7 +290,7 @@ function requestGameFullscreen(force = false) {
 
   if (typeof requestFullscreen !== "function") {
     lockGameLandscapeOrientation();
-    updateBattleViewportScale();
+    refreshGameViewport();
     return;
   }
 
@@ -306,20 +301,20 @@ function requestGameFullscreen(force = false) {
         .then(() => {
           lockGameLandscapeOrientation();
           syncGameFullscreenUiState();
-          updateBattleViewportScale();
+          refreshGameViewport();
         })
         .catch(() => {
           syncGameFullscreenUiState();
-          updateBattleViewportScale();
+          refreshGameViewport();
         });
     } else {
       lockGameLandscapeOrientation();
       syncGameFullscreenUiState();
-      updateBattleViewportScale();
+      refreshGameViewport();
     }
   } catch (error) {
     syncGameFullscreenUiState();
-    updateBattleViewportScale();
+    refreshGameViewport();
   }
 }
 
@@ -329,13 +324,8 @@ function requestGameFullscreenFromGesture(event) {
 }
 
 window.addEventListener("pointerdown", requestGameFullscreenFromGesture, { capture: true, passive: true });
-if (fullscreenRetryBtn) {
-  fullscreenRetryBtn.addEventListener("click", (event) => {
-    event.preventDefault();
-    event.stopPropagation();
-    requestGameFullscreen(true);
-  });
-}
+window.addEventListener("click", requestGameFullscreenFromGesture, { capture: true, passive: true });
+window.addEventListener("keydown", requestGameFullscreenFromGesture, { capture: true });
 syncGameFullscreenUiState();
 
 function bindUnitSlotButton(button, summonFn) {
@@ -410,7 +400,7 @@ function shouldShowWelcomeRewardPopup() {
 }
 
 function handleTitleStart() {
-  requestGameFullscreen(true);
+  requestGameFullscreen();
   showLobby();
   if (shouldShowWelcomeRewardPopup()) {
     playerProgress.welcomeMail = { ...(playerProgress.welcomeMail || {}), introduced: true, claimed: false };
