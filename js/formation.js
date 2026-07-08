@@ -804,6 +804,7 @@ function showFormationMessage(message, tone = "info") {
 function createFormationShellMarkup() {
   return `
     <div class="formation-scanline" aria-hidden="true"></div>
+    <div class="formation-artboard">
 
     <button id="formationBackBtn" class="formation-ui-btn formation-back-btn" type="button">로비</button>
     <button id="formationCloseBtn" class="formation-ui-btn formation-close-btn" type="button">인벤토리</button>
@@ -883,6 +884,7 @@ function createFormationShellMarkup() {
           </div>
         </div>
       </aside>
+    </div>
     </div>
   `;
 }
@@ -1674,6 +1676,7 @@ function cancelFormationHeroGrowth() {
 function createFormationShellMarkup() {
   return `
     <div class="formation-scanline" aria-hidden="true"></div>
+    <div class="formation-artboard">
 
     <button id="formationBackBtn" class="formation-ui-btn formation-back-btn" type="button">로비</button>
     <button id="formationCloseBtn" class="formation-ui-btn formation-close-btn" type="button">인벤토리</button>
@@ -1734,6 +1737,7 @@ function createFormationShellMarkup() {
           <button class="formation-roster-page-btn" type="button" data-roster-page="2">2</button>
         </div>
       </aside>
+    </div>
     </div>
   `;
 }

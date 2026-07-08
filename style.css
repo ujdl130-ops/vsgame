@@ -21,6 +21,7 @@
   --app-viewport-width: 100vw;
   --app-viewport-height: 100dvh;
   --shop-artboard-scale: 1;
+  --formation-artboard-scale: 1;
 }
 
 html {
@@ -18188,4 +18189,210 @@ body:not(.game-started) {
   font-size: 17px !important;
   line-height: 1.4 !important;
   transform: translateX(-50%) !important;
+}
+
+/* Formation fixed artboard fit: keep the 1920x900 growth layout identical across devices. */
+.formation-screen .formation-artboard {
+  position: absolute !important;
+  left: 50% !important;
+  top: 50% !important;
+  z-index: 3 !important;
+  width: 1920px !important;
+  height: 900px !important;
+  max-width: none !important;
+  max-height: none !important;
+  overflow: visible !important;
+  transform: translate(-50%, -50%) scale(var(--formation-artboard-scale)) !important;
+  transform-origin: center center !important;
+}
+
+.formation-screen .formation-artboard .formation-ui-btn,
+.formation-screen .formation-artboard .formation-wallet-wide,
+.formation-screen .formation-artboard .formation-shell,
+.formation-screen .formation-artboard .formation-main-panel,
+.formation-screen .formation-artboard .formation-roster-panel,
+.formation-screen .formation-artboard .formation-hero-detail-card,
+.formation-screen .formation-artboard .formation-hero-detail-list,
+.formation-screen .formation-artboard .formation-growth-actions {
+  box-sizing: border-box !important;
+}
+
+.formation-screen .formation-artboard .formation-shell {
+  position: absolute !important;
+  left: 0 !important;
+  top: 0 !important;
+  right: auto !important;
+  bottom: auto !important;
+  z-index: 1 !important;
+  display: block !important;
+  width: 1920px !important;
+  height: 900px !important;
+  min-width: 1920px !important;
+  min-height: 900px !important;
+  max-width: none !important;
+  max-height: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  overflow: visible !important;
+  transform: none !important;
+}
+
+.formation-screen .formation-artboard .formation-main-panel {
+  position: absolute !important;
+  left: 0 !important;
+  top: 0 !important;
+  width: 1120px !important;
+  height: 900px !important;
+  min-height: 900px !important;
+  max-height: none !important;
+  padding: 0 !important;
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  overflow: visible !important;
+}
+
+.formation-screen .formation-artboard .formation-slots-panel.is-hero-detail,
+.formation-screen .formation-artboard .formation-slot-grid.is-hero-detail-grid,
+.formation-screen .formation-artboard .formation-hero-detail {
+  position: absolute !important;
+  inset: 0 !important;
+  display: block !important;
+  width: 1120px !important;
+  height: 900px !important;
+  min-height: 900px !important;
+  max-height: none !important;
+  padding: 0 !important;
+  overflow: visible !important;
+}
+
+.formation-screen .formation-artboard .formation-header-row,
+.formation-screen .formation-artboard .formation-placement-head,
+.formation-screen .formation-artboard .formation-notice,
+.formation-screen .formation-artboard .formation-main-panel::before,
+.formation-screen .formation-artboard .formation-main-panel::after,
+.formation-screen .formation-artboard .formation-hero-detail::before,
+.formation-screen .formation-artboard .formation-hero-detail::after {
+  display: none !important;
+}
+
+.formation-screen .formation-artboard .formation-back-btn {
+  position: absolute !important;
+  left: 28px !important;
+  top: 12px !important;
+  z-index: 14 !important;
+  width: 82px !important;
+  min-width: 82px !important;
+  height: 48px !important;
+  min-height: 48px !important;
+  padding: 0 10px !important;
+  border: 1px solid rgba(255, 225, 146, 0.72) !important;
+  border-radius: 4px !important;
+  color: #fff6d9 !important;
+  background: linear-gradient(180deg, rgba(47, 39, 64, 0.96), rgba(14, 12, 24, 0.98)) !important;
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,0.08), 0 5px 18px rgba(0,0,0,0.46) !important;
+  font-size: 13px !important;
+  font-weight: 900 !important;
+  line-height: 1 !important;
+  text-align: center !important;
+  text-shadow: 0 1px 2px #000 !important;
+}
+
+.formation-screen .formation-artboard .formation-back-btn::before,
+.formation-screen .formation-artboard .formation-close-btn {
+  display: none !important;
+}
+
+.formation-screen .formation-artboard .formation-wallet-wide {
+  position: fixed !important;
+  left: auto !important;
+  right: 34px !important;
+  top: 24px !important;
+  bottom: auto !important;
+  z-index: 13 !important;
+  width: auto !important;
+  grid-template-columns: repeat(5, minmax(116px, auto)) !important;
+  grid-auto-rows: 48px !important;
+  gap: 8px !important;
+  transform: none !important;
+}
+
+.formation-screen .formation-artboard .formation-brand-panel {
+  position: fixed !important;
+  left: calc(50% - 130px) !important;
+  top: 28px !important;
+  z-index: 12 !important;
+  width: 260px !important;
+  transform: none !important;
+}
+
+.formation-screen .formation-artboard .formation-category-nav {
+  position: fixed !important;
+  left: 38px !important;
+  top: 204px !important;
+  z-index: 12 !important;
+  width: 220px !important;
+  transform: none !important;
+}
+
+.formation-screen .formation-artboard .formation-roster-panel {
+  position: fixed !important;
+  left: var(--hero-roster-left) !important;
+  right: auto !important;
+  top: var(--hero-roster-top) !important;
+  width: var(--hero-roster-width) !important;
+  height: var(--hero-roster-height) !important;
+  min-height: 0 !important;
+  max-height: none !important;
+  transform: none !important;
+}
+
+.formation-screen .formation-artboard .formation-hero-detail-top {
+  position: fixed !important;
+  left: 465.9px !important;
+  top: calc(var(--hero-detail-top) - 72px) !important;
+  transform: none !important;
+}
+
+.formation-screen .formation-artboard .formation-hero-detail-card {
+  position: fixed !important;
+  left: 460.9px !important;
+  top: var(--hero-detail-top) !important;
+  width: var(--hero-detail-card-width) !important;
+  height: var(--hero-detail-card-height) !important;
+  max-width: none !important;
+  max-height: none !important;
+}
+
+.formation-screen .formation-artboard .formation-unit-detail-card {
+  left: 450.9px !important;
+  width: 306px !important;
+  height: 442px !important;
+}
+
+.formation-screen .formation-artboard .formation-hero-detail-list {
+  position: fixed !important;
+  left: var(--formation-info-left) !important;
+  top: var(--formation-info-top) !important;
+  width: var(--formation-info-width) !important;
+  max-width: none !important;
+  max-height: 360px !important;
+}
+
+.formation-screen .formation-artboard .formation-growth-actions {
+  position: fixed !important;
+  left: var(--formation-action-left) !important;
+  top: var(--formation-action-top) !important;
+  width: 388px !important;
+  max-width: none !important;
+  transform: translateX(-50%) !important;
+}
+
+.formation-screen .formation-artboard .formation-growth-confirm {
+  position: fixed !important;
+  left: 50% !important;
+  top: 50% !important;
+  width: 430px !important;
+  max-width: none !important;
+  transform: translate(-50%, -50%) !important;
 }

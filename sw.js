@@ -1,4 +1,4 @@
-const CACHE_NAME = "the-last-prayer-v6";
+const CACHE_NAME = "the-last-prayer-v7";
 const APP_SHELL = [
   "./",
   "./index.html",
