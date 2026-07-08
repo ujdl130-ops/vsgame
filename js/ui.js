@@ -486,6 +486,7 @@ function syncAppViewportSize() {
   rootStyle.setProperty("--app-viewport-height", `${size.height}px`);
   rootStyle.setProperty("--app-width", `${appWidth}px`);
   rootStyle.setProperty("--app-height", `${appHeight}px`);
+  rootStyle.setProperty("--shop-artboard-scale", Math.min(appWidth / 1920, appHeight / 900).toFixed(4));
   return {
     width: appWidth,
     height: appHeight,
