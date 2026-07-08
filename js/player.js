@@ -35,6 +35,9 @@ function normalizePlayerData(savedData = {}) {
   const claimedMissionRewards = Array.isArray(savedData.claimedMissionRewards)
     ? [...new Set(savedData.claimedMissionRewards.map(String).filter(Boolean))]
     : [];
+  const claimedMissionDailyDate = typeof savedData.claimedMissionDailyDate === "string"
+    ? savedData.claimedMissionDailyDate
+    : "";
 
   return {
     ...savedData,
@@ -58,6 +61,7 @@ function normalizePlayerData(savedData = {}) {
     unitGrowth: savedData.unitGrowth && typeof savedData.unitGrowth === "object" ? { ...savedData.unitGrowth } : {},
     stageMissionStars,
     claimedMissionRewards,
+    claimedMissionDailyDate,
   };
 }
 

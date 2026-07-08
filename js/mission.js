@@ -46,6 +46,7 @@ const claimedMissionRewards = new Set(
     ? playerProgress.claimedMissionRewards.map(String).filter(Boolean)
     : []
 );
+let missionDailyResetTimer = 0;
 let claimableCount = 0;
 
 function persistClaimedMissionRewards() {
@@ -63,6 +64,65 @@ function markMissionRewardClaimed(missionKey) {
 function getMissionKey(groupId, index, mission) {
   return mission && mission.id ? `${groupId}-${mission.id}` : `${groupId}-${index}`;
 }
+
+function getMissionLocalDateKey(date = new Date()) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
+function isDailyMissionKey(missionKey) {
+  return String(missionKey || "").startsWith("daily-");
+}
+
+function clearDailyMissionClaims() {
+  Array.from(claimedMissionRewards).forEach((missionKey) => {
+    if (isDailyMissionKey(missionKey)) claimedMissionRewards.delete(missionKey);
+  });
+}
+
+function ensureDailyMissionReset() {
+  if (typeof playerProgress === "undefined" || !playerProgress) return false;
+
+  const todayKey = getMissionLocalDateKey();
+  const savedDateKey = typeof playerProgress.claimedMissionDailyDate === "string"
+    ? playerProgress.claimedMissionDailyDate
+    : "";
+
+  if (!savedDateKey) {
+    playerProgress.claimedMissionDailyDate = todayKey;
+    persistClaimedMissionRewards();
+    return false;
+  }
+  if (savedDateKey === todayKey) return false;
+
+  clearDailyMissionClaims();
+  playerProgress.claimedMissionDailyDate = todayKey;
+  persistClaimedMissionRewards();
+  return true;
+}
+
+function scheduleDailyMissionReset() {
+  if (typeof window === "undefined") return;
+  if (missionDailyResetTimer) window.clearTimeout(missionDailyResetTimer);
+
+  const now = new Date();
+  const nextMidnight = new Date(now);
+  nextMidnight.setHours(24, 0, 0, 0);
+  const resetDelay = Math.max(1000, nextMidnight.getTime() - now.getTime());
+
+  missionDailyResetTimer = window.setTimeout(() => {
+    const reset = ensureDailyMissionReset();
+    if (reset && typeof renderMissionScreen === "function" && typeof missionScreen !== "undefined" && missionScreen && !missionScreen.classList.contains("is-hidden")) {
+      renderMissionScreen();
+    }
+    scheduleDailyMissionReset();
+  }, resetDelay);
+}
+
+ensureDailyMissionReset();
+scheduleDailyMissionReset();
 
 function getMissionProgressPercent(mission) {
   if (!mission || !mission.target) return 0;
@@ -192,6 +252,7 @@ function renderMissionGroup(group) {
 
 function renderMissionScreen() {
   if (!missionRoot) return;
+  ensureDailyMissionReset();
   claimableCount = getClaimableMissionEntries().length;
   missionRoot.innerHTML = `
     <aside class="mission-brand-panel" aria-label="미션 로고">
