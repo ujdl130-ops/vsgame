@@ -102,6 +102,18 @@ function spawnHeal(x, y) {
   }
 }
 
+function spawnMiss(x, y) {
+  gameState.particles.push({
+    type: "miss",
+    x,
+    y,
+    vy: -30,
+    life: 0.72,
+    maxLife: 0.72,
+    color: "#f8fbff",
+  });
+}
+
 function spawnFireballBurst(x, y, radius) {
   const colors = ["#fff3a6", "#ffbd35", "#ff7324", "#cf2f12"];
   for (let i = 0; i < 18; i++) {
@@ -343,7 +355,7 @@ function updateProjectiles(dt) {
       }
       projectile.dead = true;
     }
-    if (projectile.x > canvas.width + 50 || projectile.life > (projectile.maxLife || PROJECTILE_DEFAULT_MAX_LIFE)) projectile.dead = true;
+    if (projectile.x < -50 || projectile.x > canvas.width + 50 || projectile.life > (projectile.maxLife || PROJECTILE_DEFAULT_MAX_LIFE)) projectile.dead = true;
   }
   gameState.projectiles = gameState.projectiles.filter((p) => !p.dead);
 }
@@ -358,6 +370,8 @@ function updateParticles(dt) {
     } else if (particle.type === "heal") {
       particle.x += particle.vx * dt;
       particle.y -= 28 * dt;
+    } else if (particle.type === "miss") {
+      particle.y += (particle.vy || -30) * dt;
     }
   }
   gameState.particles = gameState.particles.filter((p) => p.life > 0);
@@ -572,6 +586,15 @@ function drawParticles() {
     } else if (particle.type === "hit") {
       ctx.fillStyle = particle.color;
       ctx.fillRect(particle.x, particle.y, 5, 5);
+    } else if (particle.type === "miss") {
+      ctx.font = "700 18px Arial, sans-serif";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.lineWidth = 4;
+      ctx.strokeStyle = "rgba(20, 26, 44, 0.88)";
+      ctx.fillStyle = particle.color || "#f8fbff";
+      ctx.strokeText("MISS", particle.x, particle.y);
+      ctx.fillText("MISS", particle.x, particle.y);
     } else if (particle.type === "fireBurst") {
       ctx.fillStyle = particle.color;
       ctx.shadowColor = particle.color;

@@ -175,7 +175,6 @@ body.game-started:not(.in-lobby):not(.in-stage-select):not(.in-shop):not(.in-rec
   height: 540px;
 }
 
-.battle-wave-badge,
 .battle-unit-badge {
   position: absolute;
   top: 14px;
@@ -191,17 +190,9 @@ body.game-started:not(.in-lobby):not(.in-stage-select):not(.in-shop):not(.in-rec
   background: transparent;
   box-shadow: none;
   pointer-events: none;
-}
-
-.battle-wave-badge {
   left: 16px;
 }
 
-.battle-unit-badge {
-  left: 134px;
-}
-
-.battle-wave-badge span,
 .battle-unit-badge span {
   display: block;
   margin-bottom: 0;
@@ -213,7 +204,6 @@ body.game-started:not(.in-lobby):not(.in-stage-select):not(.in-shop):not(.in-rec
   text-shadow: 2px 2px 0 #000;
 }
 
-.battle-wave-badge strong,
 .battle-unit-badge strong {
   display: block;
   color: #fff0a7;
@@ -717,6 +707,36 @@ body.game-started:not(.in-lobby):not(.in-stage-select):not(.in-shop):not(.in-rec
 .stage-clear-reward-action:disabled:hover,
 .stage-clear-reward-action:disabled:active {
   transform: none;
+}
+
+.stage-clear-reward-notice {
+  position: absolute;
+  left: 50%;
+  bottom: 20.2%;
+  z-index: 4;
+  min-width: 42%;
+  max-width: 70%;
+  margin: 0;
+  padding: clamp(6px, 1vw, 10px) clamp(12px, 2vw, 22px);
+  border: 2px solid rgba(255, 227, 124, 0.92);
+  border-radius: 6px;
+  background: rgba(30, 20, 8, 0.88);
+  color: #fff3bd;
+  font-size: clamp(11px, 1.55vw, 19px);
+  font-weight: 1000;
+  line-height: 1.15;
+  letter-spacing: 0;
+  text-align: center;
+  text-shadow: 0 2px 0 rgba(34, 18, 4, 0.9);
+  pointer-events: none;
+  opacity: 0;
+  transform: translate(-50%, 8px) scale(0.96);
+  transition: opacity 0.16s ease, transform 0.16s ease;
+}
+
+.stage-clear-reward-notice.is-show {
+  opacity: 1;
+  transform: translate(-50%, 0) scale(1);
 }
 
 @keyframes rewardUiPop {
@@ -2332,26 +2352,16 @@ body.game-started:not(.in-lobby):not(.in-stage-select):not(.in-shop):not(.in-rec
 }
 
 @media (max-width: 720px) {
-  .battle-wave-badge,
   .battle-unit-badge {
     top: 10px;
     gap: 6px;
-  }
-
-  .battle-wave-badge {
     left: 10px;
   }
 
-  .battle-unit-badge {
-    left: 112px;
-  }
-
-  .battle-wave-badge span,
   .battle-unit-badge span {
     font-size: 10px;
   }
 
-  .battle-wave-badge strong,
   .battle-unit-badge strong {
     font-size: 11px;
   }

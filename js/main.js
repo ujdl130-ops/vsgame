@@ -39,7 +39,7 @@ function startGame(stageNumber = selectedStage) {
   document.body.classList.remove("in-lobby", "in-stage-select", "in-shop", "in-recruit", "in-formation", "in-mission", "in-inventory");
   updateBattleViewportScale();
   gameState.running = true;
-  gameState.message = `Stage ${selectedStage} - Wave ${gameState.wave} 시작! 영웅을 보조하며 병사를 소환하세요.`;
+  gameState.message = `Stage ${selectedStage} 전투 시작! 영웅을 보조하며 병사를 소환하세요.`;
   gameState.messageTimer = 1.2;
   updateHud();
   updateButtons();
