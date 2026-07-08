@@ -396,6 +396,8 @@ function createDefaultProgress() {
     unlockedStage: 1,
     clearedStages: [],
     growth: {},
+    claimedMissionRewards: [],
+    claimedMissionDailyDate: "",
   };
 }
 

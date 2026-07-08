@@ -591,13 +591,19 @@ function getFormationHeroPromotionActionKey(heroId, action) {
 function getFormationHeroStats(heroId = formationState.selectedHeroId) {
   const star = getFormationHeroStar(heroId);
   const level = getFormationHeroLevel(heroId);
-  const stats = getGrownStats("hero", { hp: 180, damage: 34 }, { level, star });
+  const definition = typeof getHeroDefinition === "function" ? getHeroDefinition(heroId) : null;
+  const stats = getGrownStats("hero", {
+    hp: definition?.baseHp || 180,
+    damage: definition?.baseDamage || 34,
+  }, { level, star });
 
   return {
+    level,
+    star,
     hp: stats.hp,
     damage: stats.damage,
-    range: 275,
-    attackSpeed: 0.48,
+    range: definition?.range || 275,
+    attackSpeed: definition?.attackSpeed || 0.48,
   };
 }
 
@@ -654,6 +660,8 @@ function consumeFormationUnitEssences(unit, requiredAmount) {
 
 function getFormationUnitStats(unit = getFormationUnit(formationState.selectedUnitId)) {
   return {
+    level: unit.level,
+    star: unit.diamondLevel || unit.star || 1,
     hp: unit.hp,
     damage: unit.attack,
     defense: unit.defense,
@@ -2118,24 +2126,49 @@ function applyFormationBattleStats(baseId, battleUnit) {
   const formationUnit = getBestFormationBattleUnit(baseId);
   if (!formationUnit) return battleUnit;
 
-  const levelBonus = Math.max(0, formationUnit.level - 1);
-  const multiplier = 1 + levelBonus * 0.08;
+  const formationStats = getFormationUnitStats(formationUnit);
   const nextUnit = {
     ...battleUnit,
     formationUnitId: formationUnit.instanceId,
-    formationLevel: formationUnit.level,
+    formationLevel: formationStats.level,
+    level: formationStats.level,
+    star: formationStats.star,
+    maxHp: formationStats.hp,
+    hp: formationStats.hp,
+    damage: formationStats.damage,
+    defense: formationStats.defense,
+    range: formationStats.range,
+    attackSpeed: formationStats.attackSpeed,
   };
 
-  if (typeof nextUnit.maxHp === "number") {
-    nextUnit.maxHp = Math.max(1, Math.round(nextUnit.maxHp * multiplier));
-    nextUnit.hp = nextUnit.maxHp;
-  }
-  if (typeof nextUnit.damage === "number") {
-    nextUnit.damage = Math.max(0, Math.round(nextUnit.damage * multiplier));
-  }
-  if (typeof nextUnit.healAmount === "number") {
-    nextUnit.healAmount = Math.max(1, Math.round(nextUnit.healAmount * multiplier));
+  if (baseId === "saintess") {
+    nextUnit.healAmount = Math.max(1, formationStats.damage);
+    nextUnit.damage = 0;
   }
 
   return nextUnit;
+}
+
+function getFormationBattleStats(baseId) {
+  const battleUnit = getBestFormationBattleUnit(baseId);
+  if (!battleUnit) return null;
+  return applyFormationBattleStats(baseId, {
+    type: baseId,
+    level: battleUnit.level,
+    star: battleUnit.diamondLevel || battleUnit.star || 1,
+    maxHp: battleUnit.hp,
+    hp: battleUnit.hp,
+    damage: battleUnit.attack,
+    defense: battleUnit.defense,
+    range: battleUnit.baseId === "guard" ? 42 : battleUnit.baseId === "archer" || battleUnit.baseId === "mage" ? 260 : 90,
+    attackSpeed: battleUnit.baseId === "guard" ? 1.0 : battleUnit.baseId === "thief" ? 0.62 : battleUnit.baseId === "mage" ? 0.82 : 0.72,
+  });
+}
+
+function getFormationHeroBattleStats(heroId = formationState.selectedHeroId) {
+  const stats = getFormationHeroStats(heroId);
+  return {
+    ...stats,
+    maxHp: stats.hp,
+  };
 }

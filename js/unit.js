@@ -4,6 +4,73 @@ const THIEF_ATTACK_DURATION = 0.42;
 const THIEF_RETREAT_DURATION = 0.45;
 const THIEF_RETREAT_SPEED = 190;
 const THIEF_RETREAT_MIN_X = PLAYER_BASE_X + 58;
+const ENEMY_BASE_ATTACK_X = ENEMY_BASE_X - 35;
+
+function getUnitAttackAnimDuration(unit) {
+  if (unit.type === "guard") return 0.46;
+  if (unit.type === "thief") return THIEF_ATTACK_DURATION;
+  if (unit.type === "mage" || unit.type === "saintess") return 0.72;
+  return 0.58;
+}
+
+function canMeleeAttackEnemyBase(unit) {
+  return unit && (unit.type === "guard" || unit.type === "thief");
+}
+
+function damageEnemyBaseWithMeleeUnit(unit) {
+  const damage = Math.max(0, Number(unit.damage) || 0);
+  gameState.enemyBaseHp -= damage;
+  if (typeof spawnHit === "function") {
+    spawnHit(ENEMY_BASE_X - 38, GROUND_Y - 78, unit.type === "guard" ? "#ffe36a" : "#ffbd35");
+  }
+}
+
+function startMeleeEnemyBaseAttack(unit) {
+  unit.cooldown = unit.attackSpeed;
+  unit.attackAnimDuration = getUnitAttackAnimDuration(unit);
+  unit.attackAnimTimer = unit.attackAnimDuration;
+  unit.attackImpactPending = true;
+  unit.attackTarget = null;
+  unit.attackTargetBase = true;
+  unit.moving = false;
+  if (window.GameAudio) window.GameAudio.playUnitAttackSfx(unit.type);
+}
+
+function stopAtEnemyBase(unit) {
+  unit.x = ENEMY_BASE_ATTACK_X;
+  unit.moving = false;
+  if (canMeleeAttackEnemyBase(unit) && unit.cooldown <= 0 && unit.attackAnimTimer <= 0) {
+    startMeleeEnemyBaseAttack(unit);
+  }
+}
+
+function isRangedEnemyBaseAttacker(unit) {
+  return unit && (unit.type === "archer" || unit.type === "mage");
+}
+
+function canAttackEnemyBaseFromRange(unit) {
+  return isRangedEnemyBaseAttacker(unit)
+    && typeof isEnemyBaseInProjectileRange === "function"
+    && isEnemyBaseInProjectileRange(unit.x, unit.range);
+}
+
+function startRangedEnemyBaseAttack(unit) {
+  unit.cooldown = unit.attackSpeed;
+  if (window.GameAudio) window.GameAudio.playUnitAttackSfx(unit.type);
+
+  if (unit.type === "archer") {
+    unit.attackAnimDuration = 0.58;
+    unit.attackAnimTimer = unit.attackAnimDuration;
+    unit.pendingArrowShot = true;
+  } else if (unit.type === "mage") {
+    unit.attackAnimDuration = 0.72;
+    unit.attackAnimTimer = unit.attackAnimDuration;
+    unit.pendingMageShot = true;
+  }
+
+  unit.shotTarget = null;
+  unit.shotTargetBase = true;
+}
 
 function getSummonFormationStats(baseId, fallbackBaseStats) {
   if (typeof getFormationBattleStats === "function") {
@@ -52,6 +119,7 @@ function summonGuard() {
     attackAnimDuration: 0.46,
     attackImpactPending: false,
     attackTarget: null,
+    attackTargetBase: false,
     dead: false,
     deathAnimTimer: 0,
     deathAnimDuration: 0.85,
@@ -213,6 +281,7 @@ function summonThief() {
     attackAnimDuration: THIEF_ATTACK_DURATION,
     attackImpactPending: false,
     attackTarget: null,
+    attackTargetBase: false,
     retreatTimer: 0,
     retreatDuration: THIEF_RETREAT_DURATION,
     retreatSpeed: THIEF_RETREAT_SPEED,
@@ -271,7 +340,7 @@ function updateUnits(dt) {
     unit.moving = false;
 
     const previousAttackTimer = unit.attackAnimTimer || 0;
-    unit.attackAnimDuration = unit.attackAnimDuration || (unit.type === "guard" ? 0.46 : unit.type === "thief" ? THIEF_ATTACK_DURATION : (unit.type === "mage" || unit.type === "saintess") ? 0.72 : 0.58);
+    unit.attackAnimDuration = unit.attackAnimDuration || getUnitAttackAnimDuration(unit);
     unit.attackAnimTimer = Math.max(0, previousAttackTimer - dt);
 
     const attackProgress = unit.attackAnimTimer > 0
@@ -327,17 +396,15 @@ function updateUnits(dt) {
       unit.x += unit.speed * dt;
       unit.moving = true;
 
-      if (unit.x > ENEMY_BASE_X - 35) {
-        gameState.enemyBaseHp -= 4 * dt;
-        unit.x = ENEMY_BASE_X - 35;
-        unit.moving = false;
+      if (unit.x > ENEMY_BASE_ATTACK_X) {
+        stopAtEnemyBase(unit);
       }
       continue;
     }
 
     // 근접 유닛은 무기를 앞으로 내미는 프레임에 피해를 적용합니다.
     if ((unit.type === "guard" || unit.type === "thief") && unit.attackImpactPending && (attackProgress >= 0.48 || unit.attackAnimTimer <= 0)) {
-      const attackTarget = isCombatAlive(unit.attackTarget)
+      const attackTarget = !unit.attackTargetBase && isCombatAlive(unit.attackTarget)
         ? unit.attackTarget
         : findNearestEnemy(unit.x, unit.range + 12, { includeAirborne: false });
 
@@ -347,10 +414,13 @@ function updateUnits(dt) {
           spawnThiefStrike(attackTarget.x, attackTarget.y - Math.max(34, attackTarget.h * 0.65));
           startThiefRetreat(unit);
         }
+      } else if (unit.attackTargetBase && unit.x >= ENEMY_BASE_ATTACK_X) {
+        damageEnemyBaseWithMeleeUnit(unit);
       }
 
       unit.attackImpactPending = false;
       unit.attackTarget = null;
+      unit.attackTargetBase = false;
 
       if (unit.type === "thief" && (unit.retreatTimer || 0) > 0) {
         continue;
@@ -370,29 +440,34 @@ function updateUnits(dt) {
           unit.attackAnimTimer = unit.attackAnimDuration;
           unit.pendingArrowShot = true;
           unit.shotTarget = target;
+          unit.shotTargetBase = false;
         } else if (unit.type === "mage") {
           unit.attackAnimDuration = 0.72;
           unit.attackAnimTimer = unit.attackAnimDuration;
           unit.pendingMageShot = true;
           unit.shotTarget = target;
+          unit.shotTargetBase = false;
         } else if (unit.type === "guard" || unit.type === "thief") {
-          unit.attackAnimDuration = unit.type === "guard" ? 0.46 : THIEF_ATTACK_DURATION;
+          unit.attackAnimDuration = getUnitAttackAnimDuration(unit);
           unit.attackAnimTimer = unit.attackAnimDuration;
           unit.attackImpactPending = true;
           unit.attackTarget = target;
+          unit.attackTargetBase = false;
         } else if (canDamageCombatant(target)) {
           target.hp -= unit.damage;
         }
+      }
+    } else if (canAttackEnemyBaseFromRange(unit)) {
+      if (unit.cooldown <= 0) {
+        startRangedEnemyBaseAttack(unit);
       }
     } else {
       unit.x += unit.speed * dt;
       unit.moving = true;
     }
 
-    if (unit.x > ENEMY_BASE_X - 35) {
-      gameState.enemyBaseHp -= unit.type === "guard" ? 18 * dt : unit.type === "thief" ? 14 * dt : unit.type === "mage" ? 10 * dt : 8 * dt;
-      unit.x = ENEMY_BASE_X - 35;
-      unit.moving = false;
+    if (unit.x > ENEMY_BASE_ATTACK_X) {
+      stopAtEnemyBase(unit);
     }
   }
 }

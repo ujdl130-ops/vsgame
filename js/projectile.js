@@ -7,6 +7,24 @@ const KARON_SWORD_WAVE_GATE_X = PLAYER_BASE_ATTACK_X;
 const KARON_SWORD_WAVE_GATE_DAMAGE_SCALE = 0.55;
 const KARON_SWORD_WAVE_HIT_COLOR = "#ff2d74";
 
+function getEnemyBaseProjectileHitPoint() {
+  return {
+    x: ENEMY_BASE_X - 38,
+    y: GROUND_Y - 78,
+  };
+}
+
+function isEnemyBaseInProjectileRange(fromX, range, extraRange = 0) {
+  const hitPoint = getEnemyBaseProjectileHitPoint();
+  const distance = hitPoint.x - fromX;
+  return distance >= -20 && distance <= Math.max(0, Number(range) || 0) + extraRange;
+}
+
+function damageEnemyBaseWithProjectile(projectile, impact) {
+  gameState.enemyBaseHp -= Math.max(0, Number(projectile.damage) || 0);
+  spawnHit(impact.x, impact.y, projectile.color || "#f2fdff");
+}
+
 function getEnemyProjectileHitPoint(enemy) {
   if (!enemy) return { x: 0, y: 0 };
 
@@ -237,8 +255,23 @@ function fireArcherArrow(unit) {
     : findNearestEnemy(unit.x, unit.range + 40);
 
   if (!shotTarget) {
+    if (unit.shotTargetBase && isEnemyBaseInProjectileRange(unit.x, unit.range, 40)) {
+      const baseHitPoint = getEnemyBaseProjectileHitPoint();
+      gameState.projectiles.push({
+        type: "arrow",
+        x: unit.x + 34,
+        y: unit.y - 44,
+        speed: 420,
+        damage: unit.damage,
+        maxLife: PROJECTILE_DEFAULT_MAX_LIFE,
+        targetX: baseHitPoint.x,
+        targetY: baseHitPoint.y,
+        targetBase: true,
+      });
+    }
     unit.pendingArrowShot = false;
     unit.shotTarget = null;
+    unit.shotTargetBase = false;
     return;
   }
 
@@ -254,6 +287,7 @@ function fireArcherArrow(unit) {
 
   unit.pendingArrowShot = false;
   unit.shotTarget = null;
+  unit.shotTargetBase = false;
 }
 
 function fireMageBolt(unit) {
@@ -262,8 +296,24 @@ function fireMageBolt(unit) {
     : findNearestEnemy(unit.x, unit.range + 35);
 
   if (!shotTarget) {
+    if (unit.shotTargetBase && isEnemyBaseInProjectileRange(unit.x, unit.range, 35)) {
+      const baseHitPoint = getEnemyBaseProjectileHitPoint();
+      gameState.projectiles.push({
+        type: "mageFireball",
+        x: unit.x + 32,
+        y: unit.y - 48,
+        speed: 360,
+        damage: unit.damage,
+        splashRadius: MAGE_FIREBALL_SPLASH_RADIUS,
+        maxLife: PROJECTILE_DEFAULT_MAX_LIFE,
+        targetX: baseHitPoint.x,
+        targetY: baseHitPoint.y,
+        targetBase: true,
+      });
+    }
     unit.pendingMageShot = false;
     unit.shotTarget = null;
+    unit.shotTargetBase = false;
     return;
   }
 
@@ -282,6 +332,7 @@ function fireMageBolt(unit) {
 
   unit.pendingMageShot = false;
   unit.shotTarget = null;
+  unit.shotTargetBase = false;
 }
 
 function getMageFireballImpactPoint(projectile) {
@@ -340,7 +391,11 @@ function updateProjectiles(dt) {
     if (projectile.type === "mageFireball") {
       const impact = moveProjectileTowardImpact(projectile, dt);
       if (projectile.reachedImpact) {
-        explodeMageFireball(projectile, impact.x, impact.y);
+        if (projectile.targetBase) {
+          damageEnemyBaseWithProjectile(projectile, impact);
+        } else {
+          explodeMageFireball(projectile, impact.x, impact.y);
+        }
         projectile.dead = true;
       }
       if (projectile.x > canvas.width + 50 || projectile.life > (projectile.maxLife || PROJECTILE_DEFAULT_MAX_LIFE)) projectile.dead = true;
@@ -349,7 +404,9 @@ function updateProjectiles(dt) {
 
     const impact = moveProjectileTowardImpact(projectile, dt);
     if (projectile.reachedImpact) {
-      if (isCombatAlive(projectile.target) && canDamageCombatant(projectile.target)) {
+      if (projectile.targetBase) {
+        damageEnemyBaseWithProjectile(projectile, impact);
+      } else if (isCombatAlive(projectile.target) && canDamageCombatant(projectile.target)) {
         damageCombatant(projectile.target, projectile.damage);
         spawnHit(impact.x, impact.y, projectile.color || "#f2fdff");
       }
