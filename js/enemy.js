@@ -155,6 +155,7 @@ const KARON_WEREWOLF_SPRITE = {
 const KARON_RAGE_HP_STEP = 0.1;
 const KARON_RAGE_MAX_STACKS = 6;
 const KARON_RAGE_STACK_BONUS = 0.05;
+const KARON_GATE_TRIGGER_HP_RATIO = 0.5;
 
 const GOBLIN_STAGE_STATS = {
   1: { hp: 70, damage: 13 },
@@ -347,6 +348,26 @@ function createKaronBoss(wave) {
 function shouldSpawnKaronBoss(wave) {
   if (gameState.karonBossSpawned) return false;
   return Number(gameState.stage) === 3 && wave === gameState.maxWave && gameState.spawnedInWave === 0;
+}
+
+function shouldTriggerKaronBossByEnemyGate() {
+  if (!gameState || gameState.karonBossSpawned || Number(gameState.stage) !== 3) return false;
+  const enemyBaseMaxHp = Math.max(1, Number(gameState.enemyBaseMaxHp) || 0);
+  return Math.max(0, Number(gameState.enemyBaseHp) || 0) <= enemyBaseMaxHp * KARON_GATE_TRIGGER_HP_RATIO;
+}
+
+function spawnKaronBoss(trigger = "wave") {
+  if (!gameState || gameState.karonBossSpawned || Number(gameState.stage) !== 3) return false;
+  const bossWave = Math.max(Number(gameState.wave) || 1, Number(gameState.maxWave) || 1);
+  gameState.karonBossSpawned = true;
+  gameState.karonBossTrigger = trigger;
+  gameState.enemies.push(createKaronBoss(bossWave));
+  return true;
+}
+
+function trySpawnKaronBossByEnemyGate() {
+  if (!shouldTriggerKaronBossByEnemyGate()) return false;
+  return spawnKaronBoss("gate");
 }
 
 function isKaronWerewolf(enemy) {
@@ -659,9 +680,12 @@ function spawnEnemy() {
   }
 
   if (stage === 3) {
+    if (shouldTriggerKaronBossByEnemyGate()) {
+      spawnKaronBoss("gate");
+      return;
+    }
     if (shouldSpawnKaronBoss(wave)) {
-      gameState.karonBossSpawned = true;
-      gameState.enemies.push(createKaronBoss(wave));
+      spawnKaronBoss("wave");
       return;
     }
     gameState.enemies.push(createStageThreeMinion(wave));
