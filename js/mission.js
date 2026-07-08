@@ -34,9 +34,9 @@ const MISSION_GROUPS = [
       { title: "소환 지휘관", detail: "누적 유닛 소환 횟수를 달성하세요.", current: 0, target: 700, reward: "영웅소환석 5" },
       { title: "전장의 개척자", detail: "누적 스테이지 클리어 횟수를 달성하세요.", current: 0, target: 100, reward: "골드 20000" },
       { title: "불굴의 도전자", detail: "누적 전투 도전 횟수를 달성하세요.", current: 0, target: 200, reward: "영웅소환석 10" },
-      { title: "Stage 1 별 3개 클리어", detail: "Stage 1의 스테이지 미션 3개를 모두 달성하세요.", current: 0, target: 3, reward: "뽑기권 5, 다이아 250", stageStarTarget: 1 },
-      { title: "Stage 2 별 3개 클리어", detail: "Stage 2의 스테이지 미션 3개를 모두 달성하세요.", current: 0, target: 3, reward: "뽑기권 5, 다이아 250", stageStarTarget: 2 },
-      { title: "Stage 3 별 3개 클리어", detail: "Stage 3의 스테이지 미션 3개를 모두 달성하세요.", current: 0, target: 3, reward: "뽑기권 10, 다이아 500", stageStarTarget: 3 },
+      { title: "Stage 1 별 3개 클리어", detail: "Stage 1의 스테이지 미션 3개를 모두 달성하세요.", current: 0, target: 3, reward: "강림권 5, 다이아 250", stageStarTarget: 1 },
+      { title: "Stage 2 별 3개 클리어", detail: "Stage 2의 스테이지 미션 3개를 모두 달성하세요.", current: 0, target: 3, reward: "강림권 5, 다이아 250", stageStarTarget: 2 },
+      { title: "Stage 3 별 3개 클리어", detail: "Stage 3의 스테이지 미션 3개를 모두 달성하세요.", current: 0, target: 3, reward: "강림권 10, 다이아 500", stageStarTarget: 3 },
     ],
   },
 ];
