@@ -6,11 +6,11 @@ const MISSION_GROUPS = [
     title: "일일 미션",
     subtitle: "매일 초기화",
     missions: [
-      { title: "몬스터 처치", detail: "전투에서 몬스터를 처치하세요.", current: 10, target: 100, reward: "골드 500" },
-      { title: "스킬 사용", detail: "영웅 스킬을 사용하세요.", current: 10, target: 10, reward: "다이아 20" },
-      { title: "유닛 소환", detail: "전투 중 유닛을 소환하세요.", current: 8, target: 20, reward: "영웅소환석 1" },
-      { title: "스테이지 도전", detail: "스테이지에 입장하세요.", current: 1, target: 3, reward: "영웅소환석 1" },
-      { title: "골드 획득", detail: "전투 보상으로 골드를 모으세요.", current: 1200, target: 3000, reward: "골드 800" },
+      { title: "몬스터 처치", detail: "전투에서 몬스터를 처치하세요.", current: 0, target: 100, reward: "골드 500" },
+      { title: "스킬 사용", detail: "영웅 스킬을 사용하세요.", current: 0, target: 10, reward: "다이아 20" },
+      { title: "유닛 소환", detail: "전투 중 유닛을 소환하세요.", current: 0, target: 20, reward: "영웅소환석 1" },
+      { title: "스테이지 도전", detail: "스테이지에 입장하세요.", current: 0, target: 3, reward: "영웅소환석 1" },
+      { title: "골드 획득", detail: "전투 보상으로 골드를 모으세요.", current: 0, target: 3000, reward: "골드 800" },
     ],
   },
   {
@@ -18,10 +18,10 @@ const MISSION_GROUPS = [
     title: "주간 미션",
     subtitle: "매주 초기화",
     missions: [
-      { title: "몬스터 대량 처치", detail: "한 주 동안 몬스터를 처치하세요.", current: 145, target: 500, reward: "다이아 120" },
-      { title: "보스전 승리", detail: "보스가 등장하는 전투에서 승리하세요.", current: 1, target: 5, reward: "영웅소환석 3" },
-      { title: "스킬 연계 훈련", detail: "스킬을 여러 번 사용하세요.", current: 22, target: 80, reward: "골드 4000" },
-      { title: "스테이지 클리어", detail: "스테이지를 클리어하세요.", current: 4, target: 15, reward: "영웅소환석 3" },
+      { title: "몬스터 대량 처치", detail: "한 주 동안 몬스터를 처치하세요.", current: 0, target: 500, reward: "다이아 120" },
+      { title: "보스전 승리", detail: "보스가 등장하는 전투에서 승리하세요.", current: 0, target: 5, reward: "영웅소환석 3" },
+      { title: "스킬 연계 훈련", detail: "스킬을 여러 번 사용하세요.", current: 0, target: 80, reward: "골드 4000" },
+      { title: "스테이지 클리어", detail: "스테이지를 클리어하세요.", current: 0, target: 15, reward: "영웅소환석 3" },
     ],
   },
   {
@@ -29,11 +29,11 @@ const MISSION_GROUPS = [
     title: "업적",
     subtitle: "누적 달성",
     missions: [
-      { title: "몬스터 처치 1단계", detail: "누적 몬스터 처치 수를 달성하세요.", current: 320, target: 1000, reward: "칭호: 수호자" },
-      { title: "스킬 마스터", detail: "누적 스킬 사용 횟수를 달성하세요.", current: 58, target: 300, reward: "다이아 300" },
-      { title: "소환 지휘관", detail: "누적 유닛 소환 횟수를 달성하세요.", current: 210, target: 700, reward: "영웅소환석 5" },
-      { title: "전장의 개척자", detail: "누적 스테이지 클리어 횟수를 달성하세요.", current: 18, target: 100, reward: "골드 20000" },
-      { title: "불굴의 도전자", detail: "누적 전투 도전 횟수를 달성하세요.", current: 42, target: 200, reward: "영웅소환석 10" },
+      { title: "몬스터 처치 1단계", detail: "누적 몬스터 처치 수를 달성하세요.", current: 0, target: 1000, reward: "칭호: 수호자" },
+      { title: "스킬 마스터", detail: "누적 스킬 사용 횟수를 달성하세요.", current: 0, target: 300, reward: "다이아 300" },
+      { title: "소환 지휘관", detail: "누적 유닛 소환 횟수를 달성하세요.", current: 0, target: 700, reward: "영웅소환석 5" },
+      { title: "전장의 개척자", detail: "누적 스테이지 클리어 횟수를 달성하세요.", current: 0, target: 100, reward: "골드 20000" },
+      { title: "불굴의 도전자", detail: "누적 전투 도전 횟수를 달성하세요.", current: 0, target: 200, reward: "영웅소환석 10" },
     ],
   },
 ];
@@ -66,6 +66,7 @@ function claimMissionReward(reward) {
 function handleMissionRewardClick(button) {
   if (!button || button.disabled || button.dataset.claimed === "true") return;
   claimMissionReward(button.dataset.reward || "");
+  if (window.GameAudio) window.GameAudio.playRewardGetSfx();
   claimedMissionRewards.add(button.dataset.missionKey || "");
   renderMissionScreen();
 }
@@ -170,6 +171,7 @@ function showMission() {
 
   document.body.classList.remove("game-started", "in-lobby", "in-stage-select", "in-shop", "in-recruit", "in-formation", "in-inventory");
   document.body.classList.add("in-mission");
+  if (window.GameAudio) window.GameAudio.syncScreenBgm();
 
   if (gameState) {
     gameState.running = false;
@@ -184,7 +186,6 @@ function showMissionNotice() {
   showMission();
 }
 
-// QA_MODE_SUPPORT: reward normalization and QA-completable mission cards.
 function claimMissionReward(reward) {
   const rewardText = String(reward || "");
   const amountMatch = rewardText.match(/(\d+)/);
@@ -223,12 +224,13 @@ function handleMissionClaimAll() {
     claimMissionReward(mission.reward);
     claimedMissionRewards.add(missionKey);
   });
+  if (window.GameAudio) window.GameAudio.playRewardGetSfx();
   renderMissionScreen();
 }
 
 function renderMissionCard(mission, index, groupId) {
-  const percent = window.QAAPI?.isEnabled?.() ? 100 : getMissionProgressPercent(mission);
-  const complete = window.QAAPI?.isEnabled?.() || mission.current >= mission.target;
+  const percent = getMissionProgressPercent(mission);
+  const complete = mission.current >= mission.target;
   const missionKey = `${groupId}-${index}`;
   const claimed = claimedMissionRewards.has(missionKey);
   return `
@@ -245,7 +247,7 @@ function renderMissionCard(mission, index, groupId) {
           <span style="width: ${percent}%"></span>
         </div>
         <button class="mission-reward-btn" type="button" data-reward="${mission.reward}" data-mission-key="${missionKey}" ${complete && !claimed ? "" : "disabled"}>${claimed ? "완료" : "받기"}</button>
-        <strong>${complete && window.QAAPI?.isEnabled?.() ? mission.target : mission.current} / ${mission.target}</strong>
+        <strong>${mission.current} / ${mission.target}</strong>
       </div>
       <div class="mission-card-foot">
         <span>${mission.reward}</span>

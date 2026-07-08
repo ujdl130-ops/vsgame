@@ -1,7 +1,11 @@
 ﻿// Formation screen interactions.
 
-const FORMATION_MAX_LEVEL = typeof MAX_GROWTH_LEVEL === "number" ? MAX_GROWTH_LEVEL : 50;
+const FORMATION_MAX_LEVEL = 100;
 const FORMATION_MAX_STAR = typeof MAX_TRANSCENDENCE_STAR === "number" ? MAX_TRANSCENDENCE_STAR : 5;
+const FORMATION_PROMOTION_MAX = 5;
+const FORMATION_HERO_PROMOTION_PIECES = 5;
+const FORMATION_UNIT_PROMOTION_PIECES = 4;
+const FORMATION_PROMOTION_ESSENCE_COST = 10;
 
 const FORMATION_BASE_UNITS = [
   {
@@ -78,6 +82,8 @@ const FORMATION_ROSTER_UNITS = Array.from({ length: 12 }, (_, index) => {
     instanceId: `${source.id}-${index + 1}`,
     level,
     star: 1,
+    diamondLevel: 1,
+    diamondPiece: 0,
     shards: 0,
     attack: Math.max(1, source.attack + levelDelta * 12),
     hp: Math.max(1, source.hp + levelDelta * 70),
@@ -95,10 +101,13 @@ const FORMATION_UNIT_ESSENCE_META = {
   saintess: { key: "saintessEssence", name: "성녀 정수" },
 };
 
-const FORMATION_HERO_FRAGMENT_COST = 50;
-const FORMATION_HERO_MAX_STAR = 5;
+const FORMATION_HERO_FRAGMENT_COST = FORMATION_PROMOTION_ESSENCE_COST;
+const FORMATION_HERO_OVER_STAR_FRAGMENT_COST = 20;
+const FORMATION_HERO_DISPLAY_STARS = 5;
+const FORMATION_HERO_MAX_STAR = 10;
 const FORMATION_HERO_BASE_STAR = 1;
-const FORMATION_HERO_GROWTH_VERSION = 2;
+const FORMATION_POSEIDON_UNLOCK_ESSENCE_COST = 100;
+const FORMATION_HERO_GROWTH_VERSION = 3;
 
 const FORMATION_HEROES = [
   {
@@ -162,6 +171,8 @@ const formationState = {
   heroDetailFlipped: false,
   unitDetailFlipped: false,
   pendingHeroGrowthAction: null,
+  pendingHeroPromotionAction: null,
+  pendingUnitPromotionAction: null,
   rosterPage: 1,
   pages: {
     deck: { 1: Array(10).fill(null), 2: Array(10).fill(null) },
@@ -198,12 +209,22 @@ function getFormationUnitGrowthMap() {
 }
 
 function applyFormationUnitStoredGrowth(unit) {
-  if (!unit || !playerProgress?.unitGrowth) return unit;
+  if (!unit) return unit;
+  unit.diamondLevel = Math.min(FORMATION_PROMOTION_MAX, Math.max(1, Number(unit.diamondLevel ?? unit.star) || 1));
+  unit.star = unit.diamondLevel;
+  unit.diamondPiece = Math.min(FORMATION_UNIT_PROMOTION_PIECES - 1, Math.max(0, Number(unit.diamondPiece) || 0));
+  unit.maxLevel = getFormationPromotionLevelCap(unit.diamondLevel);
+  if (!playerProgress?.unitGrowth) return unit;
   const saved = playerProgress.unitGrowth[unit.instanceId];
   if (!saved || typeof saved !== "object") return unit;
 
+  const savedDiamondLevel = Number(saved.diamondLevel ?? saved.star);
+  unit.diamondLevel = Math.min(FORMATION_PROMOTION_MAX, Math.max(1, savedDiamondLevel || unit.diamondLevel || unit.star || 1));
+  unit.star = unit.diamondLevel;
+  unit.diamondPiece = Math.min(FORMATION_UNIT_PROMOTION_PIECES - 1, Math.max(0, Number(saved.diamondPiece ?? saved.shards) || 0));
+  if (unit.diamondLevel >= FORMATION_PROMOTION_MAX) unit.diamondPiece = 0;
+  unit.maxLevel = getFormationPromotionLevelCap(unit.diamondLevel);
   unit.level = Math.min(unit.maxLevel, Math.max(1, Number(saved.level) || unit.level));
-  unit.star = Math.min(FORMATION_MAX_STAR, Math.max(1, Number(saved.star) || unit.star));
   if (typeof saved.attack === "number") unit.attack = Math.max(1, Math.round(saved.attack));
   if (typeof saved.hp === "number") unit.hp = Math.max(1, Math.round(saved.hp));
   if (typeof saved.defense === "number") unit.defense = Math.max(1, Math.round(saved.defense));
@@ -214,7 +235,10 @@ function saveFormationUnitGrowth(unit) {
   if (!playerProgress || !unit) return;
   getFormationUnitGrowthMap()[unit.instanceId] = {
     level: unit.level,
-    star: unit.star,
+    diamondLevel: unit.diamondLevel || unit.star || 1,
+    diamondPiece: unit.diamondPiece || 0,
+    essence: getFormationUnitEssenceInfo(unit).totalAmount,
+    star: unit.diamondLevel || unit.star || 1,
     attack: unit.attack,
     hp: unit.hp,
     defense: unit.defense,
@@ -227,9 +251,6 @@ function getFormationSlotsForCurrentPage() {
 }
 
 function ensureFormationOwnedUnits() {
-  if (window.QAAPI?.isEnabled?.()) {
-    return FORMATION_ROSTER_UNITS.slice(0, FORMATION_OWNED_UNIT_LIMIT);
-  }
   if (!playerProgress) return FORMATION_ROSTER_UNITS.slice(0, FORMATION_OWNED_UNIT_LIMIT);
   if (!Array.isArray(playerProgress.ownedUnits) || !playerProgress.ownedUnits.length) {
     playerProgress.ownedUnits = FORMATION_ROSTER_UNITS.slice(0, FORMATION_BASE_UNITS.length).map((unit) => unit.instanceId);
@@ -265,7 +286,17 @@ function addFormationOwnedUnit(baseId) {
 }
 
 function getFormationHero(heroId = formationState.selectedHeroId) {
-  return FORMATION_HEROES.find((hero) => hero.id === heroId) || FORMATION_HEROES[0];
+  const hero = FORMATION_HEROES.find((hero) => hero.id === heroId) || FORMATION_HEROES[0];
+  const unlocked = typeof isPlayerHeroUnlocked === "function"
+    ? isPlayerHeroUnlocked(hero.id)
+    : Boolean(hero.unlocked);
+  return { ...hero, unlocked };
+}
+
+function isFormationHeroUnlocked(heroId) {
+  if (typeof isPlayerHeroUnlocked === "function") return isPlayerHeroUnlocked(heroId);
+  const hero = FORMATION_HEROES.find((hero) => hero.id === heroId) || FORMATION_HEROES[0];
+  return Boolean(hero.unlocked);
 }
 
 function getHeroGrowthMap() {
@@ -275,9 +306,19 @@ function getHeroGrowthMap() {
   return playerProgress.heroGrowth;
 }
 
+function getFormationPromotionLevelCap(stage = 1) {
+  return Math.min(FORMATION_MAX_LEVEL, Math.max(1, Number(stage) || 1) * 20);
+}
+
 function getFormationHeroStar(heroId) {
   const growth = getHeroGrowthMap()[heroId] || {};
-  return Math.min(FORMATION_HERO_MAX_STAR, Math.max(FORMATION_HERO_BASE_STAR, Number(growth.star) || FORMATION_HERO_BASE_STAR));
+  return Math.min(FORMATION_HERO_MAX_STAR, Math.max(FORMATION_HERO_BASE_STAR, Number(growth.starLevel ?? growth.star) || FORMATION_HERO_BASE_STAR));
+}
+
+function getFormationHeroStarPiece(heroId) {
+  if (getFormationHeroStar(heroId) >= FORMATION_HERO_MAX_STAR) return 0;
+  const growth = getHeroGrowthMap()[heroId] || {};
+  return Math.min(FORMATION_HERO_PROMOTION_PIECES - 1, Math.max(0, Number(growth.starPiece) || 0));
 }
 
 function getFormationHeroLevel(heroId) {
@@ -286,14 +327,40 @@ function getFormationHeroLevel(heroId) {
   return Math.min(getFormationHeroLevelCap(heroId, star), Math.max(1, Number(growth.level) || 1));
 }
 
+function getFormationHeroPromotionPieceCost(starLevel = getFormationHeroStar(formationState.selectedHeroId)) {
+  return starLevel >= FORMATION_HERO_DISPLAY_STARS
+    ? FORMATION_HERO_OVER_STAR_FRAGMENT_COST
+    : FORMATION_HERO_FRAGMENT_COST;
+}
+
+function renderFormationHeroStars(starLevel) {
+  const redStars = Math.min(
+    FORMATION_HERO_DISPLAY_STARS,
+    Math.max(0, Number(starLevel) - FORMATION_HERO_DISPLAY_STARS)
+  );
+  const goldStars = Math.max(
+    0,
+    Math.min(Number(starLevel) || 0, FORMATION_HERO_DISPLAY_STARS) - redStars
+  );
+  const emptyStars = Math.max(0, FORMATION_HERO_DISPLAY_STARS - redStars - goldStars);
+  return `${'<span class="formation-star-red">★</span>'.repeat(redStars)}${"★".repeat(goldStars)}${"☆".repeat(emptyStars)}`;
+}
+
 function setFormationHeroGrowth(heroId, growth = {}) {
-  const nextStar = Math.min(FORMATION_HERO_MAX_STAR, Math.max(FORMATION_HERO_BASE_STAR, Number(growth.star) || getFormationHeroStar(heroId)));
+  const nextStar = Math.min(FORMATION_HERO_MAX_STAR, Math.max(FORMATION_HERO_BASE_STAR, Number(growth.starLevel ?? growth.star) || getFormationHeroStar(heroId)));
+  const nextStarPiece = Math.min(FORMATION_HERO_PROMOTION_PIECES - 1, Math.max(0, Number(growth.starPiece ?? getFormationHeroStarPiece(heroId)) || 0));
   const nextLevel = Math.min(getFormationHeroLevelCap(heroId, nextStar), Math.max(1, Number(growth.level) || getFormationHeroLevel(heroId)));
-  getHeroGrowthMap()[heroId] = { star: nextStar, level: nextLevel };
+  getHeroGrowthMap()[heroId] = {
+    level: nextLevel,
+    starLevel: nextStar,
+    starPiece: nextStarPiece,
+    essence: getFormationHeroEssenceInfo(heroId).totalAmount,
+    star: nextStar,
+  };
 
   if (heroId === "zeus") {
     playerProgress.growth = playerProgress.growth || {};
-    playerProgress.growth.hero = { level: nextLevel, star: nextStar };
+    playerProgress.growth.hero = { level: nextLevel, star: nextStar, starLevel: nextStar, starPiece: nextStarPiece };
     if (gameState) gameState.growth = playerProgress.growth;
   }
 
@@ -319,6 +386,18 @@ function getFormationHeroEssenceMeta(heroId) {
   };
 
   return fallbackEssences[heroId] || { key: "", name: "전용 정수" };
+}
+
+function getFormationHeroEssenceIcon(heroId) {
+  const iconMap = {
+    zeus: "assets/icons/essence_zeus.png",
+    poseidon: "assets/icons/essence_poseidon.png",
+    hades: "assets/icons/essence_hades.png",
+    athena: "assets/icons/essence_athena.png",
+    ares: "assets/icons/essence_ares.png",
+    heracles: "assets/icons/essence_hercules.png",
+  };
+  return iconMap[heroId] || "assets/icons/essence_all.png";
 }
 
 function getFormationHeroEssenceInfo(heroId = formationState.selectedHeroId, requiredAmount = 0) {
@@ -368,15 +447,78 @@ function consumeFormationHeroEssences(heroId, requiredAmount) {
   return true;
 }
 
+function getFormationHeroUnlockCost(heroId) {
+  return heroId === "poseidon" ? FORMATION_POSEIDON_UNLOCK_ESSENCE_COST : null;
+}
+
+function canUnlockFormationHero(heroId) {
+  const cost = getFormationHeroUnlockCost(heroId);
+  if (!cost || isFormationHeroUnlocked(heroId)) return false;
+  const info = getFormationHeroEssenceInfo(heroId, cost);
+  return info.specificAmount >= cost;
+}
+
+function unlockFormationHero(heroId = formationState.selectedHeroId) {
+  const hero = getFormationHero(heroId);
+  const cost = getFormationHeroUnlockCost(hero.id);
+  if (!cost) {
+    showFormationMessage("아직 해금할 수 없는 영웅입니다.", "warning");
+    return;
+  }
+  if (isFormationHeroUnlocked(hero.id)) {
+    showFormationMessage(`${hero.name}은 이미 해금되었습니다.`);
+    renderFormationSlots();
+    renderFormationRoster();
+    return;
+  }
+  const info = getFormationHeroEssenceInfo(hero.id, cost);
+  if (info.specificAmount < cost) {
+    showFormationMessage(`${info.name} ${cost.toLocaleString("ko-KR")}개가 필요합니다.`, "warning");
+    return;
+  }
+  playerProgress.essences[info.key] = Math.max(0, info.specificAmount - cost);
+  if (window.PlayerAPI?.unlockPlayerHero) {
+    window.PlayerAPI.unlockPlayerHero(hero.id);
+  } else {
+    playerProgress.ownedGods = playerProgress.ownedGods || {};
+    playerProgress.ownedGods[hero.id] = { id: hero.id, name: hero.name, owned: true };
+    saveProgress();
+  }
+  formationState.selectedHeroId = hero.id;
+  if (typeof setSelectedHeroId === "function") setSelectedHeroId(hero.id);
+  updateWalletDisplays();
+  if (window.GameAudio) window.GameAudio.playRewardGetSfx();
+  showFormationMessage(`${hero.name}이(가) 해금되었습니다.`);
+  renderFormationRoster();
+  renderFormationSlots();
+}
+
 function initializeFormationHeroGrowthDefaults() {
   if (playerProgress.heroGrowthVersion !== FORMATION_HERO_GROWTH_VERSION) {
+    const previousGrowth = playerProgress.heroGrowth && typeof playerProgress.heroGrowth === "object"
+      ? playerProgress.heroGrowth
+      : {};
     playerProgress.heroGrowth = {};
     FORMATION_HEROES.forEach((hero) => {
-      playerProgress.heroGrowth[hero.id] = { star: FORMATION_HERO_BASE_STAR, level: 1 };
+      const saved = previousGrowth[hero.id] || {};
+      const starLevel = Math.min(FORMATION_HERO_MAX_STAR, Math.max(FORMATION_HERO_BASE_STAR, Number(saved.starLevel ?? saved.star) || FORMATION_HERO_BASE_STAR));
+      playerProgress.heroGrowth[hero.id] = {
+        level: Math.min(getFormationPromotionLevelCap(starLevel), Math.max(1, Number(saved.level) || 1)),
+        starLevel,
+        starPiece: Math.min(FORMATION_HERO_PROMOTION_PIECES - 1, Math.max(0, Number(saved.starPiece) || 0)),
+        essence: getFormationHeroEssenceInfo(hero.id).totalAmount,
+        star: starLevel,
+      };
     });
     playerProgress.heroGrowthVersion = FORMATION_HERO_GROWTH_VERSION;
     playerProgress.growth = playerProgress.growth || {};
-    playerProgress.growth.hero = { level: 1, star: FORMATION_HERO_BASE_STAR };
+    const zeusGrowth = playerProgress.heroGrowth.zeus || { level: 1, starLevel: FORMATION_HERO_BASE_STAR, starPiece: 0 };
+    playerProgress.growth.hero = {
+      level: zeusGrowth.level,
+      star: zeusGrowth.starLevel,
+      starLevel: zeusGrowth.starLevel,
+      starPiece: zeusGrowth.starPiece,
+    };
     if (gameState) gameState.growth = playerProgress.growth;
     saveProgress();
     return;
@@ -384,16 +526,17 @@ function initializeFormationHeroGrowthDefaults() {
 
   FORMATION_HEROES.forEach((hero) => {
     const growth = getHeroGrowthMap()[hero.id] || {};
-    if (Number(growth.star) >= FORMATION_HERO_BASE_STAR && Number(growth.level) >= 1) return;
+    if (Number(growth.starLevel ?? growth.star) >= FORMATION_HERO_BASE_STAR && Number(growth.level) >= 1) return;
     setFormationHeroGrowth(hero.id, {
-      star: Math.max(FORMATION_HERO_BASE_STAR, Number(growth.star) || FORMATION_HERO_BASE_STAR),
+      starLevel: Math.max(FORMATION_HERO_BASE_STAR, Number(growth.starLevel ?? growth.star) || FORMATION_HERO_BASE_STAR),
+      starPiece: Math.max(0, Number(growth.starPiece) || 0),
       level: Math.max(1, Number(growth.level) || 1),
     });
   });
 }
 
 function getFormationHeroLevelCap(heroId, star = getFormationHeroStar(heroId)) {
-  return star <= 3 ? 30 : star * 10;
+  return getFormationPromotionLevelCap(star);
 }
 
 function getFormationHeroLevelCost(heroId) {
@@ -418,19 +561,31 @@ function getFormationHeroGrowthAction(heroId = formationState.selectedHeroId) {
   if (level < levelCap) {
     return { type: "level", cost: getFormationHeroLevelCost(heroId), nextLevel: level + 1 };
   }
-  if (star < FORMATION_HERO_MAX_STAR) {
-    return {
-      type: "star",
-      cost: star >= 3 ? FORMATION_HERO_FRAGMENT_COST : 0,
-      nextStar: star + 1,
-    };
-  }
   return { type: "max", cost: 0 };
 }
 
 function getFormationHeroGrowthActionKey(heroId, action) {
   if (!action || action.type === "max") return "";
   return `${heroId}:${action.type}:${action.nextLevel || action.nextStar || 0}`;
+}
+
+function getFormationHeroPromotionAction(heroId = formationState.selectedHeroId) {
+  const starLevel = getFormationHeroStar(heroId);
+  const starPiece = getFormationHeroStarPiece(heroId);
+  if (starLevel >= FORMATION_HERO_MAX_STAR) return { type: "max", cost: 0, starLevel, starPiece };
+  return {
+    type: "promote",
+    cost: getFormationHeroPromotionPieceCost(starLevel),
+    starLevel,
+    starPiece,
+    nextStarLevel: starPiece + 1 >= FORMATION_HERO_PROMOTION_PIECES ? starLevel + 1 : starLevel,
+    nextStarPiece: starPiece + 1 >= FORMATION_HERO_PROMOTION_PIECES ? 0 : starPiece + 1,
+  };
+}
+
+function getFormationHeroPromotionActionKey(heroId, action) {
+  if (!action || action.type !== "promote") return "";
+  return `${heroId}:promote:${action.starLevel}:${action.starPiece}`;
 }
 
 function getFormationHeroStats(heroId = formationState.selectedHeroId) {
@@ -540,21 +695,12 @@ function getFormationLevelUpCost(unit) {
 
 function getFormationTranscendCost(unit) {
   if (!unit || unit.star >= FORMATION_MAX_STAR) return null;
-  if (unit.rarity === "hero") return 40;
-  if (unit.star === 1) return 20;
-  if (unit.star === 2) return 30;
-  if (unit.star === 3) return 50;
-  if (unit.star === 4) return 80;
-  return null;
+  return FORMATION_PROMOTION_ESSENCE_COST;
 }
 
 function getFormationLevelRequirement(unit) {
-  if (!unit || unit.level >= unit.maxLevel) return null;
-  if (typeof getRequiredTranscendenceStarForLevel !== "function") return null;
-
-  const nextLevel = unit.level + 1;
-  const requiredStar = getRequiredTranscendenceStarForLevel(nextLevel);
-  return unit.star >= requiredStar ? null : requiredStar;
+  if (!unit || unit.level < unit.maxLevel) return null;
+  return unit.star < FORMATION_MAX_STAR ? unit.star + 1 : null;
 }
 
 function getFormationLevelUpLockLabel(unit) {
@@ -572,16 +718,6 @@ function getFormationLevelUpLockLabel(unit) {
 function getFormationUnitGrowthAction(unit = getFormationUnit(formationState.selectedUnitId)) {
   if (!unit) return { type: "none", cost: 0 };
 
-  const requiredStar = getFormationLevelRequirement(unit);
-  if (requiredStar && unit.star < FORMATION_MAX_STAR) {
-    return {
-      type: "star",
-      cost: getFormationTranscendCost(unit),
-      nextStar: unit.star + 1,
-      requiredStar,
-    };
-  }
-
   if (unit.level < unit.maxLevel) {
     const cost = getFormationLevelUpCost(unit);
     if (cost !== null) {
@@ -589,16 +725,27 @@ function getFormationUnitGrowthAction(unit = getFormationUnit(formationState.sel
     }
   }
 
-  if (unit.star < FORMATION_MAX_STAR) {
-    return {
-      type: "star",
-      cost: getFormationTranscendCost(unit),
-      nextStar: unit.star + 1,
-      requiredStar: null,
-    };
-  }
-
   return { type: "max", cost: 0 };
+}
+
+function getFormationUnitPromotionAction(unit = getFormationUnit(formationState.selectedUnitId)) {
+  if (!unit) return { type: "none", cost: 0 };
+  const diamondLevel = Math.min(FORMATION_PROMOTION_MAX, Math.max(1, Number(unit.diamondLevel ?? unit.star) || 1));
+  const diamondPiece = Math.min(FORMATION_UNIT_PROMOTION_PIECES - 1, Math.max(0, Number(unit.diamondPiece) || 0));
+  if (diamondLevel >= FORMATION_PROMOTION_MAX) return { type: "max", cost: 0, diamondLevel, diamondPiece };
+  return {
+    type: "promote",
+    cost: FORMATION_PROMOTION_ESSENCE_COST,
+    diamondLevel,
+    diamondPiece,
+    nextDiamondLevel: diamondPiece + 1 >= FORMATION_UNIT_PROMOTION_PIECES ? diamondLevel + 1 : diamondLevel,
+    nextDiamondPiece: diamondPiece + 1 >= FORMATION_UNIT_PROMOTION_PIECES ? 0 : diamondPiece + 1,
+  };
+}
+
+function getFormationUnitPromotionActionKey(unit, action) {
+  if (!unit || !action || action.type !== "promote") return "";
+  return `${unit.instanceId}:promote:${action.diamondLevel}:${action.diamondPiece}`;
 }
 
 function showFormationMessage(message, tone = "info") {
@@ -617,7 +764,7 @@ function createFormationShellMarkup() {
 
     <div class="formation-topbar" aria-label="재화 정보">
       <div class="formation-currency blue"><span>다이아</span><strong data-wallet-value="diamond">0</strong></div>
-      <div class="formation-currency gold"><span>골드</span><strong data-wallet-value="gold">8,520</strong></div>
+      <div class="formation-currency gold"><span>골드</span><strong data-wallet-value="gold">0</strong></div>
       <button class="formation-gear" type="button" aria-label="설정">⚙</button>
     </div>
 
@@ -706,17 +853,19 @@ function renderFormationUnitCard(unit, options = {}) {
 
 function renderFormationHeroCard(hero, options = {}) {
   const selectedClass = options.selected ? " is-selected" : "";
-  const lockedClass = hero.unlocked ? "" : " is-locked";
+  const unlocked = isFormationHeroUnlocked(hero.id);
+  const selectableLocked = !unlocked && getFormationHeroUnlockCost(hero.id);
+  const lockedClass = unlocked ? "" : " is-locked";
   const star = getFormationHeroStar(hero.id);
   const level = getFormationHeroLevel(hero.id);
-  const lockMarkup = hero.unlocked ? "" : `<span class="formation-hero-lock" aria-hidden="true">🔒</span>`;
+  const lockMarkup = unlocked ? "" : `<span class="formation-hero-lock" aria-hidden="true">🔒</span>`;
 
   return `
-    <button class="formation-unit-card formation-hero-card${selectedClass}${lockedClass}" type="button" data-hero-id="${hero.id}" ${hero.unlocked ? "" : "disabled"} aria-label="${hero.name}">
+    <button class="formation-unit-card formation-hero-card${selectedClass}${lockedClass}" type="button" data-hero-id="${hero.id}" ${unlocked || selectableLocked ? "" : "disabled"} aria-label="${hero.name}">
       <img src="${hero.image}" alt="${hero.name}">
       ${lockMarkup}
       <span class="formation-unit-name">${hero.name}</span>
-      <span class="formation-unit-level">${"★".repeat(star)}${"☆".repeat(FORMATION_HERO_MAX_STAR - star)} Lv.${level}</span>
+      <span class="formation-unit-level">${renderFormationHeroStars(star)} Lv.${level}</span>
     </button>
   `;
 }
@@ -724,31 +873,40 @@ function renderFormationHeroCard(hero, options = {}) {
 function renderFormationHeroDetail() {
   const hero = getFormationHero();
   const star = getFormationHeroStar(hero.id);
+  const starPiece = getFormationHeroStarPiece(hero.id);
   const level = getFormationHeroLevel(hero.id);
   const levelCap = getFormationHeroLevelCap(hero.id);
   const action = getFormationHeroGrowthAction(hero.id);
-  const essenceInfo = getFormationHeroEssenceInfo(hero.id, action.type === "star" ? action.cost : 0);
-  const fragmentAmount = essenceInfo.totalAmount;
+  const promotionAction = getFormationHeroPromotionAction(hero.id);
+  const essenceInfo = getFormationHeroEssenceInfo(hero.id, promotionAction.cost);
   const actionKey = getFormationHeroGrowthActionKey(hero.id, action);
+  const promotionActionKey = getFormationHeroPromotionActionKey(hero.id, promotionAction);
   const isPending = formationState.pendingHeroGrowthAction === actionKey;
+  const isPromotionPending = formationState.pendingHeroPromotionAction === promotionActionKey;
+  const unlockCost = getFormationHeroUnlockCost(hero.id);
+  const unlockInfo = getFormationHeroEssenceInfo(hero.id, unlockCost || 0);
   const stats = getFormationHeroStats(hero.id);
-  const isMax = action.type === "max";
-  const lacksEssenceForStar = action.type === "star" && action.cost > 0 && !essenceInfo.canAfford;
-  const levelLabel = isMax
+  const isLevelMax = level >= FORMATION_MAX_LEVEL && star >= FORMATION_HERO_MAX_STAR;
+  const levelLabel = isLevelMax
     ? "MAX"
     : action.type === "level"
       ? action.cost.toLocaleString("ko-KR")
-      : action.cost > 0
-        ? action.cost
-        : "성급 상승";
-  const costLabel = action.type === "level" ? "골드" : action.type === "star" && action.cost > 0 ? "신의정수" : "";
+      : "승급 필요";
   const pendingMessage = action.type === "level"
     ? `골드 ${action.cost.toLocaleString("ko-KR")}을 소모해 Lv.${action.nextLevel}로 성장시킵니다.`
-    : action.type === "star"
-      ? action.cost > 0
-        ? `신의정수 ${action.cost}개를 소모해 ${action.nextStar}성으로 성장시킵니다.`
-        : `${action.nextStar}성으로 성장시킵니다.`
-      : "";
+    : "";
+  const levelCostMarkup = action.type === "level"
+    ? `<span class="formation-btn-cost"><img src="assets/icons/gold.png" alt="">${action.cost.toLocaleString("ko-KR")}</span>`
+    : `<span class="formation-btn-cost">${levelLabel}</span>`;
+  const promoteCostMarkup = `
+    <span class="formation-btn-cost formation-promote-cost">
+      <img src="${getFormationHeroEssenceIcon(hero.id)}" alt="">${essenceInfo.specificAmount.toLocaleString("ko-KR")}
+      <b>+</b>
+      <img src="assets/icons/essence_all.png" alt="">${essenceInfo.commonAmount.toLocaleString("ko-KR")}
+      <em>/ ${promotionAction.cost}</em>
+    </span>
+  `;
+  const promotionMessage = `${getFormationHeroEssenceSpendLabel(hero.id, promotionAction.cost)}를 사용해 승급 조각을 올립니다.`;
 
   return `
     <div class="formation-hero-detail">
@@ -773,22 +931,32 @@ function renderFormationHeroDetail() {
         <div class="formation-hero-detail-top">
           <p class="formation-kicker">HERO</p>
           <h2>${hero.name}</h2>
-          <div class="formation-hero-stars" aria-label="현재 성급">${"★".repeat(star)}${"☆".repeat(FORMATION_HERO_MAX_STAR - star)}</div>
+          <div class="formation-hero-stars" aria-label="현재 성급">${renderFormationHeroStars(star)}</div>
+          <div class="formation-promotion-pieces" aria-label="현재 별 조각">${"◆".repeat(starPiece)}${"◇".repeat(FORMATION_HERO_PROMOTION_PIECES - starPiece)}</div>
         </div>
         <dl class="formation-hero-detail-list">
           <div><dt>패시브 능력</dt><dd>${hero.passive}</dd></div>
-          <div><dt>스킬 종류</dt><dd>${hero.skillType || ""}</dd></div>
           <div><dt>현재 성급</dt><dd>${star}성 / ${FORMATION_HERO_MAX_STAR}성</dd></div>
           <div><dt>현재 레벨</dt><dd>Lv.${level} / ${levelCap}</dd></div>
-          <div><dt>신의정수</dt><dd>${fragmentAmount.toLocaleString("ko-KR")} / ${FORMATION_HERO_FRAGMENT_COST}</dd></div>
+          <div><dt>별 조각</dt><dd>${"◆".repeat(starPiece)}${"◇".repeat(FORMATION_HERO_PROMOTION_PIECES - starPiece)}</dd></div>
         </dl>
-        <button id="formationHeroLevelUpBtn" class="formation-level-btn formation-hero-level-btn" type="button" ${hero.unlocked && !isMax && !lacksEssenceForStar ? "" : "disabled"}>
-          레벨업 하기 <span>${costLabel ? `${costLabel} ${levelLabel}` : levelLabel}</span>
-        </button>
-        ${lacksEssenceForStar ? `<p class="formation-growth-lock">신의정수 ${action.cost}개를 모으면 ${action.nextStar}성 성장이 가능합니다.</p>` : ""}
-        ${isPending ? `
+        <div class="formation-growth-actions">
+          ${!hero.unlocked && unlockCost ? `
+          <button id="formationHeroUnlockBtn" class="formation-level-btn formation-hero-level-btn formation-unlock-btn" type="button" ${unlockInfo.specificAmount >= unlockCost ? "" : "disabled"}>
+            해금 <span class="formation-btn-cost"><img src="${getFormationHeroEssenceIcon(hero.id)}" alt="">${unlockInfo.specificAmount.toLocaleString("ko-KR")} / ${unlockCost.toLocaleString("ko-KR")}</span>
+          </button>
+          ` : `
+          <button id="formationHeroLevelUpBtn" class="formation-level-btn formation-hero-level-btn" type="button" ${hero.unlocked && !isLevelMax ? "" : "disabled"}>
+            레벨업 ${levelCostMarkup}
+          </button>
+          <button id="formationHeroPromoteBtn" class="formation-level-btn formation-hero-level-btn formation-promote-btn" type="button" ${hero.unlocked && promotionAction.type !== "max" ? "" : "disabled"}>
+            승급 ${promoteCostMarkup}
+          </button>
+          `}
+        </div>
+        ${isPending || isPromotionPending ? `
           <div class="formation-growth-confirm" role="dialog" aria-label="영웅 성장 확인">
-            <p>${pendingMessage}</p>
+            <p>${isPromotionPending ? promotionMessage : pendingMessage}</p>
             <div>
               <button id="formationHeroGrowthConfirmBtn" type="button">진행</button>
               <button id="formationHeroGrowthCancelBtn" type="button">취소</button>
@@ -834,10 +1002,12 @@ function renderFormationSlots() {
     slotGrid.classList.add("is-hero-detail-grid");
     slotGrid.innerHTML = renderFormationHeroDetail();
     const detailCard = slotGrid.querySelector(".formation-hero-detail-card");
+    const heroUnlockBtn = document.getElementById("formationHeroUnlockBtn");
     const levelUpBtn = document.getElementById("formationHeroLevelUpBtn");
     const confirmBtn = document.getElementById("formationHeroGrowthConfirmBtn");
     const cancelBtn = document.getElementById("formationHeroGrowthCancelBtn");
     if (detailCard) detailCard.addEventListener("click", toggleFormationHeroDetailFlip);
+    if (heroUnlockBtn) heroUnlockBtn.addEventListener("click", () => unlockFormationHero());
     if (levelUpBtn) levelUpBtn.addEventListener("click", levelUpFormationHero);
     if (confirmBtn) confirmBtn.addEventListener("click", confirmFormationHeroGrowth);
     if (cancelBtn) cancelBtn.addEventListener("click", cancelFormationHeroGrowth);
@@ -888,7 +1058,7 @@ function renderFormationRoster() {
       .map((hero) => renderFormationHeroCard(hero, { selected: hero.id === formationState.selectedHeroId }))
       .join("");
 
-    rosterGrid.querySelectorAll(".formation-hero-card:not(.is-locked)").forEach((card) => {
+    rosterGrid.querySelectorAll(".formation-hero-card:not(:disabled)").forEach((card) => {
       card.addEventListener("click", () => selectFormationHero(card.dataset.heroId));
     });
     return;
@@ -1077,6 +1247,8 @@ function setFormationCategory(category) {
   formationState.activeCategory = category;
   formationState.rosterPage = 1;
   formationState.pendingHeroGrowthAction = null;
+  formationState.pendingHeroPromotionAction = null;
+  formationState.pendingUnitPromotionAction = null;
   formationState.heroDetailFlipped = false;
   if (category === "unit") {
     formationState.activeType = "deck";
@@ -1180,29 +1352,11 @@ function levelUpFormationUnit() {
   const action = getFormationUnitGrowthAction(unit);
 
   if (action.type === "max" || action.type === "none") {
-    showFormationMessage("이미 최대 성장 상태입니다.", "warning");
-    return;
-  }
-
-  if (action.type === "star") {
-    const essenceInfo = getFormationUnitEssenceInfo(unit, action.cost);
-    if (!essenceInfo.canAfford) {
-      showFormationMessage(`병사정수가 부족합니다. 초월에는 ${action.cost}개가 필요합니다.`, "warning");
-      return;
+    if (unit && unit.level >= unit.maxLevel && (unit.diamondLevel || unit.star) < FORMATION_PROMOTION_MAX) {
+      showFormationMessage("승급이 필요합니다.", "warning");
+    } else {
+      showFormationMessage("이미 최대 성장 상태입니다.", "warning");
     }
-
-    if (!consumeFormationUnitEssences(unit, action.cost)) {
-      showFormationMessage("병사정수가 부족합니다.", "warning");
-      return;
-    }
-
-    unit.star = action.nextStar;
-    saveFormationUnitGrowth(unit);
-    updateWalletDisplays();
-    showFormationMessage(`${unit.name}이(가) ${action.nextStar}성이 되었습니다.`);
-    renderFormationRoster();
-    renderFormationSelectedInfo();
-    renderFormationSlots();
     return;
   }
 
@@ -1230,7 +1384,67 @@ function levelUpFormationUnit() {
   saveFormationUnitGrowth(unit);
 
   updateWalletDisplays();
+  if (window.GameAudio) window.GameAudio.playSfx("levelUp", { cooldown: 250, volume: 0.8 });
   showFormationMessage(`${unit.name}이(가) Lv.${unit.level}이 되었습니다.`);
+  renderFormationRoster();
+  renderFormationSelectedInfo();
+  renderFormationSlots();
+}
+
+function promoteFormationUnit() {
+  const unit = getFormationUnit(formationState.selectedUnitId);
+  const action = getFormationUnitPromotionAction(unit);
+  const actionKey = getFormationUnitPromotionActionKey(unit, action);
+
+  if (!unit || action.type === "none") return;
+  if (action.type === "max") {
+    showFormationMessage("최대 승급 단계입니다.", "warning");
+    return;
+  }
+  if (!getFormationUnitEssenceInfo(unit, action.cost).canAfford) {
+    showFormationMessage("정수가 부족합니다.", "warning");
+    return;
+  }
+
+  formationState.pendingUnitPromotionAction = actionKey;
+  showFormationMessage("승급 내용을 확인한 뒤 진행하세요.");
+  renderFormationSlots();
+}
+
+function confirmFormationUnitPromotion() {
+  const unit = getFormationUnit(formationState.selectedUnitId);
+  const action = getFormationUnitPromotionAction(unit);
+  const actionKey = getFormationUnitPromotionActionKey(unit, action);
+
+  if (formationState.pendingUnitPromotionAction !== actionKey) {
+    formationState.pendingUnitPromotionAction = null;
+    renderFormationSlots();
+    return;
+  }
+  if (!getFormationUnitEssenceInfo(unit, action.cost).canAfford) {
+    showFormationMessage("정수가 부족합니다.", "warning");
+    formationState.pendingUnitPromotionAction = null;
+    renderFormationSlots();
+    return;
+  }
+  if (!consumeFormationUnitEssences(unit, action.cost)) {
+    showFormationMessage("정수가 부족합니다.", "warning");
+    formationState.pendingUnitPromotionAction = null;
+    renderFormationSlots();
+    return;
+  }
+
+  unit.diamondLevel = action.nextDiamondLevel;
+  unit.star = unit.diamondLevel;
+  unit.diamondPiece = action.nextDiamondPiece;
+  unit.maxLevel = getFormationPromotionLevelCap(unit.diamondLevel);
+  saveFormationUnitGrowth(unit);
+  formationState.pendingUnitPromotionAction = null;
+  updateWalletDisplays();
+  if (window.GameAudio) window.GameAudio.playSfx("starLevelUp", { cooldown: 350, volume: 0.82 });
+  showFormationMessage(action.nextDiamondPiece === 0
+    ? `${unit.name}이(가) ${unit.diamondLevel}단계로 승급했습니다.`
+    : `${unit.name}의 다이아 조각이 증가했습니다.`);
   renderFormationRoster();
   renderFormationSelectedInfo();
   renderFormationSlots();
@@ -1239,7 +1453,6 @@ function levelUpFormationUnit() {
 function levelUpFormationHero() {
   const hero = getFormationHero();
   const action = getFormationHeroGrowthAction(hero.id);
-  const actionKey = getFormationHeroGrowthActionKey(hero.id, action);
 
   if (!hero.unlocked) {
     showFormationMessage(`${hero.name}은 아직 잠겨 있습니다.`, "warning");
@@ -1247,7 +1460,11 @@ function levelUpFormationHero() {
   }
 
   if (action.type === "max") {
-    showFormationMessage(`${hero.name}은 이미 최대 성장 상태입니다.`, "warning");
+    if (getFormationHeroLevel(hero.id) >= getFormationHeroLevelCap(hero.id) && getFormationHeroStar(hero.id) < FORMATION_HERO_MAX_STAR) {
+      showFormationMessage("승급이 필요합니다.", "warning");
+    } else {
+      showFormationMessage(`${hero.name}은 이미 최대 성장 상태입니다.`, "warning");
+    }
     return;
   }
 
@@ -1256,24 +1473,34 @@ function levelUpFormationHero() {
       showFormationMessage(`골드가 부족합니다. 레벨업에는 ${action.cost.toLocaleString("ko-KR")} 골드가 필요합니다.`, "warning");
       return;
     }
-  }
-  if (action.type === "star" && action.cost > 0 && !getFormationHeroEssenceInfo(hero.id, action.cost).canAfford) {
-    showFormationMessage(`신의정수가 부족합니다. 성급업에는 ${action.cost}개가 필요합니다.`, "warning");
+    gameWallet.gold -= action.cost;
+    if (playerProgress) {
+      playerProgress.gold = Math.max(0, Number(playerProgress.gold) || 0);
+      playerProgress.gold = Math.max(0, playerProgress.gold - action.cost);
+    }
+    setFormationHeroGrowth(hero.id, { starLevel: getFormationHeroStar(hero.id), starPiece: getFormationHeroStarPiece(hero.id), level: action.nextLevel });
+    formationState.pendingHeroGrowthAction = null;
+    updateWalletDisplays();
+    if (window.GameAudio) window.GameAudio.playSfx("levelUp", { cooldown: 250, volume: 0.8 });
+    showFormationMessage(`${hero.name}이(가) Lv.${action.nextLevel}이 되었습니다.`);
+    renderFormationSlots();
+    renderFormationRoster();
     return;
   }
 
-  formationState.pendingHeroGrowthAction = actionKey;
-  showFormationMessage(
-    action.type === "level"
-      ? `골드 ${action.cost.toLocaleString("ko-KR")}을 소모합니다. 진행 버튼을 눌러 레벨업하세요.`
-      : action.cost > 0
-        ? `${getFormationHeroEssenceSpendLabel(hero.id, action.cost)}를 소모합니다. 진행 버튼을 눌러 성급을 올리세요.`
-        : `진행 버튼을 눌러 ${action.nextStar}성으로 성장하세요.`
-  );
   renderFormationSlots();
 }
 
 function confirmFormationHeroGrowth() {
+  if (formationState.pendingHeroPromotionAction) {
+    confirmFormationHeroPromotion();
+    return;
+  }
+  if (formationState.pendingUnitPromotionAction) {
+    confirmFormationUnitPromotion();
+    return;
+  }
+
   const hero = getFormationHero();
   const currentStar = getFormationHeroStar(hero.id);
   const currentLevel = getFormationHeroLevel(hero.id);
@@ -1302,6 +1529,7 @@ function confirmFormationHeroGrowth() {
     setFormationHeroGrowth(hero.id, { star: currentStar, level: action.nextLevel });
     formationState.pendingHeroGrowthAction = null;
     updateWalletDisplays();
+    if (window.GameAudio) window.GameAudio.playSfx("levelUp", { cooldown: 250, volume: 0.8 });
     showFormationMessage(`${hero.name}이(가) Lv.${action.nextLevel}이 되었습니다.`);
     renderFormationSlots();
     renderFormationRoster();
@@ -1331,13 +1559,77 @@ function confirmFormationHeroGrowth() {
   setFormationHeroGrowth(hero.id, { star: action.nextStar, level: currentLevel });
   formationState.pendingHeroGrowthAction = null;
   updateWalletDisplays();
+  if (window.GameAudio) window.GameAudio.playSfx("starLevelUp", { cooldown: 350, volume: 0.82 });
   showFormationMessage(`${hero.name}이(가) ${action.nextStar}성이 되었습니다. Lv.${getFormationHeroLevelCap(hero.id, action.nextStar)}까지 성장할 수 있습니다.`);
+  renderFormationSlots();
+  renderFormationRoster();
+}
+
+function promoteFormationHero() {
+  const hero = getFormationHero();
+  const action = getFormationHeroPromotionAction(hero.id);
+  const actionKey = getFormationHeroPromotionActionKey(hero.id, action);
+
+  if (!hero.unlocked) {
+    showFormationMessage(`${hero.name}은 아직 잠겨 있습니다.`, "warning");
+    return;
+  }
+  if (action.type === "max") {
+    showFormationMessage("최대 승급 단계입니다.", "warning");
+    return;
+  }
+  if (!getFormationHeroEssenceInfo(hero.id, action.cost).canAfford) {
+    showFormationMessage("정수가 부족합니다.", "warning");
+    return;
+  }
+
+  formationState.pendingHeroPromotionAction = actionKey;
+  showFormationMessage("승급 내용을 확인한 뒤 진행하세요.");
+  renderFormationSlots();
+}
+
+function confirmFormationHeroPromotion() {
+  const hero = getFormationHero();
+  const action = getFormationHeroPromotionAction(hero.id);
+  const actionKey = getFormationHeroPromotionActionKey(hero.id, action);
+
+  if (formationState.pendingHeroPromotionAction !== actionKey) {
+    formationState.pendingHeroPromotionAction = null;
+    renderFormationSlots();
+    return;
+  }
+  if (!getFormationHeroEssenceInfo(hero.id, action.cost).canAfford) {
+    showFormationMessage("정수가 부족합니다.", "warning");
+    formationState.pendingHeroPromotionAction = null;
+    renderFormationSlots();
+    return;
+  }
+  if (!consumeFormationHeroEssences(hero.id, action.cost)) {
+    showFormationMessage("정수가 부족합니다.", "warning");
+    formationState.pendingHeroPromotionAction = null;
+    renderFormationSlots();
+    return;
+  }
+
+  setFormationHeroGrowth(hero.id, {
+    starLevel: action.nextStarLevel,
+    starPiece: action.nextStarPiece,
+    level: getFormationHeroLevel(hero.id),
+  });
+  formationState.pendingHeroPromotionAction = null;
+  updateWalletDisplays();
+  if (window.GameAudio) window.GameAudio.playSfx("starLevelUp", { cooldown: 350, volume: 0.82 });
+  showFormationMessage(action.nextStarPiece === 0
+    ? `${hero.name}이(가) ${action.nextStarLevel}성으로 승급했습니다.`
+    : `${hero.name}의 별 조각이 증가했습니다.`);
   renderFormationSlots();
   renderFormationRoster();
 }
 
 function cancelFormationHeroGrowth() {
   formationState.pendingHeroGrowthAction = null;
+  formationState.pendingHeroPromotionAction = null;
+  formationState.pendingUnitPromotionAction = null;
   showFormationMessage("성장을 취소했습니다.");
   renderFormationSlots();
 }
@@ -1352,9 +1644,15 @@ function createFormationShellMarkup() {
     <div class="formation-topbar formation-wallet-wide" aria-label="재화 정보">
       <div class="formation-currency blue"><img src="assets/icons/diamond.png" alt=""><span>다이아몬드</span><strong data-wallet-value="diamond">0</strong></div>
       <div class="formation-currency gold"><img src="assets/icons/gold.png" alt=""><span>골드</span><strong data-wallet-value="gold">0</strong></div>
-      <div class="formation-currency ticket"><img src="assets/icons/ticket.png" alt=""><span>신 모집권</span><strong data-wallet-value="summonTickets">0</strong></div>
-      <div class="formation-currency essence"><img src="assets/icons/essence_all.png" alt=""><span>신의정수</span><strong data-wallet-value="commonEssence">0</strong></div>
+      <div class="formation-currency ticket"><img src="assets/icons/ticket.png" alt=""><span>강림권</span><strong data-wallet-value="summonTickets">0</strong></div>
+      <div class="formation-currency essence"><img src="assets/icons/essence_all.png" alt=""><span>공통 신의정수</span><strong data-wallet-value="commonEssence">0</strong></div>
       <div class="formation-currency soldier"><img src="assets/icons/essence_soldier.png" alt=""><span>병사정수</span><strong data-wallet-value="soldierFragments">0</strong></div>
+      <div class="formation-currency god-essence zeus"><img src="assets/icons/essence_zeus.png" alt=""><span>제우스 정수</span><strong data-essence-key="lightningEssence">0</strong></div>
+      <div class="formation-currency god-essence poseidon"><img src="assets/icons/essence_poseidon.png" alt=""><span>포세이돈 정수</span><strong data-essence-key="seaEssence">0</strong></div>
+      <div class="formation-currency god-essence hades"><img src="assets/icons/essence_hades.png" alt=""><span>하데스 정수</span><strong data-essence-key="soulEssence">0</strong></div>
+      <div class="formation-currency god-essence athena"><img src="assets/icons/essence_athena.png" alt=""><span>아테나 정수</span><strong data-essence-key="wisdomEssence">0</strong></div>
+      <div class="formation-currency god-essence ares"><img src="assets/icons/essence_ares.png" alt=""><span>아레스 정수</span><strong data-essence-key="warEssence">0</strong></div>
+      <div class="formation-currency god-essence heracles"><img src="assets/icons/essence_hercules.png" alt=""><span>헤라클레스 정수</span><strong data-essence-key="strengthEssence">0</strong></div>
     </div>
 
     <div class="formation-shell">
@@ -1404,22 +1702,24 @@ function createFormationShellMarkup() {
 }
 
 function getFormationHeroOwnedCount() {
-  return FORMATION_HEROES.filter((hero) => hero.unlocked).length;
+  return FORMATION_HEROES.filter((hero) => isFormationHeroUnlocked(hero.id)).length;
 }
 
 function renderFormationHeroCard(hero, options = {}) {
   const selectedClass = options.selected ? " is-selected" : "";
-  const lockedClass = hero.unlocked ? "" : " is-locked";
+  const unlocked = isFormationHeroUnlocked(hero.id);
+  const selectableLocked = !unlocked && getFormationHeroUnlockCost(hero.id);
+  const lockedClass = unlocked ? "" : " is-locked";
   const star = getFormationHeroStar(hero.id);
   const level = getFormationHeroLevel(hero.id);
-  const lockMarkup = hero.unlocked ? "" : `<span class="formation-hero-lock" aria-hidden="true">🔒</span>`;
+  const lockMarkup = unlocked ? "" : `<span class="formation-hero-lock" aria-hidden="true">🔒</span>`;
 
   return `
-    <button class="formation-unit-card formation-hero-card${selectedClass}${lockedClass}" type="button" data-hero-id="${hero.id}" ${hero.unlocked ? "" : "disabled"} aria-label="${hero.name}">
+    <button class="formation-unit-card formation-hero-card${selectedClass}${lockedClass}" type="button" data-hero-id="${hero.id}" ${unlocked || selectableLocked ? "" : "disabled"} aria-label="${hero.name}">
       <img src="${hero.image}" alt="${hero.name}">
       ${lockMarkup}
       <span class="formation-unit-name">${hero.name}</span>
-      <span class="formation-unit-level">${"★".repeat(star)}${"☆".repeat(FORMATION_HERO_MAX_STAR - star)} Lv.${level}</span>
+      <span class="formation-unit-level">${renderFormationHeroStars(star)} Lv.${level}</span>
     </button>
   `;
 }
@@ -1459,31 +1759,40 @@ function renderFormationFlipCard({ cardClass = "", frontImage, frontAlt, backCla
 function renderFormationHeroDetail() {
   const hero = getFormationHero();
   const star = getFormationHeroStar(hero.id);
+  const starPiece = getFormationHeroStarPiece(hero.id);
   const level = getFormationHeroLevel(hero.id);
   const levelCap = getFormationHeroLevelCap(hero.id);
   const action = getFormationHeroGrowthAction(hero.id);
-  const essenceInfo = getFormationHeroEssenceInfo(hero.id, action.type === "star" ? action.cost : 0);
-  const fragmentAmount = essenceInfo.totalAmount;
+  const promotionAction = getFormationHeroPromotionAction(hero.id);
+  const essenceInfo = getFormationHeroEssenceInfo(hero.id, promotionAction.cost);
   const actionKey = getFormationHeroGrowthActionKey(hero.id, action);
+  const promotionActionKey = getFormationHeroPromotionActionKey(hero.id, promotionAction);
   const isPending = formationState.pendingHeroGrowthAction === actionKey;
+  const isPromotionPending = formationState.pendingHeroPromotionAction === promotionActionKey;
+  const unlockCost = getFormationHeroUnlockCost(hero.id);
+  const unlockInfo = getFormationHeroEssenceInfo(hero.id, unlockCost || 0);
   const stats = getFormationHeroStats(hero.id);
-  const isMax = action.type === "max";
-  const lacksEssenceForStar = action.type === "star" && action.cost > 0 && !essenceInfo.canAfford;
-  const levelLabel = isMax
+  const isLevelMax = level >= FORMATION_MAX_LEVEL && star >= FORMATION_HERO_MAX_STAR;
+  const levelLabel = isLevelMax
     ? "MAX"
     : action.type === "level"
       ? action.cost.toLocaleString("ko-KR")
-      : action.cost > 0
-        ? action.cost
-        : "성급 상승";
-  const costLabel = action.type === "level" ? "골드" : action.type === "star" && action.cost > 0 ? "신의정수" : "";
+      : "승급 필요";
   const pendingMessage = action.type === "level"
     ? `골드 ${action.cost.toLocaleString("ko-KR")}을 소모해 Lv.${action.nextLevel}로 성장시킵니다.`
-    : action.type === "star"
-      ? action.cost > 0
-        ? `신의정수 ${action.cost}개를 소모해 ${action.nextStar}성으로 성장시킵니다.`
-        : `${action.nextStar}성으로 성장시킵니다.`
-      : "";
+    : "";
+  const levelCostMarkup = action.type === "level"
+    ? `<span class="formation-btn-cost"><img src="assets/icons/gold.png" alt="">${action.cost.toLocaleString("ko-KR")}</span>`
+    : `<span class="formation-btn-cost">${levelLabel}</span>`;
+  const promoteCostMarkup = `
+    <span class="formation-btn-cost formation-promote-cost">
+      <img src="${getFormationHeroEssenceIcon(hero.id)}" alt="">${essenceInfo.specificAmount.toLocaleString("ko-KR")}
+      <b>+</b>
+      <img src="assets/icons/essence_all.png" alt="">${essenceInfo.commonAmount.toLocaleString("ko-KR")}
+      <em>/ ${promotionAction.cost}</em>
+    </span>
+  `;
+  const promotionMessage = `${getFormationHeroEssenceSpendLabel(hero.id, promotionAction.cost)}를 사용해 승급 조각을 올립니다.`;
 
   return `
     <div class="formation-hero-detail">
@@ -1504,22 +1813,32 @@ function renderFormationHeroDetail() {
         <div class="formation-hero-detail-top">
           <p class="formation-kicker">HERO</p>
           <h2>${hero.name}</h2>
-          <div class="formation-hero-stars" aria-label="현재 성급">${"★".repeat(star)}${"☆".repeat(FORMATION_HERO_MAX_STAR - star)}</div>
+          <div class="formation-hero-stars" aria-label="현재 성급">${renderFormationHeroStars(star)}</div>
+          <div class="formation-promotion-pieces" aria-label="현재 별 조각">${"◆".repeat(starPiece)}${"◇".repeat(FORMATION_HERO_PROMOTION_PIECES - starPiece)}</div>
         </div>
         <dl class="formation-hero-detail-list">
           <div><dt>패시브 능력</dt><dd>${hero.passive}</dd></div>
-          <div><dt>스킬 종류</dt><dd>${hero.skillType || ""}</dd></div>
           <div><dt>현재 성급</dt><dd>${star}성 / ${FORMATION_HERO_MAX_STAR}성</dd></div>
           <div><dt>현재 레벨</dt><dd>Lv.${level} / ${levelCap}</dd></div>
-          <div><dt>신의정수</dt><dd>${fragmentAmount.toLocaleString("ko-KR")} / ${FORMATION_HERO_FRAGMENT_COST}</dd></div>
+          <div><dt>별 조각</dt><dd>${"◆".repeat(starPiece)}${"◇".repeat(FORMATION_HERO_PROMOTION_PIECES - starPiece)}</dd></div>
         </dl>
-        <button id="formationHeroLevelUpBtn" class="formation-level-btn formation-hero-level-btn" type="button" ${hero.unlocked && !isMax && !lacksEssenceForStar ? "" : "disabled"}>
-          레벨업 하기 <span>${costLabel ? `${costLabel} ${levelLabel}` : levelLabel}</span>
-        </button>
-        ${lacksEssenceForStar ? `<p class="formation-growth-lock">신의정수 ${action.cost}개를 모으면 ${action.nextStar}성 성장이 가능합니다.</p>` : ""}
-        ${isPending ? `
+        <div class="formation-growth-actions">
+          ${!hero.unlocked && unlockCost ? `
+          <button id="formationHeroUnlockBtn" class="formation-level-btn formation-hero-level-btn formation-unlock-btn" type="button" ${unlockInfo.specificAmount >= unlockCost ? "" : "disabled"}>
+            해금 <span class="formation-btn-cost"><img src="${getFormationHeroEssenceIcon(hero.id)}" alt="">${unlockInfo.specificAmount.toLocaleString("ko-KR")} / ${unlockCost.toLocaleString("ko-KR")}</span>
+          </button>
+          ` : `
+          <button id="formationHeroLevelUpBtn" class="formation-level-btn formation-hero-level-btn" type="button" ${hero.unlocked && !isLevelMax ? "" : "disabled"}>
+            레벨업 ${levelCostMarkup}
+          </button>
+          <button id="formationHeroPromoteBtn" class="formation-level-btn formation-hero-level-btn formation-promote-btn" type="button" ${hero.unlocked && promotionAction.type !== "max" ? "" : "disabled"}>
+            승급 ${promoteCostMarkup}
+          </button>
+          `}
+        </div>
+        ${isPending || isPromotionPending ? `
           <div class="formation-growth-confirm" role="dialog" aria-label="영웅 성장 확인">
-            <p>${pendingMessage}</p>
+            <p>${isPromotionPending ? promotionMessage : pendingMessage}</p>
             <div>
               <button id="formationHeroGrowthConfirmBtn" type="button">진행</button>
               <button id="formationHeroGrowthCancelBtn" type="button">취소</button>
@@ -1539,14 +1858,27 @@ function renderFormationUnitDetail() {
   const unit = getFormationUnit(formationState.selectedUnitId);
   const stats = getFormationUnitStats(unit);
   const action = getFormationUnitGrowthAction(unit);
-  const essenceInfo = getFormationUnitEssenceInfo(unit, action.type === "star" ? action.cost : 0);
-  const isMax = action.type === "max" || action.type === "none";
-  const lacksEssenceForStar = action.type === "star" && action.cost > 0 && !essenceInfo.canAfford;
-  const buttonCostLabel = isMax
+  const promotionAction = getFormationUnitPromotionAction(unit);
+  const essenceInfo = getFormationUnitEssenceInfo(unit, promotionAction.cost);
+  const diamondLevel = Math.min(FORMATION_PROMOTION_MAX, Math.max(1, Number(unit.diamondLevel ?? unit.star) || 1));
+  const diamondPiece = Math.min(FORMATION_UNIT_PROMOTION_PIECES - 1, Math.max(0, Number(unit.diamondPiece) || 0));
+  const isLevelMax = unit.level >= FORMATION_MAX_LEVEL && diamondLevel >= FORMATION_PROMOTION_MAX;
+  const promotionActionKey = getFormationUnitPromotionActionKey(unit, promotionAction);
+  const isPromotionPending = formationState.pendingUnitPromotionAction === promotionActionKey;
+  const buttonCostLabel = isLevelMax
     ? "MAX"
-    : action.type === "star"
-      ? `병사정수 ${action.cost.toLocaleString("ko-KR")}`
-      : `골드 ${action.cost.toLocaleString("ko-KR")}`;
+    : action.type === "level"
+      ? `골드 ${action.cost.toLocaleString("ko-KR")}`
+      : "승급 필요";
+  const levelCostMarkup = action.type === "level"
+    ? `<span class="formation-btn-cost"><img src="assets/icons/gold.png" alt="">${action.cost.toLocaleString("ko-KR")}</span>`
+    : `<span class="formation-btn-cost">${buttonCostLabel}</span>`;
+  const promoteCostMarkup = `
+    <span class="formation-btn-cost formation-promote-cost">
+      <img src="assets/icons/essence_soldier.png" alt="">${essenceInfo.totalAmount.toLocaleString("ko-KR")}
+      <em>/ ${FORMATION_PROMOTION_ESSENCE_COST}</em>
+    </span>
+  `;
 
   return `
     <div class="formation-hero-detail formation-unit-detail">
@@ -1569,17 +1901,33 @@ function renderFormationUnitDetail() {
         <div class="formation-hero-detail-top">
           <p class="formation-kicker">UNIT</p>
           <h2>${unit.name}</h2>
-          <div class="formation-hero-stars formation-unit-diamonds" aria-label="현재 성급">${"◆".repeat(unit.star)}${"◇".repeat(FORMATION_MAX_STAR - unit.star)}</div>
+          <div class="formation-hero-stars formation-unit-diamonds" aria-label="현재 단계">${"◆".repeat(diamondLevel)}${"◇".repeat(FORMATION_MAX_STAR - diamondLevel)}</div>
+          <div class="formation-promotion-pieces formation-unit-pieces" aria-label="현재 다이아 조각">${"▲".repeat(diamondPiece)}${"△".repeat(FORMATION_UNIT_PROMOTION_PIECES - diamondPiece)}</div>
         </div>
         <dl class="formation-hero-detail-list">
           <div><dt>능력</dt><dd>${unit.ability || "전투에서 아군 진형을 보조합니다."}</dd></div>
-          <div><dt>현재 성급</dt><dd>${unit.star}성 / ${FORMATION_MAX_STAR}성</dd></div>
+          <div><dt>현재 단계</dt><dd>${diamondLevel}단계 / ${FORMATION_MAX_STAR}단계</dd></div>
           <div><dt>현재 레벨</dt><dd>Lv.${unit.level} / ${unit.maxLevel}</dd></div>
-          <div><dt>병사정수</dt><dd>${essenceInfo.totalAmount.toLocaleString("ko-KR")}</dd></div>
+          <div><dt>다이아 조각</dt><dd>${"▲".repeat(diamondPiece)}${"△".repeat(FORMATION_UNIT_PROMOTION_PIECES - diamondPiece)}</dd></div>
+          <div><dt>보유 정수</dt><dd>${essenceInfo.totalAmount.toLocaleString("ko-KR")}</dd></div>
         </dl>
-        <button id="formationUnitLevelUpBtn" class="formation-level-btn formation-hero-level-btn" type="button" ${isMax || lacksEssenceForStar ? "disabled" : ""}>
-          레벨업 하기 <span>${buttonCostLabel}</span>
-        </button>
+        <div class="formation-growth-actions">
+          <button id="formationUnitLevelUpBtn" class="formation-level-btn formation-hero-level-btn" type="button" ${isLevelMax ? "disabled" : ""}>
+            레벨업 ${levelCostMarkup}
+          </button>
+          <button id="formationUnitPromoteBtn" class="formation-level-btn formation-hero-level-btn formation-promote-btn" type="button" ${promotionAction.type !== "max" ? "" : "disabled"}>
+            승급 ${promoteCostMarkup}
+          </button>
+        </div>
+        ${isPromotionPending ? `
+          <div class="formation-growth-confirm" role="dialog" aria-label="유닛 승급 확인">
+            <p>병사정수 ${FORMATION_PROMOTION_ESSENCE_COST}개를 사용해 승급 조각을 올립니다.</p>
+            <div>
+              <button id="formationHeroGrowthConfirmBtn" type="button">진행</button>
+              <button id="formationHeroGrowthCancelBtn" type="button">취소</button>
+            </div>
+          </div>
+        ` : ""}
       </div>
     </div>
   `;
@@ -1597,13 +1945,19 @@ function renderFormationSlots() {
   slotGrid.innerHTML = formationState.activeCategory === "unit" ? renderFormationUnitDetail() : renderFormationHeroDetail();
 
   const detailCard = slotGrid.querySelector(".formation-hero-detail-card");
+  const heroUnlockBtn = document.getElementById("formationHeroUnlockBtn");
   const heroLevelUpBtn = document.getElementById("formationHeroLevelUpBtn");
+  const heroPromoteBtn = document.getElementById("formationHeroPromoteBtn");
   const unitLevelUpBtn = document.getElementById("formationUnitLevelUpBtn");
+  const unitPromoteBtn = document.getElementById("formationUnitPromoteBtn");
   const confirmBtn = document.getElementById("formationHeroGrowthConfirmBtn");
   const cancelBtn = document.getElementById("formationHeroGrowthCancelBtn");
   if (detailCard) detailCard.addEventListener("click", toggleFormationDetailFlip);
+  if (heroUnlockBtn) heroUnlockBtn.addEventListener("click", () => unlockFormationHero());
   if (heroLevelUpBtn) heroLevelUpBtn.addEventListener("click", levelUpFormationHero);
+  if (heroPromoteBtn) heroPromoteBtn.addEventListener("click", promoteFormationHero);
   if (unitLevelUpBtn) unitLevelUpBtn.addEventListener("click", levelUpFormationUnit);
+  if (unitPromoteBtn) unitPromoteBtn.addEventListener("click", promoteFormationUnit);
   if (confirmBtn) confirmBtn.addEventListener("click", confirmFormationHeroGrowth);
   if (cancelBtn) cancelBtn.addEventListener("click", cancelFormationHeroGrowth);
 
@@ -1643,7 +1997,7 @@ function renderFormationRoster() {
   rosterGrid.innerHTML = FORMATION_HEROES
     .map((hero) => renderFormationHeroCard(hero, { selected: hero.id === formationState.selectedHeroId }))
     .join("");
-  rosterGrid.querySelectorAll(".formation-hero-card:not(.is-locked)").forEach((card) => {
+  rosterGrid.querySelectorAll(".formation-hero-card:not(:disabled)").forEach((card) => {
     card.addEventListener("click", () => selectFormationHero(card.dataset.heroId));
   });
 }
@@ -1724,6 +2078,7 @@ function showFormation() {
   hideRecruitDoorScene(true);
   document.body.classList.remove("game-started", "in-lobby", "in-stage-select", "in-shop", "in-recruit", "in-formation", "in-mission", "in-inventory");
   document.body.classList.add("in-formation");
+  if (window.GameAudio) window.GameAudio.syncScreenBgm();
 
   if (gameState) {
     gameState.running = false;

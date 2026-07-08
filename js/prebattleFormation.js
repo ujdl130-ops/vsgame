@@ -19,16 +19,17 @@ function getPrebattleFormationHero(heroId) {
 
 function getPrebattleHeroCard(hero) {
   const formationHero = getPrebattleFormationHero(hero.id);
-  if (!formationHero) return { ...hero, unlocked: true };
+  if (!formationHero) return { ...hero, unlocked: isPrebattleHeroOwned(hero.id) };
   return {
     ...hero,
     name: formationHero.name || hero.name,
     image: formationHero.image || hero.image,
-    unlocked: formationHero.unlocked !== false,
+    unlocked: isPrebattleHeroOwned(hero.id),
   };
 }
 
 function isPrebattleHeroOwned(heroId) {
+  if (typeof isPlayerHeroUnlocked === "function") return isPlayerHeroUnlocked(heroId);
   const formationHero = getPrebattleFormationHero(heroId);
   return formationHero ? formationHero.unlocked !== false : true;
 }

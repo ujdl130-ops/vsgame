@@ -27,7 +27,7 @@ const INVENTORY_ESSENCE_ITEMS = [
 const INVENTORY_RESOURCE_ITEMS = [
   { key: "gold", name: "골드", icon: "assets/icons/gold.png", source: "progress" },
   { key: "diamonds", name: "다이아몬드", icon: "assets/icons/diamond.png", source: "progress" },
-  { key: "summonTickets", name: "뽑기권", icon: "assets/icons/ticket.png", source: "progress" },
+  { key: "summonTickets", name: "강림권", icon: "assets/icons/ticket.png", source: "progress" },
 ];
 
 function getInventoryItemAmount(item) {
@@ -180,6 +180,7 @@ function showInventory() {
 
   document.body.classList.remove("game-started", "in-lobby", "in-stage-select", "in-shop", "in-recruit", "in-formation", "in-mission");
   document.body.classList.add("in-inventory");
+  if (window.GameAudio) window.GameAudio.syncScreenBgm();
 
   if (gameState) {
     gameState.running = false;

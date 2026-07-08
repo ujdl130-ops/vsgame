@@ -316,6 +316,7 @@ function updateUnits(dt) {
         unit.attackAnimDuration = 0.72;
         unit.attackAnimTimer = unit.attackAnimDuration;
         unit.pendingHealPulse = true;
+        if (window.GameAudio) window.GameAudio.playUnitAttackSfx(unit.type);
         continue;
       }
 
@@ -363,6 +364,7 @@ function updateUnits(dt) {
     if (target) {
       if (unit.cooldown <= 0) {
         unit.cooldown = unit.attackSpeed;
+        if (window.GameAudio) window.GameAudio.playUnitAttackSfx(unit.type);
         if (unit.type === "archer") {
           unit.attackAnimDuration = 0.58;
           unit.attackAnimTimer = unit.attackAnimDuration;

@@ -85,7 +85,7 @@ const SHOP_CATEGORY_ITEMS = {
       badge: "BEST",
       contents: [
         { icon: "assets/icons/diamond.png", label: "다이아", amount: "×500" },
-        { icon: "assets/icons/ticket.png", label: "모집권", amount: "×3" },
+        { icon: "assets/icons/ticket.png", label: "강림권", amount: "×3" },
         { icon: "assets/icons/essence_all.png", label: "공통 신의 정수", amount: "×3" },
         { icon: "assets/icons/gold.png", label: "골드", amount: "×30,000" },
       ],
@@ -115,7 +115,7 @@ const SHOP_CATEGORY_ITEMS = {
       badge: "NEW",
       contents: [
         { icon: "assets/icons/diamond.png", label: "다이아", amount: "×5,000" },
-        { icon: "assets/icons/ticket.png", label: "모집권", amount: "×50" },
+        { icon: "assets/icons/ticket.png", label: "강림권", amount: "×50" },
         { icon: "assets/icons/essence_all.png", label: "공통 신의 정수", amount: "×50" },
         { icon: "assets/icons/gold.png", label: "골드", amount: "×1,000,000" },
       ],
@@ -134,7 +134,7 @@ const SHOP_CATEGORY_ITEMS = {
       price: "₩5,900",
       contents: [
         { icon: "assets/icons/diamond.png", label: "다이아", amount: "×500" },
-        { icon: "assets/icons/ticket.png", label: "모집권", amount: "×3" },
+        { icon: "assets/icons/ticket.png", label: "강림권", amount: "×3" },
         { icon: "assets/icons/essence_all.png", label: "공통 신의 정수", amount: "×3" },
         { icon: "assets/icons/gold.png", label: "골드", amount: "×30,000" },
       ],
@@ -146,7 +146,7 @@ const SHOP_CATEGORY_ITEMS = {
       price: "₩9,900",
       contents: [
         { icon: "assets/icons/diamond.png", label: "다이아", amount: "×1,000" },
-        { icon: "assets/icons/ticket.png", label: "모집권", amount: "×5" },
+        { icon: "assets/icons/ticket.png", label: "강림권", amount: "×5" },
         { icon: "assets/icons/essence_all.png", label: "공통 신의 정수", amount: "×5" },
         { icon: "assets/icons/gold.png", label: "골드", amount: "×80,000" },
       ],
@@ -158,7 +158,7 @@ const SHOP_CATEGORY_ITEMS = {
       price: "₩14,900",
       contents: [
         { icon: "assets/icons/diamond.png", label: "다이아", amount: "×1,500" },
-        { icon: "assets/icons/ticket.png", label: "모집권", amount: "×10" },
+        { icon: "assets/icons/ticket.png", label: "강림권", amount: "×10" },
         { icon: "assets/icons/essence_all.png", label: "공통 신의 정수", amount: "×10" },
         { icon: "assets/icons/gold.png", label: "골드", amount: "×200,000" },
       ],
@@ -170,7 +170,7 @@ const SHOP_CATEGORY_ITEMS = {
       price: "₩29,900",
       contents: [
         { icon: "assets/icons/diamond.png", label: "다이아", amount: "×3,000" },
-        { icon: "assets/icons/ticket.png", label: "모집권", amount: "×30" },
+        { icon: "assets/icons/ticket.png", label: "강림권", amount: "×30" },
         { icon: "assets/icons/essence_all.png", label: "공통 신의 정수", amount: "×30" },
         { icon: "assets/icons/gold.png", label: "골드", amount: "×500,000" },
       ],
@@ -182,7 +182,7 @@ const SHOP_CATEGORY_ITEMS = {
       price: "₩49,900",
       contents: [
         { icon: "assets/icons/diamond.png", label: "다이아", amount: "×5,000" },
-        { icon: "assets/icons/ticket.png", label: "모집권", amount: "×50" },
+        { icon: "assets/icons/ticket.png", label: "강림권", amount: "×50" },
         { icon: "assets/icons/essence_all.png", label: "공통 신의 정수", amount: "×50" },
         { icon: "assets/icons/gold.png", label: "골드", amount: "×1,000,000" },
       ],
@@ -578,6 +578,7 @@ function showShop() {
     "in-inventory"
   );
   document.body.classList.add("in-shop");
+  if (window.GameAudio) window.GameAudio.syncScreenBgm();
 
   if (gameState) {
     gameState.running = false;
@@ -1014,6 +1015,7 @@ function confirmShopPurchase() {
   if (shopNotice) {
     shopNotice.textContent = `${selectedShopItemName || "상품"} 구매 완료!`;
   }
+  if (window.GameAudio) window.GameAudio.playSfx("buySuccess", { cooldown: 250, volume: 0.8 });
   closeShopPurchasePopup();
 }
 

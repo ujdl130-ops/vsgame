@@ -38,7 +38,6 @@ function getStageConfig(stageNumber) {
 }
 
 function isStageUnlocked(stageNumber) {
-  if (window.QAAPI?.isEnabled?.()) return true;
   return stageNumber <= playerProgress.unlockedStage;
 }
 
@@ -57,7 +56,7 @@ function updateStageUI() {
   stageCards.forEach((card) => {
     const stageNumber = Number(card.dataset.stage);
     const unlocked = isStageUnlocked(stageNumber);
-    const cleared = window.QAAPI?.isEnabled?.() || playerProgress.clearedStages.includes(stageNumber);
+    const cleared = playerProgress.clearedStages.includes(stageNumber);
     const status = card.querySelector(".stage-status");
     const lockIcon = card.querySelector(".lock-icon");
 
@@ -311,6 +310,7 @@ function showStageSelect() {
 
   document.body.classList.remove("game-started", "in-lobby", "in-shop", "in-recruit", "in-formation", "in-mission", "in-inventory");
   document.body.classList.add("in-stage-select");
+  if (window.GameAudio) window.GameAudio.syncScreenBgm();
 
   if (gameState) {
     gameState.running = false;
@@ -376,6 +376,7 @@ function completeStage(message) {
   const alreadyCleared = playerProgress.clearedStages.includes(selectedStage);
   gameState.clear = true;
   gameState.running = false;
+  if (window.GameAudio) window.GameAudio.playSfx("stageClear", { cooldown: 1000, volume: 0.9 });
   gameState.message = `${message} · 스테이지 선택 버튼으로 다음 지역에 도전`;
   completeStageMissions(selectedStage);
   unlockStageProgress(selectedStage);
