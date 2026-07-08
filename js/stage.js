@@ -79,7 +79,7 @@ function showEnemyGateProtectedMessage() {
   gameState.messageTimer = 0.95;
 }
 
-function damageEnemyBase(rawDamage, hitX = ENEMY_BASE_X - 38, hitY = GROUND_Y - 78, color = "#f2fdff") {
+function damageEnemyBase(rawDamage, hitX = ENEMY_BASE_ATTACK_HIT_X, hitY = ENEMY_BASE_ATTACK_HIT_Y, color = "#f2fdff") {
   if (!gameState || gameState.clear || gameState.gameOver) return 0;
 
   if (isEnemyBaseProtectedByBoss()) {

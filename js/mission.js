@@ -76,10 +76,28 @@ function isDailyMissionKey(missionKey) {
   return String(missionKey || "").startsWith("daily-");
 }
 
+function isWeeklyMissionKey(missionKey) {
+  return String(missionKey || "").startsWith("weekly-");
+}
+
 function clearDailyMissionClaims() {
   Array.from(claimedMissionRewards).forEach((missionKey) => {
     if (isDailyMissionKey(missionKey)) claimedMissionRewards.delete(missionKey);
   });
+}
+
+function clearWeeklyMissionClaims() {
+  Array.from(claimedMissionRewards).forEach((missionKey) => {
+    if (isWeeklyMissionKey(missionKey)) claimedMissionRewards.delete(missionKey);
+  });
+}
+
+function getMissionThursdayWeekKey(date = new Date()) {
+  const weekStart = new Date(date);
+  const daysSinceThursday = (weekStart.getDay() - 4 + 7) % 7;
+  weekStart.setDate(weekStart.getDate() - daysSinceThursday);
+  weekStart.setHours(0, 0, 0, 0);
+  return getMissionLocalDateKey(weekStart);
 }
 
 function ensureDailyMissionReset() {
@@ -103,6 +121,33 @@ function ensureDailyMissionReset() {
   return true;
 }
 
+function ensureWeeklyMissionReset() {
+  if (typeof playerProgress === "undefined" || !playerProgress) return false;
+
+  const currentWeekKey = getMissionThursdayWeekKey();
+  const savedWeekKey = typeof playerProgress.claimedMissionWeeklyWeek === "string"
+    ? playerProgress.claimedMissionWeeklyWeek
+    : "";
+
+  if (!savedWeekKey) {
+    playerProgress.claimedMissionWeeklyWeek = currentWeekKey;
+    persistClaimedMissionRewards();
+    return false;
+  }
+  if (savedWeekKey === currentWeekKey) return false;
+
+  clearWeeklyMissionClaims();
+  playerProgress.claimedMissionWeeklyWeek = currentWeekKey;
+  persistClaimedMissionRewards();
+  return true;
+}
+
+function ensureMissionResets() {
+  const dailyReset = ensureDailyMissionReset();
+  const weeklyReset = ensureWeeklyMissionReset();
+  return dailyReset || weeklyReset;
+}
+
 function scheduleDailyMissionReset() {
   if (typeof window === "undefined") return;
   if (missionDailyResetTimer) window.clearTimeout(missionDailyResetTimer);
@@ -113,7 +158,7 @@ function scheduleDailyMissionReset() {
   const resetDelay = Math.max(1000, nextMidnight.getTime() - now.getTime());
 
   missionDailyResetTimer = window.setTimeout(() => {
-    const reset = ensureDailyMissionReset();
+    const reset = ensureMissionResets();
     if (reset && typeof renderMissionScreen === "function" && typeof missionScreen !== "undefined" && missionScreen && !missionScreen.classList.contains("is-hidden")) {
       renderMissionScreen();
     }
@@ -121,7 +166,7 @@ function scheduleDailyMissionReset() {
   }, resetDelay);
 }
 
-ensureDailyMissionReset();
+ensureMissionResets();
 scheduleDailyMissionReset();
 
 function getMissionProgressPercent(mission) {
@@ -252,7 +297,7 @@ function renderMissionGroup(group) {
 
 function renderMissionScreen() {
   if (!missionRoot) return;
-  ensureDailyMissionReset();
+  ensureMissionResets();
   claimableCount = getClaimableMissionEntries().length;
   missionRoot.innerHTML = `
     <aside class="mission-brand-panel" aria-label="미션 로고">

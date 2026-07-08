@@ -398,6 +398,7 @@ function createDefaultProgress() {
     growth: {},
     claimedMissionRewards: [],
     claimedMissionDailyDate: "",
+    claimedMissionWeeklyWeek: "",
   };
 }
 

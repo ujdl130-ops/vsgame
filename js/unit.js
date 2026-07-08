@@ -4,7 +4,6 @@ const THIEF_ATTACK_DURATION = 0.42;
 const THIEF_RETREAT_DURATION = 0.45;
 const THIEF_RETREAT_SPEED = 190;
 const THIEF_RETREAT_MIN_X = PLAYER_BASE_X + 58;
-const ENEMY_BASE_ATTACK_X = ENEMY_BASE_X - 35;
 
 function getUnitAttackAnimDuration(unit) {
   if (unit.type === "guard") return 0.46;
@@ -19,7 +18,12 @@ function canMeleeAttackEnemyBase(unit) {
 
 function damageEnemyBaseWithMeleeUnit(unit) {
   const damage = Math.max(0, Number(unit.damage) || 0);
-  damageEnemyBase(damage, ENEMY_BASE_X - 38, GROUND_Y - 78, unit.type === "guard" ? "#ffe36a" : "#ffbd35");
+  damageEnemyBase(
+    damage,
+    ENEMY_BASE_ATTACK_HIT_X,
+    ENEMY_BASE_ATTACK_HIT_Y,
+    unit.type === "guard" ? "#ffe36a" : "#ffbd35"
+  );
 }
 
 function startMeleeEnemyBaseAttack(unit) {
