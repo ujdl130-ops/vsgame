@@ -41,6 +41,21 @@ function normalizePlayerData(savedData = {}) {
   const claimedMissionWeeklyWeek = typeof savedData.claimedMissionWeeklyWeek === "string"
     ? savedData.claimedMissionWeeklyWeek
     : "";
+  const monthlySubscriptions = {};
+  const savedMonthlySubscriptions = savedData.monthlySubscriptions && typeof savedData.monthlySubscriptions === "object"
+    ? savedData.monthlySubscriptions
+    : {};
+  Object.entries(savedMonthlySubscriptions).forEach(([key, state]) => {
+    if (!state || typeof state !== "object") return;
+    monthlySubscriptions[key] = {
+      active: state.active !== false,
+      startedDate: typeof state.startedDate === "string" ? state.startedDate : "",
+      endDate: typeof state.endDate === "string" ? state.endDate : "",
+      lastClaimedDate: typeof state.lastClaimedDate === "string" ? state.lastClaimedDate : "",
+      claimedDays: Math.max(0, Number(state.claimedDays) || 0),
+      purchasedAt: typeof state.purchasedAt === "string" ? state.purchasedAt : "",
+    };
+  });
 
   return {
     ...savedData,
@@ -66,6 +81,7 @@ function normalizePlayerData(savedData = {}) {
     claimedMissionRewards,
     claimedMissionDailyDate,
     claimedMissionWeeklyWeek,
+    monthlySubscriptions,
   };
 }
 

@@ -62,6 +62,14 @@ window.addEventListener("keydown", (event) => {
   const playableKeys = ["Space"];
   if (playableKeys.includes(event.code)) event.preventDefault();
 
+  if (typeof isMonthlyRewardPopupVisible === "function" && isMonthlyRewardPopupVisible()) {
+    if (event.code === "Escape" || event.code === "Enter" || event.code === "Space") {
+      event.preventDefault();
+      closeMonthlyRewardPopup();
+    }
+    return;
+  }
+
   if (isTitleVisible()) {
     if (event.code === "Enter" || event.code === "Space") {
       event.preventDefault();

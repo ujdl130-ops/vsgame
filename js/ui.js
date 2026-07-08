@@ -65,6 +65,9 @@ function showLobby() {
   requestAnimationFrame(() => {
     if (typeof renderLobbyHero === 'function') renderLobbyHero();
   });
+  if (typeof claimAvailableMonthlySubscriptionDailyRewards === "function") {
+    window.setTimeout(() => claimAvailableMonthlySubscriptionDailyRewards({ showPopup: true, source: "lobby" }), 140);
+  }
 }
 
 const LOBBY_HERO_HD_BOUNDS = {
