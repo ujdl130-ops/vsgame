@@ -6235,7 +6235,8 @@ body:not(.game-started) .game-wrap {
   position: absolute;
   right: max(14px, calc(14px + env(safe-area-inset-right)));
   top: max(14px, calc(14px + env(safe-area-inset-top)));
-  z-index: 45;
+  z-index: 70;
+  pointer-events: auto;
   border: 4px solid #fff;
   background: linear-gradient(180deg, #ffc6d9, #ff6b8f);
   box-shadow:
