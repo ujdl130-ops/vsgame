@@ -3,7 +3,7 @@
 function resetGame() {
   if (animationId) cancelAnimationFrame(animationId);
   keys = {};
-  heroMoveInput = 0;
+  resetHeroMoveInput();
   gameState = createInitialState();
   lastTime = performance.now();
   updateHud();
@@ -194,6 +194,10 @@ window.addEventListener("keydown", (event) => {
     event.preventDefault();
     heroAttack();
   }
+  if (event.code === "KeyA" || event.code === "KeyD") {
+    keys[event.code] = true;
+    syncHeroMoveInput();
+  }
   if (event.code === "Digit1") {
     event.preventDefault();
     summonGuard();
@@ -218,6 +222,17 @@ window.addEventListener("keydown", (event) => {
 
 window.addEventListener("keyup", (event) => {
   if (event.code === "Space") keys.Space = false;
+  if (event.code === "KeyA" || event.code === "KeyD") {
+    keys[event.code] = false;
+    syncHeroMoveInput();
+  }
+});
+
+window.addEventListener("blur", () => {
+  keys.Space = false;
+  keys.KeyA = false;
+  keys.KeyD = false;
+  syncHeroMoveInput();
 });
 
 window.addEventListener("resize", updateBattleViewportScale);

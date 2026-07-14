@@ -530,9 +530,10 @@ function bindMovementJoystick(joystick) {
   let activePointerId = null;
 
   const setJoystickInput = (amount) => {
-    heroMoveInput = Math.max(-1, Math.min(1, Number(amount) || 0));
-    joystick.classList.toggle("is-left", heroMoveInput < 0);
-    joystick.classList.toggle("is-right", heroMoveInput > 0);
+    const joystickInput = Math.max(-1, Math.min(1, Number(amount) || 0));
+    setHeroJoystickMoveInput(joystickInput);
+    joystick.classList.toggle("is-left", joystickInput < 0);
+    joystick.classList.toggle("is-right", joystickInput > 0);
   };
 
   const resetJoystick = () => {
