@@ -430,7 +430,6 @@ let selectedShopItemName = "";
 let selectedShopItem = null;
 let shopSessionBalances = null;
 const shopSessionDailyPurchases = {};
-const shopSessionFirstPurchaseBonuses = {};
 const monthlyRewardPopupState = {
   queue: [],
   current: null,
@@ -933,15 +932,6 @@ function resetShopSessionState() {
   Object.keys(shopSessionDailyPurchases).forEach((key) => {
     delete shopSessionDailyPurchases[key];
   });
-  Object.keys(shopSessionFirstPurchaseBonuses).forEach((key) => {
-    delete shopSessionFirstPurchaseBonuses[key];
-  });
-
-  const legacyEntitlement = "packageLegacyFirstPurchaseBonus";
-  if (playerProgress?.entitlements?.[legacyEntitlement]) {
-    delete playerProgress.entitlements[legacyEntitlement];
-    saveProgress();
-  }
 }
 
 function updateShopWallet() {
@@ -1276,7 +1266,7 @@ function hasClaimedFirstPurchaseBonus(itemId) {
   const rule = SHOP_PURCHASE_RULES[itemId];
   return Boolean(
     rule?.firstPurchaseEntitlement
-    && shopSessionFirstPurchaseBonuses[rule.firstPurchaseEntitlement]
+    && playerProgress?.entitlements?.[rule.firstPurchaseEntitlement]
   );
 }
 
@@ -1400,6 +1390,10 @@ function executeCurrentShopPurchase() {
     Object.entries(rule.firstPurchaseBonus).forEach(([key, amount]) => {
       rewards[key] = Number(rewards[key] || 0) + Number(amount || 0);
     });
+    if (rule.firstPurchaseEntitlement) {
+      playerProgress.entitlements = playerProgress.entitlements || {};
+      playerProgress.entitlements[rule.firstPurchaseEntitlement] = true;
+    }
   }
   grantPlayerRewards(rewards);
 
@@ -1411,9 +1405,6 @@ function executeCurrentShopPurchase() {
 
   if (rule.daily) {
     shopSessionDailyPurchases[selectedShopItem.id] = today;
-  }
-  if (shouldGrantFirstPurchaseBonus && rule.firstPurchaseEntitlement) {
-    shopSessionFirstPurchaseBonuses[rule.firstPurchaseEntitlement] = true;
   }
 
   return { success: true, monthlyPurchase };
