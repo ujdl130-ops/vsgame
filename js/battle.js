@@ -35,8 +35,17 @@ function damageCombatant(target, rawDamage) {
   return damage;
 }
 
+function damageEnemyCombatant(target, rawDamage, source = null) {
+  if (!target) return 0;
+  target.lastDamageSource = source || null;
+  return damageCombatant(target, rawDamage);
+}
+
 function startUnitDeath(unit) {
   if (!unit || unit.dead) return;
+  const shouldTransformFromCurse = unit.hp <= 0
+    && typeof shouldTransformCursedUnit === "function"
+    && shouldTransformCursedUnit(unit);
   unit.dead = true;
   unit.hp = 0;
   unit.moving = false;
@@ -49,6 +58,10 @@ function startUnitDeath(unit) {
   unit.retreatTimer = 0;
   unit.shotTarget = null;
   unit.attackTarget = null;
+  unit.curseTransformPending = shouldTransformFromCurse;
+  unit.curseTransformSpawned = false;
+  unit.skeletonCurseTimer = 0;
+  unit.skeletonCurseTickTimer = 0;
   unit.deathAnimDuration = unit.deathAnimDuration || 0.85;
   unit.deathAnimTimer = unit.deathAnimDuration;
 }
@@ -56,6 +69,10 @@ function startUnitDeath(unit) {
 function startEnemyDeath(enemy) {
   if (!enemy || enemy.dead) return;
   if (enemy.type === "karon" && typeof startKaronTransformation === "function" && startKaronTransformation(enemy)) return;
+
+  if (enemy.type === "skeleton" && typeof applySkeletonDeathCurse === "function") {
+    applySkeletonDeathCurse(enemy);
+  }
 
   enemy.dead = true;
   enemy.hp = 0;
@@ -305,7 +322,7 @@ function applyZeusThunderstormDamage() {
     if (!canDamageCombatant(enemy) || effect.hitEnemies.has(enemy)) continue;
     if (!isEnemyTouchedByZeusLightning(enemy, effect)) continue;
 
-    enemy.hp -= thunderstormDamage;
+    damageEnemyCombatant(enemy, thunderstormDamage, gameState.hero);
     if (typeof notifyKaronHitByHero === "function") notifyKaronHitByHero(enemy);
     enemy.paralyzeTimer = Math.max(
       enemy.paralyzeTimer || 0,
@@ -387,7 +404,7 @@ function applyPoseidonTsunamiDamage() {
       ? POSEIDON_TSUNAMI_SKILL.bossKnockbackDistance
       : POSEIDON_TSUNAMI_SKILL.knockbackDistance;
 
-    enemy.hp -= damage;
+    damageEnemyCombatant(enemy, damage, gameState.hero);
     if (typeof notifyKaronHitByHero === "function") notifyKaronHitByHero(enemy);
     enemy.x = Math.min(ENEMY_BASE_X - 34, enemy.x + knockbackDistance);
     enemy.moving = false;

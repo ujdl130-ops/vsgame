@@ -48,6 +48,10 @@ const CHAPTER2_SKELETON_SPRITE = {
   healthBarOffsetY: 70,
 };
 
+const SKELETON_CURSE_DURATION = 8;
+const SKELETON_CURSE_TICK_INTERVAL = 1;
+const SKELETON_CURSE_MAX_HP_DAMAGE_RATIO = 0.06;
+
 const EVILEYE_SPRITE = {
   columns: 6,
   rowCount: 5,
@@ -298,7 +302,120 @@ function createChapter2SkeletonEnemy(wave) {
     deathAnimTimer: 0,
     deathAnimDuration: 0.86,
     deathRewarded: false,
+    canApplyCurse: true,
   };
+}
+
+function isFriendlyUnitForSkeletonCurse(unit) {
+  return Boolean(
+    unit
+    && gameState
+    && Array.isArray(gameState.units)
+    && gameState.units.includes(unit)
+    && isCombatAlive(unit)
+  );
+}
+
+function applySkeletonDeathCurse(enemy) {
+  if (!enemy || enemy.type !== "skeleton" || enemy.canApplyCurse === false) return false;
+
+  const target = enemy.lastDamageSource;
+  if (!isFriendlyUnitForSkeletonCurse(target)) return false;
+
+  target.skeletonCurseTimer = SKELETON_CURSE_DURATION;
+  target.skeletonCurseTickTimer = Math.min(
+    Number(target.skeletonCurseTickTimer) || SKELETON_CURSE_TICK_INTERVAL,
+    0.45
+  );
+  target.skeletonCurseDamage = Math.max(
+    1,
+    Math.ceil((Number(target.maxHp) || 1) * SKELETON_CURSE_MAX_HP_DAMAGE_RATIO)
+  );
+  target.curseDeathEligible = false;
+
+  gameState.message = "CURSE! 스켈레톤을 처치한 병사의 생명력이 감소합니다.";
+  gameState.messageTimer = 1.35;
+  return true;
+}
+
+function updateSkeletonCurse(unit, dt) {
+  if (!unit || unit.dead || unit.hp <= 0 || !(unit.skeletonCurseTimer > 0)) return;
+
+  unit.skeletonCurseTimer = Math.max(0, unit.skeletonCurseTimer - dt);
+  unit.skeletonCurseTickTimer = (Number(unit.skeletonCurseTickTimer) || SKELETON_CURSE_TICK_INTERVAL) - dt;
+
+  while (unit.skeletonCurseTickTimer <= 0 && unit.hp > 0) {
+    unit.hp -= Math.max(1, Number(unit.skeletonCurseDamage) || 1);
+    unit.skeletonCurseTickTimer += SKELETON_CURSE_TICK_INTERVAL;
+  }
+
+  if (unit.hp <= 0) {
+    unit.curseDeathEligible = true;
+    return;
+  }
+
+  if (unit.skeletonCurseTimer <= 0) {
+    unit.skeletonCurseTimer = 0;
+    unit.skeletonCurseTickTimer = 0;
+    unit.skeletonCurseDamage = 0;
+    unit.curseDeathEligible = false;
+  }
+}
+
+function shouldTransformCursedUnit(unit) {
+  if (!unit || unit.curseTransformSpawned) return false;
+  if (!gameState || Number(gameState.chapter) !== 2) return false;
+  return Boolean(unit.curseDeathEligible || unit.skeletonCurseTimer > 0);
+}
+
+function spawnCursedSkeletonFromUnit(unit) {
+  if (!unit || !gameState || !Array.isArray(gameState.enemies)) return false;
+
+  const skeleton = createChapter2SkeletonEnemy(Math.max(1, Number(gameState.wave) || 1));
+  const convertedHp = Math.max(skeleton.maxHp, Math.round((Number(unit.maxHp) || 1) * 0.8));
+  skeleton.x = Math.max(
+    PLAYER_BASE_ATTACK_X + 24,
+    Math.min(ENEMY_BASE_X - 48, Number(unit.x) || (PLAYER_BASE_ATTACK_X + 24))
+  );
+  skeleton.y = Number(unit.y) || COMBAT_LINE_Y;
+  skeleton.hp = convertedHp;
+  skeleton.maxHp = convertedHp;
+  skeleton.damage = Math.max(skeleton.damage, Math.round((Number(unit.damage) || 1) * 0.65));
+  skeleton.canApplyCurse = false;
+  skeleton.deathRewarded = true;
+  skeleton.isConvertedAlly = true;
+  skeleton.convertedFromUnitType = unit.type || "unit";
+  gameState.enemies.push(skeleton);
+
+  gameState.message = "저주받은 병사가 적 스켈레톤으로 되살아났습니다!";
+  gameState.messageTimer = 1.5;
+  return true;
+}
+
+function drawSkeletonCurseEffect(unit) {
+  if (!unit || !(unit.skeletonCurseTimer > 0)) return;
+
+  const pulse = 0.5 + Math.sin(performance.now() * 0.009) * 0.5;
+  ctx.save();
+  ctx.globalAlpha = 0.5 + pulse * 0.25;
+  ctx.strokeStyle = "#b44cff";
+  ctx.fillStyle = "rgba(84, 15, 125, 0.18)";
+  ctx.shadowColor = "#d77aff";
+  ctx.shadowBlur = 9;
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.ellipse(0, -28, 24 + pulse * 3, 34 + pulse * 2, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.stroke();
+
+  ctx.globalAlpha = 0.9;
+  ctx.shadowBlur = 4;
+  ctx.font = "700 9px Arial, sans-serif";
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  ctx.fillStyle = "#f2c4ff";
+  ctx.fillText(`CURSE ${Math.max(1, Math.ceil(unit.skeletonCurseTimer))}`, 0, -79);
+  ctx.restore();
 }
 
 function createEvileyeEnemy(wave) {

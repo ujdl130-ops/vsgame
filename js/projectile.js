@@ -276,6 +276,7 @@ function fireArcherArrow(unit) {
         targetX: baseHitPoint.x,
         targetY: baseHitPoint.y,
         targetBase: true,
+        sourceCombatant: unit,
       });
     }
     unit.pendingArrowShot = false;
@@ -292,6 +293,7 @@ function fireArcherArrow(unit) {
     damage: unit.damage,
     maxLife: PROJECTILE_DEFAULT_MAX_LIFE,
     target: shotTarget,
+    sourceCombatant: unit,
   });
 
   unit.pendingArrowShot = false;
@@ -318,6 +320,7 @@ function fireMageBolt(unit) {
         targetX: baseHitPoint.x,
         targetY: baseHitPoint.y,
         targetBase: true,
+        sourceCombatant: unit,
       });
     }
     unit.pendingMageShot = false;
@@ -337,6 +340,7 @@ function fireMageBolt(unit) {
     targetX: getEnemyProjectileHitPoint(shotTarget).x,
     targetY: getEnemyProjectileHitPoint(shotTarget).y,
     target: shotTarget,
+    sourceCombatant: unit,
   });
 
   unit.pendingMageShot = false;
@@ -363,7 +367,7 @@ function explodeMageFireball(projectile, impactX, impactY) {
     if (!canDamageCombatant(enemy)) continue;
     if (!isEnemyInsideMageFireball(enemy, impactX, impactY, radius)) continue;
 
-    enemy.hp -= projectile.damage;
+    damageEnemyCombatant(enemy, projectile.damage, projectile.sourceCombatant || null);
     hitCount += 1;
     const hitPoint = getEnemyProjectileHitPoint(enemy);
     spawnHit(hitPoint.x, hitPoint.y, "#ffbd35");
@@ -416,7 +420,7 @@ function updateProjectiles(dt) {
       if (projectile.targetBase) {
         damageEnemyBaseWithProjectile(projectile, impact);
       } else if (isCombatAlive(projectile.target) && canDamageCombatant(projectile.target)) {
-        damageCombatant(projectile.target, projectile.damage);
+        damageEnemyCombatant(projectile.target, projectile.damage, projectile.sourceCombatant || null);
         if (
           (projectile.type === "heroBolt" || projectile.type === "poseidonBolt")
           && typeof notifyKaronHitByHero === "function"
