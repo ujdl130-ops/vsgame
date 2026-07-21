@@ -27,6 +27,22 @@ const STAGE_CONFIGS = {
   },
 };
 
+let selectedChapter = 1;
+
+const CHAPTER_STAGE_TITLES = {
+  1: {
+    1: "풀숲 입구",
+    2: "몬스터 언덕",
+    3: "마왕의 전초기지",
+  },
+  2: {
+    1: "고요의 숲길",
+    2: "속삭이는 습지",
+    3: "마녀의 제단",
+    4: "고목의 성역",
+  },
+};
+
 const STAGE_CLEAR_REWARDS = {
   1: { gold: 10000 },
   2: { gold: 15000 },
@@ -210,16 +226,40 @@ function unlockStageProgress(stageNumber) {
 }
 
 function updateStageUI() {
+  const isChapterTwo = selectedChapter === 2;
+
   stageCards.forEach((card) => {
     const stageNumber = Number(card.dataset.stage);
-    const unlocked = isStageUnlocked(stageNumber);
-    const cleared = playerProgress.clearedStages.includes(stageNumber);
+    const isVisible = isChapterTwo ? stageNumber <= 4 : stageNumber <= 3;
+    card.hidden = !isVisible;
+
+    if (!isVisible) return;
+
+    const chapterTitles = CHAPTER_STAGE_TITLES[selectedChapter] || CHAPTER_STAGE_TITLES[1];
+    const stageTitle = chapterTitles[stageNumber] || `Stage ${stageNumber}`;
+    const title = card.querySelector("strong");
     const status = card.querySelector(".stage-status");
     const lockIcon = card.querySelector(".lock-icon");
+    if (title) title.textContent = stageTitle;
+
+    if (isChapterTwo) {
+      card.classList.remove("is-locked", "is-clear");
+      card.classList.add("is-coming-soon");
+      card.setAttribute("aria-disabled", "true");
+      card.setAttribute("aria-label", `작전 2-${stageNumber} ${stageTitle}, 준비 중`);
+      if (status) status.textContent = "준비 중";
+      if (lockIcon) lockIcon.textContent = "◆";
+      return;
+    }
+
+    card.classList.remove("is-coming-soon");
+    const unlocked = isStageUnlocked(stageNumber);
+    const cleared = playerProgress.clearedStages.includes(stageNumber);
 
     card.classList.toggle("is-locked", !unlocked);
     card.classList.toggle("is-clear", cleared);
     card.setAttribute("aria-disabled", unlocked ? "false" : "true");
+    card.setAttribute("aria-label", `작전 1-${stageNumber} ${stageTitle}, ${cleared ? "완료" : unlocked ? "도전 가능" : "잠김"}`);
 
     if (status) {
       if (cleared) status.textContent = "완료";
@@ -393,6 +433,18 @@ function proceedStageDetailPanel() {
 }
 
 function openStage(stageNumber) {
+  if (selectedChapter === 2) {
+    if (stageSelectNotice) {
+      stageSelectNotice.textContent = `작전 2-${stageNumber} 전투는 현재 준비 중입니다.`;
+      stageSelectNotice.classList.add("is-show");
+      clearTimeout(showStageLockedNotice.timer);
+      showStageLockedNotice.timer = setTimeout(() => {
+        if (stageSelectNotice) stageSelectNotice.classList.remove("is-show");
+      }, 1700);
+    }
+    return;
+  }
+
   if (!isStageUnlocked(stageNumber)) {
     showStageLockedNotice(stageNumber);
     return;
@@ -463,6 +515,8 @@ function showStageSelect() {
   hideStageDetailPanel();
   if (stageBackBtn) stageBackBtn.setAttribute("aria-label", "Back to lobby");
   if (stageSelectNotice) stageSelectNotice.classList.remove("is-show");
+  selectedChapter = 1;
+  if (stageScreen) stageScreen.dataset.chapter = "1";
   setStageScreenMode("chapter");
 
   document.body.classList.remove("game-started", "in-lobby", "in-shop", "in-recruit", "in-formation", "in-mission", "in-inventory");
@@ -478,12 +532,22 @@ function showStageSelect() {
   updateStageUI();
 }
 
-function showChapterStages() {
+function showChapterStages(chapterNumber = 1) {
+  selectedChapter = Number(chapterNumber) === 2 ? 2 : 1;
+  if (stageScreen) stageScreen.dataset.chapter = String(selectedChapter);
   if (chapterPanel) chapterPanel.classList.add("is-hidden");
   if (stagePanel) stagePanel.classList.remove("is-hidden");
   hideStageDetailPanel();
   if (stageBackBtn) stageBackBtn.setAttribute("aria-label", "Back to chapter select");
-  if (stageSelectNotice) stageSelectNotice.classList.remove("is-show");
+  if (stagePanel) stagePanel.setAttribute("aria-label", `Chapter ${selectedChapter} 스테이지 선택`);
+  if (stagePartTab) stagePartTab.textContent = selectedChapter === 2 ? "✓ 파트 2" : "✓ 파트 1";
+  if (stageChapterTab) stageChapterTab.textContent = `챕터 ${selectedChapter}`;
+  if (stageSelectNotice) {
+    stageSelectNotice.textContent = selectedChapter === 2
+      ? "Chapter 2 전투 콘텐츠는 준비 중입니다."
+      : "Stage 1부터 순서대로 클리어하면 다음 스테이지가 열립니다.";
+    stageSelectNotice.classList.remove("is-show");
+  }
   setStageScreenMode("stage");
   updateStageUI();
 }

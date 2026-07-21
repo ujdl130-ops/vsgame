@@ -446,8 +446,8 @@
           <small>초원의 전초기지</small>
           <span class="chapter-arrow">▶</span>
         </button>
-        <button class="chapter-card chapter-card--chapter2" type="button" aria-label="Chapter 2 침묵의 숲, 준비 중" aria-disabled="true" disabled>
-          <span class="chapter-tag">COMING SOON</span>
+        <button id="chapter2Btn" class="chapter-card chapter-card--chapter2" type="button" aria-label="Chapter 2 침묵의 숲 열기">
+          <span class="chapter-tag">OPEN</span>
           <strong>Chapter 2</strong>
           <small>침묵의 숲</small>
         </button>
@@ -455,8 +455,8 @@
 
       <div id="stagePanel" class="stage-panel is-hidden">
         <div class="stage-map-tabs" aria-label="챕터 정보">
-          <span class="stage-part-tab">✓ 파트 1</span>
-          <span class="stage-chapter-tab">챕터 1</span>
+          <span id="stagePartTab" class="stage-part-tab">✓ 파트 1</span>
+          <span id="stageChapterTab" class="stage-chapter-tab">챕터 1</span>
         </div>
 
         <p id="stageSelectNotice" class="stage-map-notice">Stage 1부터 순서대로 클리어하면 다음 스테이지가 열립니다.</p>
@@ -483,6 +483,13 @@
             <strong>마왕의 전초기지</strong>
             <small class="stage-status">잠김</small>
             <span class="lock-icon">🔒</span>
+          </button>
+
+          <button class="stage-card" type="button" data-stage="4" hidden>
+            <span class="stage-number">4</span>
+            <strong>고목의 성역</strong>
+            <small class="stage-status">준비 중</small>
+            <span class="lock-icon">◆</span>
           </button>
         </div>
       </div>

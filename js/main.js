@@ -645,7 +645,8 @@ shopCards.forEach((card) => {
   card.addEventListener("click", () => showShopItemNotice(card.dataset.item || "아이템"));
 });
 if (stageBackBtn) stageBackBtn.addEventListener("click", handleStageBack);
-if (chapter1Btn) chapter1Btn.addEventListener("click", showChapterStages);
+if (chapter1Btn) chapter1Btn.addEventListener("click", () => showChapterStages(1));
+if (chapter2Btn) chapter2Btn.addEventListener("click", () => showChapterStages(2));
 if (chapterBackBtn) chapterBackBtn.addEventListener("click", showStageSelect);
 if (stageDetailCloseBtn) stageDetailCloseBtn.addEventListener("click", hideStageDetailPanel);
 if (stageDetailStartBtn) stageDetailStartBtn.addEventListener("click", proceedStageDetailPanel);

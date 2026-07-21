@@ -15665,8 +15665,12 @@ body:not(.game-started) .game-wrap {
   background-image: url("assets/ui/chapter backdrop.png");
 }
 
-.stage-screen.is-stage-view .stage-art-frame {
+.stage-screen.is-stage-view[data-chapter="1"] .stage-art-frame {
   background-image: url("assets/ui/stageUI.png");
+}
+
+.stage-screen.is-stage-view[data-chapter="2"] .stage-art-frame {
+  background-image: url("assets/ui/chapter2 stage UI.png");
 }
 
 .stage-screen .stage-scanline {
@@ -15866,6 +15870,10 @@ body:not(.game-started) .game-wrap {
   pointer-events: auto;
 }
 
+.stage-screen .stage-card[hidden] {
+  display: none;
+}
+
 .stage-screen .stage-card::before,
 .stage-screen .stage-card::after,
 .stage-screen .stage-card > * {
@@ -15885,6 +15893,30 @@ body:not(.game-started) .game-wrap {
 .stage-screen .stage-card[data-stage="3"] {
   left: 74.8%;
   top: 51.5%;
+}
+
+.stage-screen[data-chapter="2"] .stage-card[data-stage="1"] {
+  left: 10.2%;
+  top: 65.2%;
+}
+
+.stage-screen[data-chapter="2"] .stage-card[data-stage="2"] {
+  left: 31.9%;
+  top: 51.1%;
+}
+
+.stage-screen[data-chapter="2"] .stage-card[data-stage="3"] {
+  left: 56.1%;
+  top: 47.7%;
+}
+
+.stage-screen[data-chapter="2"] .stage-card[data-stage="4"] {
+  left: 75.1%;
+  top: 30.2%;
+}
+
+.stage-screen[data-chapter="2"] .stage-card.is-coming-soon {
+  cursor: pointer;
 }
 
 .stage-screen .stage-card:hover {
