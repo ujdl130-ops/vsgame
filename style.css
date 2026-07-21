@@ -15725,30 +15725,64 @@ body:not(.game-started) .game-wrap {
   display: none;
 }
 
+.stage-screen .chapter-panel::before {
+  content: "";
+  position: absolute;
+  left: 47.8%;
+  top: 9%;
+  z-index: 1;
+  width: 4.4%;
+  height: 75%;
+  border: 1px solid rgba(174, 137, 64, 0.78);
+  background: linear-gradient(90deg, #080a0b, #171715 48%, #080a0b);
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.42);
+  pointer-events: none;
+}
+
 .stage-screen .chapter-card {
   position: absolute;
-  left: 28.4%;
   top: 9%;
+  z-index: 2;
   width: 42.2%;
   height: 75%;
   min-height: 0;
   padding: 0;
-  border: 0;
+  border: 1px solid rgba(202, 166, 87, 0.34);
   color: transparent;
-  background: transparent;
-  box-shadow: none;
+  background-color: #080a0b;
+  background-position: 49.14% 36%;
+  background-repeat: no-repeat;
+  background-size: 236.97% 133.34%;
+  box-shadow: 0 9px 20px rgba(0, 0, 0, 0.48);
   font-size: 0;
   appearance: none;
   cursor: pointer;
   pointer-events: auto;
 }
 
+.stage-screen .chapter-card--chapter1 {
+  left: 5.7%;
+  background-image: url("assets/ui/chater UI.png");
+}
+
+.stage-screen .chapter-card--chapter2 {
+  left: 52.1%;
+  background-image: url("assets/ui/chapter2 UI.png");
+}
+
 .stage-screen .chapter-card > * {
   display: none;
 }
 
-.stage-screen .chapter-card:hover {
-  background: rgba(255, 235, 174, 0.04);
+.stage-screen .chapter-card:not(:disabled):hover {
+  border-color: rgba(255, 225, 145, 0.82);
+  box-shadow: 0 0 0 2px rgba(255, 225, 145, 0.22), 0 12px 26px rgba(0, 0, 0, 0.58);
+  filter: brightness(1.05);
+}
+
+.stage-screen .chapter-card:disabled {
+  cursor: default;
+  opacity: 1;
 }
 
 .stage-screen .stage-map-tabs,
