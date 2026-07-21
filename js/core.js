@@ -191,6 +191,7 @@ const ASSET_PATHS = {
   karonTransformSprite: "assets/animations/Boss_Karon/karon_transform_transparent.png",
   karonWerewolfSprite: "assets/animations/Boss_Karon/karon_werewolf_phase2_transparent.png",
   stage1Background: "assets/maps/stage1/stage1_forest_bg_v2.png",
+  chapter2Stage1Background: "assets/maps/chapter2/stage1/stage2_1_background.png",
   stageBackgroundTemplate: "assets/maps/stage{stage}/stage{stage}_background.png",
   playerCastleTemplate: "assets/maps/rune_gate_transparent.png",
   enemyCastleTemplate: "assets/maps/demon_gate_transparent.png",
@@ -378,21 +379,24 @@ let playerCastleReady = false;
 const enemyCastleImage = new Image();
 let enemyCastleReady = false;
 
-function loadStageAssets(stageNumber) {
+function loadStageAssets(stageNumber, chapterNumber = 1) {
   const stage = Math.min(Math.max(1, Number(stageNumber) || 1), 3);
+  const chapter = Math.max(1, Number(chapterNumber) || 1);
   stageBackgroundReady = false;
   playerCastleReady = false;
   enemyCastleReady = false;
 
-  const backgroundPath = stage === 1
-    ? ASSET_PATHS.stage1Background
-    : resolveStageAssetPath(stage, "stageBackgroundTemplate");
+  const backgroundPath = chapter === 2 && stage === 1
+    ? ASSET_PATHS.chapter2Stage1Background
+    : stage === 1
+      ? ASSET_PATHS.stage1Background
+      : resolveStageAssetPath(stage, "stageBackgroundTemplate");
 
   loadGameImage(
     stageBackgroundImage,
     [backgroundPath],
     (ready) => { stageBackgroundReady = ready; },
-    `Stage ${stage} background`
+    `Chapter ${chapter} Stage ${stage} background`
   );
 
   loadGameImage(

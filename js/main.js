@@ -21,7 +21,7 @@ function startGame(stageNumber = selectedStage) {
     return;
   }
 
-  loadStageAssets(selectedStage);
+  loadStageAssets(selectedStage, typeof selectedChapter === "number" ? selectedChapter : 1);
   hideStageClearRewardUi();
   hideStageDefeatUi();
   closeGameOptionsMenu(false);
