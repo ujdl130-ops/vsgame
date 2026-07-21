@@ -15662,7 +15662,7 @@ body:not(.game-started) .game-wrap {
 }
 
 .stage-screen.is-chapter-view .stage-art-frame {
-  background-image: url("assets/ui/chater UI.png");
+  background-image: url("assets/ui/chapter backdrop.png");
 }
 
 .stage-screen.is-stage-view .stage-art-frame {
@@ -15725,59 +15725,109 @@ body:not(.game-started) .game-wrap {
   display: none;
 }
 
-.stage-screen .chapter-panel::before {
-  content: "";
-  position: absolute;
-  left: 47.8%;
-  top: 9%;
-  z-index: 1;
-  width: 4.4%;
-  height: 75%;
-  border: 1px solid rgba(174, 137, 64, 0.78);
-  background: linear-gradient(90deg, #080a0b, #171715 48%, #080a0b);
-  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.42);
-  pointer-events: none;
-}
-
 .stage-screen .chapter-card {
   position: absolute;
-  top: 9%;
+  top: 15.5%;
   z-index: 2;
-  width: 42.2%;
-  height: 75%;
+  width: 38.8%;
+  height: 69%;
   min-height: 0;
   padding: 0;
-  border: 1px solid rgba(202, 166, 87, 0.34);
+  border: 0;
   color: transparent;
-  background-color: #080a0b;
-  background-position: 49.14% 36%;
-  background-repeat: no-repeat;
-  background-size: 236.97% 133.34%;
-  box-shadow: 0 9px 20px rgba(0, 0, 0, 0.48);
+  background: transparent;
+  box-shadow: none;
+  filter: drop-shadow(0 9px 8px rgba(0, 0, 0, 0.5));
   font-size: 0;
   appearance: none;
   cursor: pointer;
   pointer-events: auto;
 }
 
+.stage-screen .chapter-card::before,
+.stage-screen .chapter-card::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: var(--chapter-cover);
+  background-position: 49.14% 36%;
+  background-repeat: no-repeat;
+  background-size: 236.97% 133.34%;
+  pointer-events: none;
+}
+
+.stage-screen .chapter-card::before {
+  clip-path: polygon(
+    27% 0,
+    54% 0,
+    61% 7%,
+    87% 7%,
+    87% 14.5%,
+    100% 14.5%,
+    100% 100%,
+    0 100%,
+    0 14.5%,
+    27% 14.5%
+  );
+}
+
+.stage-screen .chapter-card::after {
+  -webkit-mask-image: radial-gradient(
+    circle at 20.2% 14.7%,
+    #000 0 6.2%,
+    transparent 6.45%
+  );
+  mask-image: radial-gradient(
+    circle at 20.2% 14.7%,
+    #000 0 6.2%,
+    transparent 6.45%
+  );
+}
+
 .stage-screen .chapter-card--chapter1 {
-  left: 5.7%;
-  background-image: url("assets/ui/chater UI.png");
+  left: 8.5%;
+  --chapter-cover: url("assets/ui/chater UI.png");
 }
 
 .stage-screen .chapter-card--chapter2 {
-  left: 52.1%;
-  background-image: url("assets/ui/chapter2 UI.png");
+  left: 52.7%;
+  --chapter-cover: url("assets/ui/chapter2 UI.png");
 }
 
 .stage-screen .chapter-card > * {
   display: none;
 }
 
+.stage-screen .chapter-card .chapter-tag {
+  position: absolute;
+  left: 8.95%;
+  top: 3.45%;
+  z-index: 3;
+  display: block;
+  width: 22.5%;
+  aspect-ratio: 1;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  color: transparent;
+  background: radial-gradient(
+    circle,
+    transparent 0 70%,
+    rgba(171, 132, 52, 0.96) 70.8% 72.2%,
+    transparent 73% 86%,
+    rgba(171, 132, 52, 0.9) 86.8% 88.2%,
+    transparent 89%
+  );
+  box-shadow: none;
+  font-size: 0;
+  pointer-events: none;
+}
+
 .stage-screen .chapter-card:not(:disabled):hover {
-  border-color: rgba(255, 225, 145, 0.82);
-  box-shadow: 0 0 0 2px rgba(255, 225, 145, 0.22), 0 12px 26px rgba(0, 0, 0, 0.58);
-  filter: brightness(1.05);
+  filter:
+    brightness(1.05)
+    drop-shadow(0 0 5px rgba(255, 225, 145, 0.48))
+    drop-shadow(0 10px 9px rgba(0, 0, 0, 0.56));
 }
 
 .stage-screen .chapter-card:disabled {
