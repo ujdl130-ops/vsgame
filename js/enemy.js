@@ -51,6 +51,8 @@ const CHAPTER2_SKELETON_SPRITE = {
 const SKELETON_CURSE_DURATION = 8;
 const SKELETON_CURSE_TICK_INTERVAL = 1;
 const SKELETON_CURSE_MAX_HP_DAMAGE_RATIO = 0.06;
+const CHAPTER2_SKELETON_STAT_MULTIPLIER = 1.1;
+const LEVEL10_GUARD_STATS = { hp: 165, damage: 12 };
 
 const EVILEYE_SPRITE = {
   columns: 6,
@@ -278,7 +280,9 @@ function createGoblinEnemy(wave, isStageOne) {
 }
 
 function createChapter2SkeletonEnemy(wave) {
-  const hp = 82 + wave * 10;
+  const waveBonus = Math.max(0, (Number(wave) || 1) - 1);
+  const hp = LEVEL10_GUARD_STATS.hp * CHAPTER2_SKELETON_STAT_MULTIPLIER + waveBonus * 10;
+  const damage = LEVEL10_GUARD_STATS.damage * CHAPTER2_SKELETON_STAT_MULTIPLIER + waveBonus * 2;
   return {
     type: "skeleton",
     name: "skeleton soldier",
@@ -289,7 +293,7 @@ function createChapter2SkeletonEnemy(wave) {
     hp,
     maxHp: hp,
     speed: 39 + wave * 3,
-    damage: 14 + wave * 2,
+    damage,
     range: 42,
     cooldown: 0,
     attackSpeed: 0.9,
