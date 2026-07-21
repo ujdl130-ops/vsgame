@@ -243,16 +243,20 @@ function updateStageUI() {
     if (title) title.textContent = stageTitle;
 
     if (isChapterTwo) {
+      const hasDetailPanel = Boolean(getStageDetailConfig(stageNumber, 2));
       card.classList.remove("is-locked", "is-clear");
-      card.classList.add("is-coming-soon");
-      card.setAttribute("aria-disabled", "true");
-      card.setAttribute("aria-label", `작전 2-${stageNumber} ${stageTitle}, 준비 중`);
-      if (status) status.textContent = "준비 중";
-      if (lockIcon) lockIcon.textContent = "◆";
+      card.classList.toggle("is-coming-soon", !hasDetailPanel);
+      card.classList.toggle("is-info-ready", hasDetailPanel);
+      card.setAttribute("aria-disabled", hasDetailPanel ? "false" : "true");
+      card.setAttribute("aria-label", hasDetailPanel
+        ? `작전 2-${stageNumber} ${stageTitle} 상세 정보 열기`
+        : `작전 2-${stageNumber} ${stageTitle}, 준비 중`);
+      if (status) status.textContent = hasDetailPanel ? "정보 보기" : "준비 중";
+      if (lockIcon) lockIcon.textContent = hasDetailPanel ? "▶" : "◆";
       return;
     }
 
-    card.classList.remove("is-coming-soon");
+    card.classList.remove("is-coming-soon", "is-info-ready");
     const unlocked = isStageUnlocked(stageNumber);
     const cleared = playerProgress.clearedStages.includes(stageNumber);
 
@@ -277,33 +281,50 @@ function updateStageUI() {
 
 const STAGE_DETAIL_CONFIGS = {
   1: {
-    image: "assets/ui/stage1 info UI.png",
-    alt: "Stage 1 detail info",
-    missionIds: ["clear", "guard5", "noChampionDeath"],
+    1: {
+      image: "assets/ui/stage1 info UI.png",
+      alt: "작전 1-1 풀숲 입구 상세 정보",
+      missionIds: ["clear", "guard5", "noChampionDeath"],
+      missionLabels: ["스테이지 클리어", "기사 5명 이상 소환", "챔피언 사망 없음"],
+    },
+    2: {
+      image: "assets/ui/stgae 2 ui info.png",
+      alt: "작전 1-2 몬스터 언덕 상세 정보",
+      missionIds: ["clear", "archer3", "noChampionDeath"],
+      missionLabels: ["스테이지 클리어", "궁수 3명 이상 소환", "챔피언 사망 없음"],
+    },
+    3: {
+      image: "assets/ui/stage3 info UI.png",
+      alt: "작전 1-3 마왕의 전초기지 상세 정보",
+      missionIds: ["clear", "bossDefeat", "noChampionDeath"],
+      missionLabels: ["스테이지 클리어", "보스 처치", "챔피언 사망 없음"],
+    },
   },
   2: {
-    image: "assets/ui/stgae 2 ui info.png",
-    alt: "Stage 2 detail info",
-    missionIds: ["clear", "archer3", "noChampionDeath"],
-  },
-  3: {
-    image: "assets/ui/stage3 info UI.png",
-    alt: "Stage 3 detail info",
-    missionIds: ["clear", "bossDefeat", "noChampionDeath"],
+    1: {
+      image: "assets/ui/chapter2 stage1 info UI.png",
+      alt: "작전 2-1 고요의 숲길 상세 정보",
+      missionIds: ["clear", "thief5", "noChampionDeath"],
+      missionLabels: ["스테이지 클리어", "도적 5명 이상 소환", "챔피언 사망 없음"],
+      isBattleReady: false,
+    },
   },
 };
 
-function getStageDetailConfig(stageNumber) {
-  return STAGE_DETAIL_CONFIGS[Number(stageNumber)] || null;
+function getStageDetailConfig(stageNumber, chapterNumber = selectedChapter) {
+  const chapterConfigs = STAGE_DETAIL_CONFIGS[Number(chapterNumber)] || STAGE_DETAIL_CONFIGS[1];
+  return chapterConfigs[Number(stageNumber)] || null;
 }
 
-function getStageMissionProgress(stageNumber) {
+function getStageMissionProgress(stageNumber, chapterNumber = selectedChapter) {
+  if (Number(chapterNumber) !== 1) return {};
+
   const allProgress = playerProgress.stageMissionStars && typeof playerProgress.stageMissionStars === "object"
     ? playerProgress.stageMissionStars
     : {};
   const progress = allProgress[String(stageNumber)] || allProgress[stageNumber] || {};
   const normalizedProgress = progress && typeof progress === "object" ? { ...progress } : {};
-  if (getStageDetailConfig(stageNumber) && Array.isArray(playerProgress.clearedStages) && playerProgress.clearedStages.includes(Number(stageNumber))) {
+  if (getStageDetailConfig(stageNumber, chapterNumber) && Array.isArray(playerProgress.clearedStages) && playerProgress.clearedStages.includes(Number(stageNumber))) {
     normalizedProgress.clear = true;
   }
   return normalizedProgress;
@@ -313,12 +334,15 @@ function updateStageDetailStars() {
   if (!stageDetailPanel) return;
 
   const stageNumber = Number(stageDetailPanel.dataset.stage) || 1;
-  const detailConfig = getStageDetailConfig(stageNumber);
+  const chapterNumber = Number(stageDetailPanel.dataset.chapter) || selectedChapter;
+  const detailConfig = getStageDetailConfig(stageNumber, chapterNumber);
   const missionIds = detailConfig ? detailConfig.missionIds : [];
-  const progress = getStageMissionProgress(stageNumber);
+  const missionLabels = detailConfig ? detailConfig.missionLabels : [];
+  const progress = getStageMissionProgress(stageNumber, chapterNumber);
   stageDetailPanel.querySelectorAll(".stage-detail-star").forEach((star, index) => {
     const missionId = missionIds[index] || "";
     star.dataset.missionId = missionId;
+    star.setAttribute("aria-label", missionLabels[index] || `미션 ${index + 1}`);
     const completed = Boolean(missionId && progress[missionId]);
     star.classList.toggle("is-earned", completed);
     star.dataset.completed = completed ? "true" : "false";
@@ -389,14 +413,17 @@ function setStageDetailSelectedCard(stageNumber) {
 function hideStageDetailPanel() {
   if (stageDetailPanel) {
     stageDetailPanel.classList.add("is-hidden");
+    stageDetailPanel.classList.remove("is-coming-soon");
     stageDetailPanel.removeAttribute("data-stage");
+    stageDetailPanel.removeAttribute("data-chapter");
   }
   if (stageScreen) stageScreen.classList.remove("is-stage-detail-open");
   setStageDetailSelectedCard(0);
 }
 
 function showStageDetailPanel(stageNumber) {
-  const detailConfig = getStageDetailConfig(stageNumber);
+  const chapterNumber = selectedChapter;
+  const detailConfig = getStageDetailConfig(stageNumber, chapterNumber);
   if (!stageDetailPanel || !detailConfig) return false;
 
   const detailImage = stageDetailPanel.querySelector(".stage-detail-bg");
@@ -407,7 +434,13 @@ function showStageDetailPanel(stageNumber) {
   stageDetailPanel.setAttribute("aria-label", detailConfig.alt);
 
   stageDetailPanel.dataset.stage = String(stageNumber);
+  stageDetailPanel.dataset.chapter = String(chapterNumber);
+  stageDetailPanel.classList.toggle("is-coming-soon", detailConfig.isBattleReady === false);
   stageDetailPanel.classList.remove("is-hidden");
+  if (stageDetailStartBtn) {
+    stageDetailStartBtn.setAttribute("aria-label", detailConfig.isBattleReady === false ? "작전 2-1 전투 준비 중" : "작전 시작");
+    stageDetailStartBtn.setAttribute("aria-disabled", detailConfig.isBattleReady === false ? "true" : "false");
+  }
   if (stageScreen) stageScreen.classList.add("is-stage-detail-open");
   if (stageSelectNotice) stageSelectNotice.classList.remove("is-show");
   setStageDetailSelectedCard(stageNumber);
@@ -422,6 +455,21 @@ function showStageDetailPanel(stageNumber) {
 
 function proceedStageDetailPanel() {
   const stageNumber = Number(stageDetailPanel?.dataset.stage) || 1;
+  const chapterNumber = Number(stageDetailPanel?.dataset.chapter) || 1;
+  const detailConfig = getStageDetailConfig(stageNumber, chapterNumber);
+
+  if (detailConfig && detailConfig.isBattleReady === false) {
+    if (stageSelectNotice) {
+      stageSelectNotice.textContent = `작전 ${chapterNumber}-${stageNumber} 전투는 현재 준비 중입니다.`;
+      stageSelectNotice.classList.add("is-show");
+      clearTimeout(showStageLockedNotice.timer);
+      showStageLockedNotice.timer = setTimeout(() => {
+        if (stageSelectNotice) stageSelectNotice.classList.remove("is-show");
+      }, 1700);
+    }
+    return;
+  }
+
   hideStageDetailPanel();
 
   if (typeof showPreBattleFormation === "function") {
@@ -434,6 +482,9 @@ function proceedStageDetailPanel() {
 
 function openStage(stageNumber) {
   if (selectedChapter === 2) {
+    if (showStageDetailPanel(stageNumber)) {
+      return;
+    }
     if (stageSelectNotice) {
       stageSelectNotice.textContent = `작전 2-${stageNumber} 전투는 현재 준비 중입니다.`;
       stageSelectNotice.classList.add("is-show");
