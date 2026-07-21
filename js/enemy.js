@@ -1335,7 +1335,12 @@ function drawChapter2SkeletonSprite(enemy) {
   const sy = CHAPTER2_SKELETON_SPRITE.rows[anim] * frameH;
   const dw = CHAPTER2_SKELETON_SPRITE.drawW;
   const dh = CHAPTER2_SKELETON_SPRITE.drawH;
-  const groundOffsetY = anim === "walk" ? 8 : 14;
+  const deathGroundOffsets = [32, 31, 32, 28, 28, 26];
+  const groundOffsetY = anim === "walk"
+    ? 8
+    : anim === "death"
+      ? deathGroundOffsets[frame] || 28
+      : 14;
 
   ctx.save();
   ctx.translate(enemy.x, enemy.y);
