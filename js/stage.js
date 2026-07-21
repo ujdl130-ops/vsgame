@@ -306,7 +306,6 @@ const STAGE_DETAIL_CONFIGS = {
       alt: "작전 2-1 고요의 숲길 상세 정보",
       missionIds: ["clear", "thief5", "noChampionDeath"],
       missionLabels: ["스테이지 클리어", "도적 5명 이상 소환", "챔피언 사망 없음"],
-      isBattleReady: false,
     },
   },
 };

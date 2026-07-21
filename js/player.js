@@ -178,6 +178,7 @@ function createInitialState() {
     running: false,
     gameOver: false,
     clear: false,
+    chapter: typeof selectedChapter === "number" ? selectedChapter : 1,
     stage: selectedStage,
     stageTitle: stageConfig.title,
     maxWave: stageConfig.maxWave,

@@ -187,6 +187,7 @@ const ASSET_PATHS = {
   karonSwordWaveProjectile: "assets/animations/Boss_Karon/sword_effect_transparent_v2.png",
   stage1EnemySprite: "assets/animations/enemy/stage1_goblin_spritesheet.png",
   stage2EvileyeSprite: "assets/animations/enemy/stage2_flying_eye_spritesheet.png",
+  chapter2SkeletonSprite: "assets/animations/enemy/chapter2/skeleton_soldier_spritesheet_v3.png",
   karonHumanSprite: "assets/animations/Boss_Karon/karon_human_phase1_transparent.png",
   karonTransformSprite: "assets/animations/Boss_Karon/karon_transform_transparent.png",
   karonWerewolfSprite: "assets/animations/Boss_Karon/karon_werewolf_phase2_transparent.png",
@@ -329,6 +330,15 @@ loadGameImage(
   [ASSET_PATHS.stage2EvileyeSprite],
   (ready) => { stage2EvileyeSpriteReady = ready; },
   "Stage 2 evileye sprite"
+);
+
+const chapter2SkeletonSprite = new Image();
+let chapter2SkeletonSpriteReady = false;
+loadGameImage(
+  chapter2SkeletonSprite,
+  [ASSET_PATHS.chapter2SkeletonSprite],
+  (ready) => { chapter2SkeletonSpriteReady = ready; },
+  "Chapter 2 skeleton soldier sprite"
 );
 
 const karonHumanSprite = new Image();

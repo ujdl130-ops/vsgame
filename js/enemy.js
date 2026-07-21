@@ -37,6 +37,17 @@ const STAGE1_ENEMY_SPRITE = {
   },
 };
 
+const CHAPTER2_SKELETON_SPRITE = {
+  columns: 6,
+  rowCount: 3,
+  rows: { walk: 0, attack: 1, death: 2 },
+  frames: { walk: 6, attack: 6, death: 6 },
+  fps: { walk: 8, attack: 10, death: 7 },
+  drawW: 168,
+  drawH: 224,
+  healthBarOffsetY: 176,
+};
+
 const EVILEYE_SPRITE = {
   columns: 6,
   rowCount: 5,
@@ -258,6 +269,34 @@ function createGoblinEnemy(wave, isStageOne) {
     dead: false,
     deathAnimTimer: 0,
     deathAnimDuration: isStageOne ? 0.8 : 0.8,
+    deathRewarded: false,
+  };
+}
+
+function createChapter2SkeletonEnemy(wave) {
+  const hp = 82 + wave * 10;
+  return {
+    type: "skeleton",
+    name: "skeleton soldier",
+    x: ENEMY_BASE_X - 45,
+    y: COMBAT_LINE_Y,
+    w: 38,
+    h: 92,
+    hp,
+    maxHp: hp,
+    speed: 39 + wave * 3,
+    damage: 14 + wave * 2,
+    range: 42,
+    cooldown: 0,
+    attackSpeed: 0.9,
+    animTime: 0,
+    moving: false,
+    attackAnimTimer: 0,
+    attackAnimDuration: 0.6,
+    paralyzeTimer: 0,
+    dead: false,
+    deathAnimTimer: 0,
+    deathAnimDuration: 0.86,
     deathRewarded: false,
   };
 }
@@ -759,7 +798,13 @@ function createStageThreeMinion(wave) {
 function spawnEnemy() {
   const wave = gameState.wave;
   const stage = Number(gameState.stage);
+  const chapter = Number(gameState.chapter) || 1;
   const isStageOne = stage === 1;
+
+  if (chapter === 2 && stage === 1) {
+    gameState.enemies.push(createChapter2SkeletonEnemy(wave));
+    return;
+  }
 
   if (stage === 2) {
     gameState.enemies.push(shouldSpawnEvileye(wave) ? createEvileyeEnemy(wave) : createGoblinEnemy(wave, false));
@@ -898,6 +943,10 @@ function updateEnemies(dt) {
 function canDrawStage1EnemySprite(enemy) {
   return stage1EnemySpriteReady
     && enemy.type === "normal";
+}
+
+function canDrawChapter2SkeletonSprite(enemy) {
+  return chapter2SkeletonSpriteReady && enemy.type === "skeleton";
 }
 
 function canDrawEvileyeSprite(enemy) {
@@ -1142,6 +1191,66 @@ function drawStage1EnemySprite(enemy) {
   return true;
 }
 
+function drawChapter2SkeletonSprite(enemy) {
+  if (!canDrawChapter2SkeletonSprite(enemy)) return false;
+
+  let anim = "walk";
+  if (enemy.dead || enemy.hp <= 0) anim = "death";
+  else if (enemy.attackAnimTimer > 0) anim = "attack";
+
+  const frameCount = CHAPTER2_SKELETON_SPRITE.frames[anim] || 1;
+  const fps = CHAPTER2_SKELETON_SPRITE.fps[anim] || 8;
+  let frame = Math.floor((enemy.animTime || 0) * fps) % frameCount;
+
+  if (anim === "attack") {
+    const duration = enemy.attackAnimDuration || 0.6;
+    const progress = 1 - Math.max(0, enemy.attackAnimTimer || 0) / duration;
+    frame = Math.min(frameCount - 1, Math.max(0, Math.floor(progress * frameCount)));
+  } else if (anim === "death") {
+    const duration = enemy.deathAnimDuration || 0.86;
+    const progress = 1 - Math.max(0, enemy.deathAnimTimer || 0) / duration;
+    frame = Math.min(frameCount - 1, Math.max(0, Math.floor(progress * frameCount)));
+  }
+
+  const frameW = chapter2SkeletonSprite.naturalWidth / CHAPTER2_SKELETON_SPRITE.columns;
+  const frameH = chapter2SkeletonSprite.naturalHeight / CHAPTER2_SKELETON_SPRITE.rowCount;
+  const sx = frame * frameW;
+  const sy = CHAPTER2_SKELETON_SPRITE.rows[anim] * frameH;
+  const dw = CHAPTER2_SKELETON_SPRITE.drawW;
+  const dh = CHAPTER2_SKELETON_SPRITE.drawH;
+
+  ctx.save();
+  ctx.translate(enemy.x, enemy.y);
+
+  if (anim === "death") {
+    const duration = enemy.deathAnimDuration || 0.86;
+    const progress = 1 - Math.max(0, enemy.deathAnimTimer || 0) / duration;
+    ctx.globalAlpha = Math.max(0.22, 1 - progress * 0.42);
+  }
+
+  ctx.fillStyle = "rgba(0,0,0,0.24)";
+  ctx.beginPath();
+  ctx.ellipse(0, 5, anim === "death" ? 48 : 31, 9, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  // The source artwork already faces screen-left, matching the enemy movement.
+  ctx.imageSmoothingEnabled = true;
+  ctx.drawImage(
+    chapter2SkeletonSprite,
+    sx,
+    sy,
+    frameW,
+    frameH,
+    -dw / 2,
+    -dh + 22,
+    dw,
+    dh
+  );
+
+  ctx.restore();
+  return true;
+}
+
 function drawEnemy(enemy) {
   const usedKaronSprite = drawKaronSprite(enemy);
   if (usedKaronSprite) {
@@ -1168,6 +1277,22 @@ function drawEnemy(enemy) {
       drawHealthBar(
         enemy.x,
         enemy.y - EVILEYE_SPRITE.healthBarOffsetY,
+        48,
+        enemy.hp,
+        enemy.maxHp,
+        "#ff6868"
+      );
+    }
+    return;
+  }
+
+  const usedChapter2SkeletonSprite = drawChapter2SkeletonSprite(enemy);
+  if (usedChapter2SkeletonSprite) {
+    const isDying = enemy.dead || enemy.hp <= 0;
+    if (!isDying) {
+      drawHealthBar(
+        enemy.x,
+        enemy.y - CHAPTER2_SKELETON_SPRITE.healthBarOffsetY,
         48,
         enemy.hp,
         enemy.maxHp,
