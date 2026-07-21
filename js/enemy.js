@@ -43,9 +43,9 @@ const CHAPTER2_SKELETON_SPRITE = {
   rows: { walk: 0, attack: 1, death: 2 },
   frames: { walk: 6, attack: 6, death: 6 },
   fps: { walk: 8, attack: 10, death: 7 },
-  drawW: 102,
-  drawH: 136,
-  healthBarOffsetY: 112,
+  drawW: 62,
+  drawH: 82,
+  healthBarOffsetY: 70,
 };
 
 const EVILEYE_SPRITE = {
@@ -1242,7 +1242,7 @@ function drawChapter2SkeletonSprite(enemy) {
     frameW,
     frameH,
     -dw / 2,
-    -dh + 22,
+    -dh + 14,
     dw,
     dh
   );
@@ -1293,7 +1293,7 @@ function drawEnemy(enemy) {
       drawHealthBar(
         enemy.x,
         enemy.y - CHAPTER2_SKELETON_SPRITE.healthBarOffsetY,
-        38,
+        30,
         enemy.hp,
         enemy.maxHp,
         "#ff6868"
