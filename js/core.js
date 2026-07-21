@@ -187,7 +187,7 @@ const ASSET_PATHS = {
   karonSwordWaveProjectile: "assets/animations/Boss_Karon/sword_effect_transparent_v2.png",
   stage1EnemySprite: "assets/animations/enemy/stage1_goblin_spritesheet.png",
   stage2EvileyeSprite: "assets/animations/enemy/stage2_flying_eye_spritesheet.png",
-  chapter2SkeletonSprite: "assets/animations/enemy/chapter2/skeleton_soldier_spritesheet_v5.png",
+  chapter2SkeletonSprite: "assets/animations/enemy/chapter2/skeleton_soldier_spritesheet_v6.png",
   karonHumanSprite: "assets/animations/Boss_Karon/karon_human_phase1_transparent.png",
   karonTransformSprite: "assets/animations/Boss_Karon/karon_transform_transparent.png",
   karonWerewolfSprite: "assets/animations/Boss_Karon/karon_werewolf_phase2_transparent.png",
