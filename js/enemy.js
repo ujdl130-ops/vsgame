@@ -67,6 +67,28 @@ const CHAPTER2_BAT_SPRITE = {
   healthBarWidth: 30,
 };
 
+const CHAPTER2_WITCH_SPRITE = {
+  walkFrames: 6,
+  attackFrames: 4,
+  frameW: 480,
+  frameH: 724,
+  walkFps: 7,
+  attackFps: 8,
+  drawW: 210,
+  drawH: 317,
+  flightOffsetY: 158,
+  healthBarOffsetY: 276,
+  healthBarWidth: 118,
+  meteorReleaseProgress: 0.72,
+};
+
+const WITCH_POISON_DURATION = 10;
+const WITCH_POISON_TICK_INTERVAL = 1;
+const WITCH_POISON_MAX_HP_DAMAGE_RATIO = 0.04;
+const WITCH_CURSED_SKELETON_EXPLOSION_RADIUS = 210;
+const WITCH_CURSED_SKELETON_EXPLOSION_DAMAGE = 70;
+const WITCH_CURSED_SKELETON_EXPLOSION_TARGET_LIMIT = 3;
+
 const EVILEYE_SPRITE = {
   columns: 6,
   rowCount: 5,
@@ -407,6 +429,55 @@ function spawnChapter2Stage3SkeletonGroup(wave, spawnIndex = 0) {
   }
 }
 
+function createChapter2WitchBoss() {
+  return {
+    type: "witch",
+    name: "green witch",
+    isBoss: true,
+    airborne: true,
+    x: ENEMY_BASE_X - 105,
+    y: COMBAT_LINE_Y,
+    w: 78,
+    h: 108,
+    hp: 2600,
+    maxHp: 2600,
+    speed: 24,
+    damage: 26,
+    range: 700,
+    cooldown: 1.4,
+    attackSpeed: 4.2,
+    attackAnimTimer: 0,
+    attackAnimDuration: 1.2,
+    meteorCastPending: false,
+    meteorTarget: null,
+    animTime: 0,
+    moving: false,
+    face: -1,
+    flightOffset: CHAPTER2_WITCH_SPRITE.flightOffsetY,
+    paralyzeTimer: 0,
+    dead: false,
+    deathAnimTimer: 0,
+    deathAnimDuration: 1.05,
+    deathRewarded: false,
+    runestoneReward: 150,
+  };
+}
+
+function spawnChapter2WitchBoss() {
+  if (
+    !gameState
+    || gameState.witchBossSpawned
+    || Number(gameState.chapter) !== 2
+    || Number(gameState.stage) !== 4
+  ) return false;
+
+  gameState.witchBossSpawned = true;
+  gameState.enemies.push(createChapter2WitchBoss());
+  gameState.message = "보스 출현! 녹색 마녀가 독 메테오를 소환합니다!";
+  gameState.messageTimer = 1.8;
+  return true;
+}
+
 function isFriendlyUnitForSkeletonCurse(unit) {
   return Boolean(
     unit
@@ -435,10 +506,28 @@ function applySkeletonDeathCurse(enemy) {
       * (Number(enemy.curseDamageRatio) || SKELETON_CURSE_MAX_HP_DAMAGE_RATIO)
     )
   );
+  target.curseKind = "skeleton";
   target.curseDeathEligible = false;
 
   gameState.message = "CURSE! 스켈레톤을 처치한 병사의 생명력이 감소합니다.";
   gameState.messageTimer = 1.35;
+  return true;
+}
+
+function applyWitchPoisonCurse(target) {
+  if (!isFriendlyUnitForSkeletonCurse(target)) return false;
+
+  target.skeletonCurseTimer = WITCH_POISON_DURATION;
+  target.skeletonCurseTickTimer = Math.min(
+    Number(target.skeletonCurseTickTimer) || WITCH_POISON_TICK_INTERVAL,
+    0.45
+  );
+  target.skeletonCurseDamage = Math.max(
+    1,
+    Math.ceil((Number(target.maxHp) || 1) * WITCH_POISON_MAX_HP_DAMAGE_RATIO)
+  );
+  target.curseKind = "witch";
+  target.curseDeathEligible = false;
   return true;
 }
 
@@ -462,6 +551,7 @@ function updateSkeletonCurse(unit, dt) {
     unit.skeletonCurseTimer = 0;
     unit.skeletonCurseTickTimer = 0;
     unit.skeletonCurseDamage = 0;
+    unit.curseKind = "";
     unit.curseDeathEligible = false;
   }
 }
@@ -475,6 +565,7 @@ function shouldTransformCursedUnit(unit) {
 function spawnCursedSkeletonFromUnit(unit) {
   if (!unit || !gameState || !Array.isArray(gameState.enemies)) return false;
 
+  const transformedByWitch = unit.curseKind === "witch";
   const skeleton = createChapter2SkeletonEnemy(Math.max(1, Number(gameState.wave) || 1));
   const convertedHp = Math.max(skeleton.maxHp, Math.round((Number(unit.maxHp) || 1) * 0.8));
   skeleton.x = Math.max(
@@ -489,22 +580,69 @@ function spawnCursedSkeletonFromUnit(unit) {
   skeleton.deathRewarded = true;
   skeleton.isConvertedAlly = true;
   skeleton.convertedFromUnitType = unit.type || "unit";
+  skeleton.isWitchCursedSkeleton = transformedByWitch;
+  skeleton.witchExplosionTriggered = false;
   gameState.enemies.push(skeleton);
 
-  gameState.message = "저주받은 병사가 적 스켈레톤으로 되살아났습니다!";
+  gameState.message = transformedByWitch
+    ? "마녀의 독에 쓰러진 병사가 초록 저주 스켈레톤으로 변했습니다!"
+    : "저주받은 병사가 적 스켈레톤으로 되살아났습니다!";
   gameState.messageTimer = 1.5;
+  return true;
+}
+
+function getWitchExplosionTargets(enemy) {
+  if (!gameState) return [];
+  const candidates = gameState.units.filter(isCombatAlive);
+  if (gameState.hero && isCombatAlive(gameState.hero)) candidates.push(gameState.hero);
+
+  return candidates
+    .map((target) => ({ target, distance: Math.abs(target.x - enemy.x) }))
+    .filter((entry) => entry.distance <= WITCH_CURSED_SKELETON_EXPLOSION_RADIUS)
+    .sort((a, b) => a.distance - b.distance)
+    .slice(0, WITCH_CURSED_SKELETON_EXPLOSION_TARGET_LIMIT)
+    .map((entry) => entry.target);
+}
+
+function explodeWitchCursedSkeleton(enemy) {
+  if (!enemy || !enemy.isWitchCursedSkeleton || enemy.witchExplosionTriggered) return false;
+  enemy.witchExplosionTriggered = true;
+
+  const targets = getWitchExplosionTargets(enemy);
+  for (const target of targets) {
+    damageCombatant(target, WITCH_CURSED_SKELETON_EXPLOSION_DAMAGE);
+    spawnHit(target.x, target.y - 42, "#7dff4f");
+  }
+
+  for (let index = 0; index < 12; index += 1) {
+    const angle = Math.PI * 2 * index / 12;
+    gameState.particles.push({
+      type: "hit",
+      x: enemy.x + Math.cos(angle) * 22,
+      y: enemy.y - 38 + Math.sin(angle) * 22,
+      vx: Math.cos(angle) * 85,
+      vy: Math.sin(angle) * 85,
+      life: 0.48,
+      maxLife: 0.48,
+      color: "#70ff3d",
+    });
+  }
+
+  gameState.message = `초록 저주 스켈레톤 자폭! 최대 ${targets.length}명에게 큰 피해`;
+  gameState.messageTimer = 1.15;
   return true;
 }
 
 function drawSkeletonCurseEffect(unit) {
   if (!unit || !(unit.skeletonCurseTimer > 0)) return;
 
+  const witchCurse = unit.curseKind === "witch";
   const pulse = 0.5 + Math.sin(performance.now() * 0.009) * 0.5;
   ctx.save();
   ctx.globalAlpha = 0.5 + pulse * 0.25;
-  ctx.strokeStyle = "#b44cff";
-  ctx.fillStyle = "rgba(84, 15, 125, 0.18)";
-  ctx.shadowColor = "#d77aff";
+  ctx.strokeStyle = witchCurse ? "#69ff35" : "#b44cff";
+  ctx.fillStyle = witchCurse ? "rgba(58, 170, 24, 0.18)" : "rgba(84, 15, 125, 0.18)";
+  ctx.shadowColor = witchCurse ? "#8dff5a" : "#d77aff";
   ctx.shadowBlur = 9;
   ctx.lineWidth = 2;
   ctx.beginPath();
@@ -517,9 +655,60 @@ function drawSkeletonCurseEffect(unit) {
   ctx.font = "700 9px Arial, sans-serif";
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
-  ctx.fillStyle = "#f2c4ff";
-  ctx.fillText(`CURSE ${Math.max(1, Math.ceil(unit.skeletonCurseTimer))}`, 0, -79);
+  ctx.fillStyle = witchCurse ? "#caffb5" : "#f2c4ff";
+  ctx.fillText(
+    `${witchCurse ? "POISON" : "CURSE"} ${Math.max(1, Math.ceil(unit.skeletonCurseTimer))}`,
+    0,
+    -79
+  );
   ctx.restore();
+}
+
+function startWitchMeteorCast(enemy, target) {
+  enemy.cooldown = enemy.attackSpeed;
+  enemy.attackAnimTimer = enemy.attackAnimDuration;
+  enemy.meteorCastPending = true;
+  enemy.meteorTarget = target || null;
+  enemy.moving = false;
+  if (window.GameAudio) window.GameAudio.playSfx("magicAttack", { cooldown: 220, volume: 0.82 });
+}
+
+function updateWitchEnemy(enemy, dt) {
+  const attackDuration = enemy.attackAnimDuration || 1.2;
+  const attackProgress = enemy.attackAnimTimer > 0
+    ? 1 - enemy.attackAnimTimer / attackDuration
+    : 1;
+
+  if (
+    enemy.meteorCastPending
+    && (attackProgress >= CHAPTER2_WITCH_SPRITE.meteorReleaseProgress || enemy.attackAnimTimer <= 0)
+  ) {
+    if (typeof spawnWitchMeteor === "function") {
+      spawnWitchMeteor(enemy, isCombatAlive(enemy.meteorTarget) ? enemy.meteorTarget : null);
+    }
+    enemy.meteorCastPending = false;
+    enemy.meteorTarget = null;
+  }
+
+  if (enemy.attackAnimTimer > 0) {
+    enemy.moving = false;
+    return;
+  }
+
+  const target = findNearestAlly(enemy.x, enemy.range);
+  if (target) {
+    if (enemy.cooldown <= 0) startWitchMeteorCast(enemy, target);
+    return;
+  }
+
+  const castingPositionX = PLAYER_BASE_ATTACK_X + 560;
+  if (enemy.x > castingPositionX) {
+    enemy.x -= enemy.speed * dt;
+    enemy.moving = true;
+    return;
+  }
+
+  if (enemy.cooldown <= 0) startWitchMeteorCast(enemy, null);
 }
 
 function createEvileyeEnemy(wave) {
@@ -1055,6 +1244,11 @@ function spawnEnemy() {
     return;
   }
 
+  if (chapter === 2 && stage === 4) {
+    spawnChapter2WitchBoss();
+    return;
+  }
+
   if (stage === 2) {
     gameState.enemies.push(shouldSpawnEvileye(wave) ? createEvileyeEnemy(wave) : createGoblinEnemy(wave, false));
     return;
@@ -1120,6 +1314,11 @@ function updateEnemies(dt) {
       enemy.animTime = Math.max(0, (enemy.animTime || 0) - dt);
       enemy.attackAnimTimer = 0;
       enemy.playerGateHitPending = false;
+      continue;
+    }
+
+    if (enemy.type === "witch") {
+      updateWitchEnemy(enemy, dt);
       continue;
     }
 
@@ -1209,6 +1408,73 @@ function canDrawEvileyeSprite(enemy) {
 function canDrawKaronSprite(enemy) {
   const source = getKaronSpriteSource(enemy);
   return Boolean(enemy && enemy.type === "karon" && source.ready && source.image);
+}
+
+function canDrawWitchSprite(enemy) {
+  if (!enemy || enemy.type !== "witch") return false;
+  if (enemy.attackAnimTimer > 0) {
+    return Boolean(chapter2WitchAttackSpriteReady && chapter2WitchAttackSprite);
+  }
+  return Boolean(chapter2WitchWalkSpriteReady && chapter2WitchWalkSprite);
+}
+
+function drawWitchSprite(enemy) {
+  if (!canDrawWitchSprite(enemy)) return false;
+
+  const attacking = !enemy.dead && enemy.hp > 0 && enemy.attackAnimTimer > 0;
+  const sprite = attacking ? chapter2WitchAttackSprite : chapter2WitchWalkSprite;
+  const frameCount = attacking
+    ? CHAPTER2_WITCH_SPRITE.attackFrames
+    : CHAPTER2_WITCH_SPRITE.walkFrames;
+  let frame = Math.floor(
+    (enemy.animTime || 0)
+    * (attacking ? CHAPTER2_WITCH_SPRITE.attackFps : CHAPTER2_WITCH_SPRITE.walkFps)
+  ) % frameCount;
+
+  if (attacking) {
+    const duration = enemy.attackAnimDuration || 1.2;
+    const progress = 1 - Math.max(0, enemy.attackAnimTimer || 0) / duration;
+    frame = Math.min(frameCount - 1, Math.max(0, Math.floor(progress * frameCount)));
+  }
+
+  const dying = enemy.dead || enemy.hp <= 0;
+  const deathDuration = enemy.deathAnimDuration || 1.05;
+  const deathProgress = dying
+    ? 1 - Math.max(0, enemy.deathAnimTimer || 0) / deathDuration
+    : 0;
+  const sx = frame * CHAPTER2_WITCH_SPRITE.frameW;
+  const dw = CHAPTER2_WITCH_SPRITE.drawW;
+  const dh = CHAPTER2_WITCH_SPRITE.drawH;
+  const flightOffset = enemy.flightOffset || CHAPTER2_WITCH_SPRITE.flightOffsetY;
+
+  ctx.save();
+  ctx.translate(enemy.x, enemy.y);
+  ctx.fillStyle = "rgba(0,0,0,0.2)";
+  ctx.beginPath();
+  ctx.ellipse(0, 5, 46, 10, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.translate(0, -flightOffset);
+  if (dying) {
+    ctx.globalAlpha = Math.max(0.08, 1 - deathProgress * 0.92);
+    ctx.translate(0, deathProgress * 105);
+    ctx.rotate(-deathProgress * 0.28);
+  }
+
+  ctx.imageSmoothingEnabled = true;
+  ctx.drawImage(
+    sprite,
+    sx,
+    0,
+    CHAPTER2_WITCH_SPRITE.frameW,
+    CHAPTER2_WITCH_SPRITE.frameH,
+    -dw / 2,
+    -dh / 2,
+    dw,
+    dh
+  );
+  ctx.restore();
+  return true;
 }
 
 function drawKaronSprite(enemy) {
@@ -1537,6 +1803,22 @@ function drawChapter2SkeletonSprite(enemy) {
   ctx.ellipse(0, 5, anim === "death" ? 48 : 31, 9, 0, 0, Math.PI * 2);
   ctx.fill();
 
+  if (enemy.isWitchCursedSkeleton) {
+    const pulse = 0.5 + Math.sin((performance.now() + enemy.x * 9) * 0.012) * 0.5;
+    ctx.save();
+    ctx.globalAlpha = 0.42 + pulse * 0.28;
+    ctx.strokeStyle = "#65ff35";
+    ctx.fillStyle = "rgba(60, 220, 35, 0.16)";
+    ctx.shadowColor = "#79ff45";
+    ctx.shadowBlur = 12 + pulse * 6;
+    ctx.lineWidth = 2.5;
+    ctx.beginPath();
+    ctx.ellipse(0, -32, 25 + pulse * 4, 39 + pulse * 3, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.stroke();
+    ctx.restore();
+  }
+
   // The source artwork already faces screen-left, matching the enemy movement.
   ctx.imageSmoothingEnabled = true;
   ctx.drawImage(
@@ -1556,6 +1838,22 @@ function drawChapter2SkeletonSprite(enemy) {
 }
 
 function drawEnemy(enemy) {
+  const usedWitchSprite = drawWitchSprite(enemy);
+  if (usedWitchSprite) {
+    const isDying = enemy.dead || enemy.hp <= 0;
+    if (!isDying) {
+      drawHealthBar(
+        enemy.x,
+        enemy.y - CHAPTER2_WITCH_SPRITE.healthBarOffsetY,
+        CHAPTER2_WITCH_SPRITE.healthBarWidth,
+        enemy.hp,
+        enemy.maxHp,
+        "#75ff42"
+      );
+    }
+    return;
+  }
+
   const usedKaronSprite = drawKaronSprite(enemy);
   if (usedKaronSprite) {
     const isDying = enemy.dead || (enemy.hp <= 0 && enemy.bossPhase === "werewolf");
@@ -1617,7 +1915,7 @@ function drawEnemy(enemy) {
         30,
         enemy.hp,
         enemy.maxHp,
-        "#ff6868"
+        enemy.isWitchCursedSkeleton ? "#72ff3d" : "#ff6868"
       );
     }
     return;

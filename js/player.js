@@ -217,6 +217,7 @@ function createInitialState() {
     spawnedInWave: 0,
     karonBossSpawned: false,
     karonBossTrigger: "",
+    witchBossSpawned: false,
     stageThreeBossOpeningMinionsSpawned: false,
     stageThreeBossReinforcementTimer: typeof STAGE3_BOSS_REINFORCEMENT_INTERVAL === "number"
       ? STAGE3_BOSS_REINFORCEMENT_INTERVAL

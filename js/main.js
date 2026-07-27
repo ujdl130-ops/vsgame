@@ -120,6 +120,7 @@ window.addEventListener("keydown", (event) => {
       if (event.code === "Digit1") openStage(1);
       if (event.code === "Digit2") openStage(2);
       if (event.code === "Digit3") openStage(3);
+      if (event.code === "Digit4") openStage(4);
     }
     return;
   }

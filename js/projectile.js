@@ -7,6 +7,13 @@ const KARON_SWORD_WAVE_GATE_X = PLAYER_BASE_ATTACK_X;
 const KARON_SWORD_WAVE_GATE_DAMAGE_SCALE = 0.55;
 const KARON_SWORD_WAVE_HIT_COLOR = "#ff2d74";
 const KARON_SWORD_WAVE_SPLASH_TARGET_LIMIT = 3;
+const WITCH_METEOR_FRAME_COUNT = 6;
+const WITCH_METEOR_FRAME_SIZE = 416;
+const WITCH_METEOR_DRAW_SIZE = 112;
+const WITCH_METEOR_FALL_DURATION = 1.15;
+const WITCH_METEOR_SPLASH_RADIUS = 175;
+const WITCH_METEOR_TARGET_LIMIT = 3;
+const WITCH_METEOR_DAMAGE = 28;
 
 function getEnemyBaseProjectileHitPoint() {
   return {
@@ -28,6 +35,84 @@ function damageEnemyBaseWithProjectile(projectile, impact) {
     impact.y,
     projectile.color || "#f2fdff"
   );
+}
+
+function spawnWitchMeteor(enemy, target = null) {
+  if (!gameState || !Array.isArray(gameState.projectiles)) return false;
+
+  const targetAlive = isCombatAlive(target);
+  const impactX = targetAlive ? target.x : PLAYER_BASE_ATTACK_HIT_X;
+  const impactY = targetAlive ? target.y - 18 : PLAYER_BASE_ATTACK_HIT_Y;
+  const startX = Math.min(canvas.width - 70, impactX + 480);
+  const startY = -80;
+
+  gameState.projectiles.push({
+    type: "witchMeteor",
+    sourceCombatant: enemy,
+    target: targetAlive ? target : null,
+    targetBase: !targetAlive,
+    x: startX,
+    y: startY,
+    impactX,
+    impactY,
+    vx: (impactX - startX) / WITCH_METEOR_FALL_DURATION,
+    vy: (impactY - startY) / WITCH_METEOR_FALL_DURATION,
+    damage: WITCH_METEOR_DAMAGE,
+    life: 0,
+    maxLife: WITCH_METEOR_FALL_DURATION + 0.2,
+    fallDuration: WITCH_METEOR_FALL_DURATION,
+    dead: false,
+  });
+  return true;
+}
+
+function getWitchMeteorImpactTargets(impactX) {
+  if (!gameState) return [];
+  const candidates = gameState.units.filter(isCombatAlive);
+  if (gameState.hero && isCombatAlive(gameState.hero)) candidates.push(gameState.hero);
+
+  return candidates
+    .map((target) => ({ target, distance: Math.abs(target.x - impactX) }))
+    .filter((entry) => entry.distance <= WITCH_METEOR_SPLASH_RADIUS)
+    .sort((a, b) => a.distance - b.distance)
+    .slice(0, WITCH_METEOR_TARGET_LIMIT)
+    .map((entry) => entry.target);
+}
+
+function explodeWitchMeteor(projectile) {
+  const targets = getWitchMeteorImpactTargets(projectile.impactX);
+
+  for (const target of targets) {
+    if (target.type !== "hero" && typeof applyWitchPoisonCurse === "function") {
+      applyWitchPoisonCurse(target);
+    }
+    damageCombatant(target, projectile.damage);
+    spawnHit(target.x, target.y - 42, "#78ff3f");
+  }
+
+  if (targets.length === 0 && projectile.targetBase) {
+    gameState.playerBaseHp -= projectile.damage * 0.85;
+    spawnHit(PLAYER_BASE_ATTACK_HIT_X, PLAYER_BASE_ATTACK_HIT_Y, "#78ff3f");
+  }
+
+  for (let index = 0; index < 14; index += 1) {
+    const angle = Math.PI * 2 * index / 14;
+    gameState.particles.push({
+      type: "hit",
+      x: projectile.impactX + Math.cos(angle) * 20,
+      y: projectile.impactY + Math.sin(angle) * 16,
+      vx: Math.cos(angle) * 96,
+      vy: Math.sin(angle) * 82,
+      life: 0.5,
+      maxLife: 0.5,
+      color: "#78ff3f",
+    });
+  }
+
+  gameState.message = targets.length > 0
+    ? `독 메테오 적중! ${Math.min(WITCH_METEOR_TARGET_LIMIT, targets.length)}명 저주`
+    : "독 메테오가 성문을 강타했습니다!";
+  gameState.messageTimer = 1.05;
 }
 
 function getEnemyProjectileHitPoint(enemy) {
@@ -388,6 +473,19 @@ function updateProjectiles(dt) {
   for (const projectile of gameState.projectiles) {
     projectile.life = (projectile.life || 0) + dt;
 
+    if (projectile.type === "witchMeteor") {
+      projectile.x += projectile.vx * dt;
+      projectile.y += projectile.vy * dt;
+
+      if (projectile.life >= projectile.fallDuration || projectile.y >= projectile.impactY) {
+        explodeWitchMeteor(projectile);
+        projectile.dead = true;
+      }
+
+      if (projectile.life > projectile.maxLife) projectile.dead = true;
+      continue;
+    }
+
     if (projectile.type === "karonSwordWave") {
       projectile.x += projectile.vx * dt;
       const target = isCombatAlive(projectile.target)
@@ -541,8 +639,46 @@ function drawKaronSwordWave(projectile) {
   drawKaronSwordWaveFallback(projectile);
 }
 
+function drawWitchMeteor(projectile) {
+  if (!chapter2WitchMeteorSpriteReady || !chapter2WitchMeteorSprite) {
+    ctx.save();
+    ctx.translate(projectile.x, projectile.y);
+    ctx.rotate(-0.75);
+    ctx.shadowColor = "#72ff3d";
+    ctx.shadowBlur = 14;
+    ctx.fillStyle = "#8dff45";
+    ctx.beginPath();
+    ctx.arc(0, 0, 20, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+    return;
+  }
+
+  const frame = Math.floor((projectile.life || 0) * 12) % WITCH_METEOR_FRAME_COUNT;
+  ctx.save();
+  ctx.translate(projectile.x, projectile.y);
+  ctx.imageSmoothingEnabled = true;
+  ctx.drawImage(
+    chapter2WitchMeteorSprite,
+    frame * WITCH_METEOR_FRAME_SIZE,
+    0,
+    WITCH_METEOR_FRAME_SIZE,
+    WITCH_METEOR_FRAME_SIZE,
+    -WITCH_METEOR_DRAW_SIZE / 2,
+    -WITCH_METEOR_DRAW_SIZE / 2,
+    WITCH_METEOR_DRAW_SIZE,
+    WITCH_METEOR_DRAW_SIZE
+  );
+  ctx.restore();
+}
+
 function drawProjectiles() {
   for (const projectile of gameState.projectiles) {
+    if (projectile.type === "witchMeteor") {
+      drawWitchMeteor(projectile);
+      continue;
+    }
+
     if (projectile.type === "karonSwordWave") {
       drawKaronSwordWave(projectile);
       continue;

@@ -44,9 +44,17 @@ const CHAPTER2_STAGE_CONFIGS = {
     enemyBaseHp: 150,
     baseEnemiesToSpawn: 3,
   },
+  4: {
+    title: "고목의 성역",
+    maxWave: 1,
+    startRunestone: 0,
+    playerBaseHp: 150,
+    enemyBaseHp: 200,
+    baseEnemiesToSpawn: 1,
+  },
 };
 
-const CHAPTER2_BATTLE_READY_STAGES = new Set([1, 2, 3]);
+const CHAPTER2_BATTLE_READY_STAGES = new Set([1, 2, 3, 4]);
 
 let selectedChapter = 1;
 
@@ -68,6 +76,7 @@ const STAGE_CLEAR_REWARDS = {
   1: { gold: 10000 },
   2: { gold: 15000 },
   3: { gold: 30000 },
+  4: { gold: 50000 },
 };
 
 const ENEMY_GATE_BOSS_SHIELD_MESSAGE = "알수없는힘에 막혔습니다";
@@ -118,7 +127,8 @@ function getLivingStageBossEnemy() {
 }
 
 function isEnemyBaseProtectedByBoss() {
-  return Boolean(Number(gameState && gameState.stage) === 3 && getLivingStageBossEnemy());
+  const stage = Number(gameState && gameState.stage);
+  return Boolean((stage === 3 || stage === 4) && getLivingStageBossEnemy());
 }
 
 function showEnemyGateProtectedMessage() {
@@ -243,6 +253,23 @@ function updateStageThreeBossEncounter(dt) {
   if (gameState.stageThreeBossReinforcementTimer <= 0) {
     spawnStageThreeBossMinionGroup(STAGE3_BOSS_REINFORCEMENT_COUNT);
     gameState.stageThreeBossReinforcementTimer = STAGE3_BOSS_REINFORCEMENT_INTERVAL;
+  }
+
+  return true;
+}
+
+function updateStageFourBossEncounter() {
+  if (
+    !gameState
+    || Number(gameState.chapter) !== 2
+    || Number(gameState.stage) !== 4
+    || !gameState.witchBossSpawned
+  ) return false;
+
+  if (!getLivingStageBossEnemy() && !gameState.gateObjectiveAnnounced) {
+    gameState.gateObjectiveAnnounced = true;
+    gameState.message = "마녀를 처치했습니다! 상대 게이트를 파괴하세요!";
+    gameState.messageTimer = 1.6;
   }
 
   return true;
@@ -728,6 +755,10 @@ function updateWave(dt) {
   }
 
   if (updateStageThreeBossEncounter(dt)) {
+    return;
+  }
+
+  if (updateStageFourBossEncounter()) {
     return;
   }
 

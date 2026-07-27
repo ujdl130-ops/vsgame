@@ -189,6 +189,9 @@ const ASSET_PATHS = {
   stage2EvileyeSprite: "assets/animations/enemy/stage2_flying_eye_spritesheet.png",
   chapter2SkeletonSprite: "assets/animations/enemy/chapter2/skeleton_soldier_spritesheet_v7.png",
   chapter2BatSprite: "assets/animations/enemy/chapter2/bat_enemy.png",
+  chapter2WitchWalkSprite: "assets/animations/enemy/chapter2/boss_witch/witch_walk_spritesheet.png",
+  chapter2WitchAttackSprite: "assets/animations/enemy/chapter2/boss_witch/witch_attack_spritesheet.png",
+  chapter2WitchMeteorSprite: "assets/animations/enemy/chapter2/boss_witch/witch_meteor_spritesheet.png",
   karonHumanSprite: "assets/animations/Boss_Karon/karon_human_phase1_transparent.png",
   karonTransformSprite: "assets/animations/Boss_Karon/karon_transform_transparent.png",
   karonWerewolfSprite: "assets/animations/Boss_Karon/karon_werewolf_phase2_transparent.png",
@@ -349,6 +352,33 @@ loadGameImage(
   [ASSET_PATHS.chapter2BatSprite],
   (ready) => { chapter2BatSpriteReady = ready; },
   "Chapter 2 bat sprite"
+);
+
+const chapter2WitchWalkSprite = new Image();
+let chapter2WitchWalkSpriteReady = false;
+loadGameImage(
+  chapter2WitchWalkSprite,
+  [ASSET_PATHS.chapter2WitchWalkSprite],
+  (ready) => { chapter2WitchWalkSpriteReady = ready; },
+  "Chapter 2 witch walk sprite"
+);
+
+const chapter2WitchAttackSprite = new Image();
+let chapter2WitchAttackSpriteReady = false;
+loadGameImage(
+  chapter2WitchAttackSprite,
+  [ASSET_PATHS.chapter2WitchAttackSprite],
+  (ready) => { chapter2WitchAttackSpriteReady = ready; },
+  "Chapter 2 witch attack sprite"
+);
+
+const chapter2WitchMeteorSprite = new Image();
+let chapter2WitchMeteorSpriteReady = false;
+loadGameImage(
+  chapter2WitchMeteorSprite,
+  [ASSET_PATHS.chapter2WitchMeteorSprite],
+  (ready) => { chapter2WitchMeteorSpriteReady = ready; },
+  "Chapter 2 witch meteor sprite"
 );
 
 const karonHumanSprite = new Image();

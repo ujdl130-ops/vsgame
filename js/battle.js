@@ -70,6 +70,10 @@ function startEnemyDeath(enemy) {
   if (!enemy || enemy.dead) return;
   if (enemy.type === "karon" && typeof startKaronTransformation === "function" && startKaronTransformation(enemy)) return;
 
+  if (enemy.isWitchCursedSkeleton && typeof explodeWitchCursedSkeleton === "function") {
+    explodeWitchCursedSkeleton(enemy);
+  }
+
   if (enemy.type === "skeleton" && typeof applySkeletonDeathCurse === "function") {
     applySkeletonDeathCurse(enemy);
   }
