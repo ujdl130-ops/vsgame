@@ -235,6 +235,7 @@ function createInitialState() {
     stageMissionRun: {
       guardSummons: 0,
       archerSummons: 0,
+      mageSummons: 0,
       bossDefeated: false,
       championDied: false,
     },

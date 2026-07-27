@@ -367,6 +367,12 @@ const STAGE_DETAIL_CONFIGS = {
       missionIds: ["clear", "thief5", "noChampionDeath"],
       missionLabels: ["스테이지 클리어", "도적 5명 이상 소환", "챔피언 사망 없음"],
     },
+    2: {
+      image: "assets/ui/chapter2 stage2 info UI.png",
+      alt: "작전 2-2 속삭이는 습지 상세 정보",
+      missionIds: ["clear", "mage5", "noChampionDeath"],
+      missionLabels: ["스테이지 클리어", "마법사 5명 이상 소환", "챔피언 사망 없음"],
+    },
   },
 };
 
@@ -418,6 +424,16 @@ function recordStageMissionArcherSummon() {
   gameState.stageMissionRun.archerSummons = Math.max(0, Number(gameState.stageMissionRun.archerSummons) || 0) + 1;
 }
 
+function recordStageMissionMageSummon() {
+  if (
+    !gameState
+    || Number(gameState.chapter) !== 2
+    || Number(gameState.stage) !== 2
+    || !gameState.stageMissionRun
+  ) return;
+  gameState.stageMissionRun.mageSummons = Math.max(0, Number(gameState.stageMissionRun.mageSummons) || 0) + 1;
+}
+
 function recordStageMissionChampionDeath() {
   if (!gameState || !getStageDetailConfig(gameState.stage) || !gameState.stageMissionRun) return;
   gameState.stageMissionRun.championDied = true;
@@ -448,6 +464,9 @@ function completeStageMissions(stageNumber) {
   }
   if (detailConfig.missionIds.includes("archer3") && (Number(run.archerSummons) || 0) >= 3) {
     progress.archer3 = true;
+  }
+  if (detailConfig.missionIds.includes("mage5") && (Number(run.mageSummons) || 0) >= 5) {
+    progress.mage5 = true;
   }
   if (detailConfig.missionIds.includes("bossDefeat") && run.bossDefeated) {
     progress.bossDefeat = true;

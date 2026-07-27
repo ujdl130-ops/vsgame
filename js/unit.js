@@ -207,6 +207,7 @@ function summonMage() {
     deathAnimDuration: 0.85,
     deathRewarded: false,
   });
+  if (typeof recordStageMissionMageSummon === "function") recordStageMissionMageSummon();
 }
 
 function summonSaintess() {
