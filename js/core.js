@@ -406,7 +406,7 @@ function loadStageAssets(stageNumber, chapterNumber = 1) {
   playerCastleReady = false;
   enemyCastleReady = false;
 
-  const backgroundPath = chapter === 2 && (stage === 1 || stage === 2)
+  const backgroundPath = chapter === 2 && (stage === 1 || stage === 2 || stage === 3)
     ? ASSET_PATHS.chapter2Stage1Background
     : stage === 1
       ? ASSET_PATHS.stage1Background

@@ -51,6 +51,7 @@ const CHAPTER2_SKELETON_SPRITE = {
 const SKELETON_CURSE_DURATION = 8;
 const SKELETON_CURSE_TICK_INTERVAL = 1;
 const SKELETON_CURSE_MAX_HP_DAMAGE_RATIO = 0.06;
+const CHAPTER2_STAGE3_SKELETON_CURSE_DAMAGE_RATIO = 0.08;
 const CHAPTER2_SKELETON_STAT_MULTIPLIER = 1.1;
 const LEVEL15_GUARD_STATS = { hp: 193, damage: 14 };
 const LEVEL20_GUARD_STATS = { hp: 221, damage: 15 };
@@ -322,6 +323,18 @@ function createChapter2SkeletonEnemy(wave) {
   };
 }
 
+function createChapter2Stage3SkeletonEnemy(wave) {
+  const waveBonus = Math.max(0, (Number(wave) || 1) - 1);
+  const hp = Math.round(LEVEL20_GUARD_STATS.hp * CHAPTER2_SKELETON_STAT_MULTIPLIER) + waveBonus * 10;
+  const damage = Math.round(LEVEL20_GUARD_STATS.damage * CHAPTER2_SKELETON_STAT_MULTIPLIER) + waveBonus * 2;
+  const skeleton = createChapter2SkeletonEnemy(wave);
+  skeleton.hp = hp;
+  skeleton.maxHp = hp;
+  skeleton.damage = damage;
+  skeleton.curseDamageRatio = CHAPTER2_STAGE3_SKELETON_CURSE_DAMAGE_RATIO;
+  return skeleton;
+}
+
 function createChapter2Stage2GoblinEnemy(wave) {
   const hp = Math.round(LEVEL20_GUARD_STATS.hp * CHAPTER2_STAGE2_GOBLIN_STAT_MULTIPLIER);
   const damage = Math.round(LEVEL20_GUARD_STATS.damage * CHAPTER2_STAGE2_GOBLIN_STAT_MULTIPLIER);
@@ -405,7 +418,10 @@ function applySkeletonDeathCurse(enemy) {
   );
   target.skeletonCurseDamage = Math.max(
     1,
-    Math.ceil((Number(target.maxHp) || 1) * SKELETON_CURSE_MAX_HP_DAMAGE_RATIO)
+    Math.ceil(
+      (Number(target.maxHp) || 1)
+      * (Number(enemy.curseDamageRatio) || SKELETON_CURSE_MAX_HP_DAMAGE_RATIO)
+    )
   );
   target.curseDeathEligible = false;
 
@@ -583,11 +599,19 @@ function createKaronBoss(wave) {
 
 function shouldSpawnKaronBoss(wave) {
   if (gameState.karonBossSpawned) return false;
-  return Number(gameState.stage) === 3 && wave === gameState.maxWave && gameState.spawnedInWave === 0;
+  return Number(gameState.chapter) === 1
+    && Number(gameState.stage) === 3
+    && wave === gameState.maxWave
+    && gameState.spawnedInWave === 0;
 }
 
 function shouldTriggerKaronBossByEnemyGate() {
-  if (!gameState || gameState.karonBossSpawned || Number(gameState.stage) !== 3) return false;
+  if (
+    !gameState
+    || gameState.karonBossSpawned
+    || Number(gameState.chapter) !== 1
+    || Number(gameState.stage) !== 3
+  ) return false;
   const enemyBaseMaxHp = Math.max(1, Number(gameState.enemyBaseMaxHp) || 0);
   return Math.max(0, Number(gameState.enemyBaseHp) || 0) <= enemyBaseMaxHp * KARON_GATE_TRIGGER_HP_RATIO;
 }
@@ -1005,6 +1029,16 @@ function spawnEnemy() {
       spawnChapter2BatSwarm(wave);
     } else {
       gameState.enemies.push(createChapter2Stage2GoblinEnemy(wave));
+    }
+    return;
+  }
+
+  if (chapter === 2 && stage === 3) {
+    const spawnIndex = Math.max(0, Number(gameState.spawnedInWave) || 0);
+    if (spawnIndex % 2 === 0) {
+      gameState.enemies.push(createChapter2Stage3SkeletonEnemy(wave));
+    } else {
+      spawnChapter2BatSwarm(wave);
     }
     return;
   }

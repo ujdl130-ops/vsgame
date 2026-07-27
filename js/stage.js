@@ -36,9 +36,17 @@ const CHAPTER2_STAGE_CONFIGS = {
     enemyBaseHp: 120,
     baseEnemiesToSpawn: 3,
   },
+  3: {
+    title: "마녀의 제단",
+    maxWave: 3,
+    startRunestone: 0,
+    playerBaseHp: 100,
+    enemyBaseHp: 150,
+    baseEnemiesToSpawn: 3,
+  },
 };
 
-const CHAPTER2_BATTLE_READY_STAGES = new Set([1, 2]);
+const CHAPTER2_BATTLE_READY_STAGES = new Set([1, 2, 3]);
 
 let selectedChapter = 1;
 
