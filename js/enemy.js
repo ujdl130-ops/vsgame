@@ -62,7 +62,7 @@ const CHAPTER2_BAT_SWARM_SIZE = 8;
 const CHAPTER2_BAT_SPRITE = {
   drawW: 64,
   drawH: 44,
-  flightOffsetY: 190,
+  flightOffsetY: 170,
   healthBarWidth: 30,
 };
 
