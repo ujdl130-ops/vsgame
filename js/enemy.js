@@ -395,6 +395,18 @@ function spawnChapter2BatSwarm(wave) {
   }
 }
 
+function spawnChapter2Stage3SkeletonGroup(wave, spawnIndex = 0) {
+  const groupIndex = Math.floor(Math.max(0, Number(spawnIndex) || 0) / 2);
+  const groupSize = groupIndex % 2 === 0 ? 5 : 6;
+
+  for (let index = 0; index < groupSize; index += 1) {
+    const skeleton = createChapter2Stage3SkeletonEnemy(wave);
+    skeleton.x -= index * 24;
+    skeleton.y += (index % 2 === 0 ? -1 : 1) * Math.min(4, Math.floor(index / 2) * 2);
+    gameState.enemies.push(skeleton);
+  }
+}
+
 function isFriendlyUnitForSkeletonCurse(unit) {
   return Boolean(
     unit
@@ -1036,7 +1048,7 @@ function spawnEnemy() {
   if (chapter === 2 && stage === 3) {
     const spawnIndex = Math.max(0, Number(gameState.spawnedInWave) || 0);
     if (spawnIndex % 2 === 0) {
-      gameState.enemies.push(createChapter2Stage3SkeletonEnemy(wave));
+      spawnChapter2Stage3SkeletonGroup(wave, spawnIndex);
     } else {
       spawnChapter2BatSwarm(wave);
     }
