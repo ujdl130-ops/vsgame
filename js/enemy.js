@@ -76,8 +76,8 @@ const CHAPTER2_WITCH_SPRITE = {
   attackFps: 8,
   drawW: 210,
   drawH: 317,
-  flightOffsetY: 136,
-  healthBarOffsetY: 282,
+  flightOffsetY: 95,
+  healthBarOffsetY: 138,
   healthBarWidth: 166,
   meteorReleaseProgress: 0.72,
 };
@@ -1500,7 +1500,7 @@ function drawWitchBossHealthBar(enemy) {
   const width = CHAPTER2_WITCH_SPRITE.healthBarWidth;
   const height = 12;
   const x = enemy.x - width / 2;
-  const y = enemy.y - CHAPTER2_WITCH_SPRITE.healthBarOffsetY;
+  const y = Math.max(20, enemy.y - CHAPTER2_WITCH_SPRITE.healthBarOffsetY);
   const ratio = Math.max(0, Math.min(1, enemy.hp / enemy.maxHp));
 
   ctx.save();
