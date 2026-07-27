@@ -57,12 +57,12 @@ const LEVEL20_GUARD_STATS = { hp: 221, damage: 15 };
 const CHAPTER2_STAGE2_GOBLIN_STAT_MULTIPLIER = 1.1;
 const LEVEL15_MAGE_DAMAGE = 23;
 const CHAPTER2_BAT_HP = LEVEL15_MAGE_DAMAGE * 2;
-const CHAPTER2_BAT_SWARM_SIZE = 4;
+const CHAPTER2_BAT_SWARM_SIZE = 8;
 
 const CHAPTER2_BAT_SPRITE = {
   drawW: 64,
   drawH: 44,
-  flightOffsetY: 76,
+  flightOffsetY: 190,
   healthBarWidth: 30,
 };
 
@@ -339,6 +339,10 @@ function createChapter2BatEnemy(wave, swarmIndex = 0) {
     { x: -6, y: 7 },
     { x: 6, y: -5 },
     { x: 18, y: 9 },
+    { x: -18, y: 10 },
+    { x: -6, y: -10 },
+    { x: 6, y: 12 },
+    { x: 18, y: -12 },
   ];
   const offset = formationOffsets[swarmIndex % formationOffsets.length];
 
