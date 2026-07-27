@@ -250,6 +250,7 @@ function summonSaintess() {
     deathAnimDuration: 0.85,
     deathRewarded: false,
   });
+  if (typeof recordStageMissionSaintessSummon === "function") recordStageMissionSaintessSummon();
 }
 
 function summonThief() {

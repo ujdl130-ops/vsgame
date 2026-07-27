@@ -381,6 +381,12 @@ const STAGE_DETAIL_CONFIGS = {
       missionIds: ["clear", "mage5", "noChampionDeath"],
       missionLabels: ["스테이지 클리어", "마법사 5명 이상 소환", "챔피언 사망 없음"],
     },
+    3: {
+      image: "assets/ui/chapter2 stage3 info UI.png",
+      alt: "작전 2-3 마녀의 제단 상세 정보",
+      missionIds: ["clear", "saintess2", "noChampionDeath"],
+      missionLabels: ["스테이지 클리어", "성녀 2명 이상 소환", "챔피언 사망 없음"],
+    },
   },
 };
 
@@ -442,6 +448,19 @@ function recordStageMissionMageSummon() {
   gameState.stageMissionRun.mageSummons = Math.max(0, Number(gameState.stageMissionRun.mageSummons) || 0) + 1;
 }
 
+function recordStageMissionSaintessSummon() {
+  if (
+    !gameState
+    || Number(gameState.chapter) !== 2
+    || Number(gameState.stage) !== 3
+    || !gameState.stageMissionRun
+  ) return;
+  gameState.stageMissionRun.saintessSummons = Math.max(
+    0,
+    Number(gameState.stageMissionRun.saintessSummons) || 0,
+  ) + 1;
+}
+
 function recordStageMissionChampionDeath() {
   if (!gameState || !getStageDetailConfig(gameState.stage) || !gameState.stageMissionRun) return;
   gameState.stageMissionRun.championDied = true;
@@ -475,6 +494,9 @@ function completeStageMissions(stageNumber) {
   }
   if (detailConfig.missionIds.includes("mage5") && (Number(run.mageSummons) || 0) >= 5) {
     progress.mage5 = true;
+  }
+  if (detailConfig.missionIds.includes("saintess2") && (Number(run.saintessSummons) || 0) >= 2) {
+    progress.saintess2 = true;
   }
   if (detailConfig.missionIds.includes("bossDefeat") && run.bossDefeated) {
     progress.bossDefeat = true;
