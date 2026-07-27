@@ -14,14 +14,15 @@ function resetGame() {
 
 function startGame(stageNumber = selectedStage) {
   selectedStage = Number(stageNumber) || 1;
-  if (!isStageUnlocked(selectedStage)) {
+  const chapter = typeof selectedChapter === "number" ? selectedChapter : 1;
+  if (!canStartChapterStage(chapter, selectedStage)) {
     showStageSelect();
-    showChapterStages();
+    showChapterStages(chapter);
     showStageLockedNotice(selectedStage);
     return;
   }
 
-  loadStageAssets(selectedStage, typeof selectedChapter === "number" ? selectedChapter : 1);
+  loadStageAssets(selectedStage, chapter);
   hideStageClearRewardUi();
   hideStageDefeatUi();
   closeGameOptionsMenu(false);

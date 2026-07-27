@@ -184,8 +184,9 @@ function isStageDefeatVisible() {
 
 function updateStageClearRewardActions() {
   if (!stageClearRewardNextBtn) return;
+  const currentChapter = Number(gameState?.chapter) || 1;
   const nextStage = Number(selectedStage) + 1;
-  const canGoNext = Boolean(STAGE_CONFIGS[nextStage] && isStageUnlocked(nextStage));
+  const canGoNext = canStartChapterStage(currentChapter, nextStage);
   stageClearRewardNextBtn.disabled = !canGoNext;
   stageClearRewardNextBtn.setAttribute("aria-disabled", canGoNext ? "false" : "true");
 }
@@ -390,8 +391,9 @@ function handleStageClearRewardRetry() {
 
 function handleStageClearRewardNext() {
   if (!requireStageClearTreasureOpened()) return;
+  const currentChapter = Number(gameState?.chapter) || 1;
   const nextStage = Number(selectedStage) + 1;
-  if (!STAGE_CONFIGS[nextStage] || !isStageUnlocked(nextStage)) return;
+  if (!canStartChapterStage(currentChapter, nextStage)) return;
   hideStageClearRewardUi();
   startGame(nextStage);
 }

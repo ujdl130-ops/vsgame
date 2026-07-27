@@ -53,6 +53,18 @@ const SKELETON_CURSE_TICK_INTERVAL = 1;
 const SKELETON_CURSE_MAX_HP_DAMAGE_RATIO = 0.06;
 const CHAPTER2_SKELETON_STAT_MULTIPLIER = 1.1;
 const LEVEL15_GUARD_STATS = { hp: 193, damage: 14 };
+const LEVEL20_GUARD_STATS = { hp: 221, damage: 15 };
+const CHAPTER2_STAGE2_GOBLIN_STAT_MULTIPLIER = 1.1;
+const LEVEL15_MAGE_DAMAGE = 23;
+const CHAPTER2_BAT_HP = LEVEL15_MAGE_DAMAGE * 2;
+const CHAPTER2_BAT_SWARM_SIZE = 4;
+
+const CHAPTER2_BAT_SPRITE = {
+  drawW: 64,
+  drawH: 44,
+  flightOffsetY: 76,
+  healthBarWidth: 30,
+};
 
 const EVILEYE_SPRITE = {
   columns: 6,
@@ -308,6 +320,62 @@ function createChapter2SkeletonEnemy(wave) {
     deathRewarded: false,
     canApplyCurse: true,
   };
+}
+
+function createChapter2Stage2GoblinEnemy(wave) {
+  const hp = Math.round(LEVEL20_GUARD_STATS.hp * CHAPTER2_STAGE2_GOBLIN_STAT_MULTIPLIER);
+  const damage = Math.round(LEVEL20_GUARD_STATS.damage * CHAPTER2_STAGE2_GOBLIN_STAT_MULTIPLIER);
+  const goblin = createGoblinEnemy(wave, false);
+  goblin.hp = hp;
+  goblin.maxHp = hp;
+  goblin.damage = damage;
+  goblin.speed = 40 + wave * 2;
+  return goblin;
+}
+
+function createChapter2BatEnemy(wave, swarmIndex = 0) {
+  const formationOffsets = [
+    { x: -18, y: -8 },
+    { x: -6, y: 7 },
+    { x: 6, y: -5 },
+    { x: 18, y: 9 },
+  ];
+  const offset = formationOffsets[swarmIndex % formationOffsets.length];
+
+  return {
+    type: "bat",
+    name: "swarm bat",
+    airborne: true,
+    x: ENEMY_BASE_X - 62 + offset.x,
+    y: COMBAT_LINE_Y,
+    w: 42,
+    h: 44,
+    hp: CHAPTER2_BAT_HP,
+    maxHp: CHAPTER2_BAT_HP,
+    speed: 53 + wave * 2,
+    damage: 7 + wave,
+    range: 34,
+    cooldown: 0,
+    attackSpeed: 0.82,
+    animTime: swarmIndex * 0.17,
+    moving: false,
+    attackAnimTimer: 0,
+    attackAnimDuration: 0.34,
+    paralyzeTimer: 0,
+    dead: false,
+    deathAnimTimer: 0,
+    deathAnimDuration: 0.48,
+    deathRewarded: false,
+    runestoneReward: 3,
+    flightOffset: CHAPTER2_BAT_SPRITE.flightOffsetY + offset.y,
+    swarmIndex,
+  };
+}
+
+function spawnChapter2BatSwarm(wave) {
+  for (let index = 0; index < CHAPTER2_BAT_SWARM_SIZE; index += 1) {
+    gameState.enemies.push(createChapter2BatEnemy(wave, index));
+  }
 }
 
 function isFriendlyUnitForSkeletonCurse(unit) {
@@ -927,6 +995,16 @@ function spawnEnemy() {
     return;
   }
 
+  if (chapter === 2 && stage === 2) {
+    const spawnIndex = Math.max(0, Number(gameState.spawnedInWave) || 0);
+    if (spawnIndex % 2 === 0) {
+      spawnChapter2BatSwarm(wave);
+    } else {
+      gameState.enemies.push(createChapter2Stage2GoblinEnemy(wave));
+    }
+    return;
+  }
+
   if (stage === 2) {
     gameState.enemies.push(shouldSpawnEvileye(wave) ? createEvileyeEnemy(wave) : createGoblinEnemy(wave, false));
     return;
@@ -1068,6 +1146,10 @@ function canDrawStage1EnemySprite(enemy) {
 
 function canDrawChapter2SkeletonSprite(enemy) {
   return chapter2SkeletonSpriteReady && enemy.type === "skeleton";
+}
+
+function canDrawChapter2BatSprite(enemy) {
+  return chapter2BatSpriteReady && enemy.type === "bat";
 }
 
 function canDrawEvileyeSprite(enemy) {
@@ -1251,6 +1333,51 @@ function drawEvileyeSprite(enemy) {
   return true;
 }
 
+function drawChapter2BatSprite(enemy) {
+  if (!canDrawChapter2BatSprite(enemy)) return false;
+
+  const isDying = enemy.dead || enemy.hp <= 0;
+  const isAttacking = !isDying && enemy.attackAnimTimer > 0;
+  const deathDuration = enemy.deathAnimDuration || 0.48;
+  const deathProgress = isDying
+    ? 1 - Math.max(0, enemy.deathAnimTimer || 0) / deathDuration
+    : 0;
+  const attackDuration = enemy.attackAnimDuration || 0.34;
+  const attackProgress = isAttacking
+    ? 1 - Math.max(0, enemy.attackAnimTimer || 0) / attackDuration
+    : 0;
+  const hover = isDying || enemy.paralyzeTimer > 0
+    ? 0
+    : Math.sin((enemy.animTime || 0) * 10 + (enemy.swarmIndex || 0) * 0.8) * 3;
+  const wingPulse = isDying
+    ? 1
+    : 0.94 + Math.sin((enemy.animTime || 0) * 13 + (enemy.swarmIndex || 0)) * 0.06;
+  const attackLunge = isAttacking ? -Math.sin(attackProgress * Math.PI) * 7 : 0;
+  const drawW = CHAPTER2_BAT_SPRITE.drawW;
+  const drawH = CHAPTER2_BAT_SPRITE.drawH;
+  const flightOffset = enemy.flightOffset || CHAPTER2_BAT_SPRITE.flightOffsetY;
+
+  ctx.save();
+  ctx.translate(enemy.x + attackLunge, enemy.y - flightOffset + hover + deathProgress * 42);
+
+  if (isDying) {
+    ctx.globalAlpha = Math.max(0.1, 1 - deathProgress * 0.9);
+    ctx.rotate(-deathProgress * 0.65);
+  }
+
+  ctx.scale(1, wingPulse);
+  ctx.imageSmoothingEnabled = true;
+  ctx.drawImage(
+    chapter2BatSprite,
+    -drawW / 2,
+    -drawH / 2,
+    drawW,
+    drawH
+  );
+  ctx.restore();
+  return true;
+}
+
 function drawStage1EnemySprite(enemy) {
   if (!canDrawStage1EnemySprite(enemy)) return false;
 
@@ -1392,6 +1519,23 @@ function drawEnemy(enemy) {
         enemy.hp,
         enemy.maxHp,
         isKaronWerewolf(enemy) ? "#ff375c" : "#ff4f78"
+      );
+    }
+    return;
+  }
+
+  const usedChapter2BatSprite = drawChapter2BatSprite(enemy);
+  if (usedChapter2BatSprite) {
+    const isDying = enemy.dead || enemy.hp <= 0;
+    if (!isDying) {
+      const flightOffset = enemy.flightOffset || CHAPTER2_BAT_SPRITE.flightOffsetY;
+      drawHealthBar(
+        enemy.x,
+        enemy.y - flightOffset - CHAPTER2_BAT_SPRITE.drawH / 2 - 9,
+        CHAPTER2_BAT_SPRITE.healthBarWidth,
+        enemy.hp,
+        enemy.maxHp,
+        "#ff6868"
       );
     }
     return;

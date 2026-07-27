@@ -96,7 +96,7 @@ function startEnemyDeath(enemy) {
   }
 
   if (!enemy.deathRewarded) {
-    addRunestone(18);
+    addRunestone(typeof enemy.runestoneReward === "number" ? enemy.runestoneReward : 18);
     enemy.deathRewarded = true;
   }
 }

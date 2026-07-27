@@ -188,6 +188,7 @@ const ASSET_PATHS = {
   stage1EnemySprite: "assets/animations/enemy/stage1_goblin_spritesheet.png",
   stage2EvileyeSprite: "assets/animations/enemy/stage2_flying_eye_spritesheet.png",
   chapter2SkeletonSprite: "assets/animations/enemy/chapter2/skeleton_soldier_spritesheet_v7.png",
+  chapter2BatSprite: "assets/animations/enemy/chapter2/bat_enemy.png",
   karonHumanSprite: "assets/animations/Boss_Karon/karon_human_phase1_transparent.png",
   karonTransformSprite: "assets/animations/Boss_Karon/karon_transform_transparent.png",
   karonWerewolfSprite: "assets/animations/Boss_Karon/karon_werewolf_phase2_transparent.png",
@@ -341,6 +342,15 @@ loadGameImage(
   "Chapter 2 skeleton soldier sprite"
 );
 
+const chapter2BatSprite = new Image();
+let chapter2BatSpriteReady = false;
+loadGameImage(
+  chapter2BatSprite,
+  [ASSET_PATHS.chapter2BatSprite],
+  (ready) => { chapter2BatSpriteReady = ready; },
+  "Chapter 2 bat sprite"
+);
+
 const karonHumanSprite = new Image();
 let karonHumanSpriteReady = false;
 loadGameImage(
@@ -396,7 +406,7 @@ function loadStageAssets(stageNumber, chapterNumber = 1) {
   playerCastleReady = false;
   enemyCastleReady = false;
 
-  const backgroundPath = chapter === 2 && stage === 1
+  const backgroundPath = chapter === 2 && (stage === 1 || stage === 2)
     ? ASSET_PATHS.chapter2Stage1Background
     : stage === 1
       ? ASSET_PATHS.stage1Background

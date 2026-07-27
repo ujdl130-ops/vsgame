@@ -33,6 +33,13 @@ function damageEnemyBaseWithProjectile(projectile, impact) {
 function getEnemyProjectileHitPoint(enemy) {
   if (!enemy) return { x: 0, y: 0 };
 
+  if (enemy.type === "bat") {
+    return {
+      x: enemy.x,
+      y: enemy.y - (enemy.flightOffset || CHAPTER2_BAT_SPRITE.flightOffsetY),
+    };
+  }
+
   if (enemy.airborne) {
     const evileyeConfig = typeof EVILEYE_SPRITE !== "undefined" ? EVILEYE_SPRITE : null;
     const flightOffset = enemy.type === "evileye" && evileyeConfig
