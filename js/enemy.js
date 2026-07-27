@@ -76,9 +76,9 @@ const CHAPTER2_WITCH_SPRITE = {
   attackFps: 8,
   drawW: 210,
   drawH: 317,
-  flightOffsetY: 158,
-  healthBarOffsetY: 276,
-  healthBarWidth: 118,
+  flightOffsetY: 136,
+  healthBarOffsetY: 282,
+  healthBarWidth: 166,
   meteorReleaseProgress: 0.72,
 };
 
@@ -429,6 +429,24 @@ function spawnChapter2Stage3SkeletonGroup(wave, spawnIndex = 0) {
   }
 }
 
+function spawnChapter2Stage4BossEscort(wave = 1) {
+  const skeletonCount = 4;
+  const batCount = 4;
+
+  for (let index = 0; index < skeletonCount; index += 1) {
+    const skeleton = createChapter2Stage3SkeletonEnemy(wave);
+    skeleton.x = ENEMY_BASE_X - 175 - index * 38;
+    skeleton.y += index % 2 === 0 ? -2 : 2;
+    gameState.enemies.push(skeleton);
+  }
+
+  for (let index = 0; index < batCount; index += 1) {
+    const bat = createChapter2BatEnemy(wave, index);
+    bat.x = ENEMY_BASE_X - 135 - index * 42;
+    gameState.enemies.push(bat);
+  }
+}
+
 function createChapter2WitchBoss() {
   return {
     type: "witch",
@@ -473,7 +491,8 @@ function spawnChapter2WitchBoss() {
 
   gameState.witchBossSpawned = true;
   gameState.enemies.push(createChapter2WitchBoss());
-  gameState.message = "보스 출현! 녹색 마녀가 독 메테오를 소환합니다!";
+  spawnChapter2Stage4BossEscort(Math.max(1, Number(gameState.wave) || 1));
+  gameState.message = "보스 출현! 녹색 마녀와 스켈레톤·박쥐 호위대가 나타났습니다!";
   gameState.messageTimer = 1.8;
   return true;
 }
@@ -1477,6 +1496,44 @@ function drawWitchSprite(enemy) {
   return true;
 }
 
+function drawWitchBossHealthBar(enemy) {
+  const width = CHAPTER2_WITCH_SPRITE.healthBarWidth;
+  const height = 12;
+  const x = enemy.x - width / 2;
+  const y = enemy.y - CHAPTER2_WITCH_SPRITE.healthBarOffsetY;
+  const ratio = Math.max(0, Math.min(1, enemy.hp / enemy.maxHp));
+
+  ctx.save();
+  ctx.font = "700 11px Arial, sans-serif";
+  ctx.textAlign = "center";
+  ctx.textBaseline = "bottom";
+  ctx.fillStyle = "#eaffdd";
+  ctx.shadowColor = "rgba(0, 0, 0, 0.9)";
+  ctx.shadowBlur = 4;
+  ctx.fillText("녹색 마녀", enemy.x, y - 4);
+
+  ctx.shadowBlur = 0;
+  ctx.fillStyle = "rgba(7, 10, 12, 0.92)";
+  ctx.fillRect(x - 3, y - 3, width + 6, height + 6);
+
+  ctx.fillStyle = "#20272b";
+  ctx.fillRect(x, y, width, height);
+
+  if (ratio > 0) {
+    const gradient = ctx.createLinearGradient(x, y, x, y + height);
+    gradient.addColorStop(0, "#b7ff68");
+    gradient.addColorStop(0.5, "#62dc35");
+    gradient.addColorStop(1, "#258d20");
+    ctx.fillStyle = gradient;
+    ctx.fillRect(x, y, width * ratio, height);
+  }
+
+  ctx.strokeStyle = "#e4f5d9";
+  ctx.lineWidth = 2;
+  ctx.strokeRect(x, y, width, height);
+  ctx.restore();
+}
+
 function drawKaronSprite(enemy) {
   if (!canDrawKaronSprite(enemy)) return false;
 
@@ -1842,14 +1899,7 @@ function drawEnemy(enemy) {
   if (usedWitchSprite) {
     const isDying = enemy.dead || enemy.hp <= 0;
     if (!isDying) {
-      drawHealthBar(
-        enemy.x,
-        enemy.y - CHAPTER2_WITCH_SPRITE.healthBarOffsetY,
-        CHAPTER2_WITCH_SPRITE.healthBarWidth,
-        enemy.hp,
-        enemy.maxHp,
-        "#75ff42"
-      );
+      drawWitchBossHealthBar(enemy);
     }
     return;
   }
