@@ -408,6 +408,11 @@ function handleStageDefeatRetry() {
   restartGame();
 }
 
+function handleStageDefeatUpgrade() {
+  hideStageDefeatUi();
+  showFormation();
+}
+
 function closeGameOptionsMenu(resumeGame = true) {
   if (!gameOptionsMenu) return;
 
@@ -469,14 +474,50 @@ function handleOptionRestart() {
   restartGame();
 }
 
+function getGameViewportSize() {
+  const viewport = window.visualViewport || null;
+  const width = Math.max(1, viewport?.width || window.innerWidth || document.documentElement.clientWidth || 1);
+  const height = Math.max(1, viewport?.height || window.innerHeight || document.documentElement.clientHeight || 1);
+  return { width, height };
+}
+
+function syncAppViewportSize() {
+  const size = getGameViewportSize();
+  const forceLandscape = size.height > size.width;
+  const appWidth = forceLandscape ? size.height : size.width;
+  const appHeight = forceLandscape ? size.width : size.height;
+  const root = document.documentElement;
+  const rootStyle = document.documentElement.style;
+  root.classList.toggle("is-forced-landscape", forceLandscape);
+  rootStyle.setProperty("--app-viewport-width", `${size.width}px`);
+  rootStyle.setProperty("--app-viewport-height", `${size.height}px`);
+  rootStyle.setProperty("--app-width", `${appWidth}px`);
+  rootStyle.setProperty("--app-height", `${appHeight}px`);
+  rootStyle.setProperty("--recruit-artboard-scale", Math.min(appWidth / 1920, appHeight / 900).toFixed(4));
+  rootStyle.setProperty("--shop-artboard-scale", Math.min(appWidth / 1920, appHeight / 900).toFixed(4));
+  rootStyle.setProperty("--formation-artboard-scale", Math.min(appWidth / 1920, appHeight / 900).toFixed(4));
+  rootStyle.setProperty("--mission-artboard-scale", Math.min(appWidth / 1920, appHeight / 900).toFixed(4));
+  return {
+    width: appWidth,
+    height: appHeight,
+    viewportWidth: size.width,
+    viewportHeight: size.height,
+    forceLandscape,
+  };
+}
+
 function updateBattleViewportScale() {
   const baseWidth = 960;
   const baseHeight = 540;
   const maxScale = 2;
-  const availableWidth = Math.max(1, window.innerWidth);
-  const availableHeight = Math.max(1, window.innerHeight);
-  const scale = Math.min(maxScale, availableWidth / baseWidth);
-  const frameHeight = Math.min(baseHeight, availableHeight / scale);
+  const { width: availableWidth, height: availableHeight } = syncAppViewportSize();
+  const isCompactLandscape = availableWidth > availableHeight && availableHeight <= baseHeight;
+  const scale = Math.min(
+    maxScale,
+    availableWidth / baseWidth,
+    isCompactLandscape ? availableHeight / baseHeight : maxScale
+  );
+  const frameHeight = isCompactLandscape ? baseHeight : Math.min(baseHeight, availableHeight / scale);
   const rootStyle = document.documentElement.style;
 
   rootStyle.setProperty("--battle-visual-scale", scale.toFixed(4));
@@ -491,9 +532,10 @@ function bindMovementJoystick(joystick) {
   let activePointerId = null;
 
   const setJoystickInput = (amount) => {
-    heroMoveInput = Math.max(-1, Math.min(1, Number(amount) || 0));
-    joystick.classList.toggle("is-left", heroMoveInput < 0);
-    joystick.classList.toggle("is-right", heroMoveInput > 0);
+    const joystickInput = Math.max(-1, Math.min(1, Number(amount) || 0));
+    setHeroJoystickMoveInput(joystickInput);
+    joystick.classList.toggle("is-left", joystickInput < 0);
+    joystick.classList.toggle("is-right", joystickInput > 0);
   };
 
   const resetJoystick = () => {

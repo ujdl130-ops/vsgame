@@ -3,7 +3,7 @@
 function resetGame() {
   if (animationId) cancelAnimationFrame(animationId);
   keys = {};
-  heroMoveInput = 0;
+  resetHeroMoveInput();
   gameState = createInitialState();
   lastTime = performance.now();
   updateHud();
@@ -195,6 +195,10 @@ window.addEventListener("keydown", (event) => {
     event.preventDefault();
     heroAttack();
   }
+  if (event.code === "KeyA" || event.code === "KeyD") {
+    keys[event.code] = true;
+    syncHeroMoveInput();
+  }
   if (event.code === "Digit1") {
     event.preventDefault();
     summonGuard();
@@ -219,10 +223,126 @@ window.addEventListener("keydown", (event) => {
 
 window.addEventListener("keyup", (event) => {
   if (event.code === "Space") keys.Space = false;
+  if (event.code === "KeyA" || event.code === "KeyD") {
+    keys[event.code] = false;
+    syncHeroMoveInput();
+  }
+});
+
+window.addEventListener("blur", () => {
+  keys.Space = false;
+  keys.KeyA = false;
+  keys.KeyD = false;
+  syncHeroMoveInput();
 });
 
 window.addEventListener("resize", updateBattleViewportScale);
 window.addEventListener("orientationchange", updateBattleViewportScale);
+if (window.visualViewport) {
+  window.visualViewport.addEventListener("resize", updateBattleViewportScale);
+}
+document.addEventListener("fullscreenchange", refreshGameViewport);
+document.addEventListener("webkitfullscreenchange", refreshGameViewport);
+updateBattleViewportScale();
+
+function refreshGameViewport() {
+  requestAnimationFrame(updateBattleViewportScale);
+  window.setTimeout(updateBattleViewportScale, 250);
+}
+
+function isGameStandaloneDisplay() {
+  return Boolean(
+    window.navigator.standalone
+    || window.matchMedia?.("(display-mode: fullscreen)")?.matches
+    || window.matchMedia?.("(display-mode: standalone)")?.matches
+  );
+}
+
+function isGameFullscreenActive() {
+  return Boolean(
+    document.fullscreenElement
+    || document.webkitFullscreenElement
+    || document.msFullscreenElement
+    || isGameStandaloneDisplay()
+  );
+}
+
+function syncGameFullscreenUiState() {
+  document.documentElement.classList.toggle("is-game-fullscreen", isGameFullscreenActive());
+}
+
+document.addEventListener("fullscreenchange", syncGameFullscreenUiState);
+document.addEventListener("webkitfullscreenchange", syncGameFullscreenUiState);
+
+function lockGameLandscapeOrientation() {
+  const lock = window.screen?.orientation?.lock;
+  if (typeof lock !== "function") return;
+  try {
+    const orientationLock = lock.call(window.screen.orientation, "landscape-primary");
+    if (orientationLock && typeof orientationLock.catch === "function") {
+      orientationLock.catch(() => {
+        const fallbackLock = lock.call(window.screen.orientation, "landscape");
+        if (fallbackLock && typeof fallbackLock.catch === "function") fallbackLock.catch(() => {});
+      });
+    }
+  } catch (error) {
+    refreshGameViewport();
+  }
+}
+
+function requestGameFullscreen() {
+  syncGameFullscreenUiState();
+  if (isGameFullscreenActive()) {
+    lockGameLandscapeOrientation();
+    refreshGameViewport();
+    return;
+  }
+
+  const root = document.documentElement;
+  const requestFullscreen =
+    root.requestFullscreen
+    || root.webkitRequestFullscreen
+    || root.msRequestFullscreen;
+
+  if (typeof requestFullscreen !== "function") {
+    lockGameLandscapeOrientation();
+    refreshGameViewport();
+    return;
+  }
+
+  try {
+    const fullscreenRequest = requestFullscreen.call(root, { navigationUI: "hide" });
+    if (fullscreenRequest && typeof fullscreenRequest.then === "function") {
+      fullscreenRequest
+        .then(() => {
+          lockGameLandscapeOrientation();
+          syncGameFullscreenUiState();
+          refreshGameViewport();
+        })
+        .catch(() => {
+          syncGameFullscreenUiState();
+          refreshGameViewport();
+        });
+    } else {
+      lockGameLandscapeOrientation();
+      syncGameFullscreenUiState();
+      refreshGameViewport();
+    }
+  } catch (error) {
+    syncGameFullscreenUiState();
+    refreshGameViewport();
+  }
+}
+
+function requestGameFullscreenFromGesture(event) {
+  if (event?.button !== undefined && event.button !== 0) return;
+  requestGameFullscreen();
+}
+
+window.addEventListener("pointerdown", requestGameFullscreenFromGesture, { capture: true, passive: true });
+window.addEventListener("click", requestGameFullscreenFromGesture, { capture: true, passive: true });
+window.addEventListener("keydown", requestGameFullscreenFromGesture, { capture: true });
+syncGameFullscreenUiState();
 
 function bindUnitSlotButton(button, summonFn) {
   if (!button || typeof summonFn !== "function") return;
@@ -288,6 +408,7 @@ if (stageClearRewardRetryBtn) stageClearRewardRetryBtn.addEventListener("click",
 if (stageClearRewardNextBtn) stageClearRewardNextBtn.addEventListener("click", handleStageClearRewardNext);
 if (stageDefeatLobbyBtn) stageDefeatLobbyBtn.addEventListener("click", handleStageDefeatLobby);
 if (stageDefeatRetryBtn) stageDefeatRetryBtn.addEventListener("click", handleStageDefeatRetry);
+if (stageDefeatUpgradeBtn) stageDefeatUpgradeBtn.addEventListener("click", handleStageDefeatUpgrade);
 bindMovementJoystick(movementJoystick);
 if (titleStartBtn) titleStartBtn.textContent = "TAP TO START";
 function shouldShowWelcomeRewardPopup() {
@@ -296,6 +417,7 @@ function shouldShowWelcomeRewardPopup() {
 }
 
 function handleTitleStart() {
+  requestGameFullscreen();
   showLobby();
   if (shouldShowWelcomeRewardPopup()) {
     playerProgress.welcomeMail = { ...(playerProgress.welcomeMail || {}), introduced: true, claimed: false };
@@ -634,11 +756,10 @@ if (recruitPullTenBtn) recruitPullTenBtn.addEventListener("click", () => {
   requestRecruitPull(10);
 });
 if (recruitDoorFrame) recruitDoorFrame.addEventListener("pointerdown", handleRecruitDoorTap);
-if (recruitDoorCloseBtn) recruitDoorCloseBtn.addEventListener("pointerdown", (event) => {
-  event.preventDefault();
-  event.stopPropagation();
-  hideRecruitDoorScene();
-});
+if (recruitDoorCloseBtn) {
+  recruitDoorCloseBtn.addEventListener("pointerdown", closeRecruitDoorScene);
+  recruitDoorCloseBtn.addEventListener("click", closeRecruitDoorScene);
+}
 if (lobbyExitBtn) lobbyExitBtn.addEventListener("click", showTitle);
 if (shopBackBtn) shopBackBtn.addEventListener("click", showLobby);
 if (shopCloseBtn) shopCloseBtn.addEventListener("click", showLobby);

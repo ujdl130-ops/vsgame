@@ -286,10 +286,7 @@ function ensureRecruitAnimationUI() {
     <div class="gacha-result-grid"></div>
     <button class="gacha-result-confirm" type="button">확인</button>
   `;
-  resultLayer.querySelector(".gacha-result-confirm").addEventListener("click", () => {
-    hideRecruitDoorScene();
-    showRecruit();
-  });
+  resultLayer.querySelector(".gacha-result-confirm").addEventListener("click", closeRecruitDoorScene);
 
   recruitDoorScene.append(particles, heavenStrike, flash, resultLayer);
 }
@@ -474,6 +471,15 @@ function hideRecruitDoorScene(silent = false) {
   if (!silent && recruitNotice) {
     recruitNotice.innerHTML = "<strong>신 확률 3%</strong><span>병사정수 70% · 신의정수 27% · 신 3%</span>";
   }
+}
+
+function closeRecruitDoorScene(event = null) {
+  if (event) {
+    event.preventDefault();
+    event.stopPropagation();
+  }
+  hideRecruitDoorScene();
+  showRecruit();
 }
 
 function playDoorKnockStep() {

@@ -16,11 +16,29 @@
   --battle-visual-width: 1920px;
   --battle-visual-height: 1080px;
   --battle-frame-height: 540px;
+  --app-width: 100vw;
+  --app-height: 100dvh;
+  --app-viewport-width: 100vw;
+  --app-viewport-height: 100dvh;
+  --recruit-artboard-scale: 1;
+  --shop-artboard-scale: 1;
+  --formation-artboard-scale: 1;
+  --mission-artboard-scale: 1;
+}
+
+html {
+  width: 100%;
+  height: 100%;
+  min-height: 100%;
+  background: #070914;
+  overflow: hidden;
 }
 
 body {
   margin: 0;
-  min-height: 100vh;
+  width: 100%;
+  height: var(--app-height);
+  min-height: var(--app-height);
   font-family: "Pretendard", "Noto Sans KR", Arial, sans-serif;
   background:
     radial-gradient(circle at 50% 0%, rgba(88, 65, 160, 0.7) 0%, transparent 34%),
@@ -28,8 +46,11 @@ body {
   color: #fff;
   display: flex;
   justify-content: center;
-  padding: 24px 12px;
-  overflow-x: hidden;
+  padding: 0;
+  overflow: hidden;
+  overscroll-behavior: none;
+  touch-action: manipulation;
+  -webkit-text-size-adjust: 100%;
 }
 
 body::before {
@@ -149,6 +170,8 @@ canvas {
 
 body.game-started:not(.in-lobby):not(.in-stage-select):not(.in-shop):not(.in-recruit):not(.in-formation) {
   align-items: flex-start;
+  width: 100vw;
+  min-height: 100dvh;
   padding: 0;
   overflow: hidden;
 }
@@ -173,6 +196,17 @@ body.game-started:not(.in-lobby):not(.in-stage-select):not(.in-shop):not(.in-rec
 body.game-started:not(.in-lobby):not(.in-stage-select):not(.in-shop):not(.in-recruit):not(.in-formation) .battle-stage-frame canvas {
   width: 960px;
   height: 540px;
+}
+
+@media (orientation: landscape) and (max-height: 540px) {
+  body.game-started:not(.in-lobby):not(.in-stage-select):not(.in-shop):not(.in-recruit):not(.in-formation) {
+    height: 100vh;
+    height: 100dvh;
+  }
+
+  body.game-started:not(.in-lobby):not(.in-stage-select):not(.in-shop):not(.in-recruit):not(.in-formation) .game-wrap {
+    margin: auto;
+  }
 }
 
 .battle-unit-badge {
@@ -6201,7 +6235,8 @@ body:not(.game-started) .game-wrap {
   position: absolute;
   right: max(14px, calc(14px + env(safe-area-inset-right)));
   top: max(14px, calc(14px + env(safe-area-inset-top)));
-  z-index: 45;
+  z-index: 70;
+  pointer-events: auto;
   border: 4px solid #fff;
   background: linear-gradient(180deg, #ffc6d9, #ff6b8f);
   box-shadow:
@@ -17903,4 +17938,800 @@ body:not(.game-started) .game-wrap {
 
 .formation-screen .formation-wallet-wide .formation-currency strong {
   font-size: 14px !important;
+}
+
+/* Mobile fullscreen sizing: use the live visual viewport instead of browser 100vh. */
+body.in-lobby,
+body.in-stage-select,
+body.in-shop,
+body.in-recruit,
+body.in-formation,
+body.in-mission,
+body.in-inventory,
+body.in-prebattle-formation,
+body:not(.game-started) {
+  width: var(--app-width) !important;
+  height: var(--app-height) !important;
+  min-height: var(--app-height) !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+}
+
+.title-screen,
+.lobby-screen,
+.stage-screen,
+.shop-screen,
+.recruit-screen,
+.formation-screen,
+.mission-screen,
+.inventory-screen,
+.prebattle-formation-screen {
+  width: var(--app-width) !important;
+  height: var(--app-height) !important;
+  min-height: var(--app-height) !important;
+  max-height: var(--app-height) !important;
+}
+
+.lobby-stage,
+.formation-shell,
+.formation-main-panel,
+.inventory-screen .inventory-board {
+  height: var(--app-height) !important;
+  max-height: var(--app-height) !important;
+}
+
+.stage-art-frame,
+.prebattle-formation-board {
+  width: min(var(--app-width), calc(var(--app-height) * 16 / 9)) !important;
+  max-width: var(--app-width) !important;
+  max-height: var(--app-height) !important;
+}
+
+/* Force landscape composition when the browser stays in portrait. */
+:root.is-forced-landscape body {
+  width: var(--app-viewport-width) !important;
+  height: var(--app-viewport-height) !important;
+  min-height: var(--app-viewport-height) !important;
+}
+
+:root.is-forced-landscape .title-screen,
+:root.is-forced-landscape .lobby-screen,
+:root.is-forced-landscape .stage-screen,
+:root.is-forced-landscape .shop-screen,
+:root.is-forced-landscape .recruit-screen,
+:root.is-forced-landscape .formation-screen,
+:root.is-forced-landscape .mission-screen,
+:root.is-forced-landscape .inventory-screen,
+:root.is-forced-landscape .prebattle-formation-screen {
+  left: 0 !important;
+  top: 0 !important;
+  right: auto !important;
+  bottom: auto !important;
+  transform: rotate(90deg) translateY(-100%) !important;
+  transform-origin: top left !important;
+}
+
+:root.is-forced-landscape body.game-started:not(.in-lobby):not(.in-stage-select):not(.in-shop):not(.in-recruit):not(.in-formation):not(.in-mission):not(.in-inventory) .game-wrap {
+  position: fixed !important;
+  left: 0 !important;
+  top: 0 !important;
+  transform: rotate(90deg) translateY(-100%) !important;
+  transform-origin: top left !important;
+}
+
+/* Recruit fixed artboard fit: preserve mobile rules, stabilize wide emulator browsers. */
+.recruit-artboard {
+  display: contents;
+}
+
+@media (min-width: 821px) and (min-height: 560px) {
+  .recruit-screen .recruit-artboard {
+    position: absolute !important;
+    left: 50% !important;
+    top: 50% !important;
+    z-index: 3 !important;
+    display: block !important;
+    width: 1920px !important;
+    height: 900px !important;
+    max-width: none !important;
+    max-height: none !important;
+    overflow: hidden !important;
+    transform: translate(-50%, -50%) scale(var(--recruit-artboard-scale)) !important;
+    transform-origin: center center !important;
+  }
+
+  .recruit-screen .recruit-artboard .recruit-bg-video,
+  .recruit-screen .recruit-artboard .recruit-divine-overlay,
+  .recruit-screen .recruit-artboard .recruit-frame {
+    position: absolute !important;
+    inset: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+  }
+
+  .recruit-screen .recruit-artboard .recruit-bg-video {
+    object-fit: cover !important;
+  }
+
+  .recruit-screen .recruit-artboard .recruit-back-btn {
+    left: 16px !important;
+    top: 20px !important;
+    width: 166px !important;
+    min-width: 166px !important;
+    height: 98px !important;
+    min-height: 98px !important;
+    font-size: 28px !important;
+  }
+
+  .recruit-screen .recruit-artboard .recruit-top-actions {
+    position: absolute !important;
+    right: 70px !important;
+    top: 24px !important;
+    z-index: 8 !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 12px !important;
+  }
+
+  .recruit-screen .recruit-artboard .recruit-wallet {
+    position: static !important;
+    display: flex !important;
+    width: auto !important;
+    gap: 12px !important;
+  }
+
+  .recruit-screen .recruit-artboard .recruit-currency {
+    width: 230px !important;
+    min-width: 230px !important;
+    max-width: 230px !important;
+    height: 86px !important;
+    min-height: 86px !important;
+    padding: 10px 18px 10px 10px !important;
+    grid-template-columns: 60px minmax(0, 1fr) !important;
+  }
+
+  .recruit-screen .recruit-artboard .recruit-currency img {
+    width: 54px !important;
+    height: 54px !important;
+  }
+
+  .recruit-screen .recruit-artboard .recruit-currency strong {
+    font-size: 24px !important;
+  }
+
+  .recruit-screen .recruit-artboard .recruit-divine-copy {
+    left: 126px !important;
+    top: 148px !important;
+    width: 760px !important;
+  }
+
+  .recruit-screen .recruit-artboard .recruit-divine-title strong {
+    font-size: 76px !important;
+  }
+
+  .recruit-screen .recruit-artboard .recruit-divine-copy p {
+    font-size: 25px !important;
+  }
+
+  .recruit-screen .recruit-artboard .recruit-command-area,
+  .recruit-screen .recruit-artboard .recruit-pull-buttons,
+  .recruit-screen .recruit-artboard .recruit-notice {
+    position: absolute !important;
+  }
+
+  .recruit-screen .recruit-artboard .recruit-command-area {
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    min-height: 156px !important;
+    padding: 28px 116px 34px !important;
+  }
+
+  .recruit-screen .recruit-artboard .recruit-pull-buttons {
+    left: 50% !important;
+    bottom: 54px !important;
+    width: auto !important;
+    transform: translateX(-50%) !important;
+    gap: 34px !important;
+  }
+
+  .recruit-screen .recruit-artboard .recruit-pull-btn {
+    width: 430px !important;
+    min-width: 430px !important;
+    max-width: 430px !important;
+    min-height: 134px !important;
+    padding: 12px 34px !important;
+    font-size: 42px !important;
+  }
+
+  .recruit-screen .recruit-artboard .recruit-pull-cost img {
+    width: 26px !important;
+    height: 26px !important;
+  }
+
+  .recruit-screen .recruit-artboard .recruit-notice {
+    right: 116px !important;
+    bottom: 58px !important;
+    width: 390px !important;
+    min-height: 76px !important;
+    transform: none !important;
+    align-items: flex-end !important;
+    text-align: right !important;
+    font-size: 18px !important;
+  }
+
+  .recruit-screen .recruit-artboard .recruit-notice strong {
+    font-size: 28px !important;
+  }
+}
+
+/* Shop fixed artboard fit: one layout, scaled uniformly across devices. */
+.shop-screen .shop-artboard {
+  position: absolute !important;
+  left: 50% !important;
+  top: 50% !important;
+  z-index: 3 !important;
+  width: 1920px !important;
+  height: 900px !important;
+  max-width: none !important;
+  max-height: none !important;
+  overflow: visible !important;
+  transform: translate(-50%, -50%) scale(var(--shop-artboard-scale)) !important;
+  transform-origin: center center !important;
+}
+
+.shop-screen .shop-artboard .shop-ui-btn,
+.shop-screen .shop-artboard .shop-wallet,
+.shop-screen .shop-artboard .shop-layout,
+.shop-screen .shop-artboard .shop-category-list,
+.shop-screen .shop-artboard .shop-content-area,
+.shop-screen .shop-artboard .shop-item-list,
+.shop-screen .shop-artboard .shop-notice {
+  box-sizing: border-box !important;
+}
+
+.shop-screen .shop-artboard .shop-back-btn {
+  position: absolute !important;
+  left: 48px !important;
+  top: 34px !important;
+  z-index: 9 !important;
+  width: 118px !important;
+  height: 68px !important;
+  min-width: 118px !important;
+  min-height: 68px !important;
+  padding: 0 14px !important;
+  font-size: 17px !important;
+  line-height: 1 !important;
+}
+
+.shop-screen .shop-artboard .shop-top-actions {
+  position: absolute !important;
+  right: 70px !important;
+  top: 34px !important;
+  z-index: 9 !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 12px !important;
+  width: auto !important;
+  height: 54px !important;
+  padding: 0 !important;
+}
+
+.shop-screen .shop-artboard .shop-close-btn {
+  display: none !important;
+}
+
+.shop-screen .shop-artboard .shop-wallet {
+  position: static !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 10px !important;
+  width: auto !important;
+  height: 54px !important;
+  min-height: 54px !important;
+  pointer-events: none !important;
+}
+
+.shop-screen .shop-artboard .shop-wallet-currency {
+  width: 150px !important;
+  min-width: 150px !important;
+  max-width: 150px !important;
+  height: 54px !important;
+  min-height: 54px !important;
+  padding: 6px 14px 6px 8px !important;
+  grid-template-columns: 34px minmax(0, 1fr) !important;
+  grid-template-rows: 1fr !important;
+  column-gap: 8px !important;
+}
+
+.shop-screen .shop-artboard .shop-wallet-currency img {
+  width: 32px !important;
+  height: 32px !important;
+}
+
+.shop-screen .shop-artboard .shop-wallet-currency span {
+  display: none !important;
+}
+
+.shop-screen .shop-artboard .shop-wallet-currency strong {
+  align-self: center !important;
+  font-size: 16px !important;
+  line-height: 1 !important;
+  text-align: right !important;
+}
+
+.shop-screen .shop-artboard .shop-layout {
+  position: absolute !important;
+  inset: 0 !important;
+  z-index: 3 !important;
+  display: block !important;
+  width: 1920px !important;
+  height: 900px !important;
+  padding: 0 !important;
+  overflow: visible !important;
+}
+
+.shop-screen .shop-artboard .shop-category-list {
+  position: absolute !important;
+  left: 116px !important;
+  top: 166px !important;
+  z-index: 4 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  width: 280px !important;
+  gap: 18px !important;
+  transform: none !important;
+}
+
+.shop-screen .shop-artboard .shop-category-btn {
+  width: 280px !important;
+  height: 70px !important;
+  min-height: 70px !important;
+  padding: 0 30px !important;
+  gap: 13px !important;
+  font-size: 24px !important;
+  line-height: 1 !important;
+}
+
+.shop-screen .shop-artboard .shop-category-icon {
+  width: 35px !important;
+  height: 35px !important;
+  flex: 0 0 35px !important;
+}
+
+.shop-screen .shop-artboard .shop-category-label {
+  font-size: 24px !important;
+  line-height: 1 !important;
+}
+
+.shop-screen .shop-artboard .shop-content-area,
+.shop-screen .shop-artboard .shop-content-area:has(.shop-item-list[data-category="recommend"]),
+.shop-screen .shop-artboard .shop-content-area:has(.shop-item-list[data-category="diamond"]),
+.shop-screen .shop-artboard .shop-content-area:has(.shop-item-list[data-category="growth"]),
+.shop-screen .shop-artboard .shop-content-area:has(.shop-item-list[data-category="monthly"]),
+.shop-screen .shop-artboard .shop-content-area:has(.shop-item-list[data-category="package"]) {
+  position: absolute !important;
+  left: 438px !important;
+  top: 98px !important;
+  z-index: 3 !important;
+  display: block !important;
+  width: 1410px !important;
+  height: 760px !important;
+  transform: none !important;
+}
+
+.shop-screen .shop-artboard .shop-content-header {
+  position: absolute !important;
+  left: 0 !important;
+  top: 0 !important;
+  width: 1410px !important;
+  height: 116px !important;
+  margin: 0 !important;
+}
+
+.shop-screen .shop-artboard .shop-kicker {
+  margin: 0 0 8px !important;
+  font-size: 17px !important;
+  line-height: 1 !important;
+}
+
+.shop-screen .shop-artboard .shop-logo {
+  margin: 0 !important;
+  font-size: 58px !important;
+  line-height: 0.96 !important;
+}
+
+.shop-screen .shop-artboard .shop-item-list,
+.shop-screen .shop-artboard .shop-item-list[data-category="package"] {
+  position: absolute !important;
+  left: 50% !important;
+  top: 166px !important;
+  z-index: 3 !important;
+  display: grid !important;
+  grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
+  width: 1320px !important;
+  gap: 28px !important;
+  margin: 0 !important;
+  transform: translateX(-50%) !important;
+  align-items: start !important;
+}
+
+.shop-screen .shop-artboard .shop-item-list[data-category="recommend"],
+.shop-screen .shop-artboard .shop-item-list[data-category="diamond"],
+.shop-screen .shop-artboard .shop-item-list[data-category="monthly"] {
+  grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+  width: 1080px !important;
+}
+
+.shop-screen .shop-artboard .shop-item-list[data-category="growth"] {
+  grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+  width: 700px !important;
+  gap: 11px !important;
+}
+
+.shop-screen .shop-artboard .shop-item-card {
+  width: 100% !important;
+  height: 348px !important;
+  min-height: 0 !important;
+  max-height: none !important;
+  aspect-ratio: auto !important;
+}
+
+.shop-screen .shop-artboard .shop-item-list[data-category="package"] .shop-item-card {
+  height: 350px !important;
+}
+
+.shop-screen .shop-artboard .shop-item-list[data-category="recommend"] .shop-item-card,
+.shop-screen .shop-artboard .shop-item-list[data-category="diamond"] .shop-item-card,
+.shop-screen .shop-artboard .shop-item-list[data-category="monthly"] .shop-item-card {
+  height: 366px !important;
+}
+
+.shop-screen .shop-artboard .shop-item-list[data-category="growth"] .shop-item-card {
+  height: 164px !important;
+}
+
+.shop-screen .shop-artboard .shop-item-list[data-category="monthly"] .shop-item-card:nth-child(1) {
+  grid-column: 2 !important;
+}
+
+.shop-screen .shop-artboard .shop-item-list[data-category="monthly"] .shop-item-card:nth-child(2) {
+  grid-column: 3 !important;
+}
+
+.shop-screen .shop-artboard .shop-item-name,
+.shop-screen .shop-artboard .shop-package-title,
+.shop-screen .shop-artboard .shop-package-price,
+.shop-screen .shop-artboard .shop-growth-title,
+.shop-screen .shop-artboard .shop-growth-amount,
+.shop-screen .shop-artboard .shop-growth-limit,
+.shop-screen .shop-artboard .shop-growth-price {
+  letter-spacing: 0 !important;
+}
+
+.shop-screen .shop-artboard .shop-item-name {
+  font-size: 17px !important;
+}
+
+.shop-screen .shop-artboard .shop-package-title {
+  font-size: 19px !important;
+}
+
+.shop-screen .shop-artboard .shop-package-contents {
+  gap: 5px !important;
+}
+
+.shop-screen .shop-artboard .shop-package-content-row {
+  grid-template-columns: 23px minmax(0, 1fr) auto !important;
+  gap: 6px !important;
+  min-height: 25px !important;
+  font-size: 11px !important;
+}
+
+.shop-screen .shop-artboard .shop-package-price {
+  font-size: 26px !important;
+}
+
+.shop-screen .shop-artboard .shop-growth-title {
+  font-size: 15px !important;
+}
+
+.shop-screen .shop-artboard .shop-growth-amount,
+.shop-screen .shop-artboard .shop-growth-limit,
+.shop-screen .shop-artboard .shop-growth-price {
+  font-size: 12px !important;
+}
+
+.shop-screen .shop-artboard .shop-notice {
+  position: absolute !important;
+  left: 50% !important;
+  top: 628px !important;
+  z-index: 3 !important;
+  width: 1420px !important;
+  min-height: 56px !important;
+  margin: 0 !important;
+  padding: 14px 22px !important;
+  font-size: 17px !important;
+  line-height: 1.4 !important;
+  transform: translateX(-50%) !important;
+}
+
+/* Formation fixed artboard fit: keep the 1920x900 growth layout identical across devices. */
+.formation-screen .formation-artboard {
+  position: absolute !important;
+  left: 50% !important;
+  top: 50% !important;
+  z-index: 3 !important;
+  width: 1920px !important;
+  height: 900px !important;
+  max-width: none !important;
+  max-height: none !important;
+  overflow: visible !important;
+  transform: translate(-50%, -50%) scale(var(--formation-artboard-scale)) !important;
+  transform-origin: center center !important;
+}
+
+.formation-screen .formation-artboard .formation-ui-btn,
+.formation-screen .formation-artboard .formation-wallet-wide,
+.formation-screen .formation-artboard .formation-shell,
+.formation-screen .formation-artboard .formation-main-panel,
+.formation-screen .formation-artboard .formation-roster-panel,
+.formation-screen .formation-artboard .formation-hero-detail-card,
+.formation-screen .formation-artboard .formation-hero-detail-list,
+.formation-screen .formation-artboard .formation-growth-actions {
+  box-sizing: border-box !important;
+}
+
+.formation-screen .formation-artboard .formation-shell {
+  position: absolute !important;
+  left: 0 !important;
+  top: 0 !important;
+  right: auto !important;
+  bottom: auto !important;
+  z-index: 1 !important;
+  display: block !important;
+  width: 1920px !important;
+  height: 900px !important;
+  min-width: 1920px !important;
+  min-height: 900px !important;
+  max-width: none !important;
+  max-height: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  overflow: visible !important;
+  transform: none !important;
+}
+
+.formation-screen .formation-artboard .formation-main-panel {
+  position: absolute !important;
+  left: 0 !important;
+  top: 0 !important;
+  width: 1120px !important;
+  height: 900px !important;
+  min-height: 900px !important;
+  max-height: none !important;
+  padding: 0 !important;
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  overflow: visible !important;
+}
+
+.formation-screen .formation-artboard .formation-slots-panel.is-hero-detail,
+.formation-screen .formation-artboard .formation-slot-grid.is-hero-detail-grid,
+.formation-screen .formation-artboard .formation-hero-detail {
+  position: absolute !important;
+  inset: 0 !important;
+  display: block !important;
+  width: 1120px !important;
+  height: 900px !important;
+  min-height: 900px !important;
+  max-height: none !important;
+  padding: 0 !important;
+  overflow: visible !important;
+}
+
+.formation-screen .formation-artboard .formation-header-row,
+.formation-screen .formation-artboard .formation-placement-head,
+.formation-screen .formation-artboard .formation-notice,
+.formation-screen .formation-artboard .formation-main-panel::before,
+.formation-screen .formation-artboard .formation-main-panel::after,
+.formation-screen .formation-artboard .formation-hero-detail::before,
+.formation-screen .formation-artboard .formation-hero-detail::after {
+  display: none !important;
+}
+
+.formation-screen .formation-artboard .formation-back-btn {
+  position: absolute !important;
+  left: 28px !important;
+  top: 12px !important;
+  z-index: 14 !important;
+  width: 82px !important;
+  min-width: 82px !important;
+  height: 48px !important;
+  min-height: 48px !important;
+  padding: 0 10px !important;
+  border: 1px solid rgba(255, 225, 146, 0.72) !important;
+  border-radius: 4px !important;
+  color: #fff6d9 !important;
+  background: linear-gradient(180deg, rgba(47, 39, 64, 0.96), rgba(14, 12, 24, 0.98)) !important;
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,0.08), 0 5px 18px rgba(0,0,0,0.46) !important;
+  font-size: 13px !important;
+  font-weight: 900 !important;
+  line-height: 1 !important;
+  text-align: center !important;
+  text-shadow: 0 1px 2px #000 !important;
+}
+
+.formation-screen .formation-artboard .formation-back-btn::before,
+.formation-screen .formation-artboard .formation-close-btn {
+  display: none !important;
+}
+
+.formation-screen .formation-artboard .formation-wallet-wide {
+  position: fixed !important;
+  left: auto !important;
+  right: 34px !important;
+  top: 24px !important;
+  bottom: auto !important;
+  z-index: 13 !important;
+  width: auto !important;
+  grid-template-columns: repeat(5, minmax(116px, auto)) !important;
+  grid-auto-rows: 48px !important;
+  gap: 8px !important;
+  transform: none !important;
+}
+
+.formation-screen .formation-artboard .formation-brand-panel {
+  position: fixed !important;
+  left: calc(50% - 130px) !important;
+  top: 28px !important;
+  z-index: 12 !important;
+  width: 260px !important;
+  transform: none !important;
+}
+
+.formation-screen .formation-artboard .formation-category-nav {
+  position: fixed !important;
+  left: 38px !important;
+  top: 204px !important;
+  z-index: 12 !important;
+  width: 220px !important;
+  transform: none !important;
+}
+
+.formation-screen .formation-artboard .formation-roster-panel {
+  position: fixed !important;
+  left: var(--hero-roster-left) !important;
+  right: auto !important;
+  top: var(--hero-roster-top) !important;
+  width: var(--hero-roster-width) !important;
+  height: var(--hero-roster-height) !important;
+  min-height: 0 !important;
+  max-height: none !important;
+  transform: none !important;
+}
+
+.formation-screen .formation-artboard .formation-hero-detail-top {
+  position: fixed !important;
+  left: 465.9px !important;
+  top: calc(var(--hero-detail-top) - 72px) !important;
+  transform: none !important;
+}
+
+.formation-screen .formation-artboard .formation-hero-detail-card {
+  position: fixed !important;
+  left: 460.9px !important;
+  top: var(--hero-detail-top) !important;
+  width: var(--hero-detail-card-width) !important;
+  height: var(--hero-detail-card-height) !important;
+  max-width: none !important;
+  max-height: none !important;
+}
+
+.formation-screen .formation-artboard .formation-unit-detail-card {
+  left: 450.9px !important;
+  width: 306px !important;
+  height: 442px !important;
+}
+
+.formation-screen .formation-artboard .formation-hero-detail-list {
+  position: fixed !important;
+  left: var(--formation-info-left) !important;
+  top: var(--formation-info-top) !important;
+  width: var(--formation-info-width) !important;
+  max-width: none !important;
+  max-height: 360px !important;
+}
+
+.formation-screen .formation-artboard .formation-growth-actions {
+  position: fixed !important;
+  left: var(--formation-action-left) !important;
+  top: var(--formation-action-top) !important;
+  width: 388px !important;
+  max-width: none !important;
+  transform: translateX(-50%) !important;
+}
+
+.formation-screen .formation-artboard .formation-growth-confirm {
+  position: fixed !important;
+  left: 50% !important;
+  top: 50% !important;
+  width: 430px !important;
+  max-width: none !important;
+  transform: translate(-50%, -50%) !important;
+}
+
+/* Mission fixed artboard fit: keep the quest board position identical across devices. */
+.mission-screen .mission-artboard {
+  position: absolute !important;
+  left: 50% !important;
+  top: 50% !important;
+  z-index: 3 !important;
+  width: 1920px !important;
+  height: 900px !important;
+  max-width: none !important;
+  max-height: none !important;
+  overflow: visible !important;
+  transform: translate(-50%, -50%) scale(var(--mission-artboard-scale)) !important;
+  transform-origin: center center !important;
+}
+
+.mission-screen .mission-artboard .mission-root {
+  position: absolute !important;
+  left: 0 !important;
+  top: 0 !important;
+  z-index: 1 !important;
+  width: 1920px !important;
+  height: 900px !important;
+  min-width: 1920px !important;
+  min-height: 900px !important;
+  max-width: none !important;
+  max-height: none !important;
+  overflow: visible !important;
+}
+
+.mission-screen .mission-artboard .mission-back-btn {
+  position: absolute !important;
+  left: 18px !important;
+  right: auto !important;
+  top: 12px !important;
+  z-index: 14 !important;
+  width: 92px !important;
+  min-width: 92px !important;
+  height: 54px !important;
+  min-height: 54px !important;
+  padding: 0 12px !important;
+  transform: none !important;
+}
+
+.mission-screen .mission-artboard .mission-close-btn {
+  display: none !important;
+}
+
+.mission-screen .mission-artboard .mission-board {
+  position: absolute !important;
+  left: 297.2px !important;
+  top: 97.7px !important;
+  right: auto !important;
+  bottom: auto !important;
+  width: 1340.8px !important;
+  height: 702.8px !important;
+  max-width: none !important;
+  max-height: none !important;
+  transform: none !important;
+}
+
+.mission-screen .mission-artboard .mission-columns {
+  display: grid !important;
+  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  width: 100% !important;
+}
+
+.mission-screen .mission-artboard .mission-section,
+.mission-screen .mission-artboard .mission-list,
+.mission-screen .mission-artboard .mission-card,
+.mission-screen .mission-artboard .mission-progress-row {
+  min-width: 0 !important;
+  box-sizing: border-box !important;
 }

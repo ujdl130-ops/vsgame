@@ -149,6 +149,7 @@ let lastTime = 0;
 let animationId = null;
 let keys = {};
 let heroMoveInput = 0;
+let heroJoystickMoveInput = 0;
 let selectedHeroId = "zeus";
 const PROTOTYPE_PLAYABLE_HERO_IDS = new Set(["zeus", "poseidon"]);
 let gameOptionsWasRunning = false;
@@ -159,6 +160,24 @@ let recruitDoorState = {
   hasThreeStar: false,
   opened: false,
 };
+
+function syncHeroMoveInput() {
+  const keyboardInput = Number(Boolean(keys.KeyD)) - Number(Boolean(keys.KeyA));
+  const isKeyboardMoving = Boolean(keys.KeyA || keys.KeyD);
+  heroMoveInput = isKeyboardMoving ? keyboardInput : heroJoystickMoveInput;
+}
+
+function setHeroJoystickMoveInput(amount) {
+  heroJoystickMoveInput = Math.max(-1, Math.min(1, Number(amount) || 0));
+  syncHeroMoveInput();
+}
+
+function resetHeroMoveInput() {
+  keys.KeyA = false;
+  keys.KeyD = false;
+  heroJoystickMoveInput = 0;
+  heroMoveInput = 0;
+}
 
 function isPlayerHeroUnlocked(heroId) {
   if (!PROTOTYPE_PLAYABLE_HERO_IDS.has(heroId)) return false;
