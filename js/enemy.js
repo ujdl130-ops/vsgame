@@ -450,7 +450,7 @@ function spawnChapter2Stage4BossEscort(wave = 1) {
 function createChapter2WitchBoss() {
   return {
     type: "witch",
-    name: "green witch",
+    name: "독룡의 마녀 베르디아",
     isBoss: true,
     airborne: true,
     x: ENEMY_BASE_X - 105,
@@ -492,7 +492,7 @@ function spawnChapter2WitchBoss() {
   gameState.witchBossSpawned = true;
   gameState.enemies.push(createChapter2WitchBoss());
   spawnChapter2Stage4BossEscort(Math.max(1, Number(gameState.wave) || 1));
-  gameState.message = "보스 출현! 녹색 마녀와 스켈레톤·박쥐 호위대가 나타났습니다!";
+  gameState.message = "보스 출현! 독룡의 마녀 베르디아와 호위대가 나타났습니다!";
   gameState.messageTimer = 1.8;
   return true;
 }
@@ -1507,10 +1507,10 @@ function drawWitchBossHealthBar(enemy) {
   ctx.font = "700 11px Arial, sans-serif";
   ctx.textAlign = "center";
   ctx.textBaseline = "bottom";
-  ctx.fillStyle = "#eaffdd";
+  ctx.fillStyle = "#ffe3e8";
   ctx.shadowColor = "rgba(0, 0, 0, 0.9)";
   ctx.shadowBlur = 4;
-  ctx.fillText("녹색 마녀", enemy.x, y - 4);
+  ctx.fillText(enemy.name || "독룡의 마녀 베르디아", enemy.x, y - 4);
 
   ctx.shadowBlur = 0;
   ctx.fillStyle = "rgba(7, 10, 12, 0.92)";
@@ -1520,15 +1520,11 @@ function drawWitchBossHealthBar(enemy) {
   ctx.fillRect(x, y, width, height);
 
   if (ratio > 0) {
-    const gradient = ctx.createLinearGradient(x, y, x, y + height);
-    gradient.addColorStop(0, "#b7ff68");
-    gradient.addColorStop(0.5, "#62dc35");
-    gradient.addColorStop(1, "#258d20");
-    ctx.fillStyle = gradient;
+    ctx.fillStyle = "#ff4f78";
     ctx.fillRect(x, y, width * ratio, height);
   }
 
-  ctx.strokeStyle = "#e4f5d9";
+  ctx.strokeStyle = "rgba(255,255,255,0.65)";
   ctx.lineWidth = 2;
   ctx.strokeRect(x, y, width, height);
   ctx.restore();
