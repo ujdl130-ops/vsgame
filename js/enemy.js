@@ -115,11 +115,15 @@ const CHAPTER2_WITCH_DRAGON_BREATH_SPRITE = {
   frameH: 192,
   totalFrames: 8,
   fps: 12,
-  drawW: 360,
-  drawH: 180,
+  minDrawW: 150,
+  maxDrawW: 350,
+  baseDrawH: 88,
+  maxDrawH: 118,
   mouthOffsetX: -96,
   mouthOffsetY: -112,
   sourceTipX: 371,
+  targetPadding: 38,
+  maxAimAngleRad: 28 * Math.PI / 180,
   angleRad: -10 * Math.PI / 180,
 };
 
@@ -1733,10 +1737,55 @@ function drawWitchDragonBreath(enemy) {
   const mouthX = enemy.x + spec.mouthOffsetX;
   const mouthY = enemy.y + spec.mouthOffsetY;
   const tipRatio = spec.sourceTipX / spec.frameW;
+  const targetPoints = (enemy.dragonBreathTargets || [])
+    .filter(isCombatAlive)
+    .map((target) => ({
+      x: target.x,
+      y: target.y - Math.max(32, (target.h || 70) * 0.55),
+    }));
+
+  if (!targetPoints.length && enemy.x <= PLAYER_BASE_ATTACK_X) {
+    targetPoints.push({
+      x: PLAYER_BASE_ATTACK_HIT_X,
+      y: GROUND_Y - 88,
+    });
+  }
+
+  let angleRad = spec.angleRad;
+  let drawW = spec.minDrawW;
+  let drawH = spec.baseDrawH;
+
+  if (targetPoints.length) {
+    const aimX = targetPoints.reduce((sum, point) => sum + point.x, 0) / targetPoints.length;
+    const aimY = targetPoints.reduce((sum, point) => sum + point.y, 0) / targetPoints.length;
+    const aimDx = aimX - mouthX;
+    const aimDy = aimY - mouthY;
+    const desiredAngle = Math.atan2(aimDy, aimDx) - Math.PI;
+    angleRad = Math.max(-spec.maxAimAngleRad, Math.min(spec.maxAimAngleRad, desiredAngle));
+
+    const furthestDistance = Math.max(
+      ...targetPoints.map((point) => Math.hypot(point.x - mouthX, point.y - mouthY))
+    );
+    drawW = Math.max(
+      spec.minDrawW,
+      Math.min(spec.maxDrawW, (furthestDistance + spec.targetPadding) / tipRatio)
+    );
+
+    const axisX = -Math.cos(angleRad);
+    const axisY = -Math.sin(angleRad);
+    const maxSpread = Math.max(
+      ...targetPoints.map((point) => {
+        const dx = point.x - mouthX;
+        const dy = point.y - mouthY;
+        return Math.abs(dx * axisY - dy * axisX);
+      })
+    );
+    drawH = Math.max(spec.baseDrawH, Math.min(spec.maxDrawH, spec.baseDrawH + maxSpread * 1.35));
+  }
 
   ctx.save();
   ctx.translate(mouthX, mouthY);
-  ctx.rotate(spec.angleRad);
+  ctx.rotate(angleRad);
   ctx.imageSmoothingEnabled = true;
   ctx.drawImage(
     chapter2WitchDragonBreathSprite,
@@ -1744,10 +1793,10 @@ function drawWitchDragonBreath(enemy) {
     0,
     spec.frameW,
     spec.frameH,
-    -spec.drawW * tipRatio,
-    -spec.drawH / 2,
-    spec.drawW,
-    spec.drawH
+    -drawW * tipRatio,
+    -drawH / 2,
+    drawW,
+    drawH
   );
   ctx.restore();
 }
