@@ -69,6 +69,7 @@ function startUnitDeath(unit) {
 function startEnemyDeath(enemy) {
   if (!enemy || enemy.dead) return;
   if (enemy.type === "karon" && typeof startKaronTransformation === "function" && startKaronTransformation(enemy)) return;
+  if (enemy.type === "witch" && typeof startWitchDragonTransformation === "function" && startWitchDragonTransformation(enemy)) return;
 
   if (enemy.isWitchCursedSkeleton && typeof explodeWitchCursedSkeleton === "function") {
     explodeWitchCursedSkeleton(enemy);
@@ -90,6 +91,8 @@ function startEnemyDeath(enemy) {
   enemy.swordWavePending = false;
   enemy.clawTarget = null;
   enemy.clawHitPending = false;
+  enemy.dragonBreathing = false;
+  enemy.dragonBreathTargets = [];
   enemy.playerGateHitPending = false;
   enemy.deathAnimDuration = enemy.deathAnimDuration || 0.55;
   enemy.deathAnimTimer = enemy.deathAnimDuration;

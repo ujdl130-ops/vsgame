@@ -82,6 +82,54 @@ const CHAPTER2_WITCH_SPRITE = {
   meteorReleaseProgress: 0.72,
 };
 
+const CHAPTER2_WITCH_TRANSFORM_SPRITE = {
+  columns: 10,
+  frameW: 384,
+  frameH: 384,
+  totalFrames: 10,
+  fps: 10,
+  duration: 1.05,
+  drawW: 300,
+  drawH: 300,
+  baseOffsetY: 0,
+  visualBottoms: [359, 359, 357, 359, 359, 296, 299, 317, 316, 316],
+};
+
+const CHAPTER2_WITCH_DRAGON_SPRITE = {
+  columns: 6,
+  frameW: 296,
+  frameH: 296,
+  rows: { walk: 0, attack: 1, death: 2 },
+  frames: { walk: 6, attack: 6, death: 6 },
+  fps: { walk: 7, death: 7 },
+  breathPoseFrame: 1,
+  drawW: 280,
+  drawH: 280,
+  baseOffsetY: 30,
+  healthBarOffsetY: 205,
+  healthBarWidth: 190,
+};
+
+const CHAPTER2_WITCH_DRAGON_BREATH_SPRITE = {
+  columns: 8,
+  frameW: 384,
+  frameH: 192,
+  totalFrames: 8,
+  fps: 12,
+  drawW: 360,
+  drawH: 180,
+  mouthOffsetX: -94,
+  mouthOffsetY: -116,
+  sourceTipX: 371,
+};
+
+const WITCH_DRAGON_PHASE_TWO_HP = 4200;
+const WITCH_DRAGON_BREATH_RANGE = 440;
+const WITCH_DRAGON_BREATH_TARGET_LIMIT = 3;
+const WITCH_DRAGON_BREATH_TICK_INTERVAL = 0.5;
+const WITCH_DRAGON_BREATH_DAMAGE = 18;
+const WITCH_DRAGON_SPEED = 18;
+
 const WITCH_POISON_DURATION = 10;
 const WITCH_POISON_TICK_INTERVAL = 1;
 const WITCH_POISON_MAX_HP_DAMAGE_RATIO = 0.04;
@@ -448,6 +496,7 @@ function spawnChapter2Stage4BossEscort(wave = 1) {
 }
 
 function createChapter2WitchBoss() {
+  const phaseOneHp = 2600;
   return {
     type: "witch",
     name: "독룡의 마녀 베르디아",
@@ -457,8 +506,13 @@ function createChapter2WitchBoss() {
     y: COMBAT_LINE_Y,
     w: 78,
     h: 108,
-    hp: 2600,
-    maxHp: 2600,
+    bossPhase: "human",
+    hasTransformed: false,
+    transforming: false,
+    phaseOneHp,
+    phaseTwoHp: WITCH_DRAGON_PHASE_TWO_HP,
+    hp: phaseOneHp,
+    maxHp: phaseOneHp,
     speed: 24,
     damage: 26,
     range: 700,
@@ -468,6 +522,12 @@ function createChapter2WitchBoss() {
     attackAnimDuration: 1.2,
     meteorCastPending: false,
     meteorTarget: null,
+    transformAnimTimer: 0,
+    transformAnimDuration: CHAPTER2_WITCH_TRANSFORM_SPRITE.duration,
+    dragonBreathing: false,
+    dragonBreathAnimTime: 0,
+    dragonBreathTickTimer: WITCH_DRAGON_BREATH_TICK_INTERVAL,
+    dragonBreathTargets: [],
     animTime: 0,
     moving: false,
     face: -1,
@@ -692,7 +752,184 @@ function startWitchMeteorCast(enemy, target) {
   if (window.GameAudio) window.GameAudio.playSfx("magicAttack", { cooldown: 220, volume: 0.82 });
 }
 
+function isWitchDragon(enemy) {
+  return Boolean(enemy && enemy.type === "witch" && enemy.bossPhase === "dragon");
+}
+
+function startWitchDragonTransformation(enemy) {
+  if (
+    !enemy
+    || enemy.type !== "witch"
+    || enemy.dead
+    || enemy.hasTransformed
+    || enemy.bossPhase === "dragon"
+  ) return false;
+
+  enemy.bossPhase = "transform";
+  enemy.hasTransformed = true;
+  enemy.transforming = true;
+  enemy.hp = 1;
+  enemy.moving = false;
+  enemy.cooldown = 0;
+  enemy.attackAnimTimer = 0;
+  enemy.meteorCastPending = false;
+  enemy.meteorTarget = null;
+  enemy.paralyzeTimer = 0;
+  enemy.transformAnimTimer = 0;
+  enemy.transformAnimDuration = CHAPTER2_WITCH_TRANSFORM_SPRITE.duration;
+  enemy.dragonBreathing = false;
+  enemy.dragonBreathAnimTime = 0;
+  enemy.dragonBreathTickTimer = WITCH_DRAGON_BREATH_TICK_INTERVAL;
+  enemy.dragonBreathTargets = [];
+  enemy.deathAnimTimer = 0;
+  enemy.animTime = 0;
+
+  gameState.message = "베르디아의 마력이 폭주합니다... 독룡으로 변신!";
+  gameState.messageTimer = 1.8;
+  if (window.GameAudio) window.GameAudio.playSfx("magicAttack", { cooldown: 0, volume: 1 });
+  return true;
+}
+
+function finishWitchDragonTransformation(enemy) {
+  if (!enemy || enemy.type !== "witch" || enemy.bossPhase !== "transform") return false;
+
+  enemy.bossPhase = "dragon";
+  enemy.transforming = false;
+  enemy.airborne = false;
+  enemy.flightOffset = 0;
+  enemy.maxHp = enemy.phaseTwoHp || WITCH_DRAGON_PHASE_TWO_HP;
+  enemy.hp = enemy.maxHp;
+  enemy.speed = WITCH_DRAGON_SPEED;
+  enemy.damage = WITCH_DRAGON_BREATH_DAMAGE;
+  enemy.range = WITCH_DRAGON_BREATH_RANGE;
+  enemy.w = 150;
+  enemy.h = 132;
+  enemy.cooldown = 0;
+  enemy.attackAnimTimer = 0;
+  enemy.dragonBreathing = false;
+  enemy.dragonBreathAnimTime = 0;
+  enemy.dragonBreathTickTimer = 0;
+  enemy.dragonBreathTargets = [];
+  enemy.animTime = 0;
+
+  gameState.message = "2페이즈! 독룡 베르디아가 브레스를 내뿜습니다!";
+  gameState.messageTimer = 1.8;
+  return true;
+}
+
+function updateWitchDragonTransformation(enemy, dt) {
+  if (!enemy || enemy.bossPhase !== "transform") return;
+  enemy.moving = false;
+  enemy.transformAnimTimer = Math.min(
+    enemy.transformAnimDuration,
+    (enemy.transformAnimTimer || 0) + dt
+  );
+
+  if (enemy.transformAnimTimer >= enemy.transformAnimDuration) {
+    finishWitchDragonTransformation(enemy);
+  }
+}
+
+function getWitchDragonBreathTargets(enemy) {
+  if (!enemy || !gameState) return [];
+  const candidates = gameState.units.filter(isCombatAlive);
+  if (gameState.hero && isCombatAlive(gameState.hero)) {
+    candidates.push(gameState.hero);
+  }
+
+  return candidates
+    .map((target) => ({
+      target,
+      distance: enemy.x - target.x,
+    }))
+    .filter((entry) => entry.distance >= -12 && entry.distance <= enemy.range)
+    .sort((a, b) => a.distance - b.distance)
+    .slice(0, WITCH_DRAGON_BREATH_TARGET_LIMIT)
+    .map((entry) => entry.target);
+}
+
+function setWitchDragonBreathing(enemy, active, targets = []) {
+  const wasBreathing = Boolean(enemy.dragonBreathing);
+  enemy.dragonBreathing = Boolean(active);
+  enemy.dragonBreathTargets = active ? targets : [];
+  enemy.moving = false;
+
+  if (!active) {
+    enemy.attackAnimTimer = 0;
+    enemy.dragonBreathTickTimer = 0;
+    return;
+  }
+
+  enemy.attackAnimTimer = 1;
+  if (!wasBreathing) {
+    enemy.dragonBreathAnimTime = 0;
+    enemy.dragonBreathTickTimer = 0;
+    if (window.GameAudio) {
+      window.GameAudio.playSfx("magicAttack", { cooldown: 350, volume: 0.9 });
+    }
+  }
+}
+
+function applyWitchDragonBreathTick(enemy, targets) {
+  for (const target of targets) {
+    if (!isCombatAlive(target)) continue;
+    damageCombatant(target, enemy.damage || WITCH_DRAGON_BREATH_DAMAGE);
+    spawnHit(target.x, target.y - Math.max(32, (target.h || 70) * 0.55), "#9dff42");
+  }
+}
+
+function updateWitchDragonBreath(enemy, dt, targets, attackingPlayerBase = false) {
+  setWitchDragonBreathing(enemy, true, targets);
+  enemy.dragonBreathAnimTime = (enemy.dragonBreathAnimTime || 0) + dt;
+  enemy.dragonBreathTickTimer -= dt;
+
+  while (enemy.dragonBreathTickTimer <= 0) {
+    if (attackingPlayerBase) {
+      gameState.playerBaseHp -= Math.max(1, Math.round((enemy.damage || WITCH_DRAGON_BREATH_DAMAGE) * 0.72));
+      spawnHit(PLAYER_BASE_ATTACK_HIT_X, GROUND_Y - 88, "#9dff42");
+    } else {
+      const currentTargets = getWitchDragonBreathTargets(enemy);
+      if (!currentTargets.length) {
+        setWitchDragonBreathing(enemy, false);
+        break;
+      }
+      enemy.dragonBreathTargets = currentTargets;
+      applyWitchDragonBreathTick(enemy, currentTargets);
+    }
+    enemy.dragonBreathTickTimer += WITCH_DRAGON_BREATH_TICK_INTERVAL;
+  }
+}
+
+function updateWitchDragonEnemy(enemy, dt) {
+  const targets = getWitchDragonBreathTargets(enemy);
+  if (targets.length) {
+    updateWitchDragonBreath(enemy, dt, targets);
+    return;
+  }
+
+  if (enemy.x <= PLAYER_BASE_ATTACK_X) {
+    enemy.x = PLAYER_BASE_ATTACK_X;
+    updateWitchDragonBreath(enemy, dt, [], true);
+    return;
+  }
+
+  setWitchDragonBreathing(enemy, false);
+  enemy.x -= enemy.speed * dt;
+  enemy.moving = true;
+  if (enemy.x < PLAYER_BASE_ATTACK_X) enemy.x = PLAYER_BASE_ATTACK_X;
+}
+
 function updateWitchEnemy(enemy, dt) {
+  if (enemy.transforming || enemy.bossPhase === "transform") {
+    updateWitchDragonTransformation(enemy, dt);
+    return;
+  }
+
+  if (isWitchDragon(enemy)) {
+    updateWitchDragonEnemy(enemy, dt);
+    return;
+  }
+
   const attackDuration = enemy.attackAnimDuration || 1.2;
   const attackProgress = enemy.attackAnimTimer > 0
     ? 1 - enemy.attackAnimTimer / attackDuration
@@ -1312,6 +1549,9 @@ function updateEnemies(dt) {
     if (enemy.type === "karon" && enemy.hp <= 0 && !enemy.dead && startKaronTransformation(enemy)) {
       continue;
     }
+    if (enemy.type === "witch" && enemy.hp <= 0 && !enemy.dead && startWitchDragonTransformation(enemy)) {
+      continue;
+    }
 
     if (enemy.hp <= 0 || enemy.dead) {
       startEnemyDeath(enemy);
@@ -1333,6 +1573,11 @@ function updateEnemies(dt) {
       enemy.animTime = Math.max(0, (enemy.animTime || 0) - dt);
       enemy.attackAnimTimer = 0;
       enemy.playerGateHitPending = false;
+      if (enemy.type === "witch") {
+        enemy.dragonBreathing = false;
+        enemy.dragonBreathTargets = [];
+        enemy.dragonBreathTickTimer = 0;
+      }
       continue;
     }
 
@@ -1431,14 +1676,133 @@ function canDrawKaronSprite(enemy) {
 
 function canDrawWitchSprite(enemy) {
   if (!enemy || enemy.type !== "witch") return false;
+  if (enemy.transforming || enemy.bossPhase === "transform") {
+    return Boolean(chapter2WitchTransformSpriteReady && chapter2WitchTransformSprite);
+  }
+  if (isWitchDragon(enemy)) {
+    return Boolean(chapter2WitchDragonSpriteReady && chapter2WitchDragonSprite);
+  }
   if (enemy.attackAnimTimer > 0) {
     return Boolean(chapter2WitchAttackSpriteReady && chapter2WitchAttackSprite);
   }
   return Boolean(chapter2WitchWalkSpriteReady && chapter2WitchWalkSprite);
 }
 
-function drawWitchSprite(enemy) {
-  if (!canDrawWitchSprite(enemy)) return false;
+function drawWitchTransformationSprite(enemy) {
+  const spec = CHAPTER2_WITCH_TRANSFORM_SPRITE;
+  const duration = enemy.transformAnimDuration || spec.duration;
+  const progress = Math.min(1, Math.max(0, (enemy.transformAnimTimer || 0) / duration));
+  const frame = Math.min(spec.totalFrames - 1, Math.floor(progress * spec.totalFrames));
+  const visualBottom = spec.visualBottoms[frame] ?? (spec.frameH - 1);
+  const scaleY = spec.drawH / spec.frameH;
+  const destY = -spec.drawH
+    + spec.baseOffsetY
+    + Math.max(0, spec.frameH - 1 - visualBottom) * scaleY;
+
+  ctx.save();
+  ctx.translate(enemy.x, enemy.y);
+  ctx.fillStyle = `rgba(34, 255, 82, ${0.08 + progress * 0.1})`;
+  ctx.beginPath();
+  ctx.ellipse(0, 5, 44 + progress * 62, 10 + progress * 5, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.imageSmoothingEnabled = true;
+  ctx.drawImage(
+    chapter2WitchTransformSprite,
+    frame * spec.frameW,
+    0,
+    spec.frameW,
+    spec.frameH,
+    -spec.drawW / 2,
+    destY,
+    spec.drawW,
+    spec.drawH
+  );
+  ctx.restore();
+  return true;
+}
+
+function drawWitchDragonBreath(enemy) {
+  if (
+    !enemy.dragonBreathing
+    || !chapter2WitchDragonBreathSpriteReady
+    || !chapter2WitchDragonBreathSprite
+  ) return;
+
+  const spec = CHAPTER2_WITCH_DRAGON_BREATH_SPRITE;
+  const frame = Math.floor((enemy.dragonBreathAnimTime || 0) * spec.fps) % spec.totalFrames;
+  const mouthX = enemy.x + spec.mouthOffsetX;
+  const mouthY = enemy.y + spec.mouthOffsetY;
+  const tipRatio = spec.sourceTipX / spec.frameW;
+  const destX = mouthX - spec.drawW * tipRatio;
+  const destY = mouthY - spec.drawH / 2;
+
+  ctx.save();
+  ctx.imageSmoothingEnabled = true;
+  ctx.drawImage(
+    chapter2WitchDragonBreathSprite,
+    frame * spec.frameW,
+    0,
+    spec.frameW,
+    spec.frameH,
+    destX,
+    destY,
+    spec.drawW,
+    spec.drawH
+  );
+  ctx.restore();
+}
+
+function drawWitchDragonSprite(enemy) {
+  const spec = CHAPTER2_WITCH_DRAGON_SPRITE;
+  const dying = enemy.dead || enemy.hp <= 0;
+  let anim = enemy.dragonBreathing ? "attack" : "walk";
+  if (dying) anim = "death";
+
+  let frame = 0;
+  if (anim === "attack") {
+    frame = spec.breathPoseFrame;
+  } else if (anim === "death") {
+    const duration = enemy.deathAnimDuration || 0.9;
+    const progress = 1 - Math.max(0, enemy.deathAnimTimer || 0) / duration;
+    frame = Math.min(spec.frames.death - 1, Math.max(0, Math.floor(progress * spec.frames.death)));
+  } else if (enemy.moving) {
+    frame = Math.floor((enemy.animTime || 0) * spec.fps.walk) % spec.frames.walk;
+  }
+
+  if (enemy.dragonBreathing && !dying) {
+    drawWitchDragonBreath(enemy);
+  }
+
+  ctx.save();
+  ctx.translate(enemy.x, enemy.y);
+  ctx.fillStyle = "rgba(0,0,0,0.28)";
+  ctx.beginPath();
+  ctx.ellipse(0, 5, anim === "death" ? 92 : 76, anim === "death" ? 14 : 12, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  if (dying) {
+    const duration = enemy.deathAnimDuration || 0.9;
+    const progress = 1 - Math.max(0, enemy.deathAnimTimer || 0) / duration;
+    ctx.globalAlpha = Math.max(0.18, 1 - progress * 0.5);
+  }
+
+  ctx.imageSmoothingEnabled = true;
+  ctx.drawImage(
+    chapter2WitchDragonSprite,
+    frame * spec.frameW,
+    spec.rows[anim] * spec.frameH,
+    spec.frameW,
+    spec.frameH,
+    -spec.drawW / 2,
+    -spec.drawH + spec.baseOffsetY,
+    spec.drawW,
+    spec.drawH
+  );
+  ctx.restore();
+  return true;
+}
+
+function drawHumanWitchSprite(enemy) {
 
   const attacking = !enemy.dead && enemy.hp > 0 && enemy.attackAnimTimer > 0;
   const sprite = attacking ? chapter2WitchAttackSprite : chapter2WitchWalkSprite;
@@ -1496,11 +1860,24 @@ function drawWitchSprite(enemy) {
   return true;
 }
 
+function drawWitchSprite(enemy) {
+  if (!canDrawWitchSprite(enemy)) return false;
+  if (enemy.transforming || enemy.bossPhase === "transform") {
+    return drawWitchTransformationSprite(enemy);
+  }
+  if (isWitchDragon(enemy)) {
+    return drawWitchDragonSprite(enemy);
+  }
+  return drawHumanWitchSprite(enemy);
+}
+
 function drawWitchBossHealthBar(enemy) {
-  const width = CHAPTER2_WITCH_SPRITE.healthBarWidth;
+  const dragonPhase = isWitchDragon(enemy);
+  const spriteSpec = dragonPhase ? CHAPTER2_WITCH_DRAGON_SPRITE : CHAPTER2_WITCH_SPRITE;
+  const width = spriteSpec.healthBarWidth;
   const height = 12;
   const x = enemy.x - width / 2;
-  const y = Math.max(20, enemy.y - CHAPTER2_WITCH_SPRITE.healthBarOffsetY);
+  const y = Math.max(20, enemy.y - spriteSpec.healthBarOffsetY);
   const ratio = Math.max(0, Math.min(1, enemy.hp / enemy.maxHp));
 
   ctx.save();
@@ -1520,7 +1897,7 @@ function drawWitchBossHealthBar(enemy) {
   ctx.fillRect(x, y, width, height);
 
   if (ratio > 0) {
-    ctx.fillStyle = "#ff4f78";
+    ctx.fillStyle = dragonPhase ? "#72e83f" : "#ff4f78";
     ctx.fillRect(x, y, width * ratio, height);
   }
 
@@ -1894,7 +2271,8 @@ function drawEnemy(enemy) {
   const usedWitchSprite = drawWitchSprite(enemy);
   if (usedWitchSprite) {
     const isDying = enemy.dead || enemy.hp <= 0;
-    if (!isDying) {
+    const isTransforming = enemy.transforming || enemy.bossPhase === "transform";
+    if (!isDying && !isTransforming) {
       drawWitchBossHealthBar(enemy);
     }
     return;

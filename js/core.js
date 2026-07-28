@@ -193,6 +193,9 @@ const ASSET_PATHS = {
   chapter2WitchWalkSprite: "assets/animations/enemy/chapter2/boss_witch/witch_walk_spritesheet.png",
   chapter2WitchAttackSprite: "assets/animations/enemy/chapter2/boss_witch/witch_attack_spritesheet.png",
   chapter2WitchMeteorSprite: "assets/animations/enemy/chapter2/boss_witch/witch_meteor_spritesheet.png",
+  chapter2WitchTransformSprite: "assets/animations/enemy/chapter2/boss_witch/witch_to_dragon_transform_spritesheet.png",
+  chapter2WitchDragonSprite: "assets/animations/enemy/chapter2/boss_witch/witch_dragon_spritesheet.png",
+  chapter2WitchDragonBreathSprite: "assets/animations/enemy/chapter2/boss_witch/witch_dragon_breath_loop_spritesheet.png",
   karonHumanSprite: "assets/animations/Boss_Karon/karon_human_phase1_transparent.png",
   karonTransformSprite: "assets/animations/Boss_Karon/karon_transform_transparent.png",
   karonWerewolfSprite: "assets/animations/Boss_Karon/karon_werewolf_phase2_transparent.png",
@@ -380,6 +383,33 @@ loadGameImage(
   [ASSET_PATHS.chapter2WitchMeteorSprite],
   (ready) => { chapter2WitchMeteorSpriteReady = ready; },
   "Chapter 2 witch meteor sprite"
+);
+
+const chapter2WitchTransformSprite = new Image();
+let chapter2WitchTransformSpriteReady = false;
+loadGameImage(
+  chapter2WitchTransformSprite,
+  [ASSET_PATHS.chapter2WitchTransformSprite],
+  (ready) => { chapter2WitchTransformSpriteReady = ready; },
+  "Chapter 2 witch transformation sprite"
+);
+
+const chapter2WitchDragonSprite = new Image();
+let chapter2WitchDragonSpriteReady = false;
+loadGameImage(
+  chapter2WitchDragonSprite,
+  [ASSET_PATHS.chapter2WitchDragonSprite],
+  (ready) => { chapter2WitchDragonSpriteReady = ready; },
+  "Chapter 2 witch dragon sprite"
+);
+
+const chapter2WitchDragonBreathSprite = new Image();
+let chapter2WitchDragonBreathSpriteReady = false;
+loadGameImage(
+  chapter2WitchDragonBreathSprite,
+  [ASSET_PATHS.chapter2WitchDragonBreathSprite],
+  (ready) => { chapter2WitchDragonBreathSpriteReady = ready; },
+  "Chapter 2 witch dragon breath sprite"
 );
 
 const karonHumanSprite = new Image();
