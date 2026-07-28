@@ -118,8 +118,8 @@ const CHAPTER2_WITCH_DRAGON_BREATH_SPRITE = {
   fps: 12,
   drawW: 360,
   drawH: 180,
-  mouthOffsetX: -94,
-  mouthOffsetY: -116,
+  mouthOffsetX: -72,
+  mouthOffsetY: -139,
   sourceTipX: 371,
 };
 
