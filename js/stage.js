@@ -27,10 +27,56 @@ const STAGE_CONFIGS = {
   },
 };
 
+const CHAPTER2_STAGE_CONFIGS = {
+  2: {
+    title: "박쥐 군락",
+    maxWave: 3,
+    startRunestone: 0,
+    playerBaseHp: 100,
+    enemyBaseHp: 120,
+    baseEnemiesToSpawn: 3,
+  },
+  3: {
+    title: "마녀의 제단",
+    maxWave: 3,
+    startRunestone: 0,
+    playerBaseHp: 100,
+    enemyBaseHp: 150,
+    baseEnemiesToSpawn: 3,
+  },
+  4: {
+    title: "고목의 성역",
+    maxWave: 1,
+    startRunestone: 0,
+    playerBaseHp: 150,
+    enemyBaseHp: 200,
+    baseEnemiesToSpawn: 1,
+  },
+};
+
+const CHAPTER2_BATTLE_READY_STAGES = new Set([1, 2, 3, 4]);
+
+let selectedChapter = 1;
+
+const CHAPTER_STAGE_TITLES = {
+  1: {
+    1: "풀숲 입구",
+    2: "몬스터 언덕",
+    3: "마왕의 전초기지",
+  },
+  2: {
+    1: "고요의 숲길",
+    2: "속삭이는 습지",
+    3: "마녀의 제단",
+    4: "고목의 성역",
+  },
+};
+
 const STAGE_CLEAR_REWARDS = {
   1: { gold: 10000 },
   2: { gold: 15000 },
   3: { gold: 30000 },
+  4: { gold: 50000 },
 };
 
 const ENEMY_GATE_BOSS_SHIELD_MESSAGE = "알수없는힘에 막혔습니다";
@@ -38,8 +84,25 @@ const STAGE3_BOSS_INITIAL_MINION_BURST_COUNT = 10;
 const STAGE3_BOSS_REINFORCEMENT_INTERVAL = 6;
 const STAGE3_BOSS_REINFORCEMENT_COUNT = 3;
 
-function getStageConfig(stageNumber) {
+function getStageConfig(stageNumber, chapterNumber = selectedChapter) {
+  if (Number(chapterNumber) === 2 && CHAPTER2_STAGE_CONFIGS[stageNumber]) {
+    return CHAPTER2_STAGE_CONFIGS[stageNumber];
+  }
   return STAGE_CONFIGS[stageNumber] || STAGE_CONFIGS[1];
+}
+
+function isChapterStageBattleReady(chapterNumber, stageNumber) {
+  const chapter = Number(chapterNumber) || 1;
+  const stage = Number(stageNumber) || 1;
+  if (chapter === 2) return CHAPTER2_BATTLE_READY_STAGES.has(stage);
+  return Boolean(STAGE_CONFIGS[stage]);
+}
+
+function canStartChapterStage(chapterNumber, stageNumber) {
+  const chapter = Number(chapterNumber) || 1;
+  const stage = Number(stageNumber) || 1;
+  if (!isChapterStageBattleReady(chapter, stage)) return false;
+  return chapter === 1 ? isStageUnlocked(stage) : true;
 }
 
 function isEntityAliveForStage(entity) {
@@ -64,7 +127,8 @@ function getLivingStageBossEnemy() {
 }
 
 function isEnemyBaseProtectedByBoss() {
-  return Boolean(Number(gameState && gameState.stage) === 3 && getLivingStageBossEnemy());
+  const stage = Number(gameState && gameState.stage);
+  return Boolean((stage === 3 || stage === 4) && getLivingStageBossEnemy());
 }
 
 function showEnemyGateProtectedMessage() {
@@ -194,15 +258,51 @@ function updateStageThreeBossEncounter(dt) {
   return true;
 }
 
+function updateStageFourBossEncounter() {
+  if (
+    !gameState
+    || Number(gameState.chapter) !== 2
+    || Number(gameState.stage) !== 4
+    || !gameState.witchBossSpawned
+  ) return false;
+
+  if (!getLivingStageBossEnemy() && !gameState.gateObjectiveAnnounced) {
+    gameState.gateObjectiveAnnounced = true;
+    gameState.message = "마녀를 처치했습니다! 상대 게이트를 파괴하세요!";
+    gameState.messageTimer = 1.6;
+  }
+
+  return true;
+}
+
 function isStageUnlocked(stageNumber) {
   return stageNumber <= playerProgress.unlockedStage;
 }
 
-function unlockStageProgress(stageNumber) {
-  if (!playerProgress.clearedStages.includes(stageNumber)) {
-    playerProgress.clearedStages.push(stageNumber);
+function getChapterClearedStages(chapterNumber) {
+  const chapter = Number(chapterNumber) || 1;
+  if (chapter === 1) return playerProgress.clearedStages;
+  if (!playerProgress.chapterClearedStages || typeof playerProgress.chapterClearedStages !== "object") {
+    playerProgress.chapterClearedStages = {};
   }
-  if (stageNumber < 3) {
+  const chapterKey = String(chapter);
+  if (!Array.isArray(playerProgress.chapterClearedStages[chapterKey])) {
+    playerProgress.chapterClearedStages[chapterKey] = [];
+  }
+  return playerProgress.chapterClearedStages[chapterKey];
+}
+
+function isChapterStageCleared(chapterNumber, stageNumber) {
+  return getChapterClearedStages(chapterNumber).includes(Number(stageNumber));
+}
+
+function unlockStageProgress(stageNumber) {
+  const chapter = Number(gameState?.chapter) || 1;
+  const clearedStages = getChapterClearedStages(chapter);
+  if (!clearedStages.includes(stageNumber)) {
+    clearedStages.push(stageNumber);
+  }
+  if (chapter === 1 && stageNumber < 3) {
     playerProgress.unlockedStage = Math.max(playerProgress.unlockedStage, stageNumber + 1);
   }
   saveProgress();
@@ -210,16 +310,55 @@ function unlockStageProgress(stageNumber) {
 }
 
 function updateStageUI() {
+  const isChapterTwo = selectedChapter === 2;
+
   stageCards.forEach((card) => {
     const stageNumber = Number(card.dataset.stage);
-    const unlocked = isStageUnlocked(stageNumber);
-    const cleared = playerProgress.clearedStages.includes(stageNumber);
+    const isVisible = isChapterTwo ? stageNumber <= 4 : stageNumber <= 3;
+    card.hidden = !isVisible;
+
+    if (!isVisible) return;
+
+    const chapterTitles = CHAPTER_STAGE_TITLES[selectedChapter] || CHAPTER_STAGE_TITLES[1];
+    const stageTitle = chapterTitles[stageNumber] || `Stage ${stageNumber}`;
+    const title = card.querySelector("strong");
     const status = card.querySelector(".stage-status");
     const lockIcon = card.querySelector(".lock-icon");
+    if (title) title.textContent = stageTitle;
+
+    if (isChapterTwo) {
+      const hasDetailPanel = Boolean(getStageDetailConfig(stageNumber, 2));
+      const isBattleReady = isChapterStageBattleReady(2, stageNumber);
+      const cleared = isChapterStageCleared(2, stageNumber);
+      card.classList.remove("is-locked");
+      card.classList.toggle("is-clear", cleared);
+      card.classList.toggle("is-coming-soon", !isBattleReady);
+      card.classList.toggle("is-info-ready", isBattleReady);
+      card.setAttribute("aria-disabled", isBattleReady ? "false" : "true");
+      card.setAttribute("aria-label", hasDetailPanel
+        ? `작전 2-${stageNumber} ${stageTitle} 상세 정보 열기`
+        : isBattleReady
+          ? `작전 2-${stageNumber} ${stageTitle} 전투 준비`
+          : `작전 2-${stageNumber} ${stageTitle}, 준비 중`);
+      if (status) status.textContent = cleared
+        ? "완료"
+        : hasDetailPanel
+          ? "정보 보기"
+          : isBattleReady
+            ? "전투 가능"
+            : "준비 중";
+      if (lockIcon) lockIcon.textContent = cleared ? "✓" : isBattleReady ? "▶" : "◆";
+      return;
+    }
+
+    card.classList.remove("is-coming-soon", "is-info-ready");
+    const unlocked = isStageUnlocked(stageNumber);
+    const cleared = playerProgress.clearedStages.includes(stageNumber);
 
     card.classList.toggle("is-locked", !unlocked);
     card.classList.toggle("is-clear", cleared);
     card.setAttribute("aria-disabled", unlocked ? "false" : "true");
+    card.setAttribute("aria-label", `작전 1-${stageNumber} ${stageTitle}, ${cleared ? "완료" : unlocked ? "도전 가능" : "잠김"}`);
 
     if (status) {
       if (cleared) status.textContent = "완료";
@@ -237,33 +376,61 @@ function updateStageUI() {
 
 const STAGE_DETAIL_CONFIGS = {
   1: {
-    image: "assets/ui/stage1 info UI.png",
-    alt: "Stage 1 detail info",
-    missionIds: ["clear", "guard5", "noChampionDeath"],
+    1: {
+      image: "assets/ui/stage1 info UI.png",
+      alt: "작전 1-1 풀숲 입구 상세 정보",
+      missionIds: ["clear", "guard5", "noChampionDeath"],
+      missionLabels: ["스테이지 클리어", "기사 5명 이상 소환", "챔피언 사망 없음"],
+    },
+    2: {
+      image: "assets/ui/stgae 2 ui info.png",
+      alt: "작전 1-2 몬스터 언덕 상세 정보",
+      missionIds: ["clear", "archer3", "noChampionDeath"],
+      missionLabels: ["스테이지 클리어", "궁수 3명 이상 소환", "챔피언 사망 없음"],
+    },
+    3: {
+      image: "assets/ui/stage3 info UI.png",
+      alt: "작전 1-3 마왕의 전초기지 상세 정보",
+      missionIds: ["clear", "bossDefeat", "noChampionDeath"],
+      missionLabels: ["스테이지 클리어", "보스 처치", "챔피언 사망 없음"],
+    },
   },
   2: {
-    image: "assets/ui/stgae 2 ui info.png",
-    alt: "Stage 2 detail info",
-    missionIds: ["clear", "archer3", "noChampionDeath"],
-  },
-  3: {
-    image: "assets/ui/stage3 info UI.png",
-    alt: "Stage 3 detail info",
-    missionIds: ["clear", "bossDefeat", "noChampionDeath"],
+    1: {
+      image: "assets/ui/chapter2 stage1 info UI.png",
+      alt: "작전 2-1 고요의 숲길 상세 정보",
+      missionIds: ["clear", "thief5", "noChampionDeath"],
+      missionLabels: ["스테이지 클리어", "도적 5명 이상 소환", "챔피언 사망 없음"],
+    },
+    2: {
+      image: "assets/ui/chapter2 stage2 info UI.png",
+      alt: "작전 2-2 속삭이는 습지 상세 정보",
+      missionIds: ["clear", "mage5", "noChampionDeath"],
+      missionLabels: ["스테이지 클리어", "마법사 5명 이상 소환", "챔피언 사망 없음"],
+    },
+    3: {
+      image: "assets/ui/chapter2 stage3 info UI.png",
+      alt: "작전 2-3 마녀의 제단 상세 정보",
+      missionIds: ["clear", "saintess2", "noChampionDeath"],
+      missionLabels: ["스테이지 클리어", "성녀 2명 이상 소환", "챔피언 사망 없음"],
+    },
   },
 };
 
-function getStageDetailConfig(stageNumber) {
-  return STAGE_DETAIL_CONFIGS[Number(stageNumber)] || null;
+function getStageDetailConfig(stageNumber, chapterNumber = selectedChapter) {
+  const chapterConfigs = STAGE_DETAIL_CONFIGS[Number(chapterNumber)] || STAGE_DETAIL_CONFIGS[1];
+  return chapterConfigs[Number(stageNumber)] || null;
 }
 
-function getStageMissionProgress(stageNumber) {
+function getStageMissionProgress(stageNumber, chapterNumber = selectedChapter) {
+  const chapter = Number(chapterNumber) || 1;
   const allProgress = playerProgress.stageMissionStars && typeof playerProgress.stageMissionStars === "object"
     ? playerProgress.stageMissionStars
     : {};
-  const progress = allProgress[String(stageNumber)] || allProgress[stageNumber] || {};
+  const progressKey = chapter === 1 ? String(stageNumber) : `${chapter}-${stageNumber}`;
+  const progress = allProgress[progressKey] || {};
   const normalizedProgress = progress && typeof progress === "object" ? { ...progress } : {};
-  if (getStageDetailConfig(stageNumber) && Array.isArray(playerProgress.clearedStages) && playerProgress.clearedStages.includes(Number(stageNumber))) {
+  if (getStageDetailConfig(stageNumber, chapter) && isChapterStageCleared(chapter, stageNumber)) {
     normalizedProgress.clear = true;
   }
   return normalizedProgress;
@@ -273,12 +440,15 @@ function updateStageDetailStars() {
   if (!stageDetailPanel) return;
 
   const stageNumber = Number(stageDetailPanel.dataset.stage) || 1;
-  const detailConfig = getStageDetailConfig(stageNumber);
+  const chapterNumber = Number(stageDetailPanel.dataset.chapter) || selectedChapter;
+  const detailConfig = getStageDetailConfig(stageNumber, chapterNumber);
   const missionIds = detailConfig ? detailConfig.missionIds : [];
-  const progress = getStageMissionProgress(stageNumber);
+  const missionLabels = detailConfig ? detailConfig.missionLabels : [];
+  const progress = getStageMissionProgress(stageNumber, chapterNumber);
   stageDetailPanel.querySelectorAll(".stage-detail-star").forEach((star, index) => {
     const missionId = missionIds[index] || "";
     star.dataset.missionId = missionId;
+    star.setAttribute("aria-label", missionLabels[index] || `미션 ${index + 1}`);
     const completed = Boolean(missionId && progress[missionId]);
     star.classList.toggle("is-earned", completed);
     star.dataset.completed = completed ? "true" : "false";
@@ -295,6 +465,29 @@ function recordStageMissionArcherSummon() {
   gameState.stageMissionRun.archerSummons = Math.max(0, Number(gameState.stageMissionRun.archerSummons) || 0) + 1;
 }
 
+function recordStageMissionMageSummon() {
+  if (
+    !gameState
+    || Number(gameState.chapter) !== 2
+    || Number(gameState.stage) !== 2
+    || !gameState.stageMissionRun
+  ) return;
+  gameState.stageMissionRun.mageSummons = Math.max(0, Number(gameState.stageMissionRun.mageSummons) || 0) + 1;
+}
+
+function recordStageMissionSaintessSummon() {
+  if (
+    !gameState
+    || Number(gameState.chapter) !== 2
+    || Number(gameState.stage) !== 3
+    || !gameState.stageMissionRun
+  ) return;
+  gameState.stageMissionRun.saintessSummons = Math.max(
+    0,
+    Number(gameState.stageMissionRun.saintessSummons) || 0,
+  ) + 1;
+}
+
 function recordStageMissionChampionDeath() {
   if (!gameState || !getStageDetailConfig(gameState.stage) || !gameState.stageMissionRun) return;
   gameState.stageMissionRun.championDied = true;
@@ -306,7 +499,8 @@ function recordStageMissionBossDefeat() {
 }
 
 function completeStageMissions(stageNumber) {
-  const detailConfig = getStageDetailConfig(stageNumber);
+  const chapter = Number(gameState?.chapter) || 1;
+  const detailConfig = getStageDetailConfig(stageNumber, chapter);
   if (!detailConfig) return;
 
   if (!playerProgress.stageMissionStars || typeof playerProgress.stageMissionStars !== "object") {
@@ -314,7 +508,7 @@ function completeStageMissions(stageNumber) {
   }
 
   const progress = {
-    ...getStageMissionProgress(stageNumber),
+    ...getStageMissionProgress(stageNumber, chapter),
     clear: true,
   };
   const run = gameState && gameState.stageMissionRun ? gameState.stageMissionRun : {};
@@ -325,6 +519,12 @@ function completeStageMissions(stageNumber) {
   if (detailConfig.missionIds.includes("archer3") && (Number(run.archerSummons) || 0) >= 3) {
     progress.archer3 = true;
   }
+  if (detailConfig.missionIds.includes("mage5") && (Number(run.mageSummons) || 0) >= 5) {
+    progress.mage5 = true;
+  }
+  if (detailConfig.missionIds.includes("saintess2") && (Number(run.saintessSummons) || 0) >= 2) {
+    progress.saintess2 = true;
+  }
   if (detailConfig.missionIds.includes("bossDefeat") && run.bossDefeated) {
     progress.bossDefeat = true;
   }
@@ -332,7 +532,8 @@ function completeStageMissions(stageNumber) {
     progress.noChampionDeath = true;
   }
 
-  playerProgress.stageMissionStars[String(stageNumber)] = progress;
+  const progressKey = chapter === 1 ? String(stageNumber) : `${chapter}-${stageNumber}`;
+  playerProgress.stageMissionStars[progressKey] = progress;
   updateStageDetailStars();
 }
 
@@ -349,14 +550,17 @@ function setStageDetailSelectedCard(stageNumber) {
 function hideStageDetailPanel() {
   if (stageDetailPanel) {
     stageDetailPanel.classList.add("is-hidden");
+    stageDetailPanel.classList.remove("is-coming-soon");
     stageDetailPanel.removeAttribute("data-stage");
+    stageDetailPanel.removeAttribute("data-chapter");
   }
   if (stageScreen) stageScreen.classList.remove("is-stage-detail-open");
   setStageDetailSelectedCard(0);
 }
 
 function showStageDetailPanel(stageNumber) {
-  const detailConfig = getStageDetailConfig(stageNumber);
+  const chapterNumber = selectedChapter;
+  const detailConfig = getStageDetailConfig(stageNumber, chapterNumber);
   if (!stageDetailPanel || !detailConfig) return false;
 
   const detailImage = stageDetailPanel.querySelector(".stage-detail-bg");
@@ -367,7 +571,13 @@ function showStageDetailPanel(stageNumber) {
   stageDetailPanel.setAttribute("aria-label", detailConfig.alt);
 
   stageDetailPanel.dataset.stage = String(stageNumber);
+  stageDetailPanel.dataset.chapter = String(chapterNumber);
+  stageDetailPanel.classList.toggle("is-coming-soon", detailConfig.isBattleReady === false);
   stageDetailPanel.classList.remove("is-hidden");
+  if (stageDetailStartBtn) {
+    stageDetailStartBtn.setAttribute("aria-label", detailConfig.isBattleReady === false ? "작전 2-1 전투 준비 중" : "작전 시작");
+    stageDetailStartBtn.setAttribute("aria-disabled", detailConfig.isBattleReady === false ? "true" : "false");
+  }
   if (stageScreen) stageScreen.classList.add("is-stage-detail-open");
   if (stageSelectNotice) stageSelectNotice.classList.remove("is-show");
   setStageDetailSelectedCard(stageNumber);
@@ -382,6 +592,21 @@ function showStageDetailPanel(stageNumber) {
 
 function proceedStageDetailPanel() {
   const stageNumber = Number(stageDetailPanel?.dataset.stage) || 1;
+  const chapterNumber = Number(stageDetailPanel?.dataset.chapter) || 1;
+  const detailConfig = getStageDetailConfig(stageNumber, chapterNumber);
+
+  if (detailConfig && detailConfig.isBattleReady === false) {
+    if (stageSelectNotice) {
+      stageSelectNotice.textContent = `작전 ${chapterNumber}-${stageNumber} 전투는 현재 준비 중입니다.`;
+      stageSelectNotice.classList.add("is-show");
+      clearTimeout(showStageLockedNotice.timer);
+      showStageLockedNotice.timer = setTimeout(() => {
+        if (stageSelectNotice) stageSelectNotice.classList.remove("is-show");
+      }, 1700);
+    }
+    return;
+  }
+
   hideStageDetailPanel();
 
   if (typeof showPreBattleFormation === "function") {
@@ -393,6 +618,29 @@ function proceedStageDetailPanel() {
 }
 
 function openStage(stageNumber) {
+  if (selectedChapter === 2) {
+    if (showStageDetailPanel(stageNumber)) {
+      return;
+    }
+    if (isChapterStageBattleReady(2, stageNumber)) {
+      if (typeof showPreBattleFormation === "function") {
+        showPreBattleFormation(stageNumber);
+        return;
+      }
+      startGame(stageNumber);
+      return;
+    }
+    if (stageSelectNotice) {
+      stageSelectNotice.textContent = `작전 2-${stageNumber} 전투는 현재 준비 중입니다.`;
+      stageSelectNotice.classList.add("is-show");
+      clearTimeout(showStageLockedNotice.timer);
+      showStageLockedNotice.timer = setTimeout(() => {
+        if (stageSelectNotice) stageSelectNotice.classList.remove("is-show");
+      }, 1700);
+    }
+    return;
+  }
+
   if (!isStageUnlocked(stageNumber)) {
     showStageLockedNotice(stageNumber);
     return;
@@ -463,6 +711,8 @@ function showStageSelect() {
   hideStageDetailPanel();
   if (stageBackBtn) stageBackBtn.setAttribute("aria-label", "Back to lobby");
   if (stageSelectNotice) stageSelectNotice.classList.remove("is-show");
+  selectedChapter = 1;
+  if (stageScreen) stageScreen.dataset.chapter = "1";
   setStageScreenMode("chapter");
 
   document.body.classList.remove("game-started", "in-lobby", "in-shop", "in-recruit", "in-formation", "in-mission", "in-inventory");
@@ -478,12 +728,22 @@ function showStageSelect() {
   updateStageUI();
 }
 
-function showChapterStages() {
+function showChapterStages(chapterNumber = 1) {
+  selectedChapter = Number(chapterNumber) === 2 ? 2 : 1;
+  if (stageScreen) stageScreen.dataset.chapter = String(selectedChapter);
   if (chapterPanel) chapterPanel.classList.add("is-hidden");
   if (stagePanel) stagePanel.classList.remove("is-hidden");
   hideStageDetailPanel();
   if (stageBackBtn) stageBackBtn.setAttribute("aria-label", "Back to chapter select");
-  if (stageSelectNotice) stageSelectNotice.classList.remove("is-show");
+  if (stagePanel) stagePanel.setAttribute("aria-label", `Chapter ${selectedChapter} 스테이지 선택`);
+  if (stagePartTab) stagePartTab.textContent = selectedChapter === 2 ? "✓ 파트 2" : "✓ 파트 1";
+  if (stageChapterTab) stageChapterTab.textContent = `챕터 ${selectedChapter}`;
+  if (stageSelectNotice) {
+    stageSelectNotice.textContent = selectedChapter === 2
+      ? "Chapter 2 전투 콘텐츠는 준비 중입니다."
+      : "Stage 1부터 순서대로 클리어하면 다음 스테이지가 열립니다.";
+    stageSelectNotice.classList.remove("is-show");
+  }
   setStageScreenMode("stage");
   updateStageUI();
 }
@@ -495,6 +755,10 @@ function updateWave(dt) {
   }
 
   if (updateStageThreeBossEncounter(dt)) {
+    return;
+  }
+
+  if (updateStageFourBossEncounter()) {
     return;
   }
 
@@ -538,7 +802,8 @@ function updateWave(dt) {
 
 function completeStage(message) {
   if (gameState.clear) return;
-  const alreadyCleared = playerProgress.clearedStages.includes(selectedStage);
+  const chapter = Number(gameState.chapter) || 1;
+  const alreadyCleared = isChapterStageCleared(chapter, selectedStage);
   gameState.clear = true;
   gameState.running = false;
   if (window.GameAudio) window.GameAudio.playSfx("stageClear", { cooldown: 1000, volume: 0.9 });

@@ -197,6 +197,7 @@ function createInitialState() {
     running: false,
     gameOver: false,
     clear: false,
+    chapter: typeof selectedChapter === "number" ? selectedChapter : 1,
     stage: selectedStage,
     stageTitle: stageConfig.title,
     maxWave: stageConfig.maxWave,
@@ -216,6 +217,7 @@ function createInitialState() {
     spawnedInWave: 0,
     karonBossSpawned: false,
     karonBossTrigger: "",
+    witchBossSpawned: false,
     stageThreeBossOpeningMinionsSpawned: false,
     stageThreeBossReinforcementTimer: typeof STAGE3_BOSS_REINFORCEMENT_INTERVAL === "number"
       ? STAGE3_BOSS_REINFORCEMENT_INTERVAL
@@ -234,6 +236,8 @@ function createInitialState() {
     stageMissionRun: {
       guardSummons: 0,
       archerSummons: 0,
+      mageSummons: 0,
+      saintessSummons: 0,
       bossDefeated: false,
       championDied: false,
     },

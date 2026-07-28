@@ -207,6 +207,7 @@ function summonMage() {
     deathAnimDuration: 0.85,
     deathRewarded: false,
   });
+  if (typeof recordStageMissionMageSummon === "function") recordStageMissionMageSummon();
 }
 
 function summonSaintess() {
@@ -249,6 +250,7 @@ function summonSaintess() {
     deathAnimDuration: 0.85,
     deathRewarded: false,
   });
+  if (typeof recordStageMissionSaintessSummon === "function") recordStageMissionSaintessSummon();
 }
 
 function summonThief() {
@@ -332,9 +334,21 @@ function updateUnits(dt) {
   for (const unit of gameState.units) {
     unit.animTime = (unit.animTime || 0) + dt;
 
+    if (!unit.dead && unit.hp > 0 && typeof updateSkeletonCurse === "function") {
+      updateSkeletonCurse(unit, dt);
+    }
+
     if (unit.hp <= 0 || unit.dead) {
       startUnitDeath(unit);
       unit.deathAnimTimer = Math.max(0, (unit.deathAnimTimer || 0) - dt);
+      if (
+        unit.curseTransformPending
+        && !unit.curseTransformSpawned
+        && unit.deathAnimTimer <= 0
+        && typeof spawnCursedSkeletonFromUnit === "function"
+      ) {
+        unit.curseTransformSpawned = spawnCursedSkeletonFromUnit(unit);
+      }
       continue;
     }
 
@@ -411,7 +425,7 @@ function updateUnits(dt) {
         : findNearestEnemy(unit.x, unit.range + 12, { includeAirborne: false });
 
       if (canDamageCombatant(attackTarget)) {
-        attackTarget.hp -= unit.damage;
+        damageEnemyCombatant(attackTarget, unit.damage, unit);
         if (unit.type === "thief") {
           spawnThiefStrike(attackTarget.x, attackTarget.y - Math.max(34, attackTarget.h * 0.65));
           startThiefRetreat(unit);
@@ -456,7 +470,7 @@ function updateUnits(dt) {
           unit.attackTarget = target;
           unit.attackTargetBase = false;
         } else if (canDamageCombatant(target)) {
-          target.hp -= unit.damage;
+          damageEnemyCombatant(target, unit.damage, unit);
         }
       }
     } else if (canAttackEnemyBaseFromRange(unit)) {
@@ -846,6 +860,10 @@ function drawUnit(unit) {
       ctx.lineTo(32, -38);
       ctx.stroke();
     }
+  }
+
+  if (!isDying && typeof drawSkeletonCurseEffect === "function") {
+    drawSkeletonCurseEffect(unit);
   }
 
   ctx.restore();

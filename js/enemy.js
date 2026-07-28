@@ -37,6 +37,110 @@ const STAGE1_ENEMY_SPRITE = {
   },
 };
 
+const CHAPTER2_SKELETON_SPRITE = {
+  columns: 6,
+  rowCount: 3,
+  rows: { walk: 0, attack: 1, death: 2 },
+  frames: { walk: 6, attack: 6, death: 6 },
+  fps: { walk: 8, attack: 10, death: 7 },
+  drawW: 62,
+  drawH: 82,
+  healthBarOffsetY: 70,
+};
+
+const SKELETON_CURSE_DURATION = 8;
+const SKELETON_CURSE_TICK_INTERVAL = 1;
+const SKELETON_CURSE_MAX_HP_DAMAGE_RATIO = 0.06;
+const CHAPTER2_STAGE3_SKELETON_CURSE_DAMAGE_RATIO = 0.08;
+const CHAPTER2_SKELETON_STAT_MULTIPLIER = 1.1;
+const LEVEL15_GUARD_STATS = { hp: 193, damage: 14 };
+const LEVEL20_GUARD_STATS = { hp: 221, damage: 15 };
+const CHAPTER2_STAGE2_GOBLIN_STAT_MULTIPLIER = 1.1;
+const LEVEL15_MAGE_DAMAGE = 23;
+const CHAPTER2_BAT_HP = LEVEL15_MAGE_DAMAGE * 2;
+const CHAPTER2_BAT_SWARM_SIZE = 8;
+
+const CHAPTER2_BAT_SPRITE = {
+  drawW: 64,
+  drawH: 44,
+  flightOffsetY: 170,
+  healthBarWidth: 30,
+};
+
+const CHAPTER2_WITCH_SPRITE = {
+  walkFrames: 6,
+  attackFrames: 4,
+  frameW: 480,
+  frameH: 724,
+  walkFps: 7,
+  attackFps: 8,
+  drawW: 210,
+  drawH: 317,
+  flightOffsetY: 95,
+  healthBarOffsetY: 138,
+  healthBarWidth: 166,
+  meteorReleaseProgress: 0.72,
+};
+
+const CHAPTER2_WITCH_TRANSFORM_SPRITE = {
+  columns: 10,
+  frameW: 384,
+  frameH: 384,
+  totalFrames: 10,
+  fps: 10,
+  duration: 1.05,
+  drawW: 300,
+  drawH: 300,
+  baseOffsetY: 0,
+  visualBottoms: [359, 359, 357, 359, 359, 296, 299, 317, 316, 316],
+};
+
+const CHAPTER2_WITCH_DRAGON_SPRITE = {
+  columns: 6,
+  frameW: 384,
+  frameH: 384,
+  rows: { walk: 0, attack: 1, death: 2 },
+  frames: { walk: 6, attack: 6, death: 6 },
+  fps: { walk: 7, attack: 7, death: 7 },
+  drawW: 360,
+  drawH: 360,
+  baseOffsetY: 0,
+  healthBarOffsetY: 305,
+  healthBarWidth: 230,
+};
+
+const CHAPTER2_WITCH_DRAGON_BREATH_SPRITE = {
+  columns: 8,
+  frameW: 384,
+  frameH: 192,
+  totalFrames: 8,
+  fps: 12,
+  minDrawW: 150,
+  maxDrawW: 350,
+  baseDrawH: 88,
+  maxDrawH: 118,
+  mouthOffsetX: -96,
+  mouthOffsetY: -112,
+  sourceTipX: 371,
+  targetPadding: 38,
+  maxAimAngleRad: 28 * Math.PI / 180,
+  angleRad: -10 * Math.PI / 180,
+};
+
+const WITCH_DRAGON_PHASE_TWO_HP = 4200;
+const WITCH_DRAGON_BREATH_RANGE = 440;
+const WITCH_DRAGON_BREATH_TARGET_LIMIT = 3;
+const WITCH_DRAGON_BREATH_TICK_INTERVAL = 0.5;
+const WITCH_DRAGON_BREATH_DAMAGE = 18;
+const WITCH_DRAGON_SPEED = 18;
+
+const WITCH_POISON_DURATION = 10;
+const WITCH_POISON_TICK_INTERVAL = 1;
+const WITCH_POISON_MAX_HP_DAMAGE_RATIO = 0.04;
+const WITCH_CURSED_SKELETON_EXPLOSION_RADIUS = 210;
+const WITCH_CURSED_SKELETON_EXPLOSION_DAMAGE = 70;
+const WITCH_CURSED_SKELETON_EXPLOSION_TARGET_LIMIT = 3;
+
 const EVILEYE_SPRITE = {
   columns: 6,
   rowCount: 5,
@@ -262,6 +366,611 @@ function createGoblinEnemy(wave, isStageOne) {
   };
 }
 
+function createChapter2SkeletonEnemy(wave) {
+  const waveBonus = Math.max(0, (Number(wave) || 1) - 1);
+  const hp = LEVEL15_GUARD_STATS.hp * CHAPTER2_SKELETON_STAT_MULTIPLIER + waveBonus * 10;
+  const damage = LEVEL15_GUARD_STATS.damage * CHAPTER2_SKELETON_STAT_MULTIPLIER + waveBonus * 2;
+  return {
+    type: "skeleton",
+    name: "skeleton soldier",
+    x: ENEMY_BASE_X - 45,
+    y: COMBAT_LINE_Y,
+    w: 38,
+    h: 92,
+    hp,
+    maxHp: hp,
+    speed: 39 + wave * 3,
+    damage,
+    range: 42,
+    cooldown: 0,
+    attackSpeed: 0.9,
+    animTime: 0,
+    moving: false,
+    attackAnimTimer: 0,
+    attackAnimDuration: 0.6,
+    paralyzeTimer: 0,
+    dead: false,
+    deathAnimTimer: 0,
+    deathAnimDuration: 0.86,
+    deathRewarded: false,
+    canApplyCurse: true,
+  };
+}
+
+function createChapter2Stage3SkeletonEnemy(wave) {
+  const waveBonus = Math.max(0, (Number(wave) || 1) - 1);
+  const hp = Math.round(LEVEL20_GUARD_STATS.hp * CHAPTER2_SKELETON_STAT_MULTIPLIER) + waveBonus * 10;
+  const damage = Math.round(LEVEL20_GUARD_STATS.damage * CHAPTER2_SKELETON_STAT_MULTIPLIER) + waveBonus * 2;
+  const skeleton = createChapter2SkeletonEnemy(wave);
+  skeleton.hp = hp;
+  skeleton.maxHp = hp;
+  skeleton.damage = damage;
+  skeleton.curseDamageRatio = CHAPTER2_STAGE3_SKELETON_CURSE_DAMAGE_RATIO;
+  return skeleton;
+}
+
+function createChapter2Stage2GoblinEnemy(wave) {
+  const hp = Math.round(LEVEL20_GUARD_STATS.hp * CHAPTER2_STAGE2_GOBLIN_STAT_MULTIPLIER);
+  const damage = Math.round(LEVEL20_GUARD_STATS.damage * CHAPTER2_STAGE2_GOBLIN_STAT_MULTIPLIER);
+  const goblin = createGoblinEnemy(wave, false);
+  goblin.hp = hp;
+  goblin.maxHp = hp;
+  goblin.damage = damage;
+  goblin.speed = 40 + wave * 2;
+  return goblin;
+}
+
+function createChapter2BatEnemy(wave, swarmIndex = 0) {
+  const formationOffsets = [
+    { x: -18, y: -8 },
+    { x: -6, y: 7 },
+    { x: 6, y: -5 },
+    { x: 18, y: 9 },
+    { x: -18, y: 10 },
+    { x: -6, y: -10 },
+    { x: 6, y: 12 },
+    { x: 18, y: -12 },
+  ];
+  const offset = formationOffsets[swarmIndex % formationOffsets.length];
+
+  return {
+    type: "bat",
+    name: "swarm bat",
+    airborne: true,
+    x: ENEMY_BASE_X - 62 + offset.x,
+    y: COMBAT_LINE_Y,
+    w: 42,
+    h: 44,
+    hp: CHAPTER2_BAT_HP,
+    maxHp: CHAPTER2_BAT_HP,
+    speed: 53 + wave * 2,
+    damage: 7 + wave,
+    range: 34,
+    cooldown: 0,
+    attackSpeed: 0.82,
+    animTime: swarmIndex * 0.17,
+    moving: false,
+    attackAnimTimer: 0,
+    attackAnimDuration: 0.34,
+    paralyzeTimer: 0,
+    dead: false,
+    deathAnimTimer: 0,
+    deathAnimDuration: 0.48,
+    deathRewarded: false,
+    runestoneReward: 3,
+    flightOffset: CHAPTER2_BAT_SPRITE.flightOffsetY + offset.y,
+    swarmIndex,
+  };
+}
+
+function spawnChapter2BatSwarm(wave) {
+  for (let index = 0; index < CHAPTER2_BAT_SWARM_SIZE; index += 1) {
+    gameState.enemies.push(createChapter2BatEnemy(wave, index));
+  }
+}
+
+function spawnChapter2Stage3SkeletonGroup(wave, spawnIndex = 0) {
+  const groupIndex = Math.floor(Math.max(0, Number(spawnIndex) || 0) / 2);
+  const groupSize = groupIndex % 2 === 0 ? 5 : 6;
+
+  for (let index = 0; index < groupSize; index += 1) {
+    const skeleton = createChapter2Stage3SkeletonEnemy(wave);
+    skeleton.x -= index * 24;
+    skeleton.y += (index % 2 === 0 ? -1 : 1) * Math.min(4, Math.floor(index / 2) * 2);
+    gameState.enemies.push(skeleton);
+  }
+}
+
+function spawnChapter2Stage4BossEscort(wave = 1) {
+  const skeletonCount = 4;
+  const batCount = 4;
+
+  for (let index = 0; index < skeletonCount; index += 1) {
+    const skeleton = createChapter2Stage3SkeletonEnemy(wave);
+    skeleton.x = ENEMY_BASE_X - 175 - index * 38;
+    skeleton.y += index % 2 === 0 ? -2 : 2;
+    gameState.enemies.push(skeleton);
+  }
+
+  for (let index = 0; index < batCount; index += 1) {
+    const bat = createChapter2BatEnemy(wave, index);
+    bat.x = ENEMY_BASE_X - 135 - index * 42;
+    gameState.enemies.push(bat);
+  }
+}
+
+function createChapter2WitchBoss() {
+  const phaseOneHp = 2600;
+  return {
+    type: "witch",
+    name: "독룡의 마녀 베르디아",
+    isBoss: true,
+    airborne: true,
+    x: ENEMY_BASE_X - 105,
+    y: COMBAT_LINE_Y,
+    w: 78,
+    h: 108,
+    bossPhase: "human",
+    hasTransformed: false,
+    transforming: false,
+    phaseOneHp,
+    phaseTwoHp: WITCH_DRAGON_PHASE_TWO_HP,
+    hp: phaseOneHp,
+    maxHp: phaseOneHp,
+    speed: 24,
+    damage: 26,
+    range: 700,
+    cooldown: 1.4,
+    attackSpeed: 4.2,
+    attackAnimTimer: 0,
+    attackAnimDuration: 1.2,
+    meteorCastPending: false,
+    meteorTarget: null,
+    transformAnimTimer: 0,
+    transformAnimDuration: CHAPTER2_WITCH_TRANSFORM_SPRITE.duration,
+    dragonBreathing: false,
+    dragonBreathAnimTime: 0,
+    dragonBreathTickTimer: WITCH_DRAGON_BREATH_TICK_INTERVAL,
+    dragonBreathTargets: [],
+    animTime: 0,
+    moving: false,
+    face: -1,
+    flightOffset: CHAPTER2_WITCH_SPRITE.flightOffsetY,
+    paralyzeTimer: 0,
+    dead: false,
+    deathAnimTimer: 0,
+    deathAnimDuration: 1.05,
+    deathRewarded: false,
+    runestoneReward: 150,
+  };
+}
+
+function spawnChapter2WitchBoss() {
+  if (
+    !gameState
+    || gameState.witchBossSpawned
+    || Number(gameState.chapter) !== 2
+    || Number(gameState.stage) !== 4
+  ) return false;
+
+  gameState.witchBossSpawned = true;
+  gameState.enemies.push(createChapter2WitchBoss());
+  spawnChapter2Stage4BossEscort(Math.max(1, Number(gameState.wave) || 1));
+  gameState.message = "보스 출현! 독룡의 마녀 베르디아와 호위대가 나타났습니다!";
+  gameState.messageTimer = 1.8;
+  return true;
+}
+
+function isFriendlyUnitForSkeletonCurse(unit) {
+  return Boolean(
+    unit
+    && gameState
+    && Array.isArray(gameState.units)
+    && gameState.units.includes(unit)
+    && isCombatAlive(unit)
+  );
+}
+
+function applySkeletonDeathCurse(enemy) {
+  if (!enemy || enemy.type !== "skeleton" || enemy.canApplyCurse === false) return false;
+
+  const target = enemy.lastDamageSource;
+  if (!isFriendlyUnitForSkeletonCurse(target)) return false;
+
+  target.skeletonCurseTimer = SKELETON_CURSE_DURATION;
+  target.skeletonCurseTickTimer = Math.min(
+    Number(target.skeletonCurseTickTimer) || SKELETON_CURSE_TICK_INTERVAL,
+    0.45
+  );
+  target.skeletonCurseDamage = Math.max(
+    1,
+    Math.ceil(
+      (Number(target.maxHp) || 1)
+      * (Number(enemy.curseDamageRatio) || SKELETON_CURSE_MAX_HP_DAMAGE_RATIO)
+    )
+  );
+  target.curseKind = "skeleton";
+  target.curseDeathEligible = false;
+
+  gameState.message = "CURSE! 스켈레톤을 처치한 병사의 생명력이 감소합니다.";
+  gameState.messageTimer = 1.35;
+  return true;
+}
+
+function applyWitchPoisonCurse(target) {
+  if (!isFriendlyUnitForSkeletonCurse(target)) return false;
+
+  target.skeletonCurseTimer = WITCH_POISON_DURATION;
+  target.skeletonCurseTickTimer = Math.min(
+    Number(target.skeletonCurseTickTimer) || WITCH_POISON_TICK_INTERVAL,
+    0.45
+  );
+  target.skeletonCurseDamage = Math.max(
+    1,
+    Math.ceil((Number(target.maxHp) || 1) * WITCH_POISON_MAX_HP_DAMAGE_RATIO)
+  );
+  target.curseKind = "witch";
+  target.curseDeathEligible = false;
+  return true;
+}
+
+function updateSkeletonCurse(unit, dt) {
+  if (!unit || unit.dead || unit.hp <= 0 || !(unit.skeletonCurseTimer > 0)) return;
+
+  unit.skeletonCurseTimer = Math.max(0, unit.skeletonCurseTimer - dt);
+  unit.skeletonCurseTickTimer = (Number(unit.skeletonCurseTickTimer) || SKELETON_CURSE_TICK_INTERVAL) - dt;
+
+  while (unit.skeletonCurseTickTimer <= 0 && unit.hp > 0) {
+    unit.hp -= Math.max(1, Number(unit.skeletonCurseDamage) || 1);
+    unit.skeletonCurseTickTimer += SKELETON_CURSE_TICK_INTERVAL;
+  }
+
+  if (unit.hp <= 0) {
+    unit.curseDeathEligible = true;
+    return;
+  }
+
+  if (unit.skeletonCurseTimer <= 0) {
+    unit.skeletonCurseTimer = 0;
+    unit.skeletonCurseTickTimer = 0;
+    unit.skeletonCurseDamage = 0;
+    unit.curseKind = "";
+    unit.curseDeathEligible = false;
+  }
+}
+
+function shouldTransformCursedUnit(unit) {
+  if (!unit || unit.curseTransformSpawned) return false;
+  if (!gameState || Number(gameState.chapter) !== 2) return false;
+  return Boolean(unit.curseDeathEligible || unit.skeletonCurseTimer > 0);
+}
+
+function spawnCursedSkeletonFromUnit(unit) {
+  if (!unit || !gameState || !Array.isArray(gameState.enemies)) return false;
+
+  const transformedByWitch = unit.curseKind === "witch";
+  const skeleton = createChapter2SkeletonEnemy(Math.max(1, Number(gameState.wave) || 1));
+  const convertedHp = Math.max(skeleton.maxHp, Math.round((Number(unit.maxHp) || 1) * 0.8));
+  skeleton.x = Math.max(
+    PLAYER_BASE_ATTACK_X + 24,
+    Math.min(ENEMY_BASE_X - 48, Number(unit.x) || (PLAYER_BASE_ATTACK_X + 24))
+  );
+  skeleton.y = Number(unit.y) || COMBAT_LINE_Y;
+  skeleton.hp = convertedHp;
+  skeleton.maxHp = convertedHp;
+  skeleton.damage = Math.max(skeleton.damage, Math.round((Number(unit.damage) || 1) * 0.65));
+  skeleton.canApplyCurse = false;
+  skeleton.deathRewarded = true;
+  skeleton.isConvertedAlly = true;
+  skeleton.convertedFromUnitType = unit.type || "unit";
+  skeleton.isWitchCursedSkeleton = transformedByWitch;
+  skeleton.witchExplosionTriggered = false;
+  gameState.enemies.push(skeleton);
+
+  gameState.message = transformedByWitch
+    ? "마녀의 독에 쓰러진 병사가 초록 저주 스켈레톤으로 변했습니다!"
+    : "저주받은 병사가 적 스켈레톤으로 되살아났습니다!";
+  gameState.messageTimer = 1.5;
+  return true;
+}
+
+function getWitchExplosionTargets(enemy) {
+  if (!gameState) return [];
+  const candidates = gameState.units.filter(isCombatAlive);
+  if (gameState.hero && isCombatAlive(gameState.hero)) candidates.push(gameState.hero);
+
+  return candidates
+    .map((target) => ({ target, distance: Math.abs(target.x - enemy.x) }))
+    .filter((entry) => entry.distance <= WITCH_CURSED_SKELETON_EXPLOSION_RADIUS)
+    .sort((a, b) => a.distance - b.distance)
+    .slice(0, WITCH_CURSED_SKELETON_EXPLOSION_TARGET_LIMIT)
+    .map((entry) => entry.target);
+}
+
+function explodeWitchCursedSkeleton(enemy) {
+  if (!enemy || !enemy.isWitchCursedSkeleton || enemy.witchExplosionTriggered) return false;
+  enemy.witchExplosionTriggered = true;
+
+  const targets = getWitchExplosionTargets(enemy);
+  for (const target of targets) {
+    damageCombatant(target, WITCH_CURSED_SKELETON_EXPLOSION_DAMAGE);
+    spawnHit(target.x, target.y - 42, "#7dff4f");
+  }
+
+  for (let index = 0; index < 12; index += 1) {
+    const angle = Math.PI * 2 * index / 12;
+    gameState.particles.push({
+      type: "hit",
+      x: enemy.x + Math.cos(angle) * 22,
+      y: enemy.y - 38 + Math.sin(angle) * 22,
+      vx: Math.cos(angle) * 85,
+      vy: Math.sin(angle) * 85,
+      life: 0.48,
+      maxLife: 0.48,
+      color: "#70ff3d",
+    });
+  }
+
+  gameState.message = `초록 저주 스켈레톤 자폭! 최대 ${targets.length}명에게 큰 피해`;
+  gameState.messageTimer = 1.15;
+  return true;
+}
+
+function drawSkeletonCurseEffect(unit) {
+  if (!unit || !(unit.skeletonCurseTimer > 0)) return;
+
+  const witchCurse = unit.curseKind === "witch";
+  const pulse = 0.5 + Math.sin(performance.now() * 0.009) * 0.5;
+  ctx.save();
+  ctx.globalAlpha = 0.5 + pulse * 0.25;
+  ctx.strokeStyle = witchCurse ? "#69ff35" : "#b44cff";
+  ctx.fillStyle = witchCurse ? "rgba(58, 170, 24, 0.18)" : "rgba(84, 15, 125, 0.18)";
+  ctx.shadowColor = witchCurse ? "#8dff5a" : "#d77aff";
+  ctx.shadowBlur = 9;
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.ellipse(0, -28, 24 + pulse * 3, 34 + pulse * 2, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.stroke();
+
+  ctx.globalAlpha = 0.9;
+  ctx.shadowBlur = 4;
+  ctx.font = "700 9px Arial, sans-serif";
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  ctx.fillStyle = witchCurse ? "#caffb5" : "#f2c4ff";
+  ctx.fillText(
+    `${witchCurse ? "POISON" : "CURSE"} ${Math.max(1, Math.ceil(unit.skeletonCurseTimer))}`,
+    0,
+    -79
+  );
+  ctx.restore();
+}
+
+function startWitchMeteorCast(enemy, target) {
+  enemy.cooldown = enemy.attackSpeed;
+  enemy.attackAnimTimer = enemy.attackAnimDuration;
+  enemy.meteorCastPending = true;
+  enemy.meteorTarget = target || null;
+  enemy.moving = false;
+  if (window.GameAudio) window.GameAudio.playSfx("magicAttack", { cooldown: 220, volume: 0.82 });
+}
+
+function isWitchDragon(enemy) {
+  return Boolean(enemy && enemy.type === "witch" && enemy.bossPhase === "dragon");
+}
+
+function startWitchDragonTransformation(enemy) {
+  if (
+    !enemy
+    || enemy.type !== "witch"
+    || enemy.dead
+    || enemy.hasTransformed
+    || enemy.bossPhase === "dragon"
+  ) return false;
+
+  enemy.bossPhase = "transform";
+  enemy.hasTransformed = true;
+  enemy.transforming = true;
+  enemy.hp = 1;
+  enemy.moving = false;
+  enemy.cooldown = 0;
+  enemy.attackAnimTimer = 0;
+  enemy.meteorCastPending = false;
+  enemy.meteorTarget = null;
+  enemy.paralyzeTimer = 0;
+  enemy.transformAnimTimer = 0;
+  enemy.transformAnimDuration = CHAPTER2_WITCH_TRANSFORM_SPRITE.duration;
+  enemy.dragonBreathing = false;
+  enemy.dragonBreathAnimTime = 0;
+  enemy.dragonBreathTickTimer = WITCH_DRAGON_BREATH_TICK_INTERVAL;
+  enemy.dragonBreathTargets = [];
+  enemy.deathAnimTimer = 0;
+  enemy.animTime = 0;
+
+  gameState.message = "베르디아의 마력이 폭주합니다... 독룡으로 변신!";
+  gameState.messageTimer = 1.8;
+  if (window.GameAudio) window.GameAudio.playSfx("magicAttack", { cooldown: 0, volume: 1 });
+  return true;
+}
+
+function finishWitchDragonTransformation(enemy) {
+  if (!enemy || enemy.type !== "witch" || enemy.bossPhase !== "transform") return false;
+
+  enemy.bossPhase = "dragon";
+  enemy.transforming = false;
+  enemy.airborne = false;
+  enemy.flightOffset = 0;
+  enemy.maxHp = enemy.phaseTwoHp || WITCH_DRAGON_PHASE_TWO_HP;
+  enemy.hp = enemy.maxHp;
+  enemy.speed = WITCH_DRAGON_SPEED;
+  enemy.damage = WITCH_DRAGON_BREATH_DAMAGE;
+  enemy.range = WITCH_DRAGON_BREATH_RANGE;
+  enemy.w = 150;
+  enemy.h = 132;
+  enemy.cooldown = 0;
+  enemy.attackAnimTimer = 0;
+  enemy.dragonBreathing = false;
+  enemy.dragonBreathAnimTime = 0;
+  enemy.dragonBreathTickTimer = 0;
+  enemy.dragonBreathTargets = [];
+  enemy.animTime = 0;
+
+  gameState.message = "2페이즈! 독룡 베르디아가 브레스를 내뿜습니다!";
+  gameState.messageTimer = 1.8;
+  return true;
+}
+
+function updateWitchDragonTransformation(enemy, dt) {
+  if (!enemy || enemy.bossPhase !== "transform") return;
+  enemy.moving = false;
+  enemy.transformAnimTimer = Math.min(
+    enemy.transformAnimDuration,
+    (enemy.transformAnimTimer || 0) + dt
+  );
+
+  if (enemy.transformAnimTimer >= enemy.transformAnimDuration) {
+    finishWitchDragonTransformation(enemy);
+  }
+}
+
+function getWitchDragonBreathTargets(enemy) {
+  if (!enemy || !gameState) return [];
+  const candidates = gameState.units.filter(isCombatAlive);
+  if (gameState.hero && isCombatAlive(gameState.hero)) {
+    candidates.push(gameState.hero);
+  }
+
+  return candidates
+    .map((target) => ({
+      target,
+      distance: enemy.x - target.x,
+    }))
+    .filter((entry) => entry.distance >= -12 && entry.distance <= enemy.range)
+    .sort((a, b) => a.distance - b.distance)
+    .slice(0, WITCH_DRAGON_BREATH_TARGET_LIMIT)
+    .map((entry) => entry.target);
+}
+
+function setWitchDragonBreathing(enemy, active, targets = []) {
+  const wasBreathing = Boolean(enemy.dragonBreathing);
+  enemy.dragonBreathing = Boolean(active);
+  enemy.dragonBreathTargets = active ? targets : [];
+  enemy.moving = false;
+
+  if (!active) {
+    enemy.attackAnimTimer = 0;
+    enemy.dragonBreathTickTimer = 0;
+    return;
+  }
+
+  enemy.attackAnimTimer = 1;
+  if (!wasBreathing) {
+    enemy.dragonBreathAnimTime = 0;
+    enemy.dragonBreathTickTimer = 0;
+    if (window.GameAudio) {
+      window.GameAudio.playSfx("magicAttack", { cooldown: 350, volume: 0.9 });
+    }
+  }
+}
+
+function applyWitchDragonBreathTick(enemy, targets) {
+  for (const target of targets) {
+    if (!isCombatAlive(target)) continue;
+    damageCombatant(target, enemy.damage || WITCH_DRAGON_BREATH_DAMAGE);
+    spawnHit(target.x, target.y - Math.max(32, (target.h || 70) * 0.55), "#9dff42");
+  }
+}
+
+function updateWitchDragonBreath(enemy, dt, targets, attackingPlayerBase = false) {
+  setWitchDragonBreathing(enemy, true, targets);
+  enemy.dragonBreathAnimTime = (enemy.dragonBreathAnimTime || 0) + dt;
+  enemy.dragonBreathTickTimer -= dt;
+
+  while (enemy.dragonBreathTickTimer <= 0) {
+    if (attackingPlayerBase) {
+      gameState.playerBaseHp -= Math.max(1, Math.round((enemy.damage || WITCH_DRAGON_BREATH_DAMAGE) * 0.72));
+      spawnHit(PLAYER_BASE_ATTACK_HIT_X, GROUND_Y - 88, "#9dff42");
+    } else {
+      const currentTargets = getWitchDragonBreathTargets(enemy);
+      if (!currentTargets.length) {
+        setWitchDragonBreathing(enemy, false);
+        break;
+      }
+      enemy.dragonBreathTargets = currentTargets;
+      applyWitchDragonBreathTick(enemy, currentTargets);
+    }
+    enemy.dragonBreathTickTimer += WITCH_DRAGON_BREATH_TICK_INTERVAL;
+  }
+}
+
+function updateWitchDragonEnemy(enemy, dt) {
+  const targets = getWitchDragonBreathTargets(enemy);
+  if (targets.length) {
+    updateWitchDragonBreath(enemy, dt, targets);
+    return;
+  }
+
+  if (enemy.x <= PLAYER_BASE_ATTACK_X) {
+    enemy.x = PLAYER_BASE_ATTACK_X;
+    updateWitchDragonBreath(enemy, dt, [], true);
+    return;
+  }
+
+  setWitchDragonBreathing(enemy, false);
+  enemy.x -= enemy.speed * dt;
+  enemy.moving = true;
+  if (enemy.x < PLAYER_BASE_ATTACK_X) enemy.x = PLAYER_BASE_ATTACK_X;
+}
+
+function updateWitchEnemy(enemy, dt) {
+  if (enemy.transforming || enemy.bossPhase === "transform") {
+    updateWitchDragonTransformation(enemy, dt);
+    return;
+  }
+
+  if (isWitchDragon(enemy)) {
+    updateWitchDragonEnemy(enemy, dt);
+    return;
+  }
+
+  const attackDuration = enemy.attackAnimDuration || 1.2;
+  const attackProgress = enemy.attackAnimTimer > 0
+    ? 1 - enemy.attackAnimTimer / attackDuration
+    : 1;
+
+  if (
+    enemy.meteorCastPending
+    && (attackProgress >= CHAPTER2_WITCH_SPRITE.meteorReleaseProgress || enemy.attackAnimTimer <= 0)
+  ) {
+    if (typeof spawnWitchMeteor === "function") {
+      spawnWitchMeteor(enemy, isCombatAlive(enemy.meteorTarget) ? enemy.meteorTarget : null);
+    }
+    enemy.meteorCastPending = false;
+    enemy.meteorTarget = null;
+  }
+
+  if (enemy.attackAnimTimer > 0) {
+    enemy.moving = false;
+    return;
+  }
+
+  const target = findNearestAlly(enemy.x, enemy.range);
+  if (target) {
+    if (enemy.cooldown <= 0) startWitchMeteorCast(enemy, target);
+    return;
+  }
+
+  const castingPositionX = PLAYER_BASE_ATTACK_X + 560;
+  if (enemy.x > castingPositionX) {
+    enemy.x -= enemy.speed * dt;
+    enemy.moving = true;
+    return;
+  }
+
+  if (enemy.cooldown <= 0) startWitchMeteorCast(enemy, null);
+}
+
 function createEvileyeEnemy(wave) {
   const stats = getStageMonsterStats(EVILEYE_STAGE_STATS, 2);
   return {
@@ -351,11 +1060,19 @@ function createKaronBoss(wave) {
 
 function shouldSpawnKaronBoss(wave) {
   if (gameState.karonBossSpawned) return false;
-  return Number(gameState.stage) === 3 && wave === gameState.maxWave && gameState.spawnedInWave === 0;
+  return Number(gameState.chapter) === 1
+    && Number(gameState.stage) === 3
+    && wave === gameState.maxWave
+    && gameState.spawnedInWave === 0;
 }
 
 function shouldTriggerKaronBossByEnemyGate() {
-  if (!gameState || gameState.karonBossSpawned || Number(gameState.stage) !== 3) return false;
+  if (
+    !gameState
+    || gameState.karonBossSpawned
+    || Number(gameState.chapter) !== 1
+    || Number(gameState.stage) !== 3
+  ) return false;
   const enemyBaseMaxHp = Math.max(1, Number(gameState.enemyBaseMaxHp) || 0);
   return Math.max(0, Number(gameState.enemyBaseHp) || 0) <= enemyBaseMaxHp * KARON_GATE_TRIGGER_HP_RATIO;
 }
@@ -759,7 +1476,38 @@ function createStageThreeMinion(wave) {
 function spawnEnemy() {
   const wave = gameState.wave;
   const stage = Number(gameState.stage);
+  const chapter = Number(gameState.chapter) || 1;
   const isStageOne = stage === 1;
+
+  if (chapter === 2 && stage === 1) {
+    gameState.enemies.push(createChapter2SkeletonEnemy(wave));
+    return;
+  }
+
+  if (chapter === 2 && stage === 2) {
+    const spawnIndex = Math.max(0, Number(gameState.spawnedInWave) || 0);
+    if (spawnIndex % 2 === 0) {
+      spawnChapter2BatSwarm(wave);
+    } else {
+      gameState.enemies.push(createChapter2Stage2GoblinEnemy(wave));
+    }
+    return;
+  }
+
+  if (chapter === 2 && stage === 3) {
+    const spawnIndex = Math.max(0, Number(gameState.spawnedInWave) || 0);
+    if (spawnIndex % 2 === 0) {
+      spawnChapter2Stage3SkeletonGroup(wave, spawnIndex);
+    } else {
+      spawnChapter2BatSwarm(wave);
+    }
+    return;
+  }
+
+  if (chapter === 2 && stage === 4) {
+    spawnChapter2WitchBoss();
+    return;
+  }
 
   if (stage === 2) {
     gameState.enemies.push(shouldSpawnEvileye(wave) ? createEvileyeEnemy(wave) : createGoblinEnemy(wave, false));
@@ -805,6 +1553,9 @@ function updateEnemies(dt) {
     if (enemy.type === "karon" && enemy.hp <= 0 && !enemy.dead && startKaronTransformation(enemy)) {
       continue;
     }
+    if (enemy.type === "witch" && enemy.hp <= 0 && !enemy.dead && startWitchDragonTransformation(enemy)) {
+      continue;
+    }
 
     if (enemy.hp <= 0 || enemy.dead) {
       startEnemyDeath(enemy);
@@ -826,6 +1577,16 @@ function updateEnemies(dt) {
       enemy.animTime = Math.max(0, (enemy.animTime || 0) - dt);
       enemy.attackAnimTimer = 0;
       enemy.playerGateHitPending = false;
+      if (enemy.type === "witch") {
+        enemy.dragonBreathing = false;
+        enemy.dragonBreathTargets = [];
+        enemy.dragonBreathTickTimer = 0;
+      }
+      continue;
+    }
+
+    if (enemy.type === "witch") {
+      updateWitchEnemy(enemy, dt);
       continue;
     }
 
@@ -900,6 +1661,14 @@ function canDrawStage1EnemySprite(enemy) {
     && enemy.type === "normal";
 }
 
+function canDrawChapter2SkeletonSprite(enemy) {
+  return chapter2SkeletonSpriteReady && enemy.type === "skeleton";
+}
+
+function canDrawChapter2BatSprite(enemy) {
+  return chapter2BatSpriteReady && enemy.type === "bat";
+}
+
 function canDrawEvileyeSprite(enemy) {
   return stage2EvileyeSpriteReady && enemy.type === "evileye";
 }
@@ -907,6 +1676,284 @@ function canDrawEvileyeSprite(enemy) {
 function canDrawKaronSprite(enemy) {
   const source = getKaronSpriteSource(enemy);
   return Boolean(enemy && enemy.type === "karon" && source.ready && source.image);
+}
+
+function canDrawWitchSprite(enemy) {
+  if (!enemy || enemy.type !== "witch") return false;
+  if (enemy.transforming || enemy.bossPhase === "transform") {
+    return Boolean(chapter2WitchTransformSpriteReady && chapter2WitchTransformSprite);
+  }
+  if (isWitchDragon(enemy)) {
+    return Boolean(chapter2WitchDragonSpriteReady && chapter2WitchDragonSprite);
+  }
+  if (enemy.attackAnimTimer > 0) {
+    return Boolean(chapter2WitchAttackSpriteReady && chapter2WitchAttackSprite);
+  }
+  return Boolean(chapter2WitchWalkSpriteReady && chapter2WitchWalkSprite);
+}
+
+function drawWitchTransformationSprite(enemy) {
+  const spec = CHAPTER2_WITCH_TRANSFORM_SPRITE;
+  const duration = enemy.transformAnimDuration || spec.duration;
+  const progress = Math.min(1, Math.max(0, (enemy.transformAnimTimer || 0) / duration));
+  const frame = Math.min(spec.totalFrames - 1, Math.floor(progress * spec.totalFrames));
+  const visualBottom = spec.visualBottoms[frame] ?? (spec.frameH - 1);
+  const scaleY = spec.drawH / spec.frameH;
+  const destY = -spec.drawH
+    + spec.baseOffsetY
+    + Math.max(0, spec.frameH - 1 - visualBottom) * scaleY;
+
+  ctx.save();
+  ctx.translate(enemy.x, enemy.y);
+  ctx.fillStyle = `rgba(34, 255, 82, ${0.08 + progress * 0.1})`;
+  ctx.beginPath();
+  ctx.ellipse(0, 5, 44 + progress * 62, 10 + progress * 5, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.imageSmoothingEnabled = true;
+  ctx.drawImage(
+    chapter2WitchTransformSprite,
+    frame * spec.frameW,
+    0,
+    spec.frameW,
+    spec.frameH,
+    -spec.drawW / 2,
+    destY,
+    spec.drawW,
+    spec.drawH
+  );
+  ctx.restore();
+  return true;
+}
+
+function drawWitchDragonBreath(enemy) {
+  if (
+    !enemy.dragonBreathing
+    || !chapter2WitchDragonBreathSpriteReady
+    || !chapter2WitchDragonBreathSprite
+  ) return;
+
+  const spec = CHAPTER2_WITCH_DRAGON_BREATH_SPRITE;
+  const frame = Math.floor((enemy.dragonBreathAnimTime || 0) * spec.fps) % spec.totalFrames;
+  const mouthX = enemy.x + spec.mouthOffsetX;
+  const mouthY = enemy.y + spec.mouthOffsetY;
+  const tipRatio = spec.sourceTipX / spec.frameW;
+  const targetPoints = (enemy.dragonBreathTargets || [])
+    .filter(isCombatAlive)
+    .map((target) => ({
+      x: target.x,
+      y: target.y - Math.max(32, (target.h || 70) * 0.55),
+    }));
+
+  if (!targetPoints.length && enemy.x <= PLAYER_BASE_ATTACK_X) {
+    targetPoints.push({
+      x: PLAYER_BASE_ATTACK_HIT_X,
+      y: GROUND_Y - 88,
+    });
+  }
+
+  let angleRad = spec.angleRad;
+  let drawW = spec.minDrawW;
+  let drawH = spec.baseDrawH;
+
+  if (targetPoints.length) {
+    const aimX = targetPoints.reduce((sum, point) => sum + point.x, 0) / targetPoints.length;
+    const aimY = targetPoints.reduce((sum, point) => sum + point.y, 0) / targetPoints.length;
+    const aimDx = aimX - mouthX;
+    const aimDy = aimY - mouthY;
+    const desiredAngle = Math.atan2(aimDy, aimDx) - Math.PI;
+    angleRad = Math.max(-spec.maxAimAngleRad, Math.min(spec.maxAimAngleRad, desiredAngle));
+
+    const furthestDistance = Math.max(
+      ...targetPoints.map((point) => Math.hypot(point.x - mouthX, point.y - mouthY))
+    );
+    drawW = Math.max(
+      spec.minDrawW,
+      Math.min(spec.maxDrawW, (furthestDistance + spec.targetPadding) / tipRatio)
+    );
+
+    const axisX = -Math.cos(angleRad);
+    const axisY = -Math.sin(angleRad);
+    const maxSpread = Math.max(
+      ...targetPoints.map((point) => {
+        const dx = point.x - mouthX;
+        const dy = point.y - mouthY;
+        return Math.abs(dx * axisY - dy * axisX);
+      })
+    );
+    drawH = Math.max(spec.baseDrawH, Math.min(spec.maxDrawH, spec.baseDrawH + maxSpread * 1.35));
+  }
+
+  ctx.save();
+  ctx.translate(mouthX, mouthY);
+  ctx.rotate(angleRad);
+  ctx.imageSmoothingEnabled = true;
+  ctx.drawImage(
+    chapter2WitchDragonBreathSprite,
+    frame * spec.frameW,
+    0,
+    spec.frameW,
+    spec.frameH,
+    -drawW * tipRatio,
+    -drawH / 2,
+    drawW,
+    drawH
+  );
+  ctx.restore();
+}
+
+function drawWitchDragonSprite(enemy) {
+  const spec = CHAPTER2_WITCH_DRAGON_SPRITE;
+  const dying = enemy.dead || enemy.hp <= 0;
+  let anim = enemy.dragonBreathing ? "attack" : "walk";
+  if (dying) anim = "death";
+
+  let frame = 0;
+  if (anim === "attack") {
+    frame = Math.floor((enemy.dragonBreathAnimTime || 0) * spec.fps.attack) % spec.frames.attack;
+  } else if (anim === "death") {
+    const duration = enemy.deathAnimDuration || 0.9;
+    const progress = 1 - Math.max(0, enemy.deathAnimTimer || 0) / duration;
+    frame = Math.min(spec.frames.death - 1, Math.max(0, Math.floor(progress * spec.frames.death)));
+  } else {
+    frame = Math.floor((enemy.animTime || 0) * spec.fps.walk) % spec.frames.walk;
+  }
+
+  if (enemy.dragonBreathing && !dying) {
+    drawWitchDragonBreath(enemy);
+  }
+
+  ctx.save();
+  ctx.translate(enemy.x, enemy.y);
+  ctx.fillStyle = "rgba(0,0,0,0.28)";
+  ctx.beginPath();
+  ctx.ellipse(0, 5, anim === "death" ? 92 : 76, anim === "death" ? 14 : 12, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  if (dying) {
+    const duration = enemy.deathAnimDuration || 0.9;
+    const progress = 1 - Math.max(0, enemy.deathAnimTimer || 0) / duration;
+    ctx.globalAlpha = Math.max(0.18, 1 - progress * 0.5);
+  }
+
+  ctx.imageSmoothingEnabled = true;
+  ctx.drawImage(
+    chapter2WitchDragonSprite,
+    frame * spec.frameW,
+    spec.rows[anim] * spec.frameH,
+    spec.frameW,
+    spec.frameH,
+    -spec.drawW / 2,
+    -spec.drawH + spec.baseOffsetY,
+    spec.drawW,
+    spec.drawH
+  );
+  ctx.restore();
+  return true;
+}
+
+function drawHumanWitchSprite(enemy) {
+
+  const attacking = !enemy.dead && enemy.hp > 0 && enemy.attackAnimTimer > 0;
+  const sprite = attacking ? chapter2WitchAttackSprite : chapter2WitchWalkSprite;
+  const frameCount = attacking
+    ? CHAPTER2_WITCH_SPRITE.attackFrames
+    : CHAPTER2_WITCH_SPRITE.walkFrames;
+  let frame = Math.floor(
+    (enemy.animTime || 0)
+    * (attacking ? CHAPTER2_WITCH_SPRITE.attackFps : CHAPTER2_WITCH_SPRITE.walkFps)
+  ) % frameCount;
+
+  if (attacking) {
+    const duration = enemy.attackAnimDuration || 1.2;
+    const progress = 1 - Math.max(0, enemy.attackAnimTimer || 0) / duration;
+    frame = Math.min(frameCount - 1, Math.max(0, Math.floor(progress * frameCount)));
+  }
+
+  const dying = enemy.dead || enemy.hp <= 0;
+  const deathDuration = enemy.deathAnimDuration || 1.05;
+  const deathProgress = dying
+    ? 1 - Math.max(0, enemy.deathAnimTimer || 0) / deathDuration
+    : 0;
+  const sx = frame * CHAPTER2_WITCH_SPRITE.frameW;
+  const dw = CHAPTER2_WITCH_SPRITE.drawW;
+  const dh = CHAPTER2_WITCH_SPRITE.drawH;
+  const flightOffset = enemy.flightOffset || CHAPTER2_WITCH_SPRITE.flightOffsetY;
+
+  ctx.save();
+  ctx.translate(enemy.x, enemy.y);
+  ctx.fillStyle = "rgba(0,0,0,0.2)";
+  ctx.beginPath();
+  ctx.ellipse(0, 5, 46, 10, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.translate(0, -flightOffset);
+  if (dying) {
+    ctx.globalAlpha = Math.max(0.08, 1 - deathProgress * 0.92);
+    ctx.translate(0, deathProgress * 105);
+    ctx.rotate(-deathProgress * 0.28);
+  }
+
+  ctx.imageSmoothingEnabled = true;
+  ctx.drawImage(
+    sprite,
+    sx,
+    0,
+    CHAPTER2_WITCH_SPRITE.frameW,
+    CHAPTER2_WITCH_SPRITE.frameH,
+    -dw / 2,
+    -dh / 2,
+    dw,
+    dh
+  );
+  ctx.restore();
+  return true;
+}
+
+function drawWitchSprite(enemy) {
+  if (!canDrawWitchSprite(enemy)) return false;
+  if (enemy.transforming || enemy.bossPhase === "transform") {
+    return drawWitchTransformationSprite(enemy);
+  }
+  if (isWitchDragon(enemy)) {
+    return drawWitchDragonSprite(enemy);
+  }
+  return drawHumanWitchSprite(enemy);
+}
+
+function drawWitchBossHealthBar(enemy) {
+  const dragonPhase = isWitchDragon(enemy);
+  const spriteSpec = dragonPhase ? CHAPTER2_WITCH_DRAGON_SPRITE : CHAPTER2_WITCH_SPRITE;
+  const width = spriteSpec.healthBarWidth;
+  const height = 12;
+  const x = enemy.x - width / 2;
+  const y = Math.max(20, enemy.y - spriteSpec.healthBarOffsetY);
+  const ratio = Math.max(0, Math.min(1, enemy.hp / enemy.maxHp));
+
+  ctx.save();
+  ctx.font = "700 11px Arial, sans-serif";
+  ctx.textAlign = "center";
+  ctx.textBaseline = "bottom";
+  ctx.fillStyle = "#ffe3e8";
+  ctx.shadowColor = "rgba(0, 0, 0, 0.9)";
+  ctx.shadowBlur = 4;
+  ctx.fillText(enemy.name || "독룡의 마녀 베르디아", enemy.x, y - 4);
+
+  ctx.shadowBlur = 0;
+  ctx.fillStyle = "rgba(7, 10, 12, 0.92)";
+  ctx.fillRect(x - 3, y - 3, width + 6, height + 6);
+
+  ctx.fillStyle = "#20272b";
+  ctx.fillRect(x, y, width, height);
+
+  if (ratio > 0) {
+    ctx.fillStyle = dragonPhase ? "#72e83f" : "#ff4f78";
+    ctx.fillRect(x, y, width * ratio, height);
+  }
+
+  ctx.strokeStyle = "rgba(255,255,255,0.65)";
+  ctx.lineWidth = 2;
+  ctx.strokeRect(x, y, width, height);
+  ctx.restore();
 }
 
 function drawKaronSprite(enemy) {
@@ -1081,6 +2128,51 @@ function drawEvileyeSprite(enemy) {
   return true;
 }
 
+function drawChapter2BatSprite(enemy) {
+  if (!canDrawChapter2BatSprite(enemy)) return false;
+
+  const isDying = enemy.dead || enemy.hp <= 0;
+  const isAttacking = !isDying && enemy.attackAnimTimer > 0;
+  const deathDuration = enemy.deathAnimDuration || 0.48;
+  const deathProgress = isDying
+    ? 1 - Math.max(0, enemy.deathAnimTimer || 0) / deathDuration
+    : 0;
+  const attackDuration = enemy.attackAnimDuration || 0.34;
+  const attackProgress = isAttacking
+    ? 1 - Math.max(0, enemy.attackAnimTimer || 0) / attackDuration
+    : 0;
+  const hover = isDying || enemy.paralyzeTimer > 0
+    ? 0
+    : Math.sin((enemy.animTime || 0) * 10 + (enemy.swarmIndex || 0) * 0.8) * 3;
+  const wingPulse = isDying
+    ? 1
+    : 0.94 + Math.sin((enemy.animTime || 0) * 13 + (enemy.swarmIndex || 0)) * 0.06;
+  const attackLunge = isAttacking ? -Math.sin(attackProgress * Math.PI) * 7 : 0;
+  const drawW = CHAPTER2_BAT_SPRITE.drawW;
+  const drawH = CHAPTER2_BAT_SPRITE.drawH;
+  const flightOffset = enemy.flightOffset || CHAPTER2_BAT_SPRITE.flightOffsetY;
+
+  ctx.save();
+  ctx.translate(enemy.x + attackLunge, enemy.y - flightOffset + hover + deathProgress * 42);
+
+  if (isDying) {
+    ctx.globalAlpha = Math.max(0.1, 1 - deathProgress * 0.9);
+    ctx.rotate(-deathProgress * 0.65);
+  }
+
+  ctx.scale(1, wingPulse);
+  ctx.imageSmoothingEnabled = true;
+  ctx.drawImage(
+    chapter2BatSprite,
+    -drawW / 2,
+    -drawH / 2,
+    drawW,
+    drawH
+  );
+  ctx.restore();
+  return true;
+}
+
 function drawStage1EnemySprite(enemy) {
   if (!canDrawStage1EnemySprite(enemy)) return false;
 
@@ -1142,7 +2234,99 @@ function drawStage1EnemySprite(enemy) {
   return true;
 }
 
+function drawChapter2SkeletonSprite(enemy) {
+  if (!canDrawChapter2SkeletonSprite(enemy)) return false;
+
+  let anim = "walk";
+  if (enemy.dead || enemy.hp <= 0) anim = "death";
+  else if (enemy.attackAnimTimer > 0) anim = "attack";
+
+  const frameCount = CHAPTER2_SKELETON_SPRITE.frames[anim] || 1;
+  const fps = CHAPTER2_SKELETON_SPRITE.fps[anim] || 8;
+  let frame = Math.floor((enemy.animTime || 0) * fps) % frameCount;
+
+  if (anim === "attack") {
+    const duration = enemy.attackAnimDuration || 0.6;
+    const progress = 1 - Math.max(0, enemy.attackAnimTimer || 0) / duration;
+    frame = Math.min(frameCount - 1, Math.max(0, Math.floor(progress * frameCount)));
+  } else if (anim === "death") {
+    const duration = enemy.deathAnimDuration || 0.86;
+    const progress = 1 - Math.max(0, enemy.deathAnimTimer || 0) / duration;
+    frame = Math.min(frameCount - 1, Math.max(0, Math.floor(progress * frameCount)));
+  }
+
+  const frameW = chapter2SkeletonSprite.naturalWidth / CHAPTER2_SKELETON_SPRITE.columns;
+  const frameH = chapter2SkeletonSprite.naturalHeight / CHAPTER2_SKELETON_SPRITE.rowCount;
+  const sx = frame * frameW;
+  const sy = CHAPTER2_SKELETON_SPRITE.rows[anim] * frameH;
+  const dw = CHAPTER2_SKELETON_SPRITE.drawW;
+  const dh = CHAPTER2_SKELETON_SPRITE.drawH;
+  const deathGroundOffsets = [32, 31, 32, 28, 28, 26];
+  const groundOffsetY = anim === "walk"
+    ? 8
+    : anim === "death"
+      ? deathGroundOffsets[frame] || 28
+      : 14;
+
+  ctx.save();
+  ctx.translate(enemy.x, enemy.y);
+
+  if (anim === "death") {
+    const duration = enemy.deathAnimDuration || 0.86;
+    const progress = 1 - Math.max(0, enemy.deathAnimTimer || 0) / duration;
+    ctx.globalAlpha = Math.max(0.22, 1 - progress * 0.42);
+  }
+
+  ctx.fillStyle = "rgba(0,0,0,0.24)";
+  ctx.beginPath();
+  ctx.ellipse(0, 5, anim === "death" ? 48 : 31, 9, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  if (enemy.isWitchCursedSkeleton) {
+    const pulse = 0.5 + Math.sin((performance.now() + enemy.x * 9) * 0.012) * 0.5;
+    ctx.save();
+    ctx.globalAlpha = 0.42 + pulse * 0.28;
+    ctx.strokeStyle = "#65ff35";
+    ctx.fillStyle = "rgba(60, 220, 35, 0.16)";
+    ctx.shadowColor = "#79ff45";
+    ctx.shadowBlur = 12 + pulse * 6;
+    ctx.lineWidth = 2.5;
+    ctx.beginPath();
+    ctx.ellipse(0, -32, 25 + pulse * 4, 39 + pulse * 3, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  // The source artwork already faces screen-left, matching the enemy movement.
+  ctx.imageSmoothingEnabled = true;
+  ctx.drawImage(
+    chapter2SkeletonSprite,
+    sx,
+    sy,
+    frameW,
+    frameH,
+    -dw / 2,
+    -dh + groundOffsetY,
+    dw,
+    dh
+  );
+
+  ctx.restore();
+  return true;
+}
+
 function drawEnemy(enemy) {
+  const usedWitchSprite = drawWitchSprite(enemy);
+  if (usedWitchSprite) {
+    const isDying = enemy.dead || enemy.hp <= 0;
+    const isTransforming = enemy.transforming || enemy.bossPhase === "transform";
+    if (!isDying && !isTransforming) {
+      drawWitchBossHealthBar(enemy);
+    }
+    return;
+  }
+
   const usedKaronSprite = drawKaronSprite(enemy);
   if (usedKaronSprite) {
     const isDying = enemy.dead || (enemy.hp <= 0 && enemy.bossPhase === "werewolf");
@@ -1161,6 +2345,23 @@ function drawEnemy(enemy) {
     return;
   }
 
+  const usedChapter2BatSprite = drawChapter2BatSprite(enemy);
+  if (usedChapter2BatSprite) {
+    const isDying = enemy.dead || enemy.hp <= 0;
+    if (!isDying) {
+      const flightOffset = enemy.flightOffset || CHAPTER2_BAT_SPRITE.flightOffsetY;
+      drawHealthBar(
+        enemy.x,
+        enemy.y - flightOffset - CHAPTER2_BAT_SPRITE.drawH / 2 - 9,
+        CHAPTER2_BAT_SPRITE.healthBarWidth,
+        enemy.hp,
+        enemy.maxHp,
+        "#ff6868"
+      );
+    }
+    return;
+  }
+
   const usedEvileyeSprite = drawEvileyeSprite(enemy);
   if (usedEvileyeSprite) {
     const isDying = enemy.dead || enemy.hp <= 0;
@@ -1172,6 +2373,22 @@ function drawEnemy(enemy) {
         enemy.hp,
         enemy.maxHp,
         "#ff6868"
+      );
+    }
+    return;
+  }
+
+  const usedChapter2SkeletonSprite = drawChapter2SkeletonSprite(enemy);
+  if (usedChapter2SkeletonSprite) {
+    const isDying = enemy.dead || enemy.hp <= 0;
+    if (!isDying) {
+      drawHealthBar(
+        enemy.x,
+        enemy.y - CHAPTER2_SKELETON_SPRITE.healthBarOffsetY,
+        30,
+        enemy.hp,
+        enemy.maxHp,
+        enemy.isWitchCursedSkeleton ? "#72ff3d" : "#ff6868"
       );
     }
     return;

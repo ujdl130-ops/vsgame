@@ -352,6 +352,7 @@ function fireHeroStraightProjectile(hero, direction, origin) {
     targetX: direction < 0 ? -60 : canvasWidth + 60,
     targetY: origin.y,
     color: hero.projectileColor || "#9fe8ff",
+    sourceCombatant: hero,
   });
 }
 
@@ -386,6 +387,7 @@ function fireHeroArrow(hero) {
       damage: hero.damage,
       target: shotTarget,
       color: hero.projectileColor || "#9fe8ff",
+      sourceCombatant: hero,
     });
   } else if (direction > 0 && ENEMY_BASE_ATTACK_HIT_X - hero.x <= hero.range + 25) {
     damageEnemyBase(

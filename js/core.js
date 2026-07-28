@@ -91,7 +91,10 @@ const stageBackBtn = document.getElementById("stageBackBtn");
 const chapterPanel = document.getElementById("chapterPanel");
 const stagePanel = document.getElementById("stagePanel");
 const chapter1Btn = document.getElementById("chapter1Btn");
+const chapter2Btn = document.getElementById("chapter2Btn");
 const chapterBackBtn = document.getElementById("chapterBackBtn");
+const stagePartTab = document.getElementById("stagePartTab");
+const stageChapterTab = document.getElementById("stageChapterTab");
 const stageSelectNotice = document.getElementById("stageSelectNotice");
 const stageCards = document.querySelectorAll(".stage-card");
 const stageDetailPanel = document.getElementById("stageDetailPanel");
@@ -103,6 +106,7 @@ const COMBAT_LINE_Y = GROUND_Y - 42;
 const PLAYER_BASE_X = 40;
 const PLAYER_BASE_ATTACK_X = PLAYER_BASE_X + 130;
 const PLAYER_BASE_ATTACK_HIT_X = PLAYER_BASE_ATTACK_X - 4;
+const PLAYER_BASE_ATTACK_HIT_Y = GROUND_Y - 76;
 const ENEMY_BASE_X = 900;
 const ENEMY_BASE_ATTACK_X = ENEMY_BASE_X - 130;
 const ENEMY_BASE_ATTACK_HIT_X = ENEMY_BASE_ATTACK_X;
@@ -184,10 +188,19 @@ const ASSET_PATHS = {
   karonSwordWaveProjectile: "assets/animations/Boss_Karon/sword_effect_transparent_v2.png",
   stage1EnemySprite: "assets/animations/enemy/stage1_goblin_spritesheet.png",
   stage2EvileyeSprite: "assets/animations/enemy/stage2_flying_eye_spritesheet.png",
+  chapter2SkeletonSprite: "assets/animations/enemy/chapter2/skeleton_soldier_spritesheet_v7.png",
+  chapter2BatSprite: "assets/animations/enemy/chapter2/bat_enemy.png",
+  chapter2WitchWalkSprite: "assets/animations/enemy/chapter2/boss_witch/witch_walk_spritesheet.png",
+  chapter2WitchAttackSprite: "assets/animations/enemy/chapter2/boss_witch/witch_attack_spritesheet.png",
+  chapter2WitchMeteorSprite: "assets/animations/enemy/chapter2/boss_witch/witch_meteor_spritesheet.png",
+  chapter2WitchTransformSprite: "assets/animations/enemy/chapter2/boss_witch/witch_to_dragon_transform_spritesheet.png",
+  chapter2WitchDragonSprite: "assets/animations/enemy/chapter2/boss_witch/witch_dragon_flying_spritesheet.png",
+  chapter2WitchDragonBreathSprite: "assets/animations/enemy/chapter2/boss_witch/witch_dragon_breath_loop_spritesheet.png",
   karonHumanSprite: "assets/animations/Boss_Karon/karon_human_phase1_transparent.png",
   karonTransformSprite: "assets/animations/Boss_Karon/karon_transform_transparent.png",
   karonWerewolfSprite: "assets/animations/Boss_Karon/karon_werewolf_phase2_transparent.png",
   stage1Background: "assets/maps/stage1/stage1_forest_bg_v2.png",
+  chapter2Stage1Background: "assets/maps/chapter2/stage1/stage2_1_background.png",
   stageBackgroundTemplate: "assets/maps/stage{stage}/stage{stage}_background.png",
   playerCastleTemplate: "assets/maps/rune_gate_transparent.png",
   enemyCastleTemplate: "assets/maps/demon_gate_transparent.png",
@@ -327,6 +340,78 @@ loadGameImage(
   "Stage 2 evileye sprite"
 );
 
+const chapter2SkeletonSprite = new Image();
+let chapter2SkeletonSpriteReady = false;
+loadGameImage(
+  chapter2SkeletonSprite,
+  [ASSET_PATHS.chapter2SkeletonSprite],
+  (ready) => { chapter2SkeletonSpriteReady = ready; },
+  "Chapter 2 skeleton soldier sprite"
+);
+
+const chapter2BatSprite = new Image();
+let chapter2BatSpriteReady = false;
+loadGameImage(
+  chapter2BatSprite,
+  [ASSET_PATHS.chapter2BatSprite],
+  (ready) => { chapter2BatSpriteReady = ready; },
+  "Chapter 2 bat sprite"
+);
+
+const chapter2WitchWalkSprite = new Image();
+let chapter2WitchWalkSpriteReady = false;
+loadGameImage(
+  chapter2WitchWalkSprite,
+  [ASSET_PATHS.chapter2WitchWalkSprite],
+  (ready) => { chapter2WitchWalkSpriteReady = ready; },
+  "Chapter 2 witch walk sprite"
+);
+
+const chapter2WitchAttackSprite = new Image();
+let chapter2WitchAttackSpriteReady = false;
+loadGameImage(
+  chapter2WitchAttackSprite,
+  [ASSET_PATHS.chapter2WitchAttackSprite],
+  (ready) => { chapter2WitchAttackSpriteReady = ready; },
+  "Chapter 2 witch attack sprite"
+);
+
+const chapter2WitchMeteorSprite = new Image();
+let chapter2WitchMeteorSpriteReady = false;
+loadGameImage(
+  chapter2WitchMeteorSprite,
+  [ASSET_PATHS.chapter2WitchMeteorSprite],
+  (ready) => { chapter2WitchMeteorSpriteReady = ready; },
+  "Chapter 2 witch meteor sprite"
+);
+
+const chapter2WitchTransformSprite = new Image();
+let chapter2WitchTransformSpriteReady = false;
+loadGameImage(
+  chapter2WitchTransformSprite,
+  [ASSET_PATHS.chapter2WitchTransformSprite],
+  (ready) => { chapter2WitchTransformSpriteReady = ready; },
+  "Chapter 2 witch transformation sprite"
+);
+
+const chapter2WitchDragonSprite = new Image();
+let chapter2WitchDragonSpriteReady = false;
+loadGameImage(
+  chapter2WitchDragonSprite,
+  [ASSET_PATHS.chapter2WitchDragonSprite],
+  (ready) => { chapter2WitchDragonSpriteReady = ready; },
+  "Chapter 2 witch dragon sprite"
+);
+
+const chapter2WitchDragonBreathSprite = new Image();
+let chapter2WitchDragonBreathSpriteReady = false;
+loadGameImage(
+  chapter2WitchDragonBreathSprite,
+  [ASSET_PATHS.chapter2WitchDragonBreathSprite],
+  (ready) => { chapter2WitchDragonBreathSpriteReady = ready; },
+  "Chapter 2 witch dragon breath sprite"
+);
+
 const karonHumanSprite = new Image();
 let karonHumanSpriteReady = false;
 loadGameImage(
@@ -375,21 +460,24 @@ let playerCastleReady = false;
 const enemyCastleImage = new Image();
 let enemyCastleReady = false;
 
-function loadStageAssets(stageNumber) {
+function loadStageAssets(stageNumber, chapterNumber = 1) {
   const stage = Math.min(Math.max(1, Number(stageNumber) || 1), 3);
+  const chapter = Math.max(1, Number(chapterNumber) || 1);
   stageBackgroundReady = false;
   playerCastleReady = false;
   enemyCastleReady = false;
 
-  const backgroundPath = stage === 1
-    ? ASSET_PATHS.stage1Background
-    : resolveStageAssetPath(stage, "stageBackgroundTemplate");
+  const backgroundPath = chapter === 2 && (stage === 1 || stage === 2 || stage === 3)
+    ? ASSET_PATHS.chapter2Stage1Background
+    : stage === 1
+      ? ASSET_PATHS.stage1Background
+      : resolveStageAssetPath(stage, "stageBackgroundTemplate");
 
   loadGameImage(
     stageBackgroundImage,
     [backgroundPath],
     (ready) => { stageBackgroundReady = ready; },
-    `Stage ${stage} background`
+    `Chapter ${chapter} Stage ${stage} background`
   );
 
   loadGameImage(

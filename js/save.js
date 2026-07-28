@@ -395,6 +395,7 @@ function createDefaultProgress() {
   return {
     unlockedStage: 1,
     clearedStages: [],
+    chapterClearedStages: {},
     growth: {},
     claimedMissionRewards: [],
     claimedMissionDailyDate: "",
@@ -411,7 +412,10 @@ function loadProgress() {
       ? saved.clearedStages.map(Number).filter((stage) => stage >= 1 && stage <= 3)
       : [];
     const growth = saved.growth && typeof saved.growth === "object" ? saved.growth : {};
-    return { ...saved, unlockedStage, clearedStages, growth };
+    const chapterClearedStages = saved.chapterClearedStages && typeof saved.chapterClearedStages === "object"
+      ? saved.chapterClearedStages
+      : {};
+    return { ...saved, unlockedStage, clearedStages, chapterClearedStages, growth };
   } catch (error) {}
   return createDefaultProgress();
 }

@@ -14,14 +14,15 @@ function resetGame() {
 
 function startGame(stageNumber = selectedStage) {
   selectedStage = Number(stageNumber) || 1;
-  if (!isStageUnlocked(selectedStage)) {
+  const chapter = typeof selectedChapter === "number" ? selectedChapter : 1;
+  if (!canStartChapterStage(chapter, selectedStage)) {
     showStageSelect();
-    showChapterStages();
+    showChapterStages(chapter);
     showStageLockedNotice(selectedStage);
     return;
   }
 
-  loadStageAssets(selectedStage);
+  loadStageAssets(selectedStage, chapter);
   hideStageClearRewardUi();
   hideStageDefeatUi();
   closeGameOptionsMenu(false);
@@ -119,6 +120,7 @@ window.addEventListener("keydown", (event) => {
       if (event.code === "Digit1") openStage(1);
       if (event.code === "Digit2") openStage(2);
       if (event.code === "Digit3") openStage(3);
+      if (event.code === "Digit4") openStage(4);
     }
     return;
   }
@@ -766,7 +768,8 @@ shopCards.forEach((card) => {
   card.addEventListener("click", () => showShopItemNotice(card.dataset.item || "아이템"));
 });
 if (stageBackBtn) stageBackBtn.addEventListener("click", handleStageBack);
-if (chapter1Btn) chapter1Btn.addEventListener("click", showChapterStages);
+if (chapter1Btn) chapter1Btn.addEventListener("click", () => showChapterStages(1));
+if (chapter2Btn) chapter2Btn.addEventListener("click", () => showChapterStages(2));
 if (chapterBackBtn) chapterBackBtn.addEventListener("click", showStageSelect);
 if (stageDetailCloseBtn) stageDetailCloseBtn.addEventListener("click", hideStageDetailPanel);
 if (stageDetailStartBtn) stageDetailStartBtn.addEventListener("click", proceedStageDetailPanel);
