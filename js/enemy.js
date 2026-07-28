@@ -97,17 +97,16 @@ const CHAPTER2_WITCH_TRANSFORM_SPRITE = {
 
 const CHAPTER2_WITCH_DRAGON_SPRITE = {
   columns: 6,
-  frameW: 296,
-  frameH: 296,
+  frameW: 384,
+  frameH: 384,
   rows: { walk: 0, attack: 1, death: 2 },
   frames: { walk: 6, attack: 6, death: 6 },
-  fps: { walk: 7, death: 7 },
-  breathPoseFrame: 1,
-  drawW: 280,
-  drawH: 280,
-  baseOffsetY: 30,
-  healthBarOffsetY: 205,
-  healthBarWidth: 190,
+  fps: { walk: 7, attack: 7, death: 7 },
+  drawW: 360,
+  drawH: 360,
+  baseOffsetY: 0,
+  healthBarOffsetY: 305,
+  healthBarWidth: 230,
 };
 
 const CHAPTER2_WITCH_DRAGON_BREATH_SPRITE = {
@@ -118,9 +117,10 @@ const CHAPTER2_WITCH_DRAGON_BREATH_SPRITE = {
   fps: 12,
   drawW: 360,
   drawH: 180,
-  mouthOffsetX: -72,
-  mouthOffsetY: -139,
+  mouthOffsetX: -96,
+  mouthOffsetY: -112,
   sourceTipX: 371,
+  angleRad: -10 * Math.PI / 180,
 };
 
 const WITCH_DRAGON_PHASE_TWO_HP = 4200;
@@ -1733,10 +1733,10 @@ function drawWitchDragonBreath(enemy) {
   const mouthX = enemy.x + spec.mouthOffsetX;
   const mouthY = enemy.y + spec.mouthOffsetY;
   const tipRatio = spec.sourceTipX / spec.frameW;
-  const destX = mouthX - spec.drawW * tipRatio;
-  const destY = mouthY - spec.drawH / 2;
 
   ctx.save();
+  ctx.translate(mouthX, mouthY);
+  ctx.rotate(spec.angleRad);
   ctx.imageSmoothingEnabled = true;
   ctx.drawImage(
     chapter2WitchDragonBreathSprite,
@@ -1744,8 +1744,8 @@ function drawWitchDragonBreath(enemy) {
     0,
     spec.frameW,
     spec.frameH,
-    destX,
-    destY,
+    -spec.drawW * tipRatio,
+    -spec.drawH / 2,
     spec.drawW,
     spec.drawH
   );
@@ -1760,12 +1760,12 @@ function drawWitchDragonSprite(enemy) {
 
   let frame = 0;
   if (anim === "attack") {
-    frame = spec.breathPoseFrame;
+    frame = Math.floor((enemy.dragonBreathAnimTime || 0) * spec.fps.attack) % spec.frames.attack;
   } else if (anim === "death") {
     const duration = enemy.deathAnimDuration || 0.9;
     const progress = 1 - Math.max(0, enemy.deathAnimTimer || 0) / duration;
     frame = Math.min(spec.frames.death - 1, Math.max(0, Math.floor(progress * spec.frames.death)));
-  } else if (enemy.moving) {
+  } else {
     frame = Math.floor((enemy.animTime || 0) * spec.fps.walk) % spec.frames.walk;
   }
 

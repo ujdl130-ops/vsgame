@@ -194,7 +194,7 @@ const ASSET_PATHS = {
   chapter2WitchAttackSprite: "assets/animations/enemy/chapter2/boss_witch/witch_attack_spritesheet.png",
   chapter2WitchMeteorSprite: "assets/animations/enemy/chapter2/boss_witch/witch_meteor_spritesheet.png",
   chapter2WitchTransformSprite: "assets/animations/enemy/chapter2/boss_witch/witch_to_dragon_transform_spritesheet.png",
-  chapter2WitchDragonSprite: "assets/animations/enemy/chapter2/boss_witch/witch_dragon_spritesheet.png",
+  chapter2WitchDragonSprite: "assets/animations/enemy/chapter2/boss_witch/witch_dragon_flying_spritesheet.png",
   chapter2WitchDragonBreathSprite: "assets/animations/enemy/chapter2/boss_witch/witch_dragon_breath_loop_spritesheet.png",
   karonHumanSprite: "assets/animations/Boss_Karon/karon_human_phase1_transparent.png",
   karonTransformSprite: "assets/animations/Boss_Karon/karon_transform_transparent.png",
